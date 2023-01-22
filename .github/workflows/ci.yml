@@ -1,0 +1,99 @@
+name: CI
+
+on:
+    push:
+        branches:
+        -   main
+        tags:
+        -   v[0-9]+.[0-9]+.[0-9]+
+    pull_request:
+        branches:
+        -   main
+
+jobs:
+    init:
+        runs-on: ubuntu-latest
+        outputs:
+            skip: ${{ steps.ci-skip-step.outputs.ci-skip }}
+        steps:
+        -   uses: actions/checkout@v2
+            with:
+                fetch-depth: 0
+        -   id: ci-skip-step
+            uses: mstachniuk/ci-skip@master
+            with:
+                commit-filter: '[ci skip];[ci-skip];[skip ci];[skip-ci]'
+                commit-filter-separator: ;
+
+    lint:
+        needs: init
+        if: ${{ github.event_name == 'schedule' || needs.init.outputs.skip == 'false' }}
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v2
+        -   name: Set up Python 3.7
+            uses: actions/setup-python@v2
+            with:
+                python-version: 3.6
+        -   name: Install dependencies
+            run: |
+                python -m pip install --upgrade pip
+                pip install pre-commit
+        -   name: Check lint
+            run: |
+                make lint
+
+    test:
+        needs: lint
+        name: test on ${{ matrix.os }} with python ${{ matrix.python }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            max-parallel: 20
+            matrix:
+                python: [3.6]
+                os: [ubuntu-latest]
+        env:
+            OS: ${{ matrix.os }}
+            PYTHON: ${{ matrix.python }}
+        steps:
+        -   uses: actions/checkout@v2
+            with:
+                fetch-depth: 0
+        -   name: Set up Python ${{ matrix.python }}
+            uses: actions/setup-python@v2
+            with:
+                python-version: ${{ matrix.python }}
+        -   name: Install dependencies
+            run: |
+                python -m pip install --upgrade pip
+                pip install pytest-cov
+        -   name: Check test
+            run: |
+                make install
+                make test
+
+    deploy:
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v2
+        -   name: Set up Python 3.8
+            uses: actions/setup-python@v2
+            with:
+                python-version: 3.8
+        -   name: Install pypa/build
+            run: |
+                python -m pip install --upgrade pip
+                pip install build
+        -   name: Build a binary wheel and a source tarball
+            run: |
+                python -m build --sdist --wheel --outdir dist/
+        -   name: Publish package on PyPI
+            uses: pypa/gh-action-pypi-publish@master
+            with:
+                user: __token__
+                password: ${{ secrets.PYPI_TOKEN }}
+                skip_existing: true
+                verbose: true
