@@ -9,6 +9,7 @@ def setup_altair():
         return {
             "config": {
                 "font": "Helvetica",
+                "padding": 0,
                 # 'background': None,
                 "scheme": "set1",
                 "color": {
@@ -17,6 +18,11 @@ def setup_altair():
                 },
                 "view": {
                     "strokeWidth": 0,
+                },
+                "title": {
+                    "fontSize": 7,
+                    "offset": 3,
+                    "fontWeight": "normal",
                 },
                 "axis": {
                     "grid": False,
@@ -27,8 +33,13 @@ def setup_altair():
                     "tickWidth": 0.6,
                     "labelFontWeight": "normal",
                     "titleFontWeight": "normal",
-                    "labelFontSize": 7,
-                    "titleFontSize": 8,
+                    "labelFontSize": 6,
+                    "titleFontSize": 7,
+                },
+                "axisX": {
+                    "labelAlign": "center",
+                    "titlePadding": 2,
+                    "labelPadding": 1.5,
                 },
                 "range": {
                     "category": cns.colors,
@@ -40,8 +51,10 @@ def setup_altair():
                 "legend": {
                     "labelFontWeight": "normal",
                     "titleFontWeight": "normal",
-                    "labelFontSize": 7,
-                    "titleFontSize": 8,
+                    "labelFontSize": 6,
+                    "titleFontSize": 7,
+                    "labelBaseline": "middle",
+                    "symbolSize": 40,
                     "symbolOpacity": 1,
                     "symbolStrokeWidth": 0,
                 },
@@ -51,15 +64,41 @@ def setup_altair():
                         "filled": True,
                     },
                 },
-                "area": {"line": True, "fillOpacity": 0.4},
                 "mark": {
                     "color": cns.colors[0],
+                    "opacity": 1,
                 },
-                # "mark": {
-                #     "filled": True,
-                #     "opacity": 1,
-                #     "type": "point",
+                # "arc": {"fill": cns.colors[0]},
+                # "group": {"fill": cns.colors[0]},
+                "area": {"fill": cns.colors[0], "line": True, "fillOpacity": 0.1},
+                # "circle": {
+                #     "fill": cns.colors[0],
+                #     "stroke": cns.colors[0],
+                #     "strokeWidth": 0.5,
                 # },
+                "line": {"strokeWidth": 1.2},
+                # "path": {"stroke": cns.colors[0]},
+                "point": {"filled": True},
+                "text": {
+                    "size": 6,
+                    "baseline": "middle",
+                },
+                # "rect": {"fill": cns.colors[0]},
+                # "shape": {"stroke": cns.colors[0]},
+                # "symbol": {
+                #     "fill": cns.colors[0],
+                #     "opacity": 1,
+                #     "shape": "circle",
+                #     "size": 40,
+                #     "strokeWidth": 1,
+                # },
+                "bar": {
+                    # "size": 40,
+                    # "binSpacing": 1,
+                    # "continuousBandSize": 30,
+                    # "discreteBandSize": 30,
+                    "stroke": False,
+                },
             }
         }
 
