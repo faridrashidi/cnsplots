@@ -1,8 +1,11 @@
 import altair as alt
 
+import cnsplots as cns
+
 
 def setup_altair():
     def config():
+        # https://altair-viz.github.io/user_guide/configuration.html
         return {
             "config": {
                 "font": "Helvetica",
@@ -13,24 +16,22 @@ def setup_altair():
                     "type": "Set1",
                 },
                 "view": {
-                    # 'height': 100,
-                    # 'width': 100,
                     "strokeWidth": 0,
                 },
                 "axis": {
                     "grid": False,
                     "domainColor": "black",
-                    "domainWidth": 0.6,
+                    "domainWidth": 0.8,
                     "tickColor": "black",
                     "tickSize": 2,
-                    "tickWidth": 0.3,
+                    "tickWidth": 0.6,
                     "labelFontWeight": "normal",
                     "titleFontWeight": "normal",
                     "labelFontSize": 7,
                     "titleFontSize": 8,
                 },
                 "range": {
-                    "category": {"scheme": "set1"},
+                    "category": cns.colors,
                     "heatmap": {"scheme": "viridis"},
                     "ordinal": {"scheme": "set1"},
                     "ramp": {"scheme": "set1"},
@@ -50,9 +51,10 @@ def setup_altair():
                         "filled": True,
                     },
                 },
-                # "mark": {
-                #     "color": "black",
-                # },
+                "area": {"line": True, "fillOpacity": 0.4},
+                "mark": {
+                    "color": cns.colors[0],
+                },
                 # "mark": {
                 #     "filled": True,
                 #     "opacity": 1,
@@ -63,3 +65,4 @@ def setup_altair():
 
     alt.themes.register("config", config)
     alt.themes.enable("config")
+    alt.data_transformers.disable_max_rows()
