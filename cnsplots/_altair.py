@@ -50,9 +50,9 @@ def setup_altair():
                         "filled": True,
                     },
                 },
-                "mark": {
-                    "color": "black",
-                },
+                # "mark": {
+                #     "color": "black",
+                # },
                 # "mark": {
                 #     "filled": True,
                 #     "opacity": 1,
