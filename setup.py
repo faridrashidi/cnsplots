@@ -8,12 +8,14 @@ setup(
     name="cnsplots",
     version=meta["__version__"],
     install_requires=[
+        "matplotlib",
         "seaborn",
         "scanpy",
         "lifelines",
         "altair",
         "altair_saver",
         "scipy",
+        "statannotations",
     ],
     packages=find_packages(),
 )
