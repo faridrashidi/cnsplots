@@ -13,6 +13,7 @@ setup(
         "lifelines",
         "altair",
         "altair_saver",
+        "scipy",
     ],
     packages=find_packages(),
 )
