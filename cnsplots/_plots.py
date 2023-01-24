@@ -1,10 +1,17 @@
 import itertools
 
+import matplotlib.pyplot as plt
 import scipy as sp
 import seaborn as sns
 from statannotations.Annotator import Annotator
 
 import cnsplots as cns
+
+
+def figure(height=150, width=150):
+    ax = plt.figure(figsize=(width / 72, height / 72), dpi=72).subplots(1)
+    ax.xaxis.labelpad = 1
+    return ax
 
 
 def sns_boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
@@ -89,7 +96,7 @@ def sns_stackplot(data, x, hue, normalize=True):
         sns.histplot(data=data, x=x, hue=hue, multiple="stack", **args)
 
 
-def sns_histplot(data, x):
+def sns_distplot(data, x):
     args = {"kde": True, "edgecolor": None}
     sns.histplot(data=data, x=x, **args)
 
@@ -120,10 +127,9 @@ def _p_value(test, data, x, ax, plotting, pairs):
     if pairs == "all":
         pairs = list(itertools.combinations(data[x].unique(), 2))
     annotator = Annotator(ax, pairs, **plotting)
-    # https://github.com/trevismd/statannotations/blob/master/statannotations/Annotator.py#L44
     annotator.configure(
         test=test,
-        text_format="full",  # star, simple
+        text_format="full",
         loc="inside",
         line_width=0.8,
         text_offset=0.5,

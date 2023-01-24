@@ -1,27 +1,27 @@
 """CNSPlots Module."""
 
-from cnsplots._altair import setup_altair
 from cnsplots._common import colors
-from cnsplots._matplotlib import figure, setup_matplotlib
-from cnsplots._seaborn import (
+from cnsplots._plots import (
+    figure,
     plt_piechart,
     sns_barplot,
     sns_boxplot,
-    sns_histplot,
+    sns_distplot,
     sns_regplot,
     sns_stackplot,
 )
+from cnsplots._setup import setup_altair, setup_matplotlib
 
 __version__ = "0.0.0"
 __all__ = (
     setup_altair,
     setup_matplotlib,
-    figure,
     colors,
+    figure,
     plt_piechart,
     sns_barplot,
     sns_boxplot,
-    sns_histplot,
+    sns_distplot,
     sns_regplot,
     sns_stackplot,
 )
