@@ -36,11 +36,11 @@ def setup_altair():
                     "labelFontSize": 6,
                     "titleFontSize": 7,
                 },
-                "axisX": {
-                    "labelAlign": "center",
-                    "titlePadding": 2,
-                    "labelPadding": 1.5,
-                },
+                # "axisX": {
+                #     "labelAlign": "center",
+                #     "titlePadding": 2,
+                #     "labelPadding": 1.5,
+                # },
                 "range": {
                     "category": cns.colors,
                     "heatmap": {"scheme": "viridis"},
@@ -99,6 +99,9 @@ def setup_altair():
                     # "discreteBandSize": 30,
                     "stroke": False,
                 },
+                # "encoding": {
+                #     "y": {"scale": {"zero": False}},
+                # },
             }
         }
 
