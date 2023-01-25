@@ -1,8 +1,8 @@
 import altair as alt
-
-import cnsplots as cns
 import matplotlib as mpl
 from cycler import cycler
+
+import cnsplots as cns
 
 
 def setup_matplotlib():

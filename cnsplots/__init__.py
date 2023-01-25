@@ -2,13 +2,14 @@
 
 from cnsplots._common import colors
 from cnsplots._plots import (
+    barplot,
+    boxplot,
+    distplot,
     figure,
-    plt_piechart,
-    sns_barplot,
-    sns_boxplot,
-    sns_distplot,
-    sns_regplot,
-    sns_stackplot,
+    piechart,
+    regplot,
+    stackplot,
+    survivalplot,
 )
 from cnsplots._setup import setup_altair, setup_matplotlib
 
@@ -18,10 +19,11 @@ __all__ = (
     setup_matplotlib,
     colors,
     figure,
-    plt_piechart,
-    sns_barplot,
-    sns_boxplot,
-    sns_distplot,
-    sns_regplot,
-    sns_stackplot,
+    piechart,
+    barplot,
+    boxplot,
+    distplot,
+    regplot,
+    stackplot,
+    survivalplot,
 )

@@ -14,6 +14,8 @@ setup(
         "lifelines",
         "altair",
         "altair_saver",
+        "numpy",
+        "pandas",
         "scipy",
         "statannotations",
     ],

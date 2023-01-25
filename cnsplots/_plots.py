@@ -1,6 +1,8 @@
 import itertools
 
+import lifelines as ll
 import matplotlib.pyplot as plt
+import pandas as pd
 import scipy as sp
 import seaborn as sns
 from statannotations.Annotator import Annotator
@@ -14,7 +16,7 @@ def figure(height=150, width=150):
     return ax
 
 
-def sns_boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
+def boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
     """Plot the median of y categorized by x."""
     args = {
         "showfliers": False,
@@ -48,7 +50,7 @@ def sns_boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
     _p_value("Mann-Whitney", data, x, ax, plotting, pairs)
 
 
-def sns_barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
+def barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
     """Plot the mean of y categorized by x."""
     args = {
         "edgecolor": None,
@@ -64,7 +66,6 @@ def sns_barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
     plotting.update(args)
     ax = sns.barplot(**plotting)
     # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
-
     if addtip:
         groupedvalues = data.groupby(x).mean().reset_index()
         for _, row in groupedvalues.iterrows():
@@ -77,11 +78,10 @@ def sns_barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
                 rotation=0,
                 size=6,
             )
-
     _p_value("t-test_welch", data, x, ax, plotting, pairs)
 
 
-def sns_stackplot(data, x, hue, normalize=True):
+def stackplot(data, x, hue, normalize=True):
     args = {
         "edgecolor": None,
         "alpha": 1,
@@ -96,12 +96,12 @@ def sns_stackplot(data, x, hue, normalize=True):
         sns.histplot(data=data, x=x, hue=hue, multiple="stack", **args)
 
 
-def sns_distplot(data, x):
+def distplot(data, x):
     args = {"kde": True, "edgecolor": None}
     sns.histplot(data=data, x=x, **args)
 
 
-def sns_regplot(data, x, y):
+def regplot(data, x, y):
     args = {
         "line_kws": {"color": "blue", "lw": 1.5},
         "scatter_kws": {"s": 3, "color": "black", "edgecolor": "black", "alpha": 1},
@@ -111,7 +111,7 @@ def sns_regplot(data, x, y):
     g.text(6, 4.5, rf"$\rho$={r:.2f}, $P$={p:.2g}")
 
 
-def plt_piechart(data, x, order=None):
+def piechart(data, x, order=None):
     df = data[x].value_counts()
     if order is None:
         order = df.index
@@ -142,3 +142,23 @@ def _p_value(test, data, x, ax, plotting, pairs):
         print("P values were determined by two-sided Mann-Whitney U test.")
     if test == "t-test_welch":
         print("P values were determined by two-sided Welch's t-test.")
+
+
+def survivalplot(data, duration, event, hue):
+    ax = None
+    kmf = ll.KaplanMeierFitter()
+    for i, group in enumerate(data[hue].unique()):
+        df = data[data[hue] == group]
+        kmf.fit(df[duration], df[event], label=group)
+        if i != 0:
+            ax = kmf.plot_survival_function(linewidth=1.2, ci_show=False)
+        else:
+            ax = kmf.plot_survival_function(ax=ax, linewidth=1.2, ci_show=False)
+
+    df = data.copy()
+    df[hue] = pd.Categorical(df[hue], categories=df[hue].unique()).codes + 1
+    p_value = ll.statistics.multivariate_logrank_test(
+        data[duration], data[hue], df[event]
+    )
+    ax.text(0, 0, rf"$P$={p_value.p_value:.2g}")
+    print("P-value was determined by two-sided log-rank test.")
