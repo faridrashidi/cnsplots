@@ -47,7 +47,7 @@ def boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
         " correspond to 1.5 times the interquartile range."
     )
-    _p_value("Mann-Whitney", data, x, ax, plotting, pairs)
+    _p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
 
 
 def barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
@@ -78,7 +78,7 @@ def barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
                 rotation=0,
                 size=6,
             )
-    _p_value("t-test_welch", data, x, ax, plotting, pairs)
+    _p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
 
 
 def stackplot(data, x, hue, normalize=True):
@@ -123,7 +123,7 @@ def piechart(data, x, order=None):
     )
 
 
-def _p_value(test, data, x, ax, plotting, pairs):
+def _p_value_helper(test, data, x, ax, plotting, pairs):
     if pairs == "all":
         pairs = list(itertools.combinations(data[x].unique(), 2))
     annotator = Annotator(ax, pairs, **plotting)
@@ -162,3 +162,46 @@ def survivalplot(data, duration, event, hue):
     )
     ax.text(0, 0, rf"$P$={p_value.p_value:.2g}")
     print("P-value was determined by two-sided log-rank test.")
+
+
+def heatmap(adata, output_file=None):
+    import rpy2.robjects as ro
+    from IPython.display import Image, display
+    from rpy2.robjects import pandas2ri
+    from rpy2.robjects.lib import grdevices
+    from rpy2.robjects.packages import importr
+
+    pheatmap = importr("pheatmap")
+
+    data = adata.to_df()
+
+    with ro.conversion.localconverter(ro.default_converter + pandas2ri.converter):
+        data = ro.conversion.py2rpy(data)
+
+    plot = pheatmap.pheatmap(data)
+
+    from rpy2.ipython.ggplot import image_png
+
+    image_png(plot)
+
+    # with ro.lib.grdevices.render_to_bytesio(
+    #     grdevices.png, width=1024, height=896, res=150
+    # ) as image:
+    #     ro.r.show(plot)
+    #     display(Image(data=image.getvalue(), embed=True, retina=True))
+
+    # with grdevices.render_to_bytesio(
+    #     grdevices.png, width=width, height=height, res=dpi
+    # ) as image:
+    #     p = ro.r(cmd)
+    #     ro.r.show(p)
+    #     if output_file is not None:
+    #         ro.r.ggsave(
+    #             plot=p,
+    #             filename=output_file,
+    #             # width=width / dpi,
+    #             # height=height / dpi,
+    #             units="in",
+    #             # dpi=dpi,
+    #             limitsize=False,
+    #         )

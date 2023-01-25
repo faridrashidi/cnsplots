@@ -6,6 +6,7 @@ from cnsplots._plots import (
     boxplot,
     distplot,
     figure,
+    heatmap,
     piechart,
     regplot,
     stackplot,
@@ -26,4 +27,5 @@ __all__ = (
     regplot,
     stackplot,
     survivalplot,
+    heatmap,
 )
