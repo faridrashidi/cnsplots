@@ -16,7 +16,7 @@ def figure(height=150, width=150):
     return ax
 
 
-def boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
+def boxplot(data, x, y, pairs=None, **kwargs):
     """Plot the median of y categorized by x."""
     args = {
         "showfliers": False,
@@ -32,14 +32,14 @@ def boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
             "marker": "o",
             "linewidth": 0,
         },
+        "width": 0.5,
     }
     plotting = {
         "data": data,
         "x": x,
         "y": y,
-        "width": width,
-        "color": color,
     }
+    plotting.update(kwargs)
     plotting.update(args)
     ax = sns.boxplot(**plotting)
     # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
@@ -47,10 +47,11 @@ def boxplot(data, x, y, pairs=None, width=0.5, color=cns.colors[0]):
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
         " correspond to 1.5 times the interquartile range."
     )
-    _p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
+    if pairs is not None:
+        _p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
 
 
-def barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
+def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     """Plot the mean of y categorized by x."""
     args = {
         "edgecolor": None,
@@ -61,8 +62,8 @@ def barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
         "data": data,
         "x": x,
         "y": y,
-        "color": color,
     }
+    plotting.update(kwargs)
     plotting.update(args)
     ax = sns.barplot(**plotting)
     # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
@@ -78,7 +79,8 @@ def barplot(data, x, y, pairs=None, color=cns.colors[0], addtip=False):
                 rotation=0,
                 size=6,
             )
-    _p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
+    if pairs is not None:
+        _p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
 
 
 def stackplot(data, x, hue, normalize=True):
@@ -164,44 +166,25 @@ def survivalplot(data, duration, event, hue):
     print("P-value was determined by two-sided log-rank test.")
 
 
-def heatmap(adata, output_file=None):
-    import rpy2.robjects as ro
-    from IPython.display import Image, display
-    from rpy2.robjects import pandas2ri
-    from rpy2.robjects.lib import grdevices
-    from rpy2.robjects.packages import importr
+def heatmap(adata, **kwargs):
+    from heatmap_grammar import (
+        Annotation,
+        aes,
+        Heatmap,
+        Plot,
+        ColumnAnnotation,
+        RowAnnotation,
+        scale_fill_manual,
+        scale_color_brewer,
+        scale_fill_brewer,
+        HeatmapTheme,
+    )
 
-    pheatmap = importr("pheatmap")
-
-    data = adata.to_df()
-
-    with ro.conversion.localconverter(ro.default_converter + pandas2ri.converter):
-        data = ro.conversion.py2rpy(data)
-
-    plot = pheatmap.pheatmap(data)
-
-    from rpy2.ipython.ggplot import image_png
-
-    image_png(plot)
-
-    # with ro.lib.grdevices.render_to_bytesio(
-    #     grdevices.png, width=1024, height=896, res=150
-    # ) as image:
-    #     ro.r.show(plot)
-    #     display(Image(data=image.getvalue(), embed=True, retina=True))
-
-    # with grdevices.render_to_bytesio(
-    #     grdevices.png, width=width, height=height, res=dpi
-    # ) as image:
-    #     p = ro.r(cmd)
-    #     ro.r.show(p)
-    #     if output_file is not None:
-    #         ro.r.ggsave(
-    #             plot=p,
-    #             filename=output_file,
-    #             # width=width / dpi,
-    #             # height=height / dpi,
-    #             units="in",
-    #             # dpi=dpi,
-    #             limitsize=False,
-    #         )
+    df = adata.to_df()
+    p = (
+        Plot().size(w=500, h=500)
+        + Heatmap(df, **kwargs)
+        + HeatmapTheme(heatmap_legend_side="bottom", row_km=2)
+        + scale_fill_brewer(palette="Set1")
+    )
+    return p
