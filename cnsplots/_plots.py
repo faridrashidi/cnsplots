@@ -168,7 +168,7 @@ def survivalplot(data, duration, event, hue):
     print("P-value was determined by two-sided log-rank test.")
 
 
-def heatmap(adata, row_colors=None, col_colors=None, **kwargs):
+def heatmap_back(adata, row_colors=None, col_colors=None, **kwargs):
     from heatmap_grammar import (
         Annotation,
         ColumnAnnotation,
@@ -210,3 +210,58 @@ def heatmap(adata, row_colors=None, col_colors=None, **kwargs):
         plot += row_annot
 
     return plot
+
+
+def heatmap(
+    adata, row_annotation=None, col_annotation=None, row_split=None, col_split=None
+):
+    from PyComplexHeatmap import ClusterMapPlotter, HeatmapAnnotation
+
+    # TODO: frameon=False for legends
+    rs = None
+    if row_split is not None:
+        rs = adata.obs[row_split]
+    cs = None
+    if col_split is not None:
+        cs = adata.var[col_split]
+
+    row_annot = None
+    if row_annotation is not None:
+        row_dict = {}
+        for annot in row_annotation:
+            row_dict[annot] = adata.obs[annot]
+        row_annot = HeatmapAnnotation(axis=0, **row_dict)
+
+    col_annot = None
+    if col_annotation is not None:
+        col_dict = {}
+        for annot in col_annotation:
+            col_dict[annot] = adata.var[annot]
+        col_annot = HeatmapAnnotation(axis=1, **col_dict)
+
+    ClusterMapPlotter(
+        data=adata.to_df(),
+        left_annotation=row_annot,
+        top_annotation=col_annot,
+        row_cluster=True,
+        col_cluster=True,
+        row_cluster_method="ward",
+        row_cluster_metric="euclidean",
+        col_cluster_method="ward",
+        col_cluster_metric="euclidean",
+        show_rownames=True,
+        show_colnames=True,
+        row_dendrogram=False,
+        col_dendrogram=False,
+        row_split=rs,
+        col_split=cs,
+        cmap="parula",
+        # row_split_gap=1,
+        # col_split_gap=1,
+        label="value",
+        # tree_kws={"col_cmap": "Set1"},
+        legend_kws={},
+        # xticklabels_kws={"labelrotation": 90},
+        # yticklabels_kws={},
+        rasterized=True,
+    )

@@ -13,6 +13,7 @@ setup(
         "scanpy",
         "lifelines",
         "upsetplot",
+        "git+https://github.com/DingWB/PyComplexHeatmap",
         "altair",
         "altair_saver",
         "numpy",
