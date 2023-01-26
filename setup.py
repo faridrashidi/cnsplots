@@ -12,6 +12,7 @@ setup(
         "seaborn",
         "scanpy",
         "lifelines",
+        "upsetplot",
         "altair",
         "altair_saver",
         "numpy",

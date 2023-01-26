@@ -2,6 +2,7 @@ import itertools
 
 import lifelines as ll
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import scipy as sp
 import seaborn as sns
@@ -11,9 +12,10 @@ import cnsplots as cns
 
 
 def figure(height=150, width=150):
-    ax = plt.figure(figsize=(width / 72, height / 72), dpi=72).subplots(1)
-    ax.xaxis.labelpad = 1
-    return ax
+    fig = plt.figure(figsize=(width / 72, height / 72), dpi=72)
+    # ax = fig.subplots(1)
+    # ax.xaxis.labelpad = 1
+    # return fig
 
 
 def boxplot(data, x, y, pairs=None, **kwargs):
@@ -166,25 +168,45 @@ def survivalplot(data, duration, event, hue):
     print("P-value was determined by two-sided log-rank test.")
 
 
-def heatmap(adata, **kwargs):
+def heatmap(adata, row_colors=None, col_colors=None, **kwargs):
     from heatmap_grammar import (
         Annotation,
-        aes,
-        Heatmap,
-        Plot,
         ColumnAnnotation,
-        RowAnnotation,
-        scale_fill_manual,
-        scale_color_brewer,
-        scale_fill_brewer,
+        Heatmap,
         HeatmapTheme,
+        Plot,
+        RowAnnotation,
+        aes,
+        scale_color_brewer,
+        scale_color_gradient,
+        scale_fill_brewer,
     )
 
-    df = adata.to_df()
-    p = (
-        Plot().size(w=500, h=500)
-        + Heatmap(df, **kwargs)
-        + HeatmapTheme(heatmap_legend_side="bottom", row_km=2)
-        + scale_fill_brewer(palette="Set1")
+    col_annot = ColumnAnnotation(adata.var)
+    if col_colors is not None:
+        for annot in col_colors:
+            col_annot += Annotation(geom="simple", mapping=aes(color=annot))
+            if adata.var[annot].nunique() < 10:
+                col_annot += scale_color_brewer(palette="Set1")
+        kwargs.update({"top_annotation": col_annot})
+
+    plot = (
+        Plot().size(w=200, h=500)
+        + Heatmap(adata.to_df(), **kwargs)
+        + HeatmapTheme(heatmap_legend_side="bottom")
     )
-    return p
+
+    if np.unique(adata.X).shape[0] < 10:
+        plot += scale_fill_brewer(palette="Set1")
+
+    row_annot = RowAnnotation(adata.obs)
+    if row_colors is not None:
+        for annot in row_colors:
+            row_annot += Annotation(geom="simple", mapping=aes(color=annot))
+            if adata.obs[annot].nunique() < 10:
+                row_annot += scale_color_brewer(palette="Set1")
+            else:
+                row_annot += scale_color_gradient(low="white", high="green")
+        plot += row_annot
+
+    return plot
