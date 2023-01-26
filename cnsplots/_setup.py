@@ -35,7 +35,7 @@ def setup_matplotlib():
             "axes.xmargin": 0.05,
             "axes.ymargin": 0.05,
             "axes.prop_cycle": cycler("color", cns.colors),
-            "image.cmap": "parula",
+            "image.cmap": "parula",  # parula, gnuplot
             "legend.frameon": False,
             "legend.markerscale": 0.5,
             "xtick.bottom": True,

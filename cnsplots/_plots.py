@@ -6,16 +6,12 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 import seaborn as sns
+from PyComplexHeatmap import ClusterMapPlotter, HeatmapAnnotation
 from statannotations.Annotator import Annotator
-
-import cnsplots as cns
 
 
 def figure(height=150, width=150):
-    fig = plt.figure(figsize=(width / 72, height / 72), dpi=72)
-    # ax = fig.subplots(1)
-    # ax.xaxis.labelpad = 1
-    # return fig
+    plt.figure(figsize=(width / 72, height / 72), dpi=72)
 
 
 def boxplot(data, x, y, pairs=None, **kwargs):
@@ -208,15 +204,12 @@ def heatmap_back(adata, row_colors=None, col_colors=None, **kwargs):
             else:
                 row_annot += scale_color_gradient(low="white", high="green")
         plot += row_annot
-
     return plot
 
 
 def heatmap(
     adata, row_annotation=None, col_annotation=None, row_split=None, col_split=None
 ):
-    from PyComplexHeatmap import ClusterMapPlotter, HeatmapAnnotation
-
     # TODO: frameon=False for legends
     rs = None
     if row_split is not None:
