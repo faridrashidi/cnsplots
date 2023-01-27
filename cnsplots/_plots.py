@@ -293,3 +293,11 @@ def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="s
     ax.spines["top"].set_visible(True)
     ax.set_xlabel("log2(fold change)")
     ax.set_ylabel("–log 10(adjusted p-value)")
+    plt.plot(
+        [0, 0],
+        [0, max(data[y])],
+        color="black",
+        linestyle="--",
+        linewidth=0.8,
+        dashes=(8, 5),
+    )
