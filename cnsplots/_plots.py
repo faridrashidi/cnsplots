@@ -1,13 +1,14 @@
 import itertools
 
+import adjustText as at
 import lifelines as ll
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import PyComplexHeatmap as pch
 import scipy as sp
 import seaborn as sns
-from PyComplexHeatmap import ClusterMapPlotter, HeatmapAnnotation
-from statannotations.Annotator import Annotator
+import statannotations.Annotator as saa
 
 
 def figure(height=150, width=150):
@@ -81,19 +82,27 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
         _p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
 
 
-def stackplot(data, x, hue, normalize=True):
+def stackplot(data, x, hue, normalize=True, pairs=None):
     args = {
         "edgecolor": None,
         "alpha": 1,
         "shrink": 0.7,
     }
+    plotting = {
+        "data": data,
+        "x": x,
+        "hue": hue,
+    }
+    plotting.update(args)
     if normalize:
-        ax = sns.histplot(data=data, x=x, hue=hue, multiple="fill", **args)
+        ax = sns.histplot(multiple="fill", **plotting)
         ax.set_ylabel("Frequency")
-        # TODO: calculate the p-value
-        print("P values were determined by two-sided Fisher's exact test")
     else:
-        sns.histplot(data=data, x=x, hue=hue, multiple="stack", **args)
+        sns.histplot(multiple="stack", **plotting)
+    # TODO: calculate the p-value
+    # print("P values were determined by two-sided Fisher's exact test")
+    if pairs is not None:
+        _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
 
 
 def distplot(data, x):
@@ -126,7 +135,7 @@ def piechart(data, x, order=None):
 def _p_value_helper(test, data, x, ax, plotting, pairs):
     if pairs == "all":
         pairs = list(itertools.combinations(data[x].unique(), 2))
-    annotator = Annotator(ax, pairs, **plotting)
+    annotator = saa.Annotator(ax, pairs, **plotting)
     annotator.configure(
         test=test,
         text_format="full",
@@ -223,16 +232,16 @@ def heatmap(
         row_dict = {}
         for annot in row_annotation:
             row_dict[annot] = adata.obs[annot]
-        row_annot = HeatmapAnnotation(axis=0, **row_dict)
+        row_annot = pch.HeatmapAnnotation(axis=0, **row_dict)
 
     col_annot = None
     if col_annotation is not None:
         col_dict = {}
         for annot in col_annotation:
             col_dict[annot] = adata.var[annot]
-        col_annot = HeatmapAnnotation(axis=1, **col_dict)
+        col_annot = pch.HeatmapAnnotation(axis=1, **col_dict)
 
-    ClusterMapPlotter(
+    pch.ClusterMapPlotter(
         data=adata.to_df(),
         left_annotation=row_annot,
         top_annotation=col_annot,
@@ -258,3 +267,29 @@ def heatmap(
         # yticklabels_kws={},
         rasterized=True,
     )
+
+
+def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="symbol"):
+    ax = sns.scatterplot(
+        data=data,
+        x=x,
+        y=y,
+        size=hue,
+        sizes=[2, 2, 10, 10],
+        hue=hue,
+        edgecolor=None,
+        palette=sns.xkcd_palette(["black", "grey", "blue", "red"]),
+    )
+
+    annotations = []
+    for mode, color in [("Up", "red"), ("Down", "blue")]:
+        for _, (x0, y0, t) in data.loc[data[hue] == mode, [x, y, symbol]].iterrows():
+            annotations.append(plt.annotate(t, (x0, y0), color=color, size=6))
+    at.adjust_text(
+        annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5}
+    )
+
+    ax.spines["right"].set_visible(True)
+    ax.spines["top"].set_visible(True)
+    ax.set_xlabel("log2(fold change)")
+    ax.set_ylabel("–log 10(adjusted p-value)")

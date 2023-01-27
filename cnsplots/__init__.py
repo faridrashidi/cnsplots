@@ -11,6 +11,7 @@ from cnsplots._plots import (
     regplot,
     stackplot,
     survivalplot,
+    volcanoplot,
 )
 from cnsplots._setup import setup_altair, setup_matplotlib
 
@@ -20,12 +21,13 @@ __all__ = (
     setup_matplotlib,
     colors,
     figure,
-    piechart,
     barplot,
     boxplot,
     distplot,
+    heatmap,
+    piechart,
     regplot,
     stackplot,
     survivalplot,
-    heatmap,
+    volcanoplot,
 )
