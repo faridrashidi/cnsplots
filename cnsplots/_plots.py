@@ -2,8 +2,8 @@ import itertools
 
 import adjustText as at
 import lifelines as ll
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
@@ -173,100 +173,74 @@ def survivalplot(data, duration, event, hue):
     print("P-value was determined by two-sided log-rank test.")
 
 
-def heatmap_back(adata, row_colors=None, col_colors=None, **kwargs):
-    from heatmap_grammar import (
-        Annotation,
-        ColumnAnnotation,
-        Heatmap,
-        HeatmapTheme,
-        Plot,
-        RowAnnotation,
-        aes,
-        scale_color_brewer,
-        scale_color_gradient,
-        scale_fill_brewer,
-    )
-
-    col_annot = ColumnAnnotation(adata.var)
-    if col_colors is not None:
-        for annot in col_colors:
-            col_annot += Annotation(geom="simple", mapping=aes(color=annot))
-            if adata.var[annot].nunique() < 10:
-                col_annot += scale_color_brewer(palette="Set1")
-        kwargs.update({"top_annotation": col_annot})
-
-    plot = (
-        Plot().size(w=200, h=500)
-        + Heatmap(adata.to_df(), **kwargs)
-        + HeatmapTheme(heatmap_legend_side="bottom")
-    )
-
-    if np.unique(adata.X).shape[0] < 10:
-        plot += scale_fill_brewer(palette="Set1")
-
-    row_annot = RowAnnotation(adata.obs)
-    if row_colors is not None:
-        for annot in row_colors:
-            row_annot += Annotation(geom="simple", mapping=aes(color=annot))
-            if adata.obs[annot].nunique() < 10:
-                row_annot += scale_color_brewer(palette="Set1")
-            else:
-                row_annot += scale_color_gradient(low="white", high="green")
-        plot += row_annot
-    return plot
-
-
 def heatmap(
-    adata, row_annotation=None, col_annotation=None, row_split=None, col_split=None
+    adata,
+    row_annotation=None,
+    col_annotation=None,
+    row_split=None,
+    col_split=None,
+    rasterized=True,
+    cmap="parula",
+    label="value",
+    **kwargs,
 ):
-    # TODO: frameon=False for legends
-    rs = None
-    if row_split is not None:
-        rs = adata.obs[row_split]
-    cs = None
-    if col_split is not None:
-        cs = adata.var[col_split]
+    cat_palettes = ["Set1", "Set2", "Set3"]
+    cont_palettes = ["parula", "gnuplot", "bwr"]
+    if cmap in cat_palettes:
+        cat_palettes.remove(cmap)
+    if cmap in cont_palettes:
+        cont_palettes.remove(cmap)
+    global cat_counter, cont_counter
+    cat_counter, cont_counter = 0, 0
 
-    row_annot = None
+    def _annot_helper(df, rc_annotation):
+        rc_dict = {}
+        global cat_counter, cont_counter
+        for annot in rc_annotation:
+            if df.dtypes[annot] == object:
+                rc_dict[annot] = pch.anno_simple(
+                    df[annot],
+                    cmap=cat_palettes[cat_counter],
+                    legend_kws={"frameon": False},
+                )
+                cat_counter += 1
+            else:
+                rc_dict[annot] = pch.anno_simple(
+                    df[annot], cmap=cont_palettes[cont_counter]
+                )
+                cont_counter += 1
+        return rc_dict
+
     if row_annotation is not None:
-        row_dict = {}
-        for annot in row_annotation:
-            row_dict[annot] = adata.obs[annot]
-        row_annot = pch.HeatmapAnnotation(axis=0, **row_dict)
-
-    col_annot = None
+        rc_dict = _annot_helper(adata.obs, row_annotation)
+        row_annotation = pch.HeatmapAnnotation(axis=0, **rc_dict)
     if col_annotation is not None:
-        col_dict = {}
-        for annot in col_annotation:
-            col_dict[annot] = adata.var[annot]
-        col_annot = pch.HeatmapAnnotation(axis=1, **col_dict)
+        ca_dict = _annot_helper(adata.var, col_annotation)
+        col_annotation = pch.HeatmapAnnotation(axis=1, **ca_dict)
 
-    pch.ClusterMapPlotter(
+    if row_split is not None and not isinstance(row_split, int):
+        row_split = adata.obs[row_split]
+    if col_split is not None and not isinstance(row_split, int):
+        col_split = adata.var[col_split]
+
+    # TODO: set dendrogram height
+    # TODO: how to control which ylables to be shown
+    cmp = pch.ClusterMapPlotter(
         data=adata.to_df(),
-        left_annotation=row_annot,
-        top_annotation=col_annot,
-        row_cluster=True,
-        col_cluster=True,
-        row_cluster_method="ward",
-        row_cluster_metric="euclidean",
-        col_cluster_method="ward",
-        col_cluster_metric="euclidean",
-        show_rownames=True,
-        show_colnames=True,
-        row_dendrogram=False,
-        col_dendrogram=False,
-        row_split=rs,
-        col_split=cs,
-        cmap="parula",
-        # row_split_gap=1,
-        # col_split_gap=1,
-        label="value",
-        # tree_kws={"col_cmap": "Set1"},
-        legend_kws={},
-        # xticklabels_kws={"labelrotation": 90},
-        # yticklabels_kws={},
-        rasterized=True,
+        left_annotation=row_annotation,
+        top_annotation=col_annotation,
+        row_split=row_split,
+        col_split=col_split,
+        cmap=cmap,
+        rasterized=rasterized,
+        label=label,
+        **kwargs,
     )
+    for cbar in cmp.cbars:
+        if isinstance(cbar, mpl.colorbar.Colorbar):
+            cbar.outline.set_linewidth(0.5)
+    cmp.ax.spines[["right", "left", "top", "bottom"]].set_visible(False)
+    return cmp
 
 
 def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="symbol"):
