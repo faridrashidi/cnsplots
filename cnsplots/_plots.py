@@ -29,6 +29,7 @@ def heatmap(
     # https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/clustermap.py
     cat_palettes = ["Set1", "Dark2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr"]
+    cbar_titles = [label]
     if cmap in cat_palettes:
         cat_palettes.remove(cmap)
     if cmap in cont_palettes:
@@ -55,20 +56,23 @@ def heatmap(
                 )
                 cat_counter += 1
             else:
+                # vmin, vmax, clip = 0.5, 0.6, True
                 rc_dict[annot] = pch.anno_simple(
                     df[annot],
                     cmap=cont_palettes[cont_counter],
                     height=3,
-                    rasterized=False,
-                    # vmin=0.5,  # FIXME: it's ok but it doesn't change the values on colorbar!
-                    # vmax=0.6,
+                    rasterized=True,
+                    # vmin=vmin,
+                    # vmax=vmax,
+                    # legend_kws={"vmin": vmin, "vmax": vmax},
                 )
                 cont_counter += 1
+                cbar_titles.append(annot)
         return rc_dict
 
     if row_annotation is not None:
         rc_dict = _annot_helper(adata.obs, row_annotation)
-        rc_dict["selected"] = pch.anno_label(adata.obs["selected"], colors="black")
+        # rc_dict["selected"] = pch.anno_label(adata.obs["selected"], colors="black")
         row_annotation = pch.HeatmapAnnotation(
             axis=0,
             # label_side="bottom",
@@ -89,11 +93,11 @@ def heatmap(
     if col_split is not None and not isinstance(row_split, int):
         col_split = adata.var[col_split]
 
+    # TODO: how to plot discrete data
+    # TODO: how to annotate specific rows e.g. `2.png`
     # TODO: how to control which ylables to be shown
-    # TODO: change width of colorbars
-    # TODO: change title colorbars to left
     # TODO: horizontal colorbars
-    # TODO: change discrete legend labels order
+    # TODO: change order of discrete legend labels
     cmp = pch.ClusterMapPlotter(
         data=adata.to_df(),
         left_annotation=row_annotation,
@@ -104,13 +108,19 @@ def heatmap(
         rasterized=rasterized,
         label=label,
         legend_gap=5,
+        legend_width=2,
+        # xlabel_kws={"rotation_mode": "anchor", "ha": "right"},
+        # xticklabels_kws={"labelrotation": 45},  # FIXME: rotate xlabeles by 90 degree
         # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working!
         **kwargs,
     )
     for cbar in cmp.cbars:
         if isinstance(cbar, mpl.colorbar.Colorbar):
             cbar.outline.set_linewidth(0.3)
-    cmp.ax.spines[["right", "left", "top", "bottom"]].set_visible(False)
+            cbar.ax.tick_params(size=0)
+    for ax in cmp.legend_axes[0].figure.axes:
+        if ax.get_ylabel() in cbar_titles:
+            ax.yaxis.set_label_position("left")
     return cmp
 
 
@@ -200,8 +210,8 @@ def stackplot(data, x, hue, normalize=True, pairs=None):
         sns.histplot(multiple="stack", **plotting)
     # TODO: calculate the p-value
     # print("P values were determined by two-sided Fisher's exact test")
-    if pairs is not None:
-        _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+    # if pairs is not None:
+    #     _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
 
 
 def distplot(data, x):
