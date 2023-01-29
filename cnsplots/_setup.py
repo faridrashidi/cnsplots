@@ -22,7 +22,8 @@ def setup_matplotlib():
             "legend.title_fontsize": 7,
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0,
-            "savefig.dpi": 72,
+            "savefig.dpi": 72
+            * 4,  # because of https://github.com/matplotlib/matplotlib/issues/18051
             "savefig.transparent": True,
             "axes.grid": False,
             "axes.spines.top": False,

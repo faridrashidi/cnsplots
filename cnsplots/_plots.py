@@ -15,6 +15,105 @@ def figure(height=150, width=150):
     plt.figure(figsize=(width / 72, height / 72), dpi=72)
 
 
+def heatmap(
+    adata,
+    row_annotation=None,
+    col_annotation=None,
+    row_split=None,
+    col_split=None,
+    rasterized=True,
+    cmap="parula",
+    label="value",
+    **kwargs,
+):
+    # https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/clustermap.py
+    cat_palettes = ["Set1", "Dark2", "Set3"]
+    cont_palettes = ["parula", "gnuplot", "bwr"]
+    if cmap in cat_palettes:
+        cat_palettes.remove(cmap)
+    if cmap in cont_palettes:
+        cont_palettes.remove(cmap)
+    global cat_counter, cont_counter
+    cat_counter, cont_counter = 0, 0
+
+    def _annot_helper(df, rc_annotation):
+        rc_dict = {}
+        global cat_counter, cont_counter
+        for annot in rc_annotation:
+            if df.dtypes[annot] == object:
+                rc_dict[annot] = pch.anno_simple(
+                    df[annot],
+                    cmap=cat_palettes[cat_counter],
+                    legend_kws={
+                        "frameon": False,
+                        "labelspacing": 0.2,
+                        "handletextpad": 0.4,
+                        "color_text": False,
+                    },
+                    height=3,
+                    rasterized=False,
+                )
+                cat_counter += 1
+            else:
+                rc_dict[annot] = pch.anno_simple(
+                    df[annot],
+                    cmap=cont_palettes[cont_counter],
+                    height=3,
+                    rasterized=False,
+                    # vmin=0.5,  # FIXME: it's ok but it doesn't change the values on colorbar!
+                    # vmax=0.6,
+                )
+                cont_counter += 1
+        return rc_dict
+
+    if row_annotation is not None:
+        rc_dict = _annot_helper(adata.obs, row_annotation)
+        rc_dict["selected"] = pch.anno_label(adata.obs["selected"], colors="black")
+        row_annotation = pch.HeatmapAnnotation(
+            axis=0,
+            # label_side="bottom",
+            # label_kws={
+            #     "rotation": 90,
+            #     "rotation_mode": "anchor",
+            #     "horizontalalignment": "right",
+            #     "verticalalignment": "top",
+            # },  # for bringing the labels to bottom
+            **rc_dict,
+        )
+    if col_annotation is not None:
+        ca_dict = _annot_helper(adata.var, col_annotation)
+        col_annotation = pch.HeatmapAnnotation(axis=1, **ca_dict)
+
+    if row_split is not None and not isinstance(row_split, int):
+        row_split = adata.obs[row_split]
+    if col_split is not None and not isinstance(row_split, int):
+        col_split = adata.var[col_split]
+
+    # TODO: how to control which ylables to be shown
+    # TODO: change width of colorbars
+    # TODO: change title colorbars to left
+    # TODO: horizontal colorbars
+    # TODO: change discrete legend labels order
+    cmp = pch.ClusterMapPlotter(
+        data=adata.to_df(),
+        left_annotation=row_annotation,
+        top_annotation=col_annotation,
+        row_split=row_split,
+        col_split=col_split,
+        cmap=cmap,
+        rasterized=rasterized,
+        label=label,
+        legend_gap=5,
+        # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working!
+        **kwargs,
+    )
+    for cbar in cmp.cbars:
+        if isinstance(cbar, mpl.colorbar.Colorbar):
+            cbar.outline.set_linewidth(0.3)
+    cmp.ax.spines[["right", "left", "top", "bottom"]].set_visible(False)
+    return cmp
+
+
 def boxplot(data, x, y, pairs=None, **kwargs):
     """Plot the median of y categorized by x."""
     args = {
@@ -171,76 +270,6 @@ def survivalplot(data, duration, event, hue):
     )
     ax.text(0, 0, rf"$P$={p_value.p_value:.2g}")
     print("P-value was determined by two-sided log-rank test.")
-
-
-def heatmap(
-    adata,
-    row_annotation=None,
-    col_annotation=None,
-    row_split=None,
-    col_split=None,
-    rasterized=True,
-    cmap="parula",
-    label="value",
-    **kwargs,
-):
-    cat_palettes = ["Set1", "Set2", "Set3"]
-    cont_palettes = ["parula", "gnuplot", "bwr"]
-    if cmap in cat_palettes:
-        cat_palettes.remove(cmap)
-    if cmap in cont_palettes:
-        cont_palettes.remove(cmap)
-    global cat_counter, cont_counter
-    cat_counter, cont_counter = 0, 0
-
-    def _annot_helper(df, rc_annotation):
-        rc_dict = {}
-        global cat_counter, cont_counter
-        for annot in rc_annotation:
-            if df.dtypes[annot] == object:
-                rc_dict[annot] = pch.anno_simple(
-                    df[annot],
-                    cmap=cat_palettes[cat_counter],
-                    legend_kws={"frameon": False},
-                )
-                cat_counter += 1
-            else:
-                rc_dict[annot] = pch.anno_simple(
-                    df[annot], cmap=cont_palettes[cont_counter]
-                )
-                cont_counter += 1
-        return rc_dict
-
-    if row_annotation is not None:
-        rc_dict = _annot_helper(adata.obs, row_annotation)
-        row_annotation = pch.HeatmapAnnotation(axis=0, **rc_dict)
-    if col_annotation is not None:
-        ca_dict = _annot_helper(adata.var, col_annotation)
-        col_annotation = pch.HeatmapAnnotation(axis=1, **ca_dict)
-
-    if row_split is not None and not isinstance(row_split, int):
-        row_split = adata.obs[row_split]
-    if col_split is not None and not isinstance(row_split, int):
-        col_split = adata.var[col_split]
-
-    # TODO: set dendrogram height
-    # TODO: how to control which ylables to be shown
-    cmp = pch.ClusterMapPlotter(
-        data=adata.to_df(),
-        left_annotation=row_annotation,
-        top_annotation=col_annotation,
-        row_split=row_split,
-        col_split=col_split,
-        cmap=cmap,
-        rasterized=rasterized,
-        label=label,
-        **kwargs,
-    )
-    for cbar in cmp.cbars:
-        if isinstance(cbar, mpl.colorbar.Colorbar):
-            cbar.outline.set_linewidth(0.5)
-    cmp.ax.spines[["right", "left", "top", "bottom"]].set_visible(False)
-    return cmp
 
 
 def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="symbol"):

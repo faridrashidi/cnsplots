@@ -1,5 +1,7 @@
 """CNSPlots Module."""
 
+import palettable
+
 from cnsplots._common import colors
 from cnsplots._plots import (
     barplot,
@@ -17,6 +19,7 @@ from cnsplots._setup import setup_altair, setup_matplotlib
 
 __version__ = "0.0.0"
 __all__ = (
+    palettable,
     setup_altair,
     setup_matplotlib,
     colors,

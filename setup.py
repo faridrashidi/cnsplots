@@ -15,6 +15,7 @@ setup(
         "upsetplot",
         "adjustText",
         "git+https://github.com/DingWB/PyComplexHeatmap",
+        "palettable",
         "altair",
         "altair_saver",
         "numpy",
