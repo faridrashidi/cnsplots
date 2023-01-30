@@ -24,6 +24,7 @@ def heatmap(
     rasterized=True,
     cmap="parula",
     label="value",
+    linewidth=0,
     **kwargs,
 ):
     # https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/clustermap.py
@@ -42,19 +43,37 @@ def heatmap(
         global cat_counter, cont_counter
         for annot in rc_annotation:
             if df.dtypes[annot] == object:
-                rc_dict[annot] = pch.anno_simple(
-                    df[annot],
-                    cmap=cat_palettes[cat_counter],
-                    legend_kws={
-                        "frameon": False,
-                        "labelspacing": 0.2,
-                        "handletextpad": 0.4,
-                        "color_text": False,
-                    },
-                    height=3,
-                    rasterized=False,
-                )
-                cat_counter += 1
+                if df[annot].isna().any():
+                    rc_dict[annot] = pch.anno_label(
+                        df[annot],
+                        colors="black",
+                        va="top",
+                        ha="right",
+                        # arrowprops={
+                        #     "color": "red",
+                        #     "connectionstyle": None,
+                        #     "arrowstyle": "-",
+                        #     "shrinkA": 0.1,
+                        #     "shrinkB": 0.1,
+                        #     "patchA": None,
+                        #     "patchB": None,
+                        # },
+                    )
+                else:
+                    rc_dict[annot] = pch.anno_simple(
+                        df[annot],
+                        cmap=cat_palettes[cat_counter],
+                        legend_kws={
+                            "frameon": False,
+                            "labelspacing": 0.2,
+                            "handletextpad": 0.4,
+                            "color_text": False,
+                        },
+                        height=3,
+                        rasterized=False,
+                        linewidth=0,
+                    )
+                    cat_counter += 1
             else:
                 # vmin, vmax, clip = 0.5, 0.6, True
                 rc_dict[annot] = pch.anno_simple(
@@ -62,6 +81,7 @@ def heatmap(
                     cmap=cont_palettes[cont_counter],
                     height=3,
                     rasterized=True,
+                    linewidth=0,
                     # vmin=vmin,
                     # vmax=vmax,
                     # legend_kws={"vmin": vmin, "vmax": vmax},
@@ -72,7 +92,6 @@ def heatmap(
 
     if row_annotation is not None:
         rc_dict = _annot_helper(adata.obs, row_annotation)
-        # rc_dict["selected"] = pch.anno_label(adata.obs["selected"], colors="black")
         row_annotation = pch.HeatmapAnnotation(
             axis=0,
             # label_side="bottom",
@@ -93,8 +112,6 @@ def heatmap(
     if col_split is not None and not isinstance(row_split, int):
         col_split = adata.var[col_split]
 
-    # TODO: how to plot discrete data
-    # TODO: how to annotate specific rows e.g. `2.png`
     # TODO: how to control which ylables to be shown
     # TODO: horizontal colorbars
     # TODO: change order of discrete legend labels
@@ -109,6 +126,7 @@ def heatmap(
         label=label,
         legend_gap=5,
         legend_width=2,
+        linewidth=linewidth,
         # xlabel_kws={"rotation_mode": "anchor", "ha": "right"},
         # xticklabels_kws={"labelrotation": 45},  # FIXME: rotate xlabeles by 90 degree
         # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working!
