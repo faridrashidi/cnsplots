@@ -22,6 +22,7 @@ setup(
         "pandas",
         "scipy",
         "statannotations",
+        "natsort",
     ],
     packages=find_packages(),
 )

@@ -9,6 +9,7 @@ import PyComplexHeatmap as pch
 import scipy as sp
 import seaborn as sns
 import statannotations.Annotator as saa
+from natsort import natsort_keygen
 
 
 def figure(height=150, width=150):
@@ -61,7 +62,7 @@ def heatmap(
                     )
                 else:
                     rc_dict[annot] = pch.anno_simple(
-                        df[annot],
+                        df[annot].sort_values(key=natsort_keygen()),
                         cmap=cat_palettes[cat_counter],
                         legend_kws={
                             "frameon": False,
@@ -112,9 +113,6 @@ def heatmap(
     if col_split is not None and not isinstance(row_split, int):
         col_split = adata.var[col_split]
 
-    # TODO: how to control which ylables to be shown
-    # TODO: horizontal colorbars
-    # TODO: change order of discrete legend labels
     cmp = pch.ClusterMapPlotter(
         data=adata.to_df(),
         left_annotation=row_annotation,
@@ -126,10 +124,12 @@ def heatmap(
         label=label,
         legend_gap=5,
         legend_width=2,
+        row_dendrogram_size=10,
+        col_dendrogram_size=10,
         linewidth=linewidth,
         # xlabel_kws={"rotation_mode": "anchor", "ha": "right"},
-        # xticklabels_kws={"labelrotation": 45},  # FIXME: rotate xlabeles by 90 degree
-        # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working!
+        # xticklabels_kws={"labelrotation": 45},  # FIXME: rotate xlabels by 90 degree
+        # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working when shrinking the dendrogram
         **kwargs,
     )
     for cbar in cmp.cbars:
