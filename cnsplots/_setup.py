@@ -9,7 +9,6 @@ import cnsplots as cns
 
 def setup_matplotlib():
     def config():
-        # https://matplotlib.org/stable/tutorials/introductory/customizing.html#the-default-matplotlibrc-file
         return {
             "font.family": "sans-serif",
             "font.sans-serif": "Helvetica",
@@ -22,8 +21,7 @@ def setup_matplotlib():
             "legend.title_fontsize": 7,
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0,
-            "savefig.dpi": 72
-            * 4,  # because of https://github.com/matplotlib/matplotlib/issues/18051
+            "savefig.dpi": 72 * 4,
             "savefig.transparent": True,
             "axes.grid": False,
             "axes.spines.top": False,
@@ -129,7 +127,6 @@ def setup_matplotlib():
 
 def setup_altair():
     def config():
-        # https://altair-viz.github.io/user_guide/configuration.html
         return {
             "config": {
                 "font": "Helvetica",

@@ -1,5 +1,3 @@
-import itertools
-
 import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
@@ -9,12 +7,9 @@ import PyComplexHeatmap as pch
 import scipy as sp
 import scipy.stats as stats
 import seaborn as sns
-import statannotations.Annotator as saa
 from natsort import natsort_keygen
 
-
-def figure(height=150, width=150):
-    plt.figure(figsize=(width / 72, height / 72), dpi=72)
+import cnsplots as cns
 
 
 def heatmap(
@@ -29,7 +24,6 @@ def heatmap(
     linewidth=0,
     **kwargs,
 ):
-    # https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/clustermap.py
     cat_palettes = ["Set1", "Dark2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr"]
     cbar_titles = [label]
@@ -124,9 +118,8 @@ def heatmap(
         row_dendrogram_size=10,
         col_dendrogram_size=10,
         linewidth=linewidth,
-        # xlabel_kws={"rotation_mode": "anchor", "ha": "right"},
-        # xticklabels_kws={"labelrotation": 90},  # FIXME: rotate xlabels by 90 degree
-        # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working when shrinking the dendrogram
+        xticklabels_kws={"labelrotation": 90},
+        # dendrogram_kws={"truncate_mode": "lastp", "p": 5},
         **kwargs,
     )
     for cbar in cmp.cbars:
@@ -136,6 +129,9 @@ def heatmap(
     for ax in cmp.legend_axes[0].figure.axes:
         if ax.get_ylabel() in cbar_titles:
             ax.yaxis.set_label_position("left")
+    plt.setp(
+        cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
+    )
     return cmp
 
 
@@ -171,7 +167,7 @@ def boxplot(data, x, y, pairs=None, **kwargs):
         " correspond to 1.5 times the interquartile range."
     )
     if pairs is not None:
-        _p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
+        cns._p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
 
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
@@ -203,15 +199,16 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
                 size=6,
             )
     if pairs is not None:
-        _p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
+        cns._p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
 
 
-def stackplot(data, x, y, hue, order=None, width=0.5, normalize=True, pairs=None):
-    df = data.pivot(index=x, columns=y, values=hue)
+def stackplot(data, x, y, hue, hue_order=None, width=0.5, normalize=True, pairs=None):
+    """Plot the value of y categorized by x and grouped by hue."""
+    df = data.pivot(index=x, columns=hue, values=y)
     df2 = df.copy()
-    if order is not None:
+    if hue_order is not None:
         df.columns = pd.CategoricalIndex(
-            df.columns.values, ordered=True, categories=order
+            df.columns.values, ordered=True, categories=hue_order, name=hue
         )
         df = df.sort_index(axis=1)
     ax = plt.gca()
@@ -222,24 +219,18 @@ def stackplot(data, x, y, hue, order=None, width=0.5, normalize=True, pairs=None
         ylabel = "Count"
     ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
     ax.set_ylabel(ylabel)
-    ax.legend(
-        bbox_to_anchor=(1, 1.02),
-        loc="upper left",
-        title=y,
-    )
+    cns.take_legend_out()
     # TODO: change the test statistics accordingly
-    # if pairs is not None:
-    plotting = {"data": df2.T}
     if pairs is not None:
-        print(df2)
+        plotting = {"data": df2.T}
         if df2.shape == (2, 2):
-            # print(stats.fisher_exact(df2.values)[1])
-            # print("P values were determined by two-sided Fisher's exact test")
-            _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+            # print(stats.fisher_exact(df2.values).pvalue)
+            # print("   ---> P values were determined by two-sided Fisher's exact test")
+            cns._p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
         else:
-            # print(stats.chi2_contingency(df2.values)[1])
-            # print("P values were determined by two-sided Chi-squared test")
-            _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+            # print(stats.chi2_contingency(df2.values).pvalue)
+            # print("   ---> P values were determined by two-sided Chi-squared test")
+            cns._p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
             # annotator0 = saa.Annotator(ax=ax, data=df2.T, pairs=pairs)
             # annotator0.configure(test="t-test_welch", text_format="star", loc="outside")
             # annotator0.apply_and_annotate()
@@ -260,12 +251,12 @@ def regplot(data, x, y):
     g.text(6, 4.5, rf"$\rho$={r:.2f}, $P$={p:.2g}")
 
 
-def piechart(data, x, order=None):
+def piechart(data, x, hue_order=None):
     df = data[x].value_counts()
-    if order is None:
-        order = df.index
+    if hue_order is None:
+        hue_order = df.index
     ax = plt.gca()
-    ax = df.reindex(index=order).plot.pie(
+    ax = df.reindex(index=hue_order).plot.pie(
         shadow=True,
         autopct="%1.0f%%",
         explode=[0] * df.shape[0],
@@ -275,28 +266,7 @@ def piechart(data, x, order=None):
         ylabel="",
         legend=True,
     )
-    ax.legend(bbox_to_anchor=(1, 1.02), loc="upper left", title=x)
-
-
-def _p_value_helper(test, data, x, ax, plotting, pairs):
-    if pairs == "all":
-        pairs = list(itertools.combinations(data[x].unique(), 2))
-    annotator = saa.Annotator(ax, pairs, **plotting)
-    annotator.configure(
-        test=test,
-        text_format="full",
-        loc="inside",
-        line_width=0.8,
-        text_offset=0.5,
-        color="black",
-        show_test_name=False,
-        pvalue_format_string="{:.1e}",
-    )
-    annotator.apply_and_annotate()
-    if test == "Mann-Whitney":
-        print("P values were determined by two-sided Mann-Whitney U test.")
-    if test == "t-test_welch":
-        print("P values were determined by two-sided Welch's t-test.")
+    cns.take_legend_out(title=x)
 
 
 def survivalplot(data, duration, event, hue):
@@ -351,4 +321,4 @@ def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="s
         linewidth=0.8,
         dashes=(8, 5),
     )
-    ax.legend(bbox_to_anchor=(1, 1.02), loc="upper left", title=hue)
+    cns.take_legend_out()

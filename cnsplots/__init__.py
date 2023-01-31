@@ -7,7 +7,6 @@ from cnsplots._plots import (
     barplot,
     boxplot,
     distplot,
-    figure,
     heatmap,
     piechart,
     regplot,
@@ -16,6 +15,7 @@ from cnsplots._plots import (
     volcanoplot,
 )
 from cnsplots._setup import setup_altair, setup_matplotlib
+from cnsplots._utils import _p_value_helper, figure, take_legend_out
 
 __version__ = "0.0.0"
 __all__ = (
@@ -24,6 +24,8 @@ __all__ = (
     setup_matplotlib,
     colors,
     figure,
+    take_legend_out,
+    _p_value_helper,
     barplot,
     boxplot,
     distplot,
