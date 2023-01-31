@@ -39,6 +39,8 @@ def setup_matplotlib():
             "image.cmap": "parula",
             "legend.frameon": False,
             "legend.markerscale": 0.5,
+            "legend.handlelength": 0.7,
+            "legend.handleheight": 0.7,
             "xtick.bottom": True,
             "xtick.color": "black",
             "xtick.major.size": 2,

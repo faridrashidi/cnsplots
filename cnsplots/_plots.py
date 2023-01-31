@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
+import scipy.stats as stats
 import seaborn as sns
 import statannotations.Annotator as saa
 from natsort import natsort_keygen
@@ -76,16 +77,12 @@ def heatmap(
                     )
                     cat_counter += 1
             else:
-                # vmin, vmax, clip = 0.5, 0.6, True
                 rc_dict[annot] = pch.anno_simple(
                     df[annot],
                     cmap=cont_palettes[cont_counter],
                     height=3,
                     rasterized=True,
                     linewidth=0,
-                    # vmin=vmin,
-                    # vmax=vmax,
-                    # legend_kws={"vmin": vmin, "vmax": vmax},
                 )
                 cont_counter += 1
                 cbar_titles.append(annot)
@@ -100,7 +97,7 @@ def heatmap(
             #     "rotation": 90,
             #     "rotation_mode": "anchor",
             #     "horizontalalignment": "right",
-            #     "verticalalignment": "top",
+            #     "verticalalignment": "center",
             # },  # for bringing the labels to bottom
             **rc_dict,
         )
@@ -128,7 +125,7 @@ def heatmap(
         col_dendrogram_size=10,
         linewidth=linewidth,
         # xlabel_kws={"rotation_mode": "anchor", "ha": "right"},
-        # xticklabels_kws={"labelrotation": 45},  # FIXME: rotate xlabels by 90 degree
+        # xticklabels_kws={"labelrotation": 90},  # FIXME: rotate xlabels by 90 degree
         # dendrogram_kws={"truncate_mode": "lastp", "p": 5},  # FIXME: not working when shrinking the dendrogram
         **kwargs,
     )
@@ -209,27 +206,43 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
         _p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
 
 
-def stackplot(data, x, hue, normalize=True, pairs=None):
-    args = {
-        "edgecolor": None,
-        "alpha": 1,
-        "shrink": 0.7,
-    }
-    plotting = {
-        "data": data,
-        "x": x,
-        "hue": hue,
-    }
-    plotting.update(args)
+def stackplot(data, x, y, hue, order=None, width=0.5, normalize=True, pairs=None):
+    df = data.pivot(index=x, columns=y, values=hue)
+    df2 = df.copy()
+    if order is not None:
+        df.columns = pd.CategoricalIndex(
+            df.columns.values, ordered=True, categories=order
+        )
+        df = df.sort_index(axis=1)
+    ax = plt.gca()
     if normalize:
-        ax = sns.histplot(multiple="fill", **plotting)
-        ax.set_ylabel("Frequency")
+        df = df.div(df.sum(axis=1), axis=0)
+        ylabel = "Frequency"
     else:
-        sns.histplot(multiple="stack", **plotting)
-    # TODO: calculate the p-value
-    # print("P values were determined by two-sided Fisher's exact test")
+        ylabel = "Count"
+    ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
+    ax.set_ylabel(ylabel)
+    ax.legend(
+        bbox_to_anchor=(1, 1.02),
+        loc="upper left",
+        title=y,
+    )
+    # TODO: change the test statistics accordingly
     # if pairs is not None:
-    #     _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+    plotting = {"data": df2.T}
+    if pairs is not None:
+        print(df2)
+        if df2.shape == (2, 2):
+            # print(stats.fisher_exact(df2.values)[1])
+            # print("P values were determined by two-sided Fisher's exact test")
+            _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+        else:
+            # print(stats.chi2_contingency(df2.values)[1])
+            # print("P values were determined by two-sided Chi-squared test")
+            _p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+            # annotator0 = saa.Annotator(ax=ax, data=df2.T, pairs=pairs)
+            # annotator0.configure(test="t-test_welch", text_format="star", loc="outside")
+            # annotator0.apply_and_annotate()
 
 
 def distplot(data, x):
@@ -251,12 +264,18 @@ def piechart(data, x, order=None):
     df = data[x].value_counts()
     if order is None:
         order = df.index
-    df.reindex(index=order).plot.pie(
+    ax = plt.gca()
+    ax = df.reindex(index=order).plot.pie(
         shadow=True,
         autopct="%1.0f%%",
         explode=[0] * df.shape[0],
         textprops={"fontsize": 6, "color": "white"},
+        labeldistance=None,
+        ax=ax,
+        ylabel="",
+        legend=True,
     )
+    ax.legend(bbox_to_anchor=(1, 1.02), loc="upper left", title=x)
 
 
 def _p_value_helper(test, data, x, ax, plotting, pairs):
@@ -332,3 +351,4 @@ def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="s
         linewidth=0.8,
         dashes=(8, 5),
     )
+    ax.legend(bbox_to_anchor=(1, 1.02), loc="upper left", title=hue)
