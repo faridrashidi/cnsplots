@@ -27,10 +27,3 @@ doc:
 
 install:
 	python -m pip install .
-	pip install -e libraries/PyComplexHeatmap
-	pip install -e libraries/statannotations
-
-uninstall:
-	pip uninstall cnsplots -y
-	pip uninstall PyComplexHeatmap -y
-	pip uninstall statannotations -y
