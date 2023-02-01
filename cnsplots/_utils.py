@@ -55,5 +55,11 @@ def _p_value_helper(test, data, x, ax, plotting, pairs, pvalues=None):
 def palettes(color):
     if color == "Set1":
         return palettable.colorbrewer.qualitative.Set1_9.hex_colors
+    elif color == "Tableau":
+        return palettable.Tableau.Tableau_10.hex_colors
+    elif color == "Bold":
+        return palettable.cartocolors.qualitative.Bold_10.hex_colors
+    elif color == "BlueRed":
+        return palettable.Tableau.BlueRed_6.hex_colors
     else:
         return None
