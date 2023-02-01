@@ -1,12 +1,15 @@
 from setuptools import find_packages, setup
+from setuptools.extension import Extension
 
-meta = {}
-exec(open("./cnsplots/__init__.py").read(), meta)
+try:
+    from trisicell import __version__
+except ImportError:
+    __version__ = "0.0.0"
 
 
 setup(
     name="cnsplots",
-    version=meta["__version__"],
+    version=__version__,
     install_requires=[
         "matplotlib",
         "seaborn",
@@ -24,6 +27,7 @@ setup(
         # "statannotations",
         "natsort",
         "num2tex",
+        "statsmodels",
     ],
     packages=find_packages(),
 )
