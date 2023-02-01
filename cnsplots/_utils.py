@@ -1,6 +1,7 @@
 import itertools
 
 import matplotlib.pyplot as plt
+import palettable
 import statannotations.Annotator as saa
 
 
@@ -19,12 +20,12 @@ def take_legend_out(title=None):
     )
 
 
-def _p_value_helper(test, data, x, ax, plotting, pairs):
+def _p_value_helper(test, data, x, ax, plotting, pairs, pvalues=None):
     if pairs == "all":
         pairs = list(itertools.combinations(data[x].unique(), 2))
     annotator = saa.Annotator(ax, pairs, **plotting)
     annotator.configure(
-        test=test,
+        test=test if pvalues is None else None,
         text_format="full",
         loc="outside",
         line_width=0.8,
@@ -36,8 +37,23 @@ def _p_value_helper(test, data, x, ax, plotting, pairs):
         pvalue_format_string="{:.1e}",
         use_fixed_offset=True,
     )
-    annotator.apply_and_annotate()
+    if pvalues is None:
+        annotator.apply_and_annotate()
+    else:
+        annotator.set_pvalues(pvalues=pvalues)
+        annotator.annotate()
     if test == "Mann-Whitney":
         print("   ---> P values were determined by two-sided Mann-Whitney U test.")
     if test == "t-test_welch":
         print("   ---> P values were determined by two-sided Welch's t-test.")
+    if test == "fisher-exact":
+        print("   ---> P values were determined by two-sided Fisher's exact test")
+    if test == "chi-squared":
+        print("   ---> P values were determined by two-sided Chi-squared test")
+
+
+def palettes(color):
+    if color == "Set1":
+        return palettable.colorbrewer.qualitative.Set1_9.hex_colors
+    else:
+        return None

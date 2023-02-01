@@ -257,20 +257,17 @@ def stackplot(data, x, y, hue, hue_order=None, width=0.5, normalize=True, pairs=
     ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
     ax.set_ylabel(ylabel)
     cns.take_legend_out()
-    # TODO: change the test statistics accordingly
     if pairs is not None:
         plotting = {"data": df2.T}
-        if df2.shape == (2, 2):
-            # print(stats.fisher_exact(df2.values).pvalue)
-            # print("   ---> P values were determined by two-sided Fisher's exact test")
-            cns._p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
+        pvalues = []
+        if df2.shape[1] == 2:
+            for pair in pairs:
+                pvalues.append(stats.fisher_exact(df2.loc[list(pair)].values)[1])
+            cns._p_value_helper("fisher-exact", data, x, ax, plotting, pairs, pvalues)
         else:
-            # print(stats.chi2_contingency(df2.values).pvalue)
-            # print("   ---> P values were determined by two-sided Chi-squared test")
-            cns._p_value_helper("t-test_ind", data, x, ax, plotting, pairs)
-            # annotator0 = saa.Annotator(ax=ax, data=df2.T, pairs=pairs)
-            # annotator0.configure(test="t-test_welch", text_format="star", loc="outside")
-            # annotator0.apply_and_annotate()
+            for pair in pairs:
+                pvalues.append(stats.chi2_contingency(df2.loc[list(pair)].values)[1])
+            cns._p_value_helper("chi-squared", data, x, ax, plotting, pairs, pvalues)
 
 
 def distplot(data, x):

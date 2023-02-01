@@ -34,7 +34,7 @@ def setup_matplotlib():
             "axes.titlepad": 4,
             "axes.xmargin": 0.05,
             "axes.ymargin": 0.05,
-            "axes.prop_cycle": cycler("color", cns.colors),
+            "axes.prop_cycle": cycler("color", cns.palettes("Set1")),
             "image.cmap": "parula",
             "legend.frameon": False,
             "legend.markerscale": 0.5,
