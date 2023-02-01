@@ -8,9 +8,10 @@ single-cell genotype matrix.
 
 # sphinx_gallery_thumbnail_path = "_static/thumbnails/trisicell-boost.png"
 
-import cnsplots as cns
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
+
+import cnsplots as cns
 
 cns.setup_matplotlib()
 
@@ -23,4 +24,4 @@ tips = sns.load_dataset("tips")
 # input.
 cns.figure(150, 100)
 cns.violinplot(data=tips, x="day", y="total_bill", pairs="all")
-plt.savefig('test.pdf')
+plt.savefig("test.pdf")

@@ -16,7 +16,13 @@ doc:
 	rm -rf docs/source/gen_modules
 	cd docs && $(MAKE) clean html
 	cd docs/build/html && python -m http.server 8080
+
 install:
 	python -m pip install .
 	pip install -e libraries/PyComplexHeatmap
 	pip install -e libraries/statannotations
+
+uninstall:
+	pip uninstall cnsplots -y
+	pip uninstall PyComplexHeatmap -y
+	pip uninstall statannotations -y
