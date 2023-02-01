@@ -1,8 +1,7 @@
 from setuptools import find_packages, setup
-from setuptools.extension import Extension
 
 try:
-    from trisicell import __version__
+    from cnsplots import __version__
 except ImportError:
     __version__ = "0.0.0"
 
@@ -31,13 +30,15 @@ setup(
     ],
     extras_require={
         "docs": [
-                "furo",
-                "sphinx",
-                "sphinx_gallery",
-                "sphinx_design",
-                "myst_parser",
-                "sphinx_copybutton",
-            ],
-    }
+            "furo",
+            "sphinx",
+            "sphinx_gallery",
+            "sphinx_design",
+            "myst_parser",
+            "sphinx_copybutton",
+            "sphinx_hoverxref",
+            "sphinx_autosummary",
+        ],
+    },
     packages=find_packages(),
 )

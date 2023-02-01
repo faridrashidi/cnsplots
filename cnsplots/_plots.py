@@ -1,3 +1,5 @@
+from typing import List, Optional, Tuple
+
 import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
@@ -173,7 +175,26 @@ def boxplot(data, x, y, pairs=None, **kwargs):
         cns._p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
 
 
-def violinplot(data, x, y, pairs=None, **kwargs):
+def violinplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    pairs: Optional[List[Tuple[str, str]]] = None,
+    **kwargs,
+):
+    """Build violinplot.
+
+    Parameters
+    ----------
+    data
+        slam
+    x
+        slam
+    y
+        slam
+    pairs
+        slam, by default None
+    """
     args = {
         "showfliers": False,
         "showcaps": False,

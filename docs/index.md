@@ -21,7 +21,7 @@ with the code.
 :::
 
 :::{grid-item-card} API reference {octicon}`book;1em;`
-:link: api/index
+:link: api
 :link-type: doc
 
 The API reference contains a detailed description of
@@ -50,7 +50,10 @@ Find a bug? Interested in improving scvi-tools? Checkout our GitHub for the late
 ::::
 
 ```{toctree}
+:hidden: true
 :maxdepth: 2
+:titlesonly: true
 
 auto_examples/index
+api
 ```
