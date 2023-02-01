@@ -23,6 +23,7 @@ setup(
         "scipy",
         "statannotations",
         "natsort",
+        "num2tex",
     ],
     packages=find_packages(),
 )

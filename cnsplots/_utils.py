@@ -26,12 +26,15 @@ def _p_value_helper(test, data, x, ax, plotting, pairs):
     annotator.configure(
         test=test,
         text_format="full",
-        loc="inside",
+        loc="outside",
         line_width=0.8,
+        line_offset=0,
+        line_offset_to_group=0,
         text_offset=0.5,
         color="black",
         show_test_name=False,
         pvalue_format_string="{:.1e}",
+        use_fixed_offset=True,
     )
     annotator.apply_and_annotate()
     if test == "Mann-Whitney":

@@ -10,6 +10,7 @@ import cnsplots as cns
 def setup_matplotlib():
     def config():
         return {
+            "mathtext.fontset": "custom",
             "font.family": "sans-serif",
             "font.sans-serif": "Helvetica",
             "font.size": 7,

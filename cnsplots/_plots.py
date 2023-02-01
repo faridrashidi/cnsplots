@@ -2,6 +2,7 @@ import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import num2tex
 import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
@@ -139,15 +140,17 @@ def boxplot(data, x, y, pairs=None, **kwargs):
     """Plot the median of y categorized by x."""
     args = {
         "showfliers": False,
+        "showcaps": False,
+        "showbox": True,
         "linewidth": 0.8,
-        "boxprops": {"edgecolor": "white"},
+        "boxprops": {"edgecolor": "none"},
         "medianprops": {"color": "white"},
         "whiskerprops": {"color": "black"},
-        "capprops": {"color": "white"},
+        "capprops": {"color": "none"},
         "flierprops": {
-            "markerfacecolor": "purple",
-            "markersize": 3,
-            "markeredgecolor": "purple",
+            "markerfacecolor": "black",
+            "markersize": 1.5,
+            "markeredgecolor": "black",
             "marker": "o",
             "linewidth": 0,
         },
@@ -158,14 +161,48 @@ def boxplot(data, x, y, pairs=None, **kwargs):
         "x": x,
         "y": y,
     }
-    plotting.update(kwargs)
     plotting.update(args)
+    plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
     # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
     print(
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
         " correspond to 1.5 times the interquartile range."
     )
+    if pairs is not None:
+        cns._p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
+
+
+def violinplot(data, x, y, pairs=None, **kwargs):
+    args = {
+        "showfliers": False,
+        "showcaps": False,
+        "showbox": True,
+        "linewidth": 0.4,
+        "boxprops": {"edgecolor": "black", "zorder": 2},
+        "medianprops": {"color": "black", "linewidth": 0.8},
+        "whiskerprops": {"color": "black"},
+        "capprops": {"color": "none"},
+        "flierprops": {
+            "markerfacecolor": "black",
+            "markersize": 1.5,
+            "markeredgecolor": "black",
+            "marker": "o",
+            "linewidth": 0,
+        },
+        "width": 0.2,
+        "color": "white",
+    }
+    plotting = {
+        "data": data,
+        "x": x,
+        "y": y,
+    }
+    plotting.update(kwargs)
+    ax = sns.violinplot(linewidth=0, width=0.6, **plotting)
+    plotting.update(args)
+    plotting.update(kwargs)
+    sns.boxplot(**plotting)
     if pairs is not None:
         cns._p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
 
@@ -182,8 +219,8 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
         "x": x,
         "y": y,
     }
-    plotting.update(kwargs)
     plotting.update(args)
+    plotting.update(kwargs)
     ax = sns.barplot(**plotting)
     # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
     if addtip:
@@ -248,7 +285,7 @@ def regplot(data, x, y):
     }
     r, p = sp.stats.pearsonr(data[x], data[y])
     g = sns.regplot(data=data, x=x, y=y, **args)
-    g.text(6, 4.5, rf"$\rho$={r:.2f}, $P$={p:.2g}")
+    g.text(6, 4.5, rf"$\rho$={r:.2f}, $P={num2tex.num2tex(p, precision=2):.2g}$")
 
 
 def piechart(data, x, hue_order=None):
@@ -285,7 +322,8 @@ def survivalplot(data, duration, event, hue):
     p_value = ll.statistics.multivariate_logrank_test(
         data[duration], data[hue], df[event]
     )
-    ax.text(0, 0, rf"$P$={p_value.p_value:.2g}")
+    ax.text(0, 0, rf"$P={num2tex.num2tex(p_value.p_value, precision=2):.2g}$")
+
     print("P-value was determined by two-sided log-rank test.")
 
 

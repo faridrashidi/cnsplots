@@ -12,6 +12,7 @@ from cnsplots._plots import (
     regplot,
     stackplot,
     survivalplot,
+    violinplot,
     volcanoplot,
 )
 from cnsplots._setup import setup_altair, setup_matplotlib
@@ -34,5 +35,6 @@ __all__ = (
     regplot,
     stackplot,
     survivalplot,
+    violinplot,
     volcanoplot,
 )
