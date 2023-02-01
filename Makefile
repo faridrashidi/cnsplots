@@ -11,4 +11,6 @@ test:
 	pytest --disable-warnings ./tests
 
 install:
+	pip install -e libraries/PyComplexHeatmap
+	pip install -e libraries/statannotations
 	python -m pip install .
