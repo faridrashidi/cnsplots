@@ -1,0 +1,6 @@
+{
+    "files.exclude": {
+        "**/libraries": true,
+        "**/libraries.zip": true,
+    }
+}

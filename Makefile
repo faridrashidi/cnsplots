@@ -4,6 +4,14 @@ help:
 	@echo " - test         : run all unit tests"
 	@echo " - install      : install the package"
 
+clean:
+	rm -rf docs/build
+	rm -rf htmlcov
+	rm -rf .coverage*
+	rm -rf docs/cnsplots*
+	rm -rf docs/auto_examples
+	rm -rf docs/gen_modules
+
 lint:
 	pre-commit run --all-files
 
