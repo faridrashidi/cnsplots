@@ -29,5 +29,15 @@ setup(
         "num2tex",
         "statsmodels",
     ],
+    extras_require={
+        "docs": [
+                "furo",
+                "sphinx",
+                "sphinx_gallery",
+                "sphinx_design",
+                "myst_parser",
+                "sphinx_copybutton",
+            ],
+    }
     packages=find_packages(),
 )

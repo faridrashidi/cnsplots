@@ -13,7 +13,12 @@ author = "Farid Rashidi"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = [
+    "sphinx_gallery.gen_gallery",
+    "sphinx_design",
+    "myst_parser",
+    "sphinx_copybutton",
+]
 
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -24,3 +29,19 @@ exclude_patterns = []
 
 html_theme = "furo"
 html_static_path = ["_static"]
+html_title = "cnsplots"
+html_logo = "_static/images/logo.svg"
+
+
+html_theme_options = {
+    "source_repository": "https://github.com/faridrashidi/cnsplots/",
+    "source_branch": "main",
+    "source_directory": "docs/",
+}
+
+sphinx_gallery_conf = {
+    "examples_dirs": "../examples",  # path to your example scripts
+    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+}
+
+myst_enable_extensions = ["colon_fence"]
