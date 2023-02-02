@@ -1,7 +1,7 @@
 Documentation!
 ==============
 
-::::{grid} 3
+::::{grid} 2
 :gutter: 2
 
 :::{grid-item-card} Installation {octicon}`plug;1em;`
@@ -11,41 +11,27 @@ Documentation!
 New to _cnsplots_? Check out the installation guide.
 :::
 
-:::{grid-item-card} User guide {octicon}`info;1em;`
-:link: auto_examples/index
-:link-type: doc
-
-The user guide provides distilled mathematical descriptions of
-the models implemented in scvi-tools and connects the math
-with the code.
-:::
-
 :::{grid-item-card} API reference {octicon}`book;1em;`
 :link: api
 :link-type: doc
 
 The API reference contains a detailed description of
-the scvi-tools API.
+the cnsplots API.
 :::
 
-:::{grid-item-card} Tutorials {octicon}`play;1em;`
-:link: tutorials/index
+:::{grid-item-card} Examples {octicon}`star;1em;`
+:link: auto_examples/index
 :link-type: doc
 
-The tutorials walk you through real-world applications of scvi-tools models.
-Developer tutorials help you build new probabilistic models.
-:::
-
-:::{grid-item-card} Discussion {octicon}`megaphone;1em;`
-:link: https://discourse.scvi-tools.org
-
-Need help? Reach out on our forum to get your questions answered!
+The gallery of examples provides detailed examples for what you can do
+with cnsplots.
 :::
 
 :::{grid-item-card} GitHub {octicon}`mark-github;1em;`
-:link: https://github.com/yoseflab/scvi-tools
+:link: https://github.com/faridrashidi/cnsplots
 
-Find a bug? Interested in improving scvi-tools? Checkout our GitHub for the latest developments.
+Find a bug? Interested in improving cnsplots? Checkout our GitHub
+for the latest developments.
 :::
 ::::
 

@@ -7,8 +7,11 @@ from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
 
+import cnsplots as cns
+
 
 def figure(height=150, width=150):
+    cns.setup_matplotlib()
     plt.figure(figsize=(width / 72, height / 72), dpi=72)
 
 

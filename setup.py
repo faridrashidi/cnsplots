@@ -14,6 +14,7 @@ setup(
         "seaborn",
         "scanpy",
         "lifelines",
+        "pydeseq2",
         "upsetplot",
         "adjustText",
         "PyComplexHeatmap @ git+ssh://git@github.com/DingWB/PyComplexHeatmap.git",

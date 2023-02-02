@@ -18,6 +18,9 @@ lint:
 test:
 	pytest --disable-warnings ./tests
 
+serve:
+	cd docs/build/html && python -m http.server 8080
+
 doc:
 	rm -rf docs/source/cnsplots*
 	rm -rf docs/source/auto_examples

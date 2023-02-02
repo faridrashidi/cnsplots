@@ -13,6 +13,6 @@ Here we host some published datasets that are useful for benchmarking and testin
 ```{eval-rst}
 .. currentmodule:: cnsplots
 .. autosummary::
-   
+
    violinplot
 ```

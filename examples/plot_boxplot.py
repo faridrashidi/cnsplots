@@ -1,0 +1,37 @@
+"""
+boxplot
+-------
+
+create boxplot
+"""
+
+# %%
+# load data
+import seaborn as sns
+
+import cnsplots as cns
+
+iris = sns.load_dataset("iris")
+tips = sns.load_dataset("tips")
+
+# %%
+# plot boxplot using :func:`cnsplots.boxplot`
+cns.figure(150, 100)
+cns.boxplot(data=tips, x="day", y="total_bill")
+
+# %%
+# plot boxplot using :func:`cnsplots.boxplot`
+cns.figure(150, 100)
+cns.boxplot(data=iris, x="species", y="sepal_width", pairs="all")
+
+# %%
+# plot boxplot using :func:`cnsplots.boxplot`
+cns.figure(150, 100)
+cns.boxplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    hue="sex",
+    pairs=[(("Thur", "Male"), ("Fri", "Male"))],
+)
+cns.take_legend_out()
