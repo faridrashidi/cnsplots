@@ -138,8 +138,34 @@ def heatmap(
     return cmp
 
 
-def boxplot(data, x, y, pairs=None, **kwargs):
-    """Plot the median of y categorized by x."""
+def boxplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    pairs: Optional[List[Tuple[str, str]]] = None,
+    **kwargs,
+):
+    """Create a box plot.
+    Plot the median of y categorized by x.
+
+    Parameters
+    ----------
+    data
+        The input DataFrame that holds the data to be plotted.
+    x
+        The label for the x-axis.
+    y
+        The label for the y-axis.
+    pairs
+        A list of pairs of x attributes for calculating the p-values.
+    **kwargs
+        Keyword arguments passed to the `seaborn.boxplot` function.
+
+    Returns
+    -------
+    None
+        This function creates a plot and does not return anything.
+    """
     args = {
         "showfliers": False,
         "showcaps": False,
@@ -182,20 +208,25 @@ def violinplot(
     pairs: Optional[List[Tuple[str, str]]] = None,
     **kwargs,
 ):
-    """Build violinplot.
+    """Create a violin plot.
 
     Parameters
     ----------
     data
-        slam
+        The input DataFrame that holds the data to be plotted.
     x
-        slam
+        The label for the x-axis.
     y
-        slam
+        The label for the y-axis.
     pairs
-        slam, by default None
+        A list of pairs of x attributes for calculating the p-values.
     **kwargs
-        Keyword args for :func:`seaborn.violinplot`
+        Keyword arguments passed to the `seaborn.violinplot` function.
+
+    Returns
+    -------
+    None
+        This function creates a plot and does not return anything.
     """
     args = {
         "showfliers": False,

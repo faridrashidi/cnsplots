@@ -37,6 +37,7 @@ setup(
             "sphinx_copybutton",
             "sphinx_hoverxref",
             "sphinx_autosummary",
+            "sphinx_autodoc_typehints",
             "myst_parser",
         ],
     },

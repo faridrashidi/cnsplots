@@ -19,6 +19,10 @@ extensions = [
     "hoverxref.extension",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx_autodoc_typehints",
+    # "sphinx.ext.linkcode",
+    "sphinx.ext.extlinks",
 ]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "**.ipynb_checkpoints"]
@@ -27,15 +31,19 @@ nbsphinx_execute = "never"
 
 master_doc = "index"
 
+todo_include_todos = False
+
 # Generate the API documentation when building
 autosummary_generate = True
 autodoc_member_order = "bysource"
+bibtex_reference_style = "author_year"
 napoleon_google_docstring = True  # for pytorch lightning
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_use_rtype = True  # having a separate entry generally helps readability
 napoleon_use_param = True
 napoleon_custom_sections = [("Params", "Parameters")]
+typehints_defaults = "braces"
 todo_include_todos = False
 numpydoc_show_class_members = False
 annotate_defaults = True  # scanpydoc option, look into why we need this
@@ -45,11 +53,13 @@ myst_enable_extensions = [
     "amsmath",
 ]
 intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
     "matplotlib": ("https://matplotlib.org/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "seaborn": ("https://seaborn.pydata.org/", None),
     "anndata": ("https://anndata.readthedocs.io/en/latest/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
 }
 
 sphinx_gallery_conf = {
@@ -70,7 +80,6 @@ html_logo = "_static/images/logo.svg"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_css_files = ["css/override.css"]
 html_show_sphinx = False
 
 

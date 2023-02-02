@@ -14,6 +14,8 @@ Here we host some published datasets that are useful for benchmarking and testin
 .. currentmodule:: cnsplots
 .. autosummary::
    :toctree: .
+   :nosignatures:
    
       violinplot
+      boxplot
 ```
