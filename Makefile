@@ -5,9 +5,9 @@ help:
 	@echo " - install      : install the package"
 
 clean:
-	rm -rf docs/build
 	rm -rf htmlcov
 	rm -rf .coverage*
+	rm -rf docs/build
 	rm -rf docs/cnsplots*
 	rm -rf docs/auto_examples
 	rm -rf docs/gen_modules
@@ -22,6 +22,7 @@ serve:
 	cd docs/build/html && python -m http.server 8080
 
 doc:
+	rm -rf docs/build
 	rm -rf docs/source/cnsplots*
 	rm -rf docs/source/auto_examples
 	rm -rf docs/source/gen_modules

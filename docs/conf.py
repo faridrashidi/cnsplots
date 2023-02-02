@@ -17,6 +17,8 @@ extensions = [
     "sphinx_copybutton",
     "sphinx.ext.autosummary",
     "hoverxref.extension",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
 ]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "**.ipynb_checkpoints"]
@@ -65,11 +67,25 @@ html_static_path = ["_static"]
 html_title = "cnsplots"
 html_logo = "_static/images/logo.svg"
 
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_css_files = ["css/override.css"]
+html_show_sphinx = False
+
 
 html_theme_options = {
     "source_repository": "https://github.com/faridrashidi/cnsplots/",
     "source_branch": "main",
     "source_directory": "docs/",
+    "sidebar_hide_name": True,
+    "light_css_variables": {
+        "color-brand-primary": "#003262",
+        "color-brand-content": "#003262",
+        "admonition-font-size": "var(--font-size-normal)",
+        "admonition-title-font-size": "var(--font-size-normal)",
+        "code-font-size": "var(--font-size--small)",
+    },
 }
 
 hoverx_default_type = "tooltip"

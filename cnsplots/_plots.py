@@ -194,6 +194,8 @@ def violinplot(
         slam
     pairs
         slam, by default None
+    **kwargs
+        Keyword args for :func:`seaborn.violinplot`
     """
     args = {
         "showfliers": False,

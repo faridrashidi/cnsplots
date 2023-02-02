@@ -30,14 +30,14 @@ setup(
     ],
     extras_require={
         "docs": [
-            "furo",
             "sphinx",
+            "furo",
             "sphinx_gallery",
             "sphinx_design",
-            "myst_parser",
             "sphinx_copybutton",
             "sphinx_hoverxref",
             "sphinx_autosummary",
+            "myst_parser",
         ],
     },
     packages=find_packages(),

@@ -41,5 +41,6 @@ for the latest developments.
 :titlesonly: true
 
 auto_examples/index
+installation
 api
 ```
