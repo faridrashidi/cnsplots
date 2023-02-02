@@ -7,7 +7,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import cnsplots as cns
 
 
-def setup_matplotlib():
+def setup_matplotlib(color_cycle="Set1", color_map="parula"):
     def config():
         return {
             "mathtext.fontset": "custom",
@@ -34,8 +34,8 @@ def setup_matplotlib():
             "axes.titlepad": 4,
             "axes.xmargin": 0.05,
             "axes.ymargin": 0.05,
-            "axes.prop_cycle": cycler("color", cns.palettes("Set1")),
-            "image.cmap": "parula",
+            "axes.prop_cycle": cycler("color", cns.palettes(color_cycle)),
+            "image.cmap": color_map,
             "legend.frameon": False,
             "legend.markerscale": 0.5,
             "legend.handlelength": 0.7,

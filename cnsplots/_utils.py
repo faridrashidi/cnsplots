@@ -3,6 +3,8 @@ import itertools
 import matplotlib.pyplot as plt
 import num2tex
 import palettable
+import pandas as pd
+import scipy.stats as stats
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
@@ -10,8 +12,8 @@ from statannotations.utils import DEFAULT
 import cnsplots as cns
 
 
-def figure(height=150, width=150):
-    cns.setup_matplotlib()
+def figure(height=150, width=150, color_cycle="Set1", color_map="parula"):
+    cns.setup_matplotlib(color_cycle, color_map)
     plt.figure(figsize=(width / 72, height / 72), dpi=72)
 
 
@@ -26,7 +28,7 @@ def take_legend_out(title=None):
     )
 
 
-def _p_value_helper(test, data, x, ax, plotting, pairs, pvalues=None):
+def _p_value_helper(test, data, ax, plotting, pairs, contingency=None):
     class PValueFormatNew(PValueFormat):
         def __init__(self):
             super(PValueFormat, self).__init__()
@@ -45,12 +47,18 @@ def _p_value_helper(test, data, x, ax, plotting, pairs, pvalues=None):
                 text, num2tex.num2tex(result.pvalue), result.significance_suffix
             )
 
-    if pairs == "all":
-        pairs = list(itertools.combinations(data[x].unique(), 2))
+    if pd.api.types.is_numeric_dtype(data[plotting["x"]]):
+        plotting["orient"] = "h"
+        if pairs == "all":
+            pairs = list(itertools.combinations(data[plotting["y"]].unique(), 2))
+    else:
+        if pairs == "all":
+            pairs = list(itertools.combinations(data[plotting["x"]].unique(), 2))
+
     annotator = Annotator(ax, pairs, **plotting)
     annotator._pvalue_format = PValueFormatNew()
     annotator.configure(
-        test=test if pvalues is None else None,
+        test=test if contingency is None else None,
         text_format="full",
         loc="outside",
         line_width=0.8,
@@ -63,11 +71,23 @@ def _p_value_helper(test, data, x, ax, plotting, pairs, pvalues=None):
         use_fixed_offset=True,
         verbose=0,
     )
-    if pvalues is None:
+
+    pvalues = []
+    if test == "fisher-exact":
+        for pair in pairs:
+            pvalues.append(stats.fisher_exact(contingency.loc[list(pair)].values)[1])
+    if test == "chi-squared":
+        for pair in pairs:
+            pvalues.append(
+                stats.chi2_contingency(contingency.loc[list(pair)].values)[1]
+            )
+
+    if contingency is None:
         annotator.apply_and_annotate()
     else:
         annotator.set_pvalues(pvalues=pvalues)
         annotator.annotate()
+
     if test == "Mann-Whitney":
         print("   ---> P values were determined by two-sided Mann-Whitney U test.")
     if test == "t-test_welch":
@@ -80,12 +100,12 @@ def _p_value_helper(test, data, x, ax, plotting, pairs, pvalues=None):
 
 def palettes(color):
     if color == "Set1":
-        return palettable.colorbrewer.qualitative.Set1_9.hex_colors
+        return palettable.colorbrewer.qualitative.Set1_9.mpl_colors
     elif color == "Tableau":
-        return palettable.Tableau.Tableau_10.hex_colors
+        return palettable.tableau.Tableau_10.mpl_colors
     elif color == "Bold":
-        return palettable.cartocolors.qualitative.Bold_10.hex_colors
+        return palettable.cartocolors.qualitative.Bold_10.mpl_colors
     elif color == "BlueRed":
-        return palettable.Tableau.BlueRed_6.hex_colors
+        return palettable.tableau.BlueRed_6.mpl_colors
     else:
-        return None
+        return RuntimeError("Wrong Choice!")

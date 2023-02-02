@@ -23,9 +23,9 @@ serve:
 
 doc:
 	rm -rf docs/build
-	rm -rf docs/source/cnsplots*
-	rm -rf docs/source/auto_examples
-	rm -rf docs/source/gen_modules
+	rm -rf docs/cnsplots*
+	rm -rf docs/auto_examples
+	rm -rf docs/gen_modules
 	cd docs && $(MAKE) clean html
 	cd docs/build/html && python -m http.server 8080
 

@@ -8,7 +8,6 @@ import num2tex
 import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
-import scipy.stats as stats
 import seaborn as sns
 from natsort import natsort_keygen
 
@@ -184,11 +183,7 @@ def boxplot(
         },
         "width": 0.5,
     }
-    plotting = {
-        "data": data,
-        "x": x,
-        "y": y,
-    }
+    plotting = {"data": data, "x": x, "y": y}
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
@@ -198,7 +193,7 @@ def boxplot(
         " correspond to 1.5 times the interquartile range."
     )
     if pairs is not None:
-        cns._p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
+        cns._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
 
 def violinplot(
@@ -247,32 +242,20 @@ def violinplot(
         "width": 0.2,
         "color": "white",
     }
-    plotting = {
-        "data": data,
-        "x": x,
-        "y": y,
-    }
+    plotting = {"data": data, "x": x, "y": y}
     plotting.update(kwargs)
     ax = sns.violinplot(linewidth=0, width=0.6, **plotting)
     plotting.update(args)
     plotting.update(kwargs)
     sns.boxplot(**plotting)
     if pairs is not None:
-        cns._p_value_helper("Mann-Whitney", data, x, ax, plotting, pairs)
+        cns._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     """Plot the mean of y categorized by x."""
-    args = {
-        "edgecolor": None,
-        "linewidth": 1,
-        "ci": None,
-    }
-    plotting = {
-        "data": data,
-        "x": x,
-        "y": y,
-    }
+    args = {"edgecolor": None, "linewidth": 1, "ci": None}
+    plotting = {"data": data, "x": x, "y": y}
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
@@ -290,13 +273,19 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
                 size=6,
             )
     if pairs is not None:
-        cns._p_value_helper("t-test_welch", data, x, ax, plotting, pairs)
+        cns._p_value_helper("t-test_welch", data, ax, plotting, pairs)
 
 
-def stackplot(data, x, y, hue, hue_order=None, width=0.5, normalize=True, pairs=None):
+def stackplot(
+    data, x, y, hue, order=None, hue_order=None, width=0.5, normalize=True, pairs=None
+):
     """Plot the value of y categorized by x and grouped by hue."""
-    df = data.pivot(index=x, columns=hue, values=y)
-    df2 = df.copy()
+    barh = pd.api.types.is_numeric_dtype(data[x])
+    if barh:
+        df = data.pivot(index=y, columns=hue, values=x)
+    else:
+        df = data.pivot(index=x, columns=hue, values=y)
+    contingency = df.copy()
     if hue_order is not None:
         df.columns = pd.CategoricalIndex(
             df.columns.values, ordered=True, categories=hue_order, name=hue
@@ -308,20 +297,20 @@ def stackplot(data, x, y, hue, hue_order=None, width=0.5, normalize=True, pairs=
         ylabel = "Frequency"
     else:
         ylabel = "Count"
-    ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
+    if order is None:
+        order = df.index
+    if barh:
+        ax = df.reindex(index=order).plot.barh(stacked=True, width=width, ax=ax, rot=0)
+    else:
+        ax = df.reindex(index=order).plot.bar(stacked=True, width=width, ax=ax, rot=0)
     ax.set_ylabel(ylabel)
     cns.take_legend_out()
     if pairs is not None:
-        plotting = {"data": df2.T}
-        pvalues = []
-        if df2.shape[1] == 2:
-            for pair in pairs:
-                pvalues.append(stats.fisher_exact(df2.loc[list(pair)].values)[1])
-            cns._p_value_helper("fisher-exact", data, x, ax, plotting, pairs, pvalues)
+        plotting = {"data": data, "x": x, "y": y, "order": order}
+        if contingency.shape[1] == 2:
+            cns._p_value_helper("fisher-exact", data, ax, plotting, pairs, contingency)
         else:
-            for pair in pairs:
-                pvalues.append(stats.chi2_contingency(df2.loc[list(pair)].values)[1])
-            cns._p_value_helper("chi-squared", data, x, ax, plotting, pairs, pvalues)
+            cns._p_value_helper("chi-squared", data, ax, plotting, pairs, contingency)
 
 
 def distplot(data, x):

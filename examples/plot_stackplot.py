@@ -49,3 +49,21 @@ cns.figure(120, 100)
 cns.stackplot(
     data=df, x="sex", y="value", hue="day", normalize=True, pairs=[("Male", "Female")]
 )
+
+# %%
+# plot stackplot using :func:`cnsplots.stackplot`
+cns.figure(120, 100, "Tableau")
+cns.stackplot(data=df, x="day", y="value", hue="sex", normalize=True, pairs="all")
+
+# %%
+# plot stackplot using :func:`cnsplots.stackplot`
+cns.figure(120, 100)
+cns.stackplot(
+    data=df,
+    x="value",
+    y="day",
+    hue="sex",
+    normalize=True,
+    pairs=[("Thur", "Fri"), ("Fri", "Sat")],
+    order=["Fri", "Sat", "Sun", "Thur"],
+)
