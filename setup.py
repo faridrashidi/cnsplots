@@ -43,3 +43,9 @@ setup(
     },
     packages=find_packages(),
 )
+
+# TODO: complete the api for other functions
+# TODO: tree plot
+# TODO: add view source code in docs
+# TODO: hoverxref doesn't work
+# TODO: add examples to the end of each function

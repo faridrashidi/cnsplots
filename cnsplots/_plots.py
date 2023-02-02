@@ -144,7 +144,7 @@ def boxplot(
     y: str,
     pairs: Optional[List[Tuple[str, str]]] = None,
     **kwargs,
-):
+) -> None:
     """Create a box plot.
     Plot the median of y categorized by x.
 
@@ -207,7 +207,7 @@ def violinplot(
     y: str,
     pairs: Optional[List[Tuple[str, str]]] = None,
     **kwargs,
-):
+) -> None:
     """Create a violin plot.
 
     Parameters
