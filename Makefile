@@ -1,7 +1,10 @@
 help:
 	@echo "available commands"
+	@echo " - clean        : clean the repo"
 	@echo " - lint         : run linting and flaking"
 	@echo " - test         : run all unit tests"
+	@echo " - serve        : open up the documentation"
+	@echo " - doc          : build the documentation"
 	@echo " - install      : install the package"
 
 clean:
@@ -31,3 +34,4 @@ doc:
 
 install:
 	python -m pip install .
+	pre-commit install

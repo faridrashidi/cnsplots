@@ -35,3 +35,14 @@ cns.boxplot(
     pairs=[(("Thur", "Male"), ("Fri", "Male"))],
 )
 cns.take_legend_out()
+
+# %%
+# plot boxplot using :func:`cnsplots.boxplot`
+cns.figure(100, 150)
+cns.boxplot(
+    data=iris,
+    x="sepal_width",
+    y="species",
+    pairs="all",
+    order=["versicolor", "setosa", "virginica"],
+)
