@@ -188,6 +188,34 @@ def boxplot(
     plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
     # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
+
+    box_patches = [
+        patch for patch in ax.patches if type(patch) == mpl.patches.PathPatch
+    ]
+    if len(box_patches) == 0:
+        box_patches = ax.artists
+    num_patches = len(box_patches)
+    lines_per_boxplot = len(ax.lines) // num_patches
+    for i, patch in enumerate(box_patches):
+        col = patch.get_facecolor()
+        patch.set_edgecolor("None")
+        patch.set_facecolor(col)
+        for j, line in enumerate(
+            ax.lines[i * lines_per_boxplot : (i + 1) * lines_per_boxplot]
+        ):
+            if j != 2:
+                line.set_color(col)
+                line.set_mfc(col)
+                line.set_mec(col)
+            else:
+                line.set_color("None")
+                line.set_mfc("None")
+                line.set_mec("None")
+
+    if ax.legend_ is not None:
+        for legpatch in ax.legend_.get_patches():
+            legpatch.set_edgecolor("None")
+
     print(
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
         " correspond to 1.5 times the interquartile range."
