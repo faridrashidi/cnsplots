@@ -14,7 +14,7 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        make install
+        pip install -e ".[dev,doc]"
     - name: Checkout
       uses: actions/checkout@master
       with:
