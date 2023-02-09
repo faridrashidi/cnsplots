@@ -1,0 +1,29 @@
+adjustText
+altair
+altair_saver
+furo
+lifelines
+# deps of cnsplots
+matplotlib
+myst_parser
+natsort
+num2tex
+numpy
+palettable
+pandas
+PyComplexHeatmap @ git+ssh://git@github.com/DingWB/PyComplexHeatmap.git
+pydeseq2
+scanpy
+scipy
+seaborn
+
+# deps of docs
+sphinx
+sphinx_autodoc_typehints
+sphinx_autosummary
+sphinx_copybutton
+sphinx_design
+sphinx_gallery
+sphinx_hoverxref
+statannotations
+upsetplot

@@ -15,7 +15,7 @@ Here we host some published datasets that are useful for benchmarking and testin
 .. autosummary::
    :toctree: .
    :nosignatures:
-   
+
       violinplot
       boxplot
 ```
