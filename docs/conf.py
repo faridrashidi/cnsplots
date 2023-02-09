@@ -21,8 +21,8 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
-    # "sphinx.ext.linkcode",
     "sphinx.ext.extlinks",
+    # "sphinx.ext.linkcode",
 ]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "**.ipynb_checkpoints"]
