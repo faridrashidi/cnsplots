@@ -11,7 +11,7 @@ num2tex
 numpy
 palettable
 pandas
-PyComplexHeatmap @ git+ssh://git@github.com/DingWB/PyComplexHeatmap.git
+PyComplexHeatmap
 pydeseq2
 scanpy
 scipy
