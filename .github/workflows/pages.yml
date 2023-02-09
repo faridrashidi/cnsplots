@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.7
+    - name: Setup python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.8
     - name: Install dependencies
       run: |
         pip install .[docs]
@@ -19,7 +19,7 @@ jobs:
       uses: actions/checkout@master
       with:
         fetch-depth: 0
-    - name: Build and Commit
+    - name: Build and commit
       uses: sphinx-notes/pages@v2
     - name: Push changes
       uses: ad-m/github-push-action@master
