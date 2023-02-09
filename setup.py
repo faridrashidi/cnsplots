@@ -17,7 +17,7 @@ setup(
         "pydeseq2",
         "upsetplot",
         "adjustText",
-        "PyComplexHeatmap @ git+ssh://git@github.com/DingWB/PyComplexHeatmap.git",
+        "PyComplexHeatmap",
         "palettable",
         "altair",
         "altair_saver",
@@ -43,9 +43,3 @@ setup(
     },
     packages=find_packages(),
 )
-
-# TODO: complete the api for other functions
-# TODO: tree plot
-# TODO: add view source code in docs
-# TODO: hoverxref doesn't work
-# TODO: add examples to the end of each function
