@@ -17,9 +17,9 @@ iris = sns.load_dataset("iris")
 # %%
 # plot scatterplot using :func:`cnsplots.scatterplot`
 cns.figure(120, 120)
-sns.scatterplot(
+cns.scatterplot(
     data=iris, x="sepal_length", y="sepal_width", s=7, hue="species", edgecolor=None
-)  # TODO: bring to the module
+)
 plt.title("title")
 plt.xlabel("xlabel")
 plt.ylabel("ylabel")

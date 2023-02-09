@@ -22,6 +22,4 @@ sns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnup
 # %%
 # plot histplot using :func:`cnsplots.histplot`
 cns.figure(150, 150)
-sns.histplot(
-    data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="parula"
-)  # TODO: bring to the module
+cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="parula")

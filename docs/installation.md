@@ -10,16 +10,10 @@ cnsplots can be installed via pip.
 pip install cnsplots
 ```
 
-Nightly version - clone this repo and run:
-
-```
-pip install .
-```
-
 ## Development
 
 For development - clone this repo and run:
 
 ```
-pip install -e ".[dev,doc]"
+make install
 ```

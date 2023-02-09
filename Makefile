@@ -33,5 +33,5 @@ doc:
 	cd docs/build/html && python -m http.server 8080
 
 install:
-	python -m pip install .
+	python -m pip install -e ".[dev,doc]"
 	pre-commit install

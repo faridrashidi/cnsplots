@@ -16,6 +16,4 @@ fmri = sns.load_dataset("fmri")
 # %%
 # plot lineplot using :func:`cnsplots.lineplot`
 cns.figure(150, 150)
-sns.lineplot(
-    data=fmri, x="timepoint", y="signal", hue="event", err_style="bars"
-)  # TODO: bring to the module
+cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", err_style="bars")

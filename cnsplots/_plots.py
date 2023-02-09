@@ -9,6 +9,7 @@ import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
 import seaborn as sns
+import upsetplot as usp
 from natsort import natsort_keygen
 
 import cnsplots as cns
@@ -428,3 +429,19 @@ def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="s
         dashes=(8, 5),
     )
     cns.take_legend_out()
+
+
+def histplot(**kwargs):
+    sns.histplot(**kwargs)
+
+
+def lineplot(**kwargs):
+    sns.lineplot(**kwargs)
+
+
+def scatterplot(**kwargs):
+    sns.scatterplot(**kwargs)
+
+
+def upsetplot(data, **kwargs):
+    usp.plot(data, **kwargs)

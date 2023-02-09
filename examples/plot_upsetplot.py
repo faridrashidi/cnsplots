@@ -7,10 +7,12 @@ create upsetplot
 
 # %%
 # load data
-from upsetplot import generate_counts, plot
+import upsetplot as usp
 
-example = generate_counts()
+import cnsplots as cns
+
+example = usp.generate_counts()
 
 # %%
 # plot upsetplot using :func:`cnsplots.upsetplot`
-plot(example, element_size=30, show_counts=True)  # TODO: bring to the module
+cns.upsetplot(example, element_size=30, show_counts=True)
