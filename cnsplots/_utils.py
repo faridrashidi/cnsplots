@@ -14,7 +14,7 @@ import cnsplots as cns
 
 def figure(height=150, width=150, color_cycle="Set1", color_map="parula"):
     cns.setup_matplotlib(color_cycle, color_map)
-    plt.figure(figsize=(width / 72, height / 72), dpi=72)
+    plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
 
 
 def take_legend_out(title=None):

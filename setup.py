@@ -29,7 +29,7 @@ setup(
         "statannotations",
     ],
     extras_require={
-        "docs": [
+        "doc": [
             "sphinx",
             "furo",
             "sphinx_gallery",
@@ -38,6 +38,9 @@ setup(
             "sphinx_hoverxref",
             "sphinx_autodoc_typehints",
             "myst_parser",
+        ],
+        "dev": [
+            "pre-commit",
         ],
     },
     packages=find_packages(),

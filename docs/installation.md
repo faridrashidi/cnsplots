@@ -21,5 +21,5 @@ pip install .
 For development - clone this repo and run:
 
 ```
-pip install -e ".[dev,docs]"
+pip install -e ".[dev,doc]"
 ```
