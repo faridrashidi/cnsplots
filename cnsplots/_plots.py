@@ -15,7 +15,7 @@ from natsort import natsort_keygen
 import cnsplots as cns
 
 
-def heatmap(
+def heatmapplot(
     adata,
     row_annotation=None,
     col_annotation=None,

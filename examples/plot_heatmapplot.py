@@ -1,8 +1,8 @@
 """
-heatmap
--------
+heatmapplot
+-----------
 
-create heatmap
+create heatmapplot
 """
 
 # %%
@@ -27,9 +27,9 @@ discrete.var["ensemble"] = [
 discrete.obs["mitf"] = [f"gene{x}" for x in np.random.randint(0, 3, discrete.shape[0])]
 
 # %%
-# plot heatmap using :func:`cnsplots.heatmap`
+# plot heatmapplot using :func:`cnsplots.heatmapplot`
 cns.figure(300, 250)
-cmp = cns.heatmap(
+cmp = cns.heatmapplot(
     blobs,
     row_annotation=["selected", "mitf", "blobs"],
     col_annotation=["ensemble"],
@@ -58,9 +58,9 @@ print(len(cmp.row_order), cmp.row_order[0][:5])
 print(len(cmp.col_order), cmp.col_order[0][:5])
 
 # %%
-# plot heatmap using :func:`cnsplots.heatmap`
+# plot heatmapplot using :func:`cnsplots.heatmapplot`
 cns.figure(300, 200)
-cns.heatmap(
+cns.heatmapplot(
     discrete,
     row_annotation=["mitf"],
     col_annotation=["ensemble"],

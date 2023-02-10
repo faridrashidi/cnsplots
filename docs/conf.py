@@ -1,3 +1,5 @@
+from sphinx_gallery.sorting import FileNameSortKey
+
 import cnsplots as cns
 
 # -- Project information -----------------------------------------------------
@@ -67,6 +69,7 @@ sphinx_gallery_conf = {
     "ignore_pattern": "/todo_",
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+    "within_subsection_order": FileNameSortKey,
 }
 
 
