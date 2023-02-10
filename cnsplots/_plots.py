@@ -188,7 +188,6 @@ def boxplot(
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
-    # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
 
     box_patches = [
         patch for patch in ax.patches if type(patch) == mpl.patches.PathPatch
@@ -288,7 +287,6 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
-    # sns.stripplot(data=data, x=x, y=y, size=3, linewidth=0)
     if addtip:
         groupedvalues = data.groupby(x).mean().reset_index()
         for _, row in groupedvalues.iterrows():
@@ -429,6 +427,23 @@ def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="s
         dashes=(8, 5),
     )
     cns.take_legend_out()
+
+
+def stripplot(data, x, y, size, **kwargs):
+    ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
+    sns.boxplot(
+        data=data,
+        x=x,
+        y=y,
+        medianprops={"visible": True, "color": "black", "lw": 1},
+        whiskerprops={"visible": False},
+        zorder=10,
+        showfliers=False,
+        showbox=False,
+        showcaps=False,
+        width=0.3,
+        ax=ax,
+    )
 
 
 def histplot(**kwargs):

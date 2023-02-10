@@ -7,6 +7,7 @@ create barplot
 
 # %%
 # load data
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 import cnsplots as cns
@@ -46,3 +47,20 @@ cns.barplot(
     order=["Sun", "Fri", "Thur", "Sat"],
     pairs=[("Sun", "Fri")],
 )
+
+# %%
+# plot barplot using :func:`cnsplots.barplot`
+tips["total_bill"] = tips["total_bill"] - tips["total_bill"].mean()
+cns.figure(100, 150, "Tableau")
+cns.barplot(data=tips, x="day", y="total_bill")
+ax = plt.gca()
+ax.axhline(0, color="k", clip_on=False, lw=0.8)
+ax.spines["bottom"].set_visible(False)
+
+# %%
+# plot barplot using :func:`cnsplots.barplot`
+cns.figure(150, 100, "Tableau")
+cns.barplot(data=tips, y="day", x="total_bill")
+ax = plt.gca()
+ax.axvline(0, color="k", clip_on=False, lw=0.8)
+ax.spines["left"].set_visible(False)
