@@ -3,6 +3,7 @@
 - https://altair-viz.github.io/user_guide/configuration.html
 - https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/clustermap.py
 - https://github.com/trevismd/statannotations/blob/master/usage/example.ipynb
+- https://github.com/Mr-Milk/milkviz
 
 ### TODO:
 - https://stackoverflow.com/questions/66180002/scipy-cluster-hierarchy-dendrogram-exactly-what-does-truncate-mode-level-do

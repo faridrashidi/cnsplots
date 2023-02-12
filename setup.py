@@ -17,6 +17,7 @@ setup(
         "pydeseq2",
         "upsetplot",
         "adjustText",
+        "matplotlib_venn",
         "PyComplexHeatmap",
         "palettable",
         "altair",

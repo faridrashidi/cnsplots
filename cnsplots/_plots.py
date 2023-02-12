@@ -4,6 +4,7 @@ import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib_venn as venn
 import num2tex
 import pandas as pd
 import PyComplexHeatmap as pch
@@ -460,3 +461,26 @@ def scatterplot(**kwargs):
 
 def upsetplot(data, **kwargs):
     usp.plot(data, **kwargs)
+
+
+def vennplot(lists, labels, **kwargs):
+    if len(lists) == 2:
+        areas = ["10", "01", "11"]
+        func = venn.venn2
+        names = ["A", "B"]
+    else:
+        areas = ["100", "010", "001", "110", "101", "011", "111"]
+        func = venn.venn3
+        names = ["A", "B", "C"]
+    ax = func(
+        lists,
+        labels,
+        set_colors=cns.palettes("Set1"),
+        alpha=0.8,
+    )
+    for area in areas:
+        ax.get_label_by_id(area).set_fontsize(6)
+        ax.get_patch_by_id(area).set_edgecolor("black")
+        ax.get_patch_by_id(area).set_linewidth(0.8)
+    for area in names:
+        ax.get_label_by_id(area).set_fontsize(7)

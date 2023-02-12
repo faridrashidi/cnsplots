@@ -14,6 +14,7 @@ from cnsplots._plots import (
     stripplot,
     survivalplot,
     upsetplot,
+    vennplot,
     violinplot,
     volcanoplot,
 )
@@ -41,6 +42,7 @@ __all__ = (
     stripplot,
     survivalplot,
     upsetplot,
+    vennplot,
     violinplot,
     volcanoplot,
 )
