@@ -1,8 +1,8 @@
 """
-piechart
---------
+pieplot
+-------
 
-create piechart
+create pieplot
 """
 
 # %%
@@ -14,6 +14,6 @@ import cnsplots as cns
 iris = sns.load_dataset("iris")
 
 # %%
-# plot piechart using :func:`cnsplots.piechart`
+# plot pieplot using :func:`cnsplots.pieplot`
 cns.figure(100, 100)
-cns.piechart(iris, "species")
+cns.pieplot(iris, "species")

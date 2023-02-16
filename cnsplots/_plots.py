@@ -356,7 +356,7 @@ def regplot(data, x, y):
     g.text(6, 4.5, rf"$\rho$={r:.2f}, $P={num2tex.num2tex(p, precision=2):.2g}$")
 
 
-def piechart(data, x, hue_order=None):
+def pieplot(data, x, hue_order=None):
     df = data[x].value_counts()
     if hue_order is None:
         hue_order = df.index
