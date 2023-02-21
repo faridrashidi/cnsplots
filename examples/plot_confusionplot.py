@@ -17,10 +17,10 @@ data = pd.DataFrame(
 
 # %%
 # plot confusionplot using :func:`cnsplots.confusionplot`
-cns.figure(100, 100)
-cns.confusionplot(data, "x", "y")
+cns.figure(80, 80)
+cns.confusionplot(data=data, x="x", y="y")
 
 # %%
 # plot confusionplot using :func:`cnsplots.confusionplot`
 cns.figure(100, 100)
-cns.confusionplot(data, "x", "y", add_pvalue=True)
+cns.confusionplot(data=data, x="x", y="y", add_pvalue=True)

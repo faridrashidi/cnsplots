@@ -6,8 +6,10 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib_venn as venn
 import num2tex
+import numpy as np
 import pandas as pd
 import PyComplexHeatmap as pch
+import pysankey as ps
 import scipy as sp
 import seaborn as sns
 import upsetplot as usp
@@ -534,3 +536,11 @@ def confusionplot(data, x, y, add_pvalue=False):
         Odds ratio: {odds_ratio:.2f}
         """
         ax2.text(-0.25, -1.1, msg, ha="left", va="bottom")
+
+
+def sankeyplot(data, x, y):
+    ax = plt.gca()
+    current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    keys = np.union1d(data[x].unique(), data[y].unique())
+    color_dict = dict(zip(keys, current_colors))
+    ps.sankey(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
