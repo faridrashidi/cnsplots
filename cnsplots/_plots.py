@@ -12,6 +12,7 @@ import scipy as sp
 import seaborn as sns
 import upsetplot as usp
 from natsort import natsort_keygen
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 import cnsplots as cns
 
@@ -463,7 +464,7 @@ def upsetplot(data, **kwargs):
     usp.plot(data, **kwargs)
 
 
-def vennplot(lists, labels, **kwargs):
+def vennplot(lists, labels):
     if len(lists) == 2:
         areas = ["10", "01", "11"]
         func = venn.venn2
@@ -484,3 +485,22 @@ def vennplot(lists, labels, **kwargs):
         ax.get_patch_by_id(area).set_linewidth(0.8)
     for area in names:
         ax.get_label_by_id(area).set_fontsize(7)
+
+
+def confusionplot(data, x, y):
+    labels = data[x].unique()
+    cm = confusion_matrix(data[x], data[y], labels=labels)
+    cmd = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    cmd.plot(cmap=plt.cm.Blues)
+    cmd.ax_.spines["right"].set_visible(True)
+    cmd.ax_.spines["top"].set_visible(True)
+    cmd.ax_.set_xlabel(y)
+    cmd.ax_.set_ylabel(x)
+    colorbar = cmd.ax_.images[-1].colorbar
+    # colorbar.outline.set_linewidth(0.3)
+    # colorbar.ax.set_aspect(0.5)
+    # colorbar.ax.yaxis.set_major_locator(
+    #     ticker.MaxNLocator(integer=True, nbins=5, prune="both")
+    # )
+    colorbar.remove()
+    cmd.figure_.set_size_inches(1.5, 1.5)

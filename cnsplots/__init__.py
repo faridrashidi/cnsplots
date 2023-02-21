@@ -3,6 +3,7 @@
 from cnsplots._plots import (
     barplot,
     boxplot,
+    confusionplot,
     distplot,
     heatmapplot,
     histplot,
@@ -31,6 +32,7 @@ __all__ = (
     take_legend_out,
     barplot,
     boxplot,
+    confusionplot,
     distplot,
     heatmapplot,
     histplot,

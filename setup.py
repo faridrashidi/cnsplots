@@ -28,6 +28,7 @@ setup(
         "natsort",
         "num2tex",
         "statannotations",
+        "scikit_learn",
     ],
     extras_require={
         "doc": [
