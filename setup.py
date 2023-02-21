@@ -19,7 +19,6 @@ setup(
         "adjustText",
         "matplotlib_venn",
         "pycomplexheatmap",
-        "pysankeybeta",
         "palettable",
         "altair",
         "altair_saver",

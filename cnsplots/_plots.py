@@ -9,7 +9,6 @@ import num2tex
 import numpy as np
 import pandas as pd
 import PyComplexHeatmap as pch
-import pysankey as ps
 import scipy as sp
 import seaborn as sns
 import upsetplot as usp
@@ -17,6 +16,7 @@ from natsort import natsort_keygen
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 import cnsplots as cns
+import cnsplots._helper_sankey as helper_sankey
 
 
 def heatmapplot(
@@ -543,4 +543,4 @@ def sankeyplot(data, x, y):
     current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
     color_dict = dict(zip(keys, current_colors))
-    ps.sankey(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
+    helper_sankey.sankey(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
