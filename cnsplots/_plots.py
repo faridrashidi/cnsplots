@@ -352,9 +352,11 @@ def regplot(data, x, y):
         "line_kws": {"color": "blue", "lw": 1.5},
         "scatter_kws": {"s": 3, "color": "black", "edgecolor": "black", "alpha": 1},
     }
-    r, p = sp.stats.pearsonr(data[x], data[y])
+    rho, p_value = sp.stats.pearsonr(data[x], data[y])
     g = sns.regplot(data=data, x=x, y=y, **args)
-    g.text(6, 4.5, rf"$\rho$={r:.2f}, $P={num2tex.num2tex(p, precision=2):.2g}$")
+    g.text(
+        6, 4.5, rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$"
+    )
 
 
 def pieplot(data, x, hue_order=None):
@@ -487,20 +489,48 @@ def vennplot(lists, labels):
         ax.get_label_by_id(area).set_fontsize(7)
 
 
-def confusionplot(data, x, y):
+def confusionplot(data, x, y, add_pvalue=False):
     labels = data[x].unique()
     cm = confusion_matrix(data[x], data[y], labels=labels)
     cmd = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-    cmd.plot(cmap=plt.cm.Blues)
+
+    ax = plt.gca()
+    cmd.plot(ax=ax, cmap=plt.cm.Blues)
     cmd.ax_.spines["right"].set_visible(True)
     cmd.ax_.spines["top"].set_visible(True)
     cmd.ax_.set_xlabel(y)
     cmd.ax_.set_ylabel(x)
+    plt.yticks(rotation=90, va="center")
     colorbar = cmd.ax_.images[-1].colorbar
     # colorbar.outline.set_linewidth(0.3)
     # colorbar.ax.set_aspect(0.5)
-    # colorbar.ax.yaxis.set_major_locator(
-    #     ticker.MaxNLocator(integer=True, nbins=5, prune="both")
-    # )
+    # colorbar.ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True, nbins=5))
     colorbar.remove()
-    cmd.figure_.set_size_inches(1.5, 1.5)
+
+    if add_pvalue:
+        tn, fp, fn, tp = cm.ravel()
+        specificity = tn / (tn + fp)
+        sensitivity = tp / (tp + fn)
+        ppv = tp / (tp + fp)
+        npv = tn / (tn + fn)
+        po = (tp + tn) / (tp + tn + fp + fn)
+        pe = ((tp + fp) * (tp + fn) + (tn + fp) * (tn + fn)) / (tp + tn + fp + fn) ** 2
+        kappa = (po - pe) / (1 - pe)
+        _, p_value = sp.stats.fisher_exact([[tp, fp], [fn, tn]])
+        odds_ratio = (tp * tn) / (fp * fn)
+
+        fig = plt.gcf()
+        ax2 = fig.add_axes(ax.get_position(), frameon=False)
+        ax2.tick_params(
+            labelcolor="none", top=False, bottom=False, left=False, right=False
+        )
+        msg = rf"""
+        Specificity: {specificity:.2f}
+        Sensitivity: {sensitivity:.2f}
+        PPV: {ppv:.2f}
+        NPV: {npv:.2f}
+        Cohen's kappa: {kappa:.2f}
+        Fisher's exact test: ${num2tex.num2tex(p_value, precision=2):.2g}$
+        Odds ratio: {odds_ratio:.2f}
+        """
+        ax2.text(-0.25, -1.1, msg, ha="left", va="bottom")

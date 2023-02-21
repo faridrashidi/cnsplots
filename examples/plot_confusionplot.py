@@ -19,3 +19,8 @@ data = pd.DataFrame(
 # plot confusionplot using :func:`cnsplots.confusionplot`
 cns.figure(100, 100)
 cns.confusionplot(data, "x", "y")
+
+# %%
+# plot confusionplot using :func:`cnsplots.confusionplot`
+cns.figure(100, 100)
+cns.confusionplot(data, "x", "y", add_pvalue=True)
