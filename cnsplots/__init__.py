@@ -23,7 +23,7 @@ from cnsplots._plots import (
 from cnsplots._setup import setup_altair, setup_matplotlib
 from cnsplots._utils import _p_value_helper, figure, palettes, take_legend_out
 
-__version__ = "0.0.0"
+__version__ = "0.0.1"
 __all__ = (
     setup_altair,
     setup_matplotlib,
