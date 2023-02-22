@@ -5,15 +5,12 @@ palettes
 plot palettes
 """
 
-import matplotlib.pyplot as plt
-
 # %%
-# load data
+import matplotlib.pyplot as plt
 import numpy as np
 
 import cnsplots as cns
 
-# %%
 gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))
 
