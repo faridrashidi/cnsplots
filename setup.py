@@ -20,8 +20,6 @@ setup(
         "matplotlib_venn",
         "pycomplexheatmap",
         "palettable",
-        "altair",
-        "altair_saver",
         "numpy",
         "pandas",
         "scipy",

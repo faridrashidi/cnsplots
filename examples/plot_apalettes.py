@@ -6,11 +6,14 @@ plot palettes
 """
 
 # %%
+# load packages
 import matplotlib.pyplot as plt
 import numpy as np
 
 import cnsplots as cns
 
+# %%
+# plot palettes
 gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))
 

@@ -225,7 +225,7 @@ def boxplot(
         " correspond to 1.5 times the interquartile range."
     )
     if pairs is not None:
-        cns._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
 
 def violinplot(
@@ -281,7 +281,7 @@ def violinplot(
     plotting.update(kwargs)
     sns.boxplot(**plotting)
     if pairs is not None:
-        cns._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
@@ -304,7 +304,7 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
                 size=6,
             )
     if pairs is not None:
-        cns._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+        cns._utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
 
 
 def stackplot(
@@ -339,9 +339,13 @@ def stackplot(
     if pairs is not None:
         plotting = {"data": data, "x": x, "y": y, "order": order}
         if contingency.shape[1] == 2:
-            cns._p_value_helper("fisher-exact", data, ax, plotting, pairs, contingency)
+            cns._utils._p_value_helper(
+                "fisher-exact", data, ax, plotting, pairs, contingency
+            )
         else:
-            cns._p_value_helper("chi-squared", data, ax, plotting, pairs, contingency)
+            cns._utils._p_value_helper(
+                "chi-squared", data, ax, plotting, pairs, contingency
+            )
 
 
 def distplot(data, x):
