@@ -1,3 +1,11 @@
+import importlib
+import inspect
+import os
+import re
+import subprocess
+import sys
+from typing import Any
+
 from sphinx_gallery.sorting import FileNameSortKey
 
 import cnsplots as cns
@@ -24,8 +32,9 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
     "sphinx.ext.extlinks",
-    # "sphinx.ext.linkcode",
+    "sphinx.ext.linkcode",
 ]
+github_repo = "https://github.com/faridrashidi/cnsplots"
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 
@@ -88,7 +97,7 @@ html_show_sphinx = False
 
 
 html_theme_options = {
-    "source_repository": "https://github.com/faridrashidi/cnsplots/",
+    "source_repository": github_repo,
     "source_branch": "main",
     "source_directory": "docs/",
     "sidebar_hide_name": True,
@@ -102,7 +111,7 @@ html_theme_options = {
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/faridrashidi/cnsplots/",
+            "url": github_repo,
             "html": """
                 <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
@@ -113,6 +122,64 @@ html_theme_options = {
     ],
 }
 
+
+# -- Config for linkcode -------------------------------------------
+
+
+def git(*args):
+    """Run git command and return output as string."""
+    return subprocess.check_output(["git", *args]).strip().decode()
+
+
+# https://github.com/DisnakeDev/disnake/blob/7853da70b13fcd2978c39c0b7efa59b34d298186/docs/conf.py#L192
+# Current git reference. Uses branch/tag name if found, otherwise uses commit hash
+git_ref = None
+try:
+    git_ref = git("name-rev", "--name-only", "--no-undefined", "HEAD")
+    git_ref = re.sub(r"^(remotes/[^/]+|tags)/", "", git_ref)
+except Exception:  # noqa: B902
+    pass
+
+# (if no name found or relative ref, use commit hash instead)
+if not git_ref or re.search(r"[\^~]", git_ref):
+    try:
+        git_ref = git("rev-parse", "HEAD")
+    except Exception:  # noqa: B902
+        git_ref = "main"
+
+# https://github.com/DisnakeDev/disnake/blob/7853da70b13fcd2978c39c0b7efa59b34d298186/docs/conf.py#L192
+_cnsplots_tools_module_path = os.path.dirname(
+    importlib.util.find_spec("cnsplots").origin
+)
+
+
+def linkcode_resolve(domain, info):
+    """Determine the URL corresponding to Python object."""
+    if domain != "py":
+        return None
+
+    try:
+        obj: Any = sys.modules[info["module"]]
+        for part in info["fullname"].split("."):
+            obj = getattr(obj, part)
+        obj = inspect.unwrap(obj)
+
+        if isinstance(obj, property):
+            obj = inspect.unwrap(obj.fget)
+
+        path = os.path.relpath(
+            inspect.getsourcefile(obj), start=_cnsplots_tools_module_path
+        )
+        src, lineno = inspect.getsourcelines(obj)
+    except Exception:  # noqa: B902
+        return None
+
+    path = f"{path}#L{lineno}-L{lineno + len(src) - 1}"
+    return f"{github_repo}/blob/{git_ref}/cnsplots/{path}"
+
+
+# -- Config for hoverxref -------------------------------------------
+
 hoverx_default_type = "tooltip"
 hoverxref_domains = ["py"]
 hoverxref_role_types = dict.fromkeys(
@@ -121,9 +188,10 @@ hoverxref_role_types = dict.fromkeys(
 )
 hoverxref_intersphinx = [
     "python",
+    "matplotlib",
     "numpy",
-    "scanpy",
+    "pandas",
+    "seaborn",
     "anndata",
     "scipy",
-    "pandas",
 ]
