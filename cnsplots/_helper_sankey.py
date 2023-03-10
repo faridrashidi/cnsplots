@@ -35,7 +35,7 @@ def check_data_matches_labels(
             raise ValueError(f"{side} labels and data do not match.{msg}")
 
 
-def sankey(
+def sankeyplot(
     left: Union[List, ndarray, Series],
     right: Union[ndarray, Series],
     leftWeight: Optional[ndarray] = None,

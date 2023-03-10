@@ -16,6 +16,7 @@ from natsort import natsort_keygen
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 import cnsplots as cns
+import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
 
 
@@ -359,9 +360,13 @@ def regplot(data, x, y):
         "scatter_kws": {"s": 3, "color": "black", "edgecolor": "black", "alpha": 1},
     }
     rho, p_value = sp.stats.pearsonr(data[x], data[y])
-    g = sns.regplot(data=data, x=x, y=y, **args)
-    g.text(
-        6, 4.5, rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$"
+    ax = sns.regplot(data=data, x=x, y=y, **args)
+
+    fig = plt.gcf()
+    ax2 = fig.add_axes(ax.get_position(), frameon=False)
+    ax2.tick_params(labelcolor="none", top=False, bottom=False, left=False, right=False)
+    ax2.text(
+        1, 1.02, rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$"
     )
 
 
@@ -464,8 +469,8 @@ def lineplot(**kwargs):
     sns.lineplot(**kwargs)
 
 
-def scatterplot(**kwargs):
-    sns.scatterplot(**kwargs)
+def scatterplot(data, x, y, s=7, **kwargs):
+    sns.scatterplot(data=data, x=x, y=y, s=s, **kwargs)
 
 
 def upsetplot(data, **kwargs):
@@ -547,4 +552,8 @@ def sankeyplot(data, x, y):
     current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
     color_dict = dict(zip(keys, current_colors))
-    helper_sankey.sankey(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
+    helper_sankey.sankeyplot(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
+
+
+def phyloplot(adata):
+    helper_phylo.phyloplot(adata)

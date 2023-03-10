@@ -6,3 +6,4 @@
 - hazardplot
 - slopeplot: [example](https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python)
 - ridgeplot: [example](https://seaborn.pydata.org/examples/kde_ridgeplot.html)
+- networkplot
