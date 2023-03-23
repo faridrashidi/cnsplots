@@ -24,6 +24,8 @@ def heatmapplot(
     adata,
     row_annotation=None,
     col_annotation=None,
+    row_cluster=False,
+    col_cluster=False,
     row_split=None,
     col_split=None,
     rasterized=True,
@@ -53,15 +55,6 @@ def heatmapplot(
                         colors="black",
                         va="top",
                         ha="right",
-                        # arrowprops={
-                        #     "color": "red",
-                        #     "connectionstyle": None,
-                        #     "arrowstyle": "-",
-                        #     "shrinkA": 0.1,
-                        #     "shrinkB": 0.1,
-                        #     "patchA": None,
-                        #     "patchB": None,
-                        # },
                     )
                 else:
                     rc_dict[annot] = pch.anno_simple(
@@ -94,13 +87,6 @@ def heatmapplot(
         rc_dict = _annot_helper(adata.obs, row_annotation)
         row_annotation = pch.HeatmapAnnotation(
             axis=0,
-            # label_side="bottom",
-            # label_kws={
-            #     "rotation": 90,
-            #     "rotation_mode": "anchor",
-            #     "horizontalalignment": "right",
-            #     "verticalalignment": "center",
-            # },  # for bringing the labels to bottom
             **rc_dict,
         )
     if col_annotation is not None:
@@ -116,6 +102,8 @@ def heatmapplot(
         data=adata.to_df(),
         left_annotation=row_annotation,
         top_annotation=col_annotation,
+        row_cluster=row_cluster,
+        col_cluster=col_cluster,
         row_split=row_split,
         col_split=col_split,
         cmap=cmap,
@@ -127,7 +115,6 @@ def heatmapplot(
         col_dendrogram_size=10,
         linewidth=linewidth,
         xticklabels_kws={"labelrotation": 90},
-        # dendrogram_kws={"truncate_mode": "lastp", "p": 5},
         **kwargs,
     )
     for cbar in cmp.cbars:
@@ -137,6 +124,10 @@ def heatmapplot(
     for ax in cmp.legend_axes[0].figure.axes:
         if ax.get_ylabel() in cbar_titles:
             ax.yaxis.set_label_position("left")
+            if ax.get_ylabel() == "value":
+                ax.set_aspect(0.5)
+            else:
+                ax.set_aspect(12)
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
@@ -309,7 +300,16 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
 
 
 def stackplot(
-    data, x, y, hue, order=None, hue_order=None, width=0.5, normalize=True, pairs=None
+    data,
+    x,
+    y,
+    hue,
+    order=None,
+    hue_order=None,
+    width=0.5,
+    normalize=True,
+    pairs=None,
+    ascending=False,
 ):
     """Plot the value of y categorized by x and grouped by hue."""
     barh = pd.api.types.is_numeric_dtype(data[x])
@@ -329,7 +329,9 @@ def stackplot(
         ylabel = "Frequency"
     else:
         ylabel = "Count"
-    if order is None:
+    if order:
+        order = df.sort_values(order, ascending=ascending).index
+    else:
         order = df.index
     if barh:
         ax = df.reindex(index=order).plot.barh(stacked=True, width=width, ax=ax, rot=0)

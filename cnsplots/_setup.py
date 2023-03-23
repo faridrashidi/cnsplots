@@ -20,6 +20,7 @@ def setup_matplotlib(color_cycle="Set1", color_map="parula"):
             "savefig.pad_inches": 0,
             "savefig.dpi": 72 * 4,
             "savefig.transparent": True,
+            "svg.fonttype": "none",
             "axes.grid": False,
             "axes.spines.top": False,
             "axes.spines.right": False,
