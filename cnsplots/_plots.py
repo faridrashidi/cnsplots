@@ -559,3 +559,60 @@ def sankeyplot(data, x, y):
 
 def phyloplot(adata):
     helper_phylo.phyloplot(adata)
+
+
+def hazardplot():
+    from lifelines import CoxPHFitter
+    from lifelines.datasets import load_waltons
+    from sklearn import preprocessing
+
+    waltons = load_waltons()
+    le = preprocessing.LabelEncoder()
+    waltons["group"] = le.fit_transform(waltons["group"])
+    cph = CoxPHFitter()
+    cph.fit(waltons, duration_col="T", event_col="E")
+
+    return cph.summary
+
+
+def ridgeplot(data, x, y):
+    sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
+
+    # Initialize the FacetGrid object
+    pal = sns.cubehelix_palette(data[y].nunique(), rot=-0.25, light=0.7)
+    g = sns.FacetGrid(data, row=y, hue=y, aspect=12, height=0.5, palette=pal)
+
+    # Draw the densities in a few steps
+    g.map(
+        sns.kdeplot,
+        x,
+        bw_adjust=0.5,
+        clip_on=False,
+        fill=True,
+        alpha=1,
+    )
+    g.map(sns.kdeplot, x, clip_on=False, color="w", lw=2, bw_adjust=0.5)
+    g.map(plt.axhline, y=0, linewidth=1, linestyle="-", color=None, clip_on=False)
+
+    # Define and use a simple function to label the plot in axes coordinates
+    def label(x, color, label):
+        ax = plt.gca()
+        ax.text(
+            0,
+            0.2,
+            label,
+            color=color,
+            ha="left",
+            va="center",
+            transform=ax.transAxes,
+        )
+
+    g.map(label, x)
+
+    # Set the subplots to overlap
+    g.fig.subplots_adjust(hspace=-0.25)
+
+    # Remove axes details that don't play well with overlap
+    g.set_titles("")
+    g.set(yticks=[], xlabel="", ylabel="")
+    g.despine(bottom=True, left=True)
