@@ -62,7 +62,7 @@ def phyloplot(adata):
 def _heatmap(
     data,
     cmap={},
-    palette="hls",
+    palette="Set1",
     ax=None,
     legend=True,
     leg_pos="right",
@@ -140,7 +140,6 @@ def _heatmap(
 
         # Generate colours in order -> for legend
         colors = [cmap[cat] for cat in unique_values]
-
     else:
         raise TypeError(f'Unable to intepret colormap of type "{type(cmap)}"')
 

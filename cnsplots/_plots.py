@@ -329,10 +329,10 @@ def stackplot(
         ylabel = "Frequency"
     else:
         ylabel = "Count"
-    if order:
-        order = df.sort_values(order, ascending=ascending).index
-    else:
-        order = df.index
+    # if order:
+    #     order = df.sort_values(order, ascending=ascending).index
+    # else:
+    #     order = df.index
     if barh:
         ax = df.reindex(index=order).plot.barh(stacked=True, width=width, ax=ax, rot=0)
     else:
@@ -616,3 +616,14 @@ def ridgeplot(data, x, y):
     g.set_titles("")
     g.set(yticks=[], xlabel="", ylabel="")
     g.despine(bottom=True, left=True)
+
+
+def slopeplot(data, x1, x2):
+    plt.scatter(np.zeros(data.shape[0]), data[x1], label=x1, color="black", s=1)
+    plt.scatter(np.ones(data.shape[0]), data[x2], label=x2, color="black", s=1)
+    for _, row in data.iterrows():
+        if row[x1] > row[x2]:
+            plt.plot([0, 1], [row[x1], row[x2]], color="blue", alpha=0.5, linewidth=0.3)
+        else:
+            plt.plot([0, 1], [row[x1], row[x2]], color="red", alpha=0.5, linewidth=0.3)
+    plt.xticks([0, 1], [x1, x2])
