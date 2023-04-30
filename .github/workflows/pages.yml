@@ -20,7 +20,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Build and commit
-      uses: sphinx-notes/pages@v2
+      uses: sphinx-notes/pages@v3
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:

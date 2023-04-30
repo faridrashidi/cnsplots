@@ -204,9 +204,9 @@ def boxplot(
                 line.set_mfc(col)
                 line.set_mec(col)
             else:
-                line.set_color("None")
-                line.set_mfc("None")
-                line.set_mec("None")
+                line.set_color("white")
+                line.set_mfc("white")
+                line.set_mec("white")
 
     if ax.legend_ is not None:
         for legpatch in ax.legend_.get_patches():
@@ -546,7 +546,7 @@ def confusionplot(data, x, y, add_pvalue=False):
         Fisher's exact test: ${num2tex.num2tex(p_value, precision=2):.2g}$
         Odds ratio: {odds_ratio:.2f}
         """
-        ax2.text(-0.25, -1.1, msg, ha="left", va="bottom")
+        ax2.text(-0.25, -1.5, msg, ha="left", va="bottom")
 
 
 def sankeyplot(data, x, y):
