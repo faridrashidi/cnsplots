@@ -7,14 +7,8 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        pip install -e ".[dev,doc]"
+    - id: install_dependencies
+      run: pip install -e ".[dev,doc]"
     - id: deployment
       uses: sphinx-notes/pages@v3
       with:
