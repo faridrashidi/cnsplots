@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
 try:
@@ -27,19 +29,16 @@ setup(
         "num2tex",
         "statannotations",
         "scikit_learn",
-        "sphinx",
-        "furo",
-        "sphinx_gallery",
-        "sphinx_design",
-        "sphinx_copybutton",
-        "sphinx_hoverxref",
-        "sphinx_autodoc_typehints",
-        "myst_parser",
-        "pre-commit",
     ],
     extras_require={
-        "doc": [],
-        "dev": [],
+        "doc": [
+            r.strip()
+            for r in (Path("docs") / "requirements.txt").read_text("utf-8").splitlines()
+            if not r.startswith("-r")
+        ],
+        "dev": [
+            "pre-commit",
+        ],
     },
     packages=find_packages(),
 )
