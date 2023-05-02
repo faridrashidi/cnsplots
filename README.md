@@ -6,3 +6,4 @@
 - slopeplot: [example](https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python)
 - hazardplot
 - networkplot
+- [gseaplot](https://gseapy.readthedocs.io/en/latest/gseapy_example.html)
