@@ -15,11 +15,12 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -e ".[dev,doc]"
-    - id: Deployment
+    - id: deployment
       uses: sphinx-notes/pages@v3
       with:
         publish: false
+        pyproject_extras: dev,doc
     - uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: gh-pages
+        publish_dir: ${{ steps.deployment.outputs.artifact }}
