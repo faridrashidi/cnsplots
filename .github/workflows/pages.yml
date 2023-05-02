@@ -9,16 +9,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Setup python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Install dependencies
       run: |
         pip install -e ".[dev,doc]"
-    - name: Checkout
-      uses: actions/checkout@master
-      with:
-        fetch-depth: 0
     - name: Build and commit
       uses: sphinx-notes/pages@v3
     - name: Push changes

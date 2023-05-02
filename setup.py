@@ -30,7 +30,7 @@ setup(
     ],
     extras_require={
         "doc": [
-            "sphinx<=6.2.1",
+            "sphinx",
             "furo",
             "sphinx_gallery",
             "sphinx_design",
