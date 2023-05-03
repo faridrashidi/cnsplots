@@ -9,6 +9,8 @@ plot palettes
 # load packages
 import matplotlib.pyplot as plt
 import numpy as np
+import palettable
+import seaborn as sns
 
 import cnsplots as cns
 
@@ -42,3 +44,15 @@ def plot_palettes(cmap_list):
 
 cns.setup_matplotlib()
 plot_palettes(["Set1", "Tableau", "Bold", "BlueRed", "ECharts", "parula", "gnuplot"])
+
+
+# %%
+# change color palette
+
+tips = sns.load_dataset("tips")
+
+cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors)
+cns.barplot(data=tips, x="day", y="total_bill")
+
+cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors[::-1])
+cns.barplot(data=tips, x="day", y="total_bill")
