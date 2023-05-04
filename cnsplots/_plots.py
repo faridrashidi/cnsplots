@@ -390,6 +390,22 @@ def pieplot(data, x, hue_order=None):
     cns.take_legend_out(title=x)
 
 
+def donutplot(data, x, hue_order=None):
+    df = data[x].value_counts()
+    if hue_order is None:
+        hue_order = df.index
+    ax = plt.gca()
+    ax = df.reindex(index=hue_order).plot.pie(
+        labeldistance=None,
+        ax=ax,
+        ylabel="",
+        legend=True,
+    )
+    ax.add_patch(plt.Circle((0, 0), 0.6, color="white"))
+    plt.annotate(x, (0, 0), size=7, ha="center", va="center")
+    cns.take_legend_out()
+
+
 def survivalplot(data, duration, event, hue):
     ax = None
     kmf = ll.KaplanMeierFitter()
