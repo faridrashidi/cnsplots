@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
+import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
 import matplotlib_venn as venn
 import num2tex
@@ -14,6 +15,7 @@ import seaborn as sns
 import upsetplot as usp
 from natsort import natsort_keygen
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+from sklearn.neighbors import KernelDensity
 
 import cnsplots as cns
 import cnsplots._helper_phylo as helper_phylo
@@ -592,46 +594,52 @@ def hazardplot():
 
 
 def ridgeplot(data, x, y):
-    sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
+    countries = data[y].unique()
+    colors = ["#0000ff", "#3300cc", "#660099", "#990066", "#cc0033", "#ff0000"]
+    gs = grid_spec.GridSpec(len(countries), 1)
+    fig = plt.gcf()
+    i = 0
+    ax_objs = []
+    for country in countries:
+        country = countries[i]
+        x_v = np.array(data[data[y] == country][x])
+        x_d = np.linspace(0, 1, 1000)
+        kde = KernelDensity(bandwidth=0.03, kernel="gaussian")
+        kde.fit(x_v[:, None])
+        logprob = kde.score_samples(x_d[:, None])
 
-    # Initialize the FacetGrid object
-    pal = sns.cubehelix_palette(data[y].nunique(), rot=-0.25, light=0.7)
-    g = sns.FacetGrid(data, row=y, hue=y, aspect=12, height=0.5, palette=pal)
+        # creating new axes object
+        ax_objs.append(fig.add_subplot(gs[i : i + 1, 0:]))
 
-    # Draw the densities in a few steps
-    g.map(
-        sns.kdeplot,
-        x,
-        bw_adjust=0.5,
-        clip_on=False,
-        fill=True,
-        alpha=1,
-    )
-    g.map(sns.kdeplot, x, clip_on=False, color="w", lw=2, bw_adjust=0.5)
-    g.map(plt.axhline, y=0, linewidth=1, linestyle="-", color=None, clip_on=False)
+        # plotting the distribution
+        ax_objs[-1].plot(x_d, np.exp(logprob), color="#f0f0f0", lw=1)
+        ax_objs[-1].fill_between(x_d, np.exp(logprob), alpha=1, color=colors[i])
 
-    # Define and use a simple function to label the plot in axes coordinates
-    def label(x, color, label):
-        ax = plt.gca()
-        ax.text(
-            0,
-            0.2,
-            label,
-            color=color,
-            ha="left",
-            va="center",
-            transform=ax.transAxes,
-        )
+        # setting uniform x and y lims
+        ax_objs[-1].set_xlim(0, 1)
+        ax_objs[-1].set_ylim(0, 2.5)
 
-    g.map(label, x)
+        # make background transparent
+        rect = ax_objs[-1].patch
+        rect.set_alpha(0)
 
-    # Set the subplots to overlap
-    g.fig.subplots_adjust(hspace=-0.25)
+        # remove borders, axis ticks, and labels
+        ax_objs[-1].set_yticks([])
 
-    # Remove axes details that don't play well with overlap
-    g.set_titles("")
-    g.set(yticks=[], xlabel="", ylabel="")
-    g.despine(bottom=True, left=True)
+        if i == len(countries) - 1:
+            ax_objs[-1].set_xlabel(x)
+        else:
+            ax_objs[-1].set_xticks([])
+
+        spines = ["top", "right", "left", "bottom"]
+        for s in spines:
+            ax_objs[-1].spines[s].set_visible(False)
+
+        adj_country = country.replace(" ", "\n")
+        ax_objs[-1].text(-0.02, 0, adj_country, ha="right")
+
+        i += 1
+    gs.update(hspace=-0.5)
 
 
 def slopeplot(data, x1, x2):
