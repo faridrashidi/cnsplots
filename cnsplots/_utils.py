@@ -1,6 +1,7 @@
 import itertools
 
 import matplotlib as mpl
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import num2tex
 import palettable
@@ -28,6 +29,12 @@ def take_legend_out(title=None):
         loc="upper left",
         title=title,
     )
+
+
+def _get_hex_colors_from_colorbar(cmap_name, n_colors):
+    cmap = plt.cm.get_cmap(cmap_name)
+    colors = [mcolors.to_hex(cmap(i)) for i in range(0, cmap.N, cmap.N // n_colors)]
+    return colors
 
 
 def _p_value_helper(test, data, ax, plotting, pairs, contingency=None):

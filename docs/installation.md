@@ -15,5 +15,7 @@ pip install cnsplots
 For development - clone this repo and run:
 
 ```
+git clone https://github.com/faridrashidi/cnsplots
+cd cnsplots
 make install
 ```
