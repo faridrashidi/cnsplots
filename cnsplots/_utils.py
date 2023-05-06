@@ -37,6 +37,12 @@ def _get_hex_colors_from_colorbar(cmap_name, n_colors):
     return colors
 
 
+def _remove_edge_from_legend_items(ax):
+    if ax.legend_ is not None:
+        for legpatch in ax.legend_.get_patches():
+            legpatch.set_edgecolor("None")
+
+
 def _p_value_helper(test, data, ax, plotting, pairs, contingency=None):
     class PValueFormatNew(PValueFormat):
         def __init__(self):

@@ -209,10 +209,7 @@ def boxplot(
                 line.set_mfc("white")
                 line.set_mec("white")
 
-    if ax.legend_ is not None:
-        for legpatch in ax.legend_.get_patches():
-            legpatch.set_edgecolor("None")
-
+    cns._utils._remove_edge_from_legend_items(ax)
     print(
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
         " correspond to 1.5 times the interquartile range."
@@ -401,10 +398,16 @@ def donutplot(data, x, hue_order=None):
         ax=ax,
         ylabel="",
         legend=True,
+        wedgeprops={"edgecolor": "black", "linewidth": 0.3},
     )
-    ax.add_patch(plt.Circle((0, 0), 0.6, color="white"))
+    ax.add_patch(
+        plt.Circle(
+            (0, 0), radius=0.6, facecolor="white", edgecolor="black", linewidth=0.3
+        )
+    )
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
     cns.take_legend_out()
+    cns._utils._remove_edge_from_legend_items(ax)
 
 
 def survivalplot(data, duration, event, hue):
@@ -424,7 +427,6 @@ def survivalplot(data, duration, event, hue):
         data[duration], data[hue], df[event]
     )
     ax.text(0, 0, rf"$P={num2tex.num2tex(p_value.p_value, precision=2):.2g}$")
-
     print("P-value was determined by two-sided log-rank test.")
 
 
@@ -588,7 +590,6 @@ def hazardplot():
     waltons["group"] = le.fit_transform(waltons["group"])
     cph = CoxPHFitter()
     cph.fit(waltons, duration_col="T", event_col="E")
-
     return cph.summary
 
 
