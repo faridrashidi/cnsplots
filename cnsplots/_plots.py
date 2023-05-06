@@ -516,7 +516,7 @@ def vennplot(lists, labels):
     for area in areas:
         ax.get_label_by_id(area).set_fontsize(6)
         ax.get_patch_by_id(area).set_edgecolor("black")
-        ax.get_patch_by_id(area).set_linewidth(0.8)
+        ax.get_patch_by_id(area).set_linewidth(0.5)
     for area in names:
         ax.get_label_by_id(area).set_fontsize(7)
 
@@ -636,12 +636,47 @@ def ridgeplot(data, x, y):
     gs.update(hspace=-0.5)
 
 
-def slopeplot(data, x1, x2):
-    plt.scatter(np.zeros(data.shape[0]), data[x1], label=x1, color="black", s=1)
-    plt.scatter(np.ones(data.shape[0]), data[x2], label=x2, color="black", s=1)
-    for _, row in data.iterrows():
-        if row[x1] > row[x2]:
-            plt.plot([0, 1], [row[x1], row[x2]], color="blue", alpha=0.5, linewidth=0.3)
-        else:
-            plt.plot([0, 1], [row[x1], row[x2]], color="red", alpha=0.5, linewidth=0.3)
-    plt.xticks([0, 1], [x1, x2])
+def slopeplot(data, x, y, hue):
+    red = "#C25539"
+    blue = "#3F7F93"
+    hues = data[hue].unique()
+
+    ax = plt.gca()
+
+    sites = []
+    i = 1.0
+    for site, subdf in data.groupby(x):
+        sites.append(site)
+        h = subdf[subdf[hue] == hues[0]][y].values
+        d = subdf[subdf[hue] == hues[1]][y].values
+
+        x1 = i - 0.2
+        x2 = i + 0.2
+
+        line_colors = (h - d) > 0
+        line_colors = [blue if j else red for j in line_colors]
+
+        alphas = [0.4] * len(line_colors)
+
+        for hi, di, ci, ai in zip(h, d, line_colors, alphas):
+            ax.plot([x1, x2], [hi, di], c=ci, alpha=ai)
+
+        ax.scatter(len(h) * [x1 - 0.01], h, c=blue, s=10, lw=0.5, label=hues[0])
+        ax.scatter(len(d) * [x2 + 0.01], d, c=red, s=10, lw=0.5, label=hues[1])
+
+        i += 1
+
+    ax.set_xticks([1, 2, 3])
+    _ = ax.set_xticklabels(sites)
+
+    handles, labels = ax.get_legend_handles_labels()
+    lgd = ax.legend(
+        handles[0:2],
+        labels[0:2],
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.25),
+        ncol=2,
+        scatterpoints=1,
+    )
+    lgd.legendHandles[0]._sizes = [30]
+    lgd.legendHandles[1]._sizes = [30]
