@@ -6,4 +6,3 @@
 - hazardplot
 - networkplot
 - phyloplot: [stream](https://github.com/pinellolab/STREAM)
-- slopeplot: [example](https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python)

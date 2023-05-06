@@ -637,6 +637,7 @@ def ridgeplot(data, x, y):
 
 
 def slopeplot(data, x, y, hue):
+    # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
     red = "#C25539"
     blue = "#3F7F93"
     hues = data[hue].unique()
