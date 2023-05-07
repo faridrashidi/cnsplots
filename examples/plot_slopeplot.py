@@ -14,6 +14,7 @@ import cnsplots as cns
 
 # %%
 # generate data
+np.random.seed(2023)
 data = np.concatenate(
     [
         [np.random.normal(loc=1, size=15), 15 * ["site1"], 15 * ["healthy"]],

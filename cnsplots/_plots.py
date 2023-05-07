@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib_venn as venn
 import num2tex
 import numpy as np
+import palettable
 import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
@@ -638,8 +639,8 @@ def ridgeplot(data, x, y):
 
 def slopeplot(data, x, y, hue):
     # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
-    red = "#C25539"
-    blue = "#3F7F93"
+    red = palettable.colorbrewer.qualitative.Set1_9.hex_colors[0]
+    blue = palettable.colorbrewer.qualitative.Set1_9.hex_colors[1]
     hues = data[hue].unique()
 
     ax = plt.gca()
