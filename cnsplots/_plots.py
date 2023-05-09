@@ -126,10 +126,10 @@ def heatmapplot(
     for ax in cmp.legend_axes[0].figure.axes:
         if ax.get_ylabel() in cbar_titles:
             ax.yaxis.set_label_position("left")
-            if ax.get_ylabel() == "value":
-                ax.set_aspect(0.5)
-            else:
-                ax.set_aspect(12)
+            # if ax.get_ylabel() == "value":
+            #     ax.set_aspect(0.5)
+            # else:
+            #     ax.set_aspect(12)
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
@@ -416,11 +416,21 @@ def survivalplot(data, duration, event, hue):
     kmf = ll.KaplanMeierFitter()
     for i, group in enumerate(data[hue].unique()):
         df = data[data[hue] == group]
+        # label = f"{group} (n={df[df[event] == 1].shape[0]})"
         kmf.fit(df[duration], df[event], label=group)
         if i != 0:
-            ax = kmf.plot_survival_function(linewidth=1.2, ci_show=False)
+            ax = kmf.plot_survival_function(
+                linewidth=1.2, ci_show=False, show_censors=True, censor_styles={"ms": 3}
+            )
         else:
-            ax = kmf.plot_survival_function(ax=ax, linewidth=1.2, ci_show=False)
+            ax = kmf.plot_survival_function(
+                ax=ax,
+                linewidth=1.2,
+                ci_show=False,
+                show_censors=True,
+                censor_styles={"ms": 3},
+            )
+    plt.ylim(-0.05, 1.01)
 
     df = data.copy()
     df[hue] = pd.Categorical(df[hue], categories=df[hue].unique()).codes + 1
