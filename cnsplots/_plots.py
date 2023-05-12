@@ -416,8 +416,8 @@ def survivalplot(data, duration, event, hue):
     kmf = ll.KaplanMeierFitter()
     for i, group in enumerate(data[hue].unique()):
         df = data[data[hue] == group]
-        # label = f"{group} (n={df[df[event] == 1].shape[0]})"
-        kmf.fit(df[duration], df[event], label=group)
+        label = f"{group} (n={df.shape[0]})"
+        kmf.fit(df[duration], df[event], label=label)
         if i != 0:
             ax = kmf.plot_survival_function(
                 linewidth=1.2, ci_show=False, show_censors=True, censor_styles={"ms": 3}
@@ -431,6 +431,7 @@ def survivalplot(data, duration, event, hue):
                 censor_styles={"ms": 3},
             )
     plt.ylim(-0.05, 1.01)
+    plt.ylabel("Overall survival probability")
 
     df = data.copy()
     df[hue] = pd.Categorical(df[hue], categories=df[hue].unique()).codes + 1
