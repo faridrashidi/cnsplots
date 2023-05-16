@@ -434,6 +434,7 @@ def survivalplot(data, duration, event, hue):
             )
     plt.ylim(-0.05, 1.01)
     plt.ylabel("Overall survival probability")
+    plt.xlabel("Time")
 
     df = data.copy()
     df[hue] = pd.Categorical(df[hue], categories=df[hue].unique()).codes + 1
