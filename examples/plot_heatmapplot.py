@@ -68,4 +68,6 @@ cns.heatmapplot(
     show_colnames=True,
     linewidth=1,
     legend_hpad=-3,
+    cmap=["blue", "red"],
+    legend_width=10,
 )

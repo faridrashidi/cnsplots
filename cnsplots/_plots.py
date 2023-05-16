@@ -18,6 +18,7 @@ from natsort import natsort_keygen
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 import cnsplots as cns
+import cnsplots._helper_heatmap as helper_heatmap
 import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
 
@@ -100,7 +101,7 @@ def heatmapplot(
     if col_split is not None and not isinstance(row_split, int):
         col_split = adata.var[col_split]
 
-    cmp = pch.ClusterMapPlotter(
+    cmp = helper_heatmap.ClusterMapPlotterNew(
         data=adata.to_df(),
         left_annotation=row_annotation,
         top_annotation=col_annotation,
@@ -112,7 +113,6 @@ def heatmapplot(
         rasterized=rasterized,
         label=label,
         legend_gap=5,
-        legend_width=2,
         row_dendrogram_size=10,
         col_dendrogram_size=10,
         linewidth=linewidth,
