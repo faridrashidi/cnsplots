@@ -8,9 +8,7 @@ def _is_qualitative_cmap(cmap_name):
         return True
     else:
         cmap = plt.get_cmap(cmap_name)
-        colors = cmap(range(cmap.N))
-        colors = [tuple(int(255 * c) for c in color[:3]) for color in colors]
-        return len(set(colors)) == len(colors)
+        return cmap.N < 33
 
 
 class ClusterMapPlotterNew(ClusterMapPlotter):
