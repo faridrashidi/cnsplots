@@ -35,6 +35,7 @@ def heatmapplot(
     cmap="parula",
     label="value",
     linewidth=0,
+    legend_width=20,
     **kwargs,
 ):
     cat_palettes = ["Set1", "Dark2", "Set3"]
@@ -117,6 +118,7 @@ def heatmapplot(
         col_dendrogram_size=10,
         linewidth=linewidth,
         xticklabels_kws={"labelrotation": 90},
+        legend_width=legend_width,
         **kwargs,
     )
     for cbar in cmp.cbars:
