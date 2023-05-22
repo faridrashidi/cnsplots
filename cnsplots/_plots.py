@@ -364,12 +364,10 @@ def regplot(data, x, y):
     }
     rho, p_value = sp.stats.pearsonr(data[x], data[y])
     ax = sns.regplot(data=data, x=x, y=y, **args)
-
-    fig = plt.gcf()
-    ax2 = fig.add_axes(ax.get_position(), frameon=False)
-    ax2.tick_params(labelcolor="none", top=False, bottom=False, left=False, right=False)
-    ax2.text(
-        1, 1.02, rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$"
+    ax.text(
+        ax.get_xlim()[0] * 2,
+        ax.get_ylim()[1] * 0.9,
+        rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
     )
 
 
