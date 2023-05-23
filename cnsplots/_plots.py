@@ -25,6 +25,7 @@ import cnsplots._helper_sankey as helper_sankey
 
 def heatmapplot(
     adata,
+    layer=None,
     row_annotation=None,
     col_annotation=None,
     row_cluster=False,
@@ -91,19 +92,24 @@ def heatmapplot(
         rc_dict = _annot_helper(adata.obs, row_annotation)
         row_annotation = pch.HeatmapAnnotation(
             axis=0,
+            verbose=0,
             **rc_dict,
         )
     if col_annotation is not None:
         ca_dict = _annot_helper(adata.var, col_annotation)
-        col_annotation = pch.HeatmapAnnotation(axis=1, **ca_dict)
+        col_annotation = pch.HeatmapAnnotation(axis=1, verbose=0, **ca_dict)
 
     if row_split is not None and not isinstance(row_split, int):
         row_split = adata.obs[row_split]
     if col_split is not None and not isinstance(row_split, int):
         col_split = adata.var[col_split]
 
+    if layer is None:
+        df = adata.to_df()
+    else:
+        df = adata.to_df(layer=layer)
     cmp = helper_heatmap.ClusterMapPlotterNew(
-        data=adata.to_df(),
+        data=df,
         left_annotation=row_annotation,
         top_annotation=col_annotation,
         row_cluster=row_cluster,
@@ -119,6 +125,7 @@ def heatmapplot(
         linewidth=linewidth,
         xticklabels_kws={"labelrotation": 90},
         legend_width=legend_width,
+        verbose=0,
         **kwargs,
     )
     for cbar in cmp.cbars:
@@ -135,6 +142,7 @@ def heatmapplot(
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
+    # TODO: add border around the heatmap
     return cmp
 
 
@@ -359,7 +367,7 @@ def distplot(data, x):
 
 def regplot(data, x, y):
     args = {
-        "line_kws": {"color": "blue", "lw": 1.5},
+        "line_kws": {"color": "#377EB8", "lw": 1.5},
         "scatter_kws": {"s": 3, "color": "black", "edgecolor": "black", "alpha": 1},
     }
     rho, p_value = sp.stats.pearsonr(data[x], data[y])
@@ -377,11 +385,12 @@ def pieplot(data, x, hue_order=None):
         hue_order = df.index
     ax = plt.gca()
     ax = df.reindex(index=hue_order).plot.pie(
-        shadow=True,
+        shadow=False,
         autopct="%1.0f%%",
         explode=[0] * df.shape[0],
         textprops={"fontsize": 6, "color": "white"},
         labeldistance=None,
+        wedgeprops={"linewidth": 0.3, "edgecolor": "white"},
         ax=ax,
         ylabel="",
         legend=True,

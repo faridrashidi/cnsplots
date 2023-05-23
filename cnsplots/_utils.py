@@ -31,9 +31,20 @@ def take_legend_out(title=None):
     )
 
 
+def _is_qualitative_cmap(cmap_name):
+    if isinstance(cmap_name, list) or isinstance(cmap_name, dict):
+        return True
+    else:
+        cmap = plt.get_cmap(cmap_name)
+        return cmap.N < 33
+
+
 def _get_hex_colors_from_colorbar(cmap_name, n_colors):
     cmap = plt.cm.get_cmap(cmap_name)
-    colors = [mcolors.to_hex(cmap(i)) for i in range(0, cmap.N, cmap.N // n_colors)]
+    if _is_qualitative_cmap(cmap_name):
+        colors = [mcolors.to_hex(cmap(i)) for i in range(0, n_colors)]
+    else:
+        colors = [mcolors.to_hex(cmap(i)) for i in range(0, cmap.N, cmap.N // n_colors)]
     return colors
 
 

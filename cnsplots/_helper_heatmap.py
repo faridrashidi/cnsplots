@@ -3,14 +3,6 @@ from PyComplexHeatmap import *
 import cnsplots as cns
 
 
-def _is_qualitative_cmap(cmap_name):
-    if isinstance(cmap_name, list) or isinstance(cmap_name, dict):
-        return True
-    else:
-        cmap = plt.get_cmap(cmap_name)
-        return cmap.N < 33
-
-
 class ClusterMapPlotterNew(ClusterMapPlotter):
     def __init__(
         self,
@@ -145,7 +137,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 if annotation.label_max_width > self.label_max_width:
                     self.label_max_width = annotation.label_max_width
         if self.legend:
-            if _is_qualitative_cmap(self.cmap):
+            if cns._utils._is_qualitative_cmap(self.cmap):
                 if isinstance(self.data, pd.DataFrame):
                     unique_values = sorted(np.unique(self.data.values.astype(str)))
                 else:
@@ -160,6 +152,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                         self.cmap, len(unique_values)
                     )
                     cmap = {v: k for v, k in zip(unique_values, cmap)}  # TODO: bug
+                self.legend_kws.setdefault("frameon", False)
                 self.legend_list.append(
                     [cmap, self.label, self.legend_kws, 4, "color_dict"]
                 )
