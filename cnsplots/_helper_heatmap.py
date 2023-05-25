@@ -153,6 +153,9 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                     )
                     cmap = {v: k for v, k in zip(unique_values, cmap)}  # TODO: bug
                 self.legend_kws.setdefault("frameon", False)
+                self.legend_kws.setdefault("labelspacing", 0.2)
+                self.legend_kws.setdefault("handletextpad", 0.4)
+                self.legend_kws.setdefault("color_text", False)
                 self.legend_list.append(
                     [cmap, self.label, self.legend_kws, 4, "color_dict"]
                 )
