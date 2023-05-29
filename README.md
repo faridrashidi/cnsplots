@@ -9,6 +9,7 @@ things simple. Additionally, the style sets the PDF font type to ensure compatib
 with Adobe Illustrator. It is also fully compatible with all Matplotlib-based packages,
 including Seaborn.
 
+![Overview](docs/_static/images/overview.png?raw=true)
 
 # TODO:
 - add examples to the end of each function: [see](https://sphinx-gallery.github.io/stable/configuration.html?highlight=mini#references-to-examples)
