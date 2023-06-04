@@ -34,6 +34,7 @@ def heatmapplot(
     col_split=None,
     rasterized=True,
     cmap="parula",
+    colors=None,
     label="value",
     linewidth=0,
     legend_width=20,
@@ -72,8 +73,9 @@ def heatmapplot(
                             "color_text": False,
                         },
                         height=3,
-                        rasterized=False,
+                        rasterized=True,
                         linewidth=0,
+                        colors=colors,
                     )
                     cat_counter += 1
             else:
