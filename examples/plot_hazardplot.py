@@ -15,5 +15,5 @@ rossi = load_rossi()
 
 # %%
 # plot hazardplot using :func:`cnsplots.hazardplot`
-cns.figure(150, 150)
+cns.figure(80, 80)
 cns.hazardplot(data=rossi, duration="week", event="arrest")
