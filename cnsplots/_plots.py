@@ -604,17 +604,21 @@ def phyloplot(adata):
     helper_phylo.phyloplot(adata)
 
 
-def hazardplot():
-    from lifelines import CoxPHFitter
-    from lifelines.datasets import load_waltons
-    from sklearn import preprocessing
-
-    waltons = load_waltons()
-    le = preprocessing.LabelEncoder()
-    waltons["group"] = le.fit_transform(waltons["group"])
-    cph = CoxPHFitter()
-    cph.fit(waltons, duration_col="T", event_col="E")
-    return cph.summary
+def hazardplot(data, duration, event):
+    cph = ll.CoxPHFitter()
+    cph.fit(data, duration_col=duration, event_col=event)
+    ax = plt.gca()
+    cph.plot(
+        ax=ax,
+        fillstyle="full",
+        capsize=1.5,
+        ecolor="red",
+        elinewidth=0.8,
+        markeredgewidth=0.8,
+        markeredgecolor="red",
+        markerfacecolor="red",
+        markersize=2,
+    )
 
 
 def ridgeplot(data, x, y):
