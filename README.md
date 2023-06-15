@@ -25,11 +25,12 @@ To use:
 ```python
 import cnsplots as cns
 import seaborn as sns
+import matplotlib.pyplot as plt
 
-mplscience.available_styles()
-mplscience.set_style()
-df = sns.load_dataset("anscombe")
-sns.scatterplot(x="x", y="y", hue="dataset", data=df)
+df = sns.load_dataset("tips")  # Generate the data
+cns.figure(150, 100)  # Create figure size (height x weight) in pixels
+cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
+plt.savefig("/Users/rashidimehrabf2/Desktop/salam.pdf")  # Save the figure
 ```
 
 
