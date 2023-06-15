@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 df = sns.load_dataset("tips")  # Generate the data
 cns.figure(150, 100)  # Create figure size (height x weight) in pixels
 cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
-plt.savefig("/Users/rashidimehrabf2/Desktop/salam.pdf")  # Save the figure
+plt.savefig("figure.pdf")  # Save the figure
 ```
 
 
