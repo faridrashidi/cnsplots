@@ -479,6 +479,7 @@ def volcanoplot(data, symbol="symbol"):
         hue=hue,
         edgecolor=None,
         palette=sns.xkcd_palette(["blue", "grey", "red", "black"]),
+        rasterized=True,
     )
 
     annotations = []
@@ -492,7 +493,7 @@ def volcanoplot(data, symbol="symbol"):
     ax.spines["right"].set_visible(True)
     ax.spines["top"].set_visible(True)
     ax.set_xlabel("log2(fold change)")
-    ax.set_ylabel("–log 10(adjusted p-value)")
+    ax.set_ylabel("–log10(adjusted p-value)")
     plt.plot(
         [0, 0],
         [0, max(de[y])],
