@@ -454,21 +454,32 @@ def survivalplot(data, duration, event, hue):
     print("P-value was determined by two-sided log-rank test.")
 
 
-def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="symbol"):
+def volcanoplot(data, symbol="symbol"):
+    # data must contains `padj`, `log2FoldChange`, `symbol`
+    de = data.copy()
+    de["-log10(adjp)"] = -np.log10(de["padj"])
+    de["DEG"] = "NS"
+    de.loc[de["pvalue"] < 0.05, "DEG"] = "p < 0.05"
+    up = (de["pvalue"] < 0.05) & (de["log2FoldChange"] > 0)
+    de.loc[de.loc[up].nlargest(10, "-log10(adjp)").index, "DEG"] = "Up"
+    down = (de["pvalue"] < 0.05) & (de["log2FoldChange"] < 0)
+    de.loc[de.loc[down].nlargest(10, "-log10(adjp)").index, "DEG"] = "Down"
+    de = de.sort_values("DEG")
+
     ax = sns.scatterplot(
-        data=data,
+        data=de,
         x=x,
         y=y,
         size=hue,
-        sizes=[2, 2, 10, 10],
+        sizes=[10, 2, 10, 2],
         hue=hue,
         edgecolor=None,
-        palette=sns.xkcd_palette(["black", "grey", "blue", "red"]),
+        palette=sns.xkcd_palette(["blue", "grey", "red", "black"]),
     )
 
     annotations = []
     for mode, color in [("Up", "red"), ("Down", "blue")]:
-        for _, (x0, y0, t) in data.loc[data[hue] == mode, [x, y, symbol]].iterrows():
+        for _, (x0, y0, t) in de.loc[de[hue] == mode, [x, y, symbol]].iterrows():
             annotations.append(plt.annotate(t, (x0, y0), color=color, size=6))
     at.adjust_text(
         annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5}
@@ -480,7 +491,7 @@ def volcanoplot(data, x="log2FoldChange", y="-log10(adjp)", hue="DEG", symbol="s
     ax.set_ylabel("–log 10(adjusted p-value)")
     plt.plot(
         [0, 0],
-        [0, max(data[y])],
+        [0, max(de[y])],
         color="black",
         linestyle="--",
         linewidth=0.8,
