@@ -455,16 +455,20 @@ def survivalplot(data, duration, event, hue):
 
 
 def volcanoplot(data, symbol="symbol"):
-    # data must contains `padj`, `log2FoldChange`, `symbol`
+    # data must contains `padj`, `log2FoldChange`, `pvalue`, `symbol`
+    x = "log2FoldChange"
+    y = "-log10(adjp)"
+    hue = "DEG"
     de = data.copy()
-    de["-log10(adjp)"] = -np.log10(de["padj"])
-    de["DEG"] = "NS"
-    de.loc[de["pvalue"] < 0.05, "DEG"] = "p < 0.05"
-    up = (de["pvalue"] < 0.05) & (de["log2FoldChange"] > 0)
-    de.loc[de.loc[up].nlargest(10, "-log10(adjp)").index, "DEG"] = "Up"
-    down = (de["pvalue"] < 0.05) & (de["log2FoldChange"] < 0)
-    de.loc[de.loc[down].nlargest(10, "-log10(adjp)").index, "DEG"] = "Down"
-    de = de.sort_values("DEG")
+
+    de[y] = -np.log10(de["padj"])
+    de[hue] = "NS"
+    de.loc[de["pvalue"] < 0.05, hue] = "p < 0.05"
+    up = (de["pvalue"] < 0.05) & (de[x] > 0)
+    de.loc[de.loc[up].nlargest(10, y).index, hue] = "Up"
+    down = (de["pvalue"] < 0.05) & (de[x] < 0)
+    de.loc[de.loc[down].nlargest(10, y).index, hue] = "Down"
+    de = de.sort_values(hue)
 
     ax = sns.scatterplot(
         data=de,
