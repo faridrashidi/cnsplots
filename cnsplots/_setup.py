@@ -17,7 +17,7 @@ def setup_matplotlib(color_cycle="Set1", color_map="parula"):
             "legend.fontsize": 6,
             "legend.title_fontsize": 7,
             "savefig.bbox": "tight",
-            "savefig.pad_inches": 0,
+            "savefig.pad_inches": 0.01,
             "savefig.dpi": 72 * 4,
             "savefig.transparent": True,
             "svg.fonttype": "none",

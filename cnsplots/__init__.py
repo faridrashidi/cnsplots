@@ -26,7 +26,12 @@ from cnsplots._plots import (
     volcanoplot,
 )
 from cnsplots._setup import setup_matplotlib
-from cnsplots._utils import figure, palettes, take_legend_out
+from cnsplots._utils import (
+    figure,
+    get_specific_hex_colors_from_set1,
+    palettes,
+    take_legend_out,
+)
 
 __version__ = "0.0.1"
 __all__ = (
@@ -34,6 +39,7 @@ __all__ = (
     figure,
     palettes,
     take_legend_out,
+    get_specific_hex_colors_from_set1,
     barplot,
     boxplot,
     confusionplot,
