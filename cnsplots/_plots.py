@@ -65,7 +65,7 @@ def heatmapplot(
                 else:
                     rc_dict[annot] = pch.anno_simple(
                         df[annot].sort_values(key=natsort_keygen()),
-                        cmap=cat_palettes[cat_counter],
+                        cmap=cat_palettes[cat_counter % len(cat_palettes)],
                         legend_kws={
                             "frameon": False,
                             "labelspacing": 0.2,
@@ -459,16 +459,19 @@ def volcanoplot(data, symbol="symbol"):
     x = "log2FoldChange"
     y = "-log10(adjp)"
     hue = "DEG"
+    n_show = 10
     de = data.copy()
 
     de[y] = -np.log10(de["padj"])
     de[hue] = "NS"
-    de.loc[de["pvalue"] < 0.05, hue] = "p < 0.05"
-    up = (de["pvalue"] < 0.05) & (de[x] > 0)
-    de.loc[de.loc[up].nlargest(10, y).index, hue] = "Up"
-    down = (de["pvalue"] < 0.05) & (de[x] < 0)
-    de.loc[de.loc[down].nlargest(10, y).index, hue] = "Down"
+    de.loc[de["padj"] < 0.05, hue] = "p_adj < 0.05"
+    up = (de["padj"] < 0.05) & (de[x] > 0)
+    de.loc[de.loc[up].nlargest(n_show, y).index, hue] = "Up"
+    down = (de["padj"] < 0.05) & (de[x] < 0)
+    de.loc[de.loc[down].nlargest(n_show, y).index, hue] = "Down"
     de = de.sort_values(hue)
+
+    sigs_de = de[(de["padj"] < 0.05) & (abs(de[x]) > 0.5)]
 
     ax = sns.scatterplot(
         data=de,
@@ -485,7 +488,8 @@ def volcanoplot(data, symbol="symbol"):
     annotations = []
     for mode, color in [("Up", "red"), ("Down", "blue")]:
         for _, (x0, y0, t) in de.loc[de[hue] == mode, [x, y, symbol]].iterrows():
-            annotations.append(plt.annotate(t, (x0, y0), color=color, size=6))
+            if t in sigs_de[symbol].values:
+                annotations.append(plt.annotate(t, (x0, y0), color=color, size=6))
     at.adjust_text(
         annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5}
     )
