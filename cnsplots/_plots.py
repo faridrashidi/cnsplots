@@ -509,13 +509,19 @@ def volcanoplot(data, symbol="symbol"):
     cns.take_legend_out()
 
 
-def stripplot(data, x, y, size, **kwargs):
-    ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
+def stripplot(data, x, y, size=2, showmedian=True, showmeans=False):
+    ax = sns.stripplot(data=data, x=x, y=y, size=size)
     sns.boxplot(
         data=data,
         x=x,
         y=y,
-        medianprops={"visible": True, "color": "black", "lw": 1},
+        medianprops={"visible": showmedian, "color": "black", "lw": 1},
+        meanprops={
+            "markerfacecolor": "white",
+            "markeredgecolor": "black",
+            "marker": "o",
+            "markersize": size + 1,
+        },
         whiskerprops={"visible": False},
         zorder=10,
         showfliers=False,
@@ -523,6 +529,7 @@ def stripplot(data, x, y, size, **kwargs):
         showcaps=False,
         width=0.3,
         ax=ax,
+        showmeans=showmeans,
     )
 
 
