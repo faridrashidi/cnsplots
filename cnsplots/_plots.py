@@ -509,8 +509,8 @@ def volcanoplot(data, symbol="symbol"):
     cns.take_legend_out()
 
 
-def stripplot(data, x, y, size=2, showmedian=True, showmeans=False):
-    ax = sns.stripplot(data=data, x=x, y=y, size=size)
+def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, **kwargs):
+    ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
         data=data,
         x=x,
