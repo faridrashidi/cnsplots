@@ -153,6 +153,7 @@ def boxplot(
     x: str,
     y: str,
     pairs: Optional[List[Tuple[str, str]]] = None,
+    showoutliers: bool = False,
     **kwargs,
 ) -> None:
     """Create a box plot.
@@ -168,6 +169,8 @@ def boxplot(
         The label for the y-axis.
     pairs
         A list of pairs of x attributes for calculating the p-values.
+    showoutliers
+        A Boolean to show outliers on the boxes.
     **kwargs
         Keyword arguments passed to the `seaborn.boxplot` function.
 
@@ -177,7 +180,7 @@ def boxplot(
         This function creates a plot and does not return anything.
     """
     args = {
-        "showfliers": False,
+        "showfliers": showoutliers,
         "showcaps": False,
         "showbox": True,
         "linewidth": 0.8,
