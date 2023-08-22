@@ -468,9 +468,9 @@ def volcanoplot(data, symbol="symbol"):
     de[y] = -np.log10(de["padj"])
     de[hue] = "NS"
     de.loc[de["padj"] < 0.05, hue] = "p_adj < 0.05"
-    up = (de["padj"] < 0.05) & (de[x] > 0)
+    up = (de["padj"] < 0.05) & (de[x] > 0.5)
     de.loc[de.loc[up].nlargest(n_show, y).index, hue] = "Up"
-    down = (de["padj"] < 0.05) & (de[x] < 0)
+    down = (de["padj"] < 0.05) & (de[x] < -0.5)
     de.loc[de.loc[down].nlargest(n_show, y).index, hue] = "Down"
     de = de.sort_values(hue)
 
@@ -481,10 +481,10 @@ def volcanoplot(data, symbol="symbol"):
         x=x,
         y=y,
         size=hue,
-        sizes=[10, 2, 10, 2],
+        sizes={"Down": 10, "NS": 2, "Up": 10, "p_adj < 0.05": 2},
         hue=hue,
         edgecolor=None,
-        palette=sns.xkcd_palette(["blue", "grey", "red", "black"]),
+        palette={"Down": "blue", "NS": "grey", "Up": "red", "p_adj < 0.05": "black"},
         rasterized=True,
     )
 
