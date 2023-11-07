@@ -4,6 +4,7 @@ import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
 import matplotlib.gridspec as grid_spec
+import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 import matplotlib_venn as venn
 import num2tex
@@ -457,7 +458,7 @@ def survivalplot(data, duration, event, hue):
     print("P-value was determined by two-sided log-rank test.")
 
 
-def volcanoplot(data, symbol="symbol"):
+def volcanoplot(data, symbol="symbol", show_list=None):
     # data must contains `padj`, `log2FoldChange`, `pvalue`, `symbol`
     x = "log2FoldChange"
     y = "-log10(adjp)"
@@ -469,12 +470,14 @@ def volcanoplot(data, symbol="symbol"):
     de[hue] = "NS"
     de.loc[de["padj"] < 0.05, hue] = "p_adj < 0.05"
     up = (de["padj"] < 0.05) & (de[x] > 0.5)
-    de.loc[de.loc[up].nlargest(n_show, y).index, hue] = "Up"
     down = (de["padj"] < 0.05) & (de[x] < -0.5)
-    de.loc[de.loc[down].nlargest(n_show, y).index, hue] = "Down"
+    if show_list is None:
+        de.loc[de.loc[up].nlargest(n_show, y).index, hue] = "Up"
+        de.loc[de.loc[down].nlargest(n_show, y).index, hue] = "Down"
+    else:
+        de.loc[de[symbol].isin(show_list) & up, hue] = "Up"
+        de.loc[de[symbol].isin(show_list) & down, hue] = "Down"
     de = de.sort_values(hue)
-
-    sigs_de = de[(de["padj"] < 0.05) & (abs(de[x]) > 0.5)]
 
     ax = sns.scatterplot(
         data=de,
@@ -491,8 +494,15 @@ def volcanoplot(data, symbol="symbol"):
     annotations = []
     for mode, color in [("Up", "red"), ("Down", "blue")]:
         for _, (x0, y0, t) in de.loc[de[hue] == mode, [x, y, symbol]].iterrows():
-            if t in sigs_de[symbol].values:
-                annotations.append(plt.annotate(t, (x0, y0), color=color, size=6))
+            annotations.append(
+                plt.annotate(
+                    t,
+                    (x0, y0),
+                    color=color,
+                    size=6,
+                    path_effects=[pe.withStroke(linewidth=1, foreground="white")],
+                )
+            )
     at.adjust_text(
         annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5}
     )
