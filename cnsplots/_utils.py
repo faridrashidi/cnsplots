@@ -120,9 +120,9 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None):
     if test == "t-test_welch":
         print("   ---> P values were determined by two-sided Welch's t-test.")
     if test == "fisher-exact":
-        print("   ---> P values were determined by two-sided Fisher's exact test")
+        print("   ---> P values were determined by two-sided Fisher's exact test.")
     if test == "chi-squared":
-        print("   ---> P values were determined by two-sided Chi-squared test")
+        print("   ---> P values were determined by two-sided Chi-squared test.")
 
 
 def get_specific_hex_colors_from_set1(alist):

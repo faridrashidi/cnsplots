@@ -366,9 +366,29 @@ def stackplot(
             )
 
 
-def distplot(data, x):
+def distplot(data, x, **kwargs):
     args = {"kde": True, "edgecolor": None}
+    args.update(kwargs)
     sns.histplot(data=data, x=x, **args)
+
+
+def kdeplot(data, x, **kwargs):
+    sns.kdeplot(data=data, x=x, **kwargs)
+    if "hue" in kwargs:
+        grouped = data.groupby(kwargs["hue"])
+        args = [group_df[x].values for _, group_df in grouped]
+        p_value = sp.stats.ks_2samp(*args)
+        ax = plt.gca()
+        x_lim = ax.get_xlim()
+        y_lim = ax.get_ylim()
+        ax.text(
+            x_lim[1],
+            y_lim[1],
+            rf"$P={num2tex.num2tex(p_value[-1], precision=2):.2g}$",
+            ha="right",
+            va="top",
+        )
+        print("P-value was determined by Anderson-Darling test.")
 
 
 def regplot(data, x, y):
