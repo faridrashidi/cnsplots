@@ -388,7 +388,7 @@ def kdeplot(data, x, **kwargs):
             ha="right",
             va="top",
         )
-        print("P-value was determined by Anderson-Darling test.")
+        print("   ---> P-value was determined by Anderson-Darling test.")
 
 
 def regplot(data, x, y):
@@ -475,7 +475,7 @@ def survivalplot(data, duration, event, hue):
         data[duration], data[hue], df[event]
     )
     ax.text(0, 0, rf"$P={num2tex.num2tex(p_value.p_value, precision=2):.2g}$")
-    print("P-value was determined by two-sided log-rank test.")
+    print("   ---> P-value was determined by two-sided log-rank test.")
 
 
 def volcanoplot(data, symbol="symbol", show_list=None):
