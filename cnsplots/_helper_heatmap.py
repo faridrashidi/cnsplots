@@ -52,12 +52,22 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         xticklabels_kws=None,
         yticklabels_kws=None,
         rasterized=False,
+        xlabel=None,
+        ylabel=None,
+        xlabel_kws=None,
+        ylabel_kws=None,
+        xlabel_side="bottom",
+        ylabel_side="left",
+        xlabel_bbox_kws=None,
+        ylabel_bbox_kws=None,
         legend_delta_x=None,
         verbose=1,
         **kwargs
     ):
         self.data = data
         self.kwargs = kwargs if not kwargs is None else {}
+        self.rasterized = rasterized
+        self.data2d = self.format_data(data, mask, z_score, standard_scale)
         self.verbose = verbose
         self._define_kws(xticklabels_kws, yticklabels_kws)
         self.top_annotation = top_annotation
@@ -87,7 +97,6 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.col_split_gap = col_split_gap
         self.row_split_order = row_split_order
         self.col_split_order = col_split_order
-        self.rasterized = rasterized
         self.legend = legend
         self.legend_kws = legend_kws if not legend_kws is None else {}
         self.legend_side = legend_side
@@ -99,7 +108,14 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.legend_vpad = legend_vpad
         self.legend_anchor = legend_anchor
         self.legend_delta_x = legend_delta_x
-        self.data2d = self.format_data(data, mask, z_score, standard_scale)
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.xlabel_kws = xlabel_kws if not xlabel_kws is None else {}
+        self.ylabel_kws = ylabel_kws if not ylabel_kws is None else {}
+        self.xlabel_side = xlabel_side
+        self.ylabel_side = ylabel_side
+        self.xlabel_bbox_kws = xlabel_bbox_kws
+        self.ylabel_bbox_kws = ylabel_bbox_kws
         if plot:
             self.plot()
             if plot_legend:
