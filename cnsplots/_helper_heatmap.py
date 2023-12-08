@@ -58,7 +58,6 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
     ):
         self.data = data
         self.kwargs = kwargs if not kwargs is None else {}
-        self.data2d = self.format_data(data, mask, z_score, standard_scale)
         self.verbose = verbose
         self._define_kws(xticklabels_kws, yticklabels_kws)
         self.top_annotation = top_annotation
@@ -100,6 +99,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.legend_vpad = legend_vpad
         self.legend_anchor = legend_anchor
         self.legend_delta_x = legend_delta_x
+        self.data2d = self.format_data(data, mask, z_score, standard_scale)
         if plot:
             self.plot()
             if plot_legend:
