@@ -607,6 +607,7 @@ def vennplot(lists, labels):
 
 def confusionplot(data, x, y, add_pvalue=False):
     labels = data[x].unique()
+    # labels = [*data[x].unique(), *data[y].unique()]
     cm = confusion_matrix(data[x], data[y], labels=labels)
     cmd = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
 

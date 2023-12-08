@@ -11,7 +11,7 @@ jobs:
     - name: Setup python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: Install dependencies
       run: |
         pip install -e ".[dev,doc]"
@@ -19,7 +19,7 @@ jobs:
       uses: sphinx-notes/pages@v3
       with:
         publish: false
-        python_version: 3.8
+        python_version: 3.9
     - uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
