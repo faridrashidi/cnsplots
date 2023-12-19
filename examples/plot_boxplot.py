@@ -7,6 +7,7 @@ create boxplot
 
 # %%
 # load data
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 import cnsplots as cns
