@@ -57,5 +57,5 @@ cns.barplot(data=tips, x="day", y="total_bill")
 cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors[::-1])
 cns.barplot(data=tips, x="day", y="total_bill")
 
-cns.figure(color_cycle=cns._utils.get_specific_hex_colors_from_set1([0, 2, 4, 6]))
+cns.figure(color_cycle=cns.get_specific_hex_colors_from_set1([0, 2, 4, 6]))
 cns.barplot(data=tips, x="day", y="total_bill")
