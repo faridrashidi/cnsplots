@@ -324,6 +324,7 @@ def stackplot(
     width=0.5,
     normalize=True,
     pairs=None,
+    addtip=False,
     ascending=False,
 ):
     """Plot the value of y categorized by x and grouped by hue."""
@@ -354,6 +355,17 @@ def stackplot(
         ax = df.reindex(index=order).plot.bar(stacked=True, width=width, ax=ax, rot=0)
     ax.set_ylabel(ylabel)
     cns.take_legend_out()
+    if addtip and normalize:
+        for _, row in data.groupby(x)[y].agg("sum").reset_index().iterrows():
+            ax.text(
+                row.name,
+                1 + 0.02,
+                row[y],
+                color="black",
+                ha="center",
+                rotation=0,
+                size=6,
+            )
     if pairs is not None:
         plotting = {"data": data, "x": x, "y": y, "order": order}
         if contingency.shape[1] == 2:

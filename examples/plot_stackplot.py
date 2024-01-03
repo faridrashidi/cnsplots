@@ -17,7 +17,9 @@ df = tips.value_counts(["sex", "day"]).reset_index().rename(columns={0: "value"}
 # %%
 # plot stackplot using :func:`cnsplots.stackplot`
 cns.figure(120, 100)
-cns.stackplot(data=df, x="sex", y="value", hue="day", width=0.4, normalize=True)
+cns.stackplot(
+    data=df, x="sex", y="value", hue="day", width=0.4, normalize=True, addtip=True
+)
 
 # %%
 # plot stackplot using :func:`cnsplots.stackplot`
