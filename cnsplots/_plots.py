@@ -342,18 +342,21 @@ def stackplot(
     ax = plt.gca()
     if normalize:
         df = df.div(df.sum(axis=1), axis=0)
-        ylabel = "Frequency"
+        value_label = "Frequency"
     else:
-        ylabel = "Count"
+        value_label = "Count"
     # if order:
     #     order = df.sort_values(order, ascending=ascending).index
     # else:
     #     order = df.index
     if barh:
         ax = df.reindex(index=order).plot.barh(stacked=True, width=width, ax=ax, rot=0)
+        ax.set_ylabel("")
+        ax.set_xlabel(value_label)
     else:
         ax = df.reindex(index=order).plot.bar(stacked=True, width=width, ax=ax, rot=0)
-    ax.set_ylabel(ylabel)
+        ax.set_ylabel(value_label)
+        ax.set_xlabel("")
     cns.take_legend_out()
     if addtip and normalize:
         for _, row in data.groupby(x)[y].agg("sum").reset_index().iterrows():
