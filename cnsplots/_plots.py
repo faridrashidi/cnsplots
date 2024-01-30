@@ -325,7 +325,6 @@ def stackplot(
     normalize=True,
     pairs=None,
     addtip=False,
-    ascending=False,
 ):
     """Plot the value of y categorized by x and grouped by hue."""
     barh = pd.api.types.is_numeric_dtype(data[x])
@@ -339,27 +338,26 @@ def stackplot(
             df.columns.values, ordered=True, categories=hue_order, name=hue
         )
         df = df.sort_index(axis=1)
-    ax = plt.gca()
     if normalize:
         df = df.div(df.sum(axis=1), axis=0)
         value_label = "Frequency"
     else:
         value_label = "Count"
-    # if order:
-    #     order = df.sort_values(order, ascending=ascending).index
-    # else:
-    #     order = df.index
+    df = df.reindex(index=order)
+    ax = plt.gca()
     if barh:
-        ax = df.reindex(index=order).plot.barh(stacked=True, width=width, ax=ax, rot=0)
+        ax = df.plot.barh(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel("")
         ax.set_xlabel(value_label)
     else:
-        ax = df.reindex(index=order).plot.bar(stacked=True, width=width, ax=ax, rot=0)
+        ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel(value_label)
         ax.set_xlabel("")
     cns.take_legend_out()
     if addtip and normalize:
-        for _, row in data.groupby(x)[y].agg("sum").reset_index().iterrows():
+        tips = contingency.sum(axis=1).astype(int).reindex(index=order).reset_index()
+        tips = tips.rename(columns={0: "value"})
+        for _, row in tips.iterrows():
             ax.text(
                 row.name,
                 1 + 0.02,
