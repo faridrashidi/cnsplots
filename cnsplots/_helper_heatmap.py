@@ -90,8 +90,12 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.row_dendrogram = row_dendrogram
         self.col_dendrogram = col_dendrogram
         self.subplot_gap = subplot_gap
-        self.row_dendrogram_kws = row_dendrogram_kws
-        self.col_dendrogram_kws = col_dendrogram_kws
+        self.row_dendrogram_kws = (
+            {} if row_dendrogram_kws is None else row_dendrogram_kws
+        )
+        self.col_dendrogram_kws = (
+            {} if col_dendrogram_kws is None else col_dendrogram_kws
+        )
         self.tree_kws = {} if tree_kws is None else tree_kws
         self.row_split = row_split
         self.col_split = col_split
