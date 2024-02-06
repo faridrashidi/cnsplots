@@ -29,7 +29,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         col_dendrogram_size=10,
         row_split=None,
         col_split=None,
-        dendrogram_kws=None,
+        row_dendrogram_kws=None,
+        col_dendrogram_kws=None,
         tree_kws=None,
         row_split_order=None,
         col_split_order=None,
@@ -89,7 +90,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.row_dendrogram = row_dendrogram
         self.col_dendrogram = col_dendrogram
         self.subplot_gap = subplot_gap
-        self.dendrogram_kws = dendrogram_kws
+        self.row_dendrogram_kws = row_dendrogram_kws
+        self.col_dendrogram_kws = col_dendrogram_kws
         self.tree_kws = {} if tree_kws is None else tree_kws
         self.row_split = row_split
         self.col_split = col_split
