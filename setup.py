@@ -11,7 +11,7 @@ setup(
     version=__version__,
     install_requires=[
         "matplotlib",
-        "seaborn",
+        "seaborn<=0.13.1",
         "scanpy",
         "lifelines",
         "pydeseq2",
