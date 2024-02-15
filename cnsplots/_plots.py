@@ -15,6 +15,7 @@ import PyComplexHeatmap as pch
 import scipy as sp
 import seaborn as sns
 import upsetplot as usp
+from matplotlib.transforms import ScaledTranslation
 from natsort import natsort_keygen
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
@@ -459,8 +460,9 @@ def donutplot(data, x, hue_order=None):
     cns._utils._remove_edge_from_legend_items(ax)
 
 
-def survivalplot(data, duration, event, hue):
+def survivalplot(data, duration, event, hue, hue_order):
     ax = None
+    data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     kmf = ll.KaplanMeierFitter()
     for i, group in enumerate(data[hue].unique()):
         df = data[data[hue] == group]
@@ -487,7 +489,13 @@ def survivalplot(data, duration, event, hue):
     p_value = ll.statistics.multivariate_logrank_test(
         data[duration], data[hue], df[event]
     )
-    ax.text(0, 0, rf"$P={num2tex.num2tex(p_value.p_value, precision=2):.2g}$")
+    df = data[[duration, hue, event]].copy()
+    df[hue] = df[hue].cat.codes
+    cph = ll.CoxPHFitter()
+    cph.fit(df, duration_col=duration, event_col=event)
+    hr = cph.hazard_ratios_.iloc[0]
+    p = num2tex.num2tex(p_value.p_value, precision=2)
+    ax.text(0, 0, f"HR = {hr:.2f}\n" + rf"$P={p:.2g}$")
     print("   ---> P-value was determined by two-sided log-rank test.")
 
 
@@ -678,21 +686,90 @@ def phyloplot(adata):
     helper_phylo.phyloplot(adata)
 
 
-def hazardplot(data, duration, event):
-    cph = ll.CoxPHFitter()
-    cph.fit(data, duration_col=duration, event_col=event)
-    ax = plt.gca()
-    cph.plot(
-        ax=ax,
-        fillstyle="full",
-        capsize=1.5,
-        ecolor="red",
-        elinewidth=0.8,
-        markeredgewidth=0.8,
-        markeredgecolor="red",
-        markerfacecolor="red",
-        markersize=2,
+def hazardplot(data, duration, event, hue=None):
+    def _helper(df):
+        cph = ll.CoxPHFitter()
+        cph.fit(df, duration_col=duration, event_col=event)
+        df = cph.summary.copy()
+        df["-log10(p)"] = -np.log10(df["p"])
+        df["hazard_ratios"] = cph.hazard_ratios_
+        df[["hazard_ratios", "exp(coef) lower 95%", "exp(coef) upper 95%", "-log10(p)"]]
+        df["exp(coef) lower 95%"] = df["hazard_ratios"] - df["exp(coef) lower 95%"]
+        df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["hazard_ratios"]
+        return df
+
+    if hue is None:
+        hue = "TEMP"
+        data[hue] = hue
+
+    fig = plt.gcf()
+    gs = grid_spec.GridSpec(1, 2, width_ratios=[2, 1])
+    dfs = []
+    ax1 = fig.add_subplot(gs[0])
+    hue_order = data[hue].unique()
+    for i, h in enumerate(hue_order):
+        df = data[data[hue] == h].drop(hue, axis=1).copy()
+        df = _helper(df)
+        df[hue] = h
+        dfs.append(df.reset_index())
+        ax1.errorbar(
+            df["hazard_ratios"],
+            df.index,
+            xerr=df[["exp(coef) lower 95%", "exp(coef) upper 95%"]].T.values,
+            label=h,
+            transform=ax1.transData
+            + ScaledTranslation(0, (i - 1) * 5 / 72, fig.dpi_scale_trans),
+            fmt="s",
+            markeredgewidth=0.8,
+            elinewidth=0.8,
+            capsize=1.5,
+            markersize=3,
+        )
+    dfs = pd.concat(dfs)
+    order = list(dfs["covariate"].unique())
+    ax1.plot(
+        [1, 1],
+        [-0.5, len(order)],
+        color="black",
+        linestyle="--",
+        linewidth=0.8,
+        dashes=(3, 2),
     )
+    ax1.set_xlabel("Hazard ratio (95% CI)")
+    # ax1.legend(loc="upper right")
+    ax1.xaxis.set_ticks(
+        np.arange(0, (dfs["hazard_ratios"] + dfs["exp(coef) upper 95%"]).max() + 1, 1)
+    )
+    ax1.set_ylim([-0.5, len(order) - 0.5])
+
+    ax2 = fig.add_subplot(gs[1])
+    dfs2 = dfs.pivot(index="covariate", columns=hue, values="-log10(p)")
+    dfs2 = dfs2[hue_order]
+    dfs2 = dfs2.reindex(index=order)
+    dfs2.plot.barh(width=0.5, ax=ax2, rot=0, edgecolor="white", linewidth=1)
+    ax2.set_ylabel("")
+    ax2.set_xlabel("–log10(p-value)")
+    ax2.plot(
+        [-np.log10(0.05), -np.log10(0.05)],
+        [-1, len(df.index)],
+        color="black",
+        linestyle="--",
+        linewidth=0.8,
+        dashes=(3, 2),
+    )
+    ax2.xaxis.set_ticks(np.arange(0, dfs2.values.max() + 1, 1))
+    ax2.yaxis.set_ticks([])
+    cns.take_legend_out()
+    # return dfs[
+    #     [
+    #         "covariate",
+    #         "hazard_ratios",
+    #         "exp(coef) lower 95%",
+    #         "exp(coef) upper 95%",
+    #         "p",
+    #         hue,
+    #     ]
+    # ]
 
 
 def ridgeplot(data, x, y):
