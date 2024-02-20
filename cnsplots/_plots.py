@@ -494,8 +494,10 @@ def survivalplot(data, duration, event, hue, hue_order):
     cph = ll.CoxPHFitter()
     cph.fit(df, duration_col=duration, event_col=event)
     hr = cph.hazard_ratios_.iloc[0]
+    hr1 = cph.summary["exp(coef) lower 95%"].iloc[0]
+    hr2 = cph.summary["exp(coef) upper 95%"].iloc[0]
     p = num2tex.num2tex(p_value.p_value, precision=2)
-    ax.text(0, 0, f"HR = {hr:.2f}\n" + rf"$P={p:.2g}$")
+    ax.text(0, 0, f"HR = {hr:.2f} ({hr1:.2f}-{hr2:.2f})\nP = " + rf"${p:.2g}$")
     print("   ---> P-value was determined by two-sided log-rank test.")
 
 
