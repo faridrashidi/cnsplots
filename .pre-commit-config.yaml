@@ -7,13 +7,13 @@ default_stages:
 minimum_pre_commit_version: 2.9.3
 repos:
 -   repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 23.11.0
     hooks:
     -   id: black
         additional_dependencies: [toml]
         args: [--line-length=88, --experimental-string-processing]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
     -   id: isort
         additional_dependencies: [toml]

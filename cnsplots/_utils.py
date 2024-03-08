@@ -55,24 +55,28 @@ def _remove_edge_from_legend_items(ax):
             legpatch.set_edgecolor("None")
 
 
-def _p_value_helper(test, data, ax, plotting, pairs, contingency=None):
+def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="full"):
     class PValueFormatNew(PValueFormat):
         def __init__(self):
             super(PValueFormat, self).__init__()
             self._pvalue_format_string = "{:.3e}"
             self._simple_format_string = "{:.2f}"
             self._text_format = "star"
-            self.fontsize = "medium"
+            self.fontsize = "medium" if format == "full" else "large"
             self._default_pvalue_thresholds = True
             self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
             self._correction_format = "{star} ({suffix})"
             self.show_test_name = True
 
-        def format_data(self, result):
-            text = f"{result.test_short_name} " if self.show_test_name else ""
-            return r"${}P = {}{}$".format("{}", self.pvalue_format_string, "{}").format(
-                text, num2tex.num2tex(result.pvalue), result.significance_suffix
-            )
+        if format == "full":
+
+            def format_data(self, result):
+                text = f"{result.test_short_name} " if self.show_test_name else ""
+                return r"${}P = {}{}$".format(
+                    "{}", self.pvalue_format_string, "{}"
+                ).format(
+                    text, num2tex.num2tex(result.pvalue), result.significance_suffix
+                )
 
     if pd.api.types.is_numeric_dtype(data[plotting["x"]]):
         plotting["orient"] = "h"
@@ -86,12 +90,12 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None):
     annotator._pvalue_format = PValueFormatNew()
     annotator.configure(
         test=test if contingency is None else None,
-        text_format="full",
+        text_format=format,
         loc="outside",
         line_width=0.8,
         line_offset=0,
         line_offset_to_group=0,
-        text_offset=0.5,
+        text_offset=0.5 if format == "full" else -2,
         color="black",
         show_test_name=False,
         pvalue_format_string="{:.1e}",
