@@ -62,7 +62,7 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="f
             self._pvalue_format_string = "{:.3e}"
             self._simple_format_string = "{:.2f}"
             self._text_format = "star"
-            self.fontsize = "medium" if format == "full" else "large"
+            self.fontsize = "medium"
             self._default_pvalue_thresholds = True
             self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
             self._correction_format = "{star} ({suffix})"
@@ -95,7 +95,7 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="f
         line_width=0.8,
         line_offset=0,
         line_offset_to_group=0,
-        text_offset=0.5 if format == "full" else -2,
+        text_offset=0.5,
         color="black",
         show_test_name=False,
         pvalue_format_string="{:.1e}",
