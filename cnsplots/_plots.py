@@ -481,8 +481,9 @@ def survivalplot(data, duration, event, hue, hue_order):
                 censor_styles={"ms": 3},
             )
     plt.ylim(-0.05, 1.01)
+    ax.xaxis.set_major_locator(plt.MultipleLocator(12))
     plt.ylabel("Overall survival probability")
-    plt.xlabel("Time")
+    plt.xlabel("Time (Months)")
 
     df = data.copy()
     df[hue] = pd.Categorical(df[hue], categories=df[hue].unique()).codes + 1
