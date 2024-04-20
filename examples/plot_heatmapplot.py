@@ -60,7 +60,7 @@ print(len(cmp.col_order), cmp.col_order[0][:5])
 # %%
 # plot heatmapplot using :func:`cnsplots.heatmapplot`
 cns.figure(300, 200)
-cns.heatmapplot(
+cmp = cns.heatmapplot(
     discrete,
     row_annotation=["mitf"],
     col_annotation=["ensemble"],

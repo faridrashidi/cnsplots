@@ -72,6 +72,7 @@ instance/
 docs/_build/
 docs/auto_examples
 docs/gene_modules
+sg_execution_times.rst
 
 # PyBuilder
 target/
