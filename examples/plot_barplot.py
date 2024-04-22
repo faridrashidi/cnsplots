@@ -22,6 +22,12 @@ cns.barplot(data=tips, x="day", y="total_bill")
 
 # %%
 # plot barplot using :func:`cnsplots.barplot`
+cols = ["grey" if x < 22.81 else "orange" for x in tips.total_bill]
+cns.figure(150, 100)
+cns.barplot(data=tips, x="day", y="total_bill", palette=cols)
+
+# %%
+# plot barplot using :func:`cnsplots.barplot`
 cns.figure(150, 100, "Tableau")
 cns.barplot(data=tips, x="day", y="total_bill", pairs="all", addtip=True)
 
