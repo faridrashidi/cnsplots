@@ -146,7 +146,10 @@ def heatmapplot(
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
-    # TODO: add border around the heatmap
+    cmp.ax_heatmap.set_axis_on()
+    sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
+    for s in ["top", "bottom", "left", "right"]:
+        cmp.ax_heatmap.spines[s].set_linewidth(1.2)
     return cmp
 
 
