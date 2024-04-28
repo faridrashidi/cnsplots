@@ -159,6 +159,7 @@ def boxplot(
     y: str,
     pairs: Optional[List[Tuple[str, str]]] = None,
     showoutliers: bool = False,
+    showcounts: bool = False,
     **kwargs,
 ) -> None:
     """Create a box plot.
@@ -237,6 +238,9 @@ def boxplot(
     )
     if pairs is not None:
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+
+    if showcounts:
+        cns._utils._showcounts_helper(data, x, ax)
 
 
 def violinplot(

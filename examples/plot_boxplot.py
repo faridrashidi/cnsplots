@@ -24,7 +24,13 @@ _ = plt.xticks(rotation=40, ha="right", rotation_mode="anchor")
 # %%
 # plot boxplot using :func:`cnsplots.boxplot`
 cns.figure(150, 100)
-cns.boxplot(data=iris, x="species", y="sepal_width", pairs="all")
+cns.boxplot(
+    data=iris,
+    x="species",
+    y="sepal_width",
+    pairs="all",
+    showcounts=True,
+)
 
 # %%
 # plot boxplot using :func:`cnsplots.boxplot`

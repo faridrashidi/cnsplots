@@ -55,6 +55,15 @@ def _remove_edge_from_legend_items(ax):
             legpatch.set_edgecolor("None")
 
 
+def _showcounts_helper(data, attr, ax):
+    xtick_labels = ax.get_xticklabels()
+    new_xtick_labels = []
+    for label in xtick_labels:
+        n = len(data[data[attr] == label.get_text()])
+        new_xtick_labels.append(f"{label.get_text()}\n(n={n})")
+    ax.set_xticklabels(new_xtick_labels)
+
+
 def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="full"):
     class PValueFormatNew(PValueFormat):
         def __init__(self):
