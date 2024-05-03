@@ -470,6 +470,7 @@ def donutplot(data, x, hue_order=None):
 def survivalplot(data, duration, event, hue, hue_order):
     ax = None
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
+    data = data.sort_values(hue)
     kmf = ll.KaplanMeierFitter()
     for i, group in enumerate(data[hue].unique()):
         df = data[data[hue] == group]
