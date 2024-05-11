@@ -34,12 +34,14 @@ def heatmapplot(
     col_cluster=False,
     row_split=None,
     col_split=None,
-    rasterized=True,
     cmap="parula",
-    colors=None,
     label="value",
-    linewidth=0,
     legend_width=20,
+    legend_hpad=10,
+    legend_vpad=0,
+    linewidth=0,
+    colors=None,
+    rasterized=True,
     **kwargs,
 ):
     cat_palettes = ["Set1", "Dark2", "Set3"]
@@ -114,7 +116,7 @@ def heatmapplot(
         df = adata.to_df(layer=layer)
     cmp = helper_heatmap.ClusterMapPlotterNew(
         data=df,
-        left_annotation=row_annotation,
+        right_annotation=row_annotation,
         top_annotation=col_annotation,
         row_cluster=row_cluster,
         col_cluster=col_cluster,
@@ -123,13 +125,15 @@ def heatmapplot(
         cmap=cmap,
         rasterized=rasterized,
         label=label,
-        legend_gap=5,
+        legend_width=legend_width,
+        legend_hpad=legend_hpad,
+        legend_vpad=legend_vpad,
         row_dendrogram_size=10,
         col_dendrogram_size=10,
         linewidth=linewidth,
         xticklabels_kws={"labelrotation": 90},
-        legend_width=legend_width,
         verbose=0,
+        row_names_side="left" if row_annotation is None else "right",
         **kwargs,
     )
     for cbar in cmp.cbars:
