@@ -330,24 +330,25 @@ def stackplot(
     data,
     x,
     y,
-    hue,
-    order=None,
-    hue_order=None,
+    bar_order=None,
+    stack_order=None,
+    horizontal=False,
     width=0.5,
     normalize=True,
     pairs=None,
     addtip=False,
 ):
     """Plot the value of y categorized by x and grouped by hue."""
-    barh = pd.api.types.is_numeric_dtype(data[x])
-    if barh:
-        df = data.pivot(index=y, columns=hue, values=x)
+    data2 = data.value_counts([x, y]).reset_index().rename(columns={0: "value"})
+    # horizontal = pd.api.types.is_numeric_dtype(data[x])
+    if horizontal:
+        df = data2.pivot(index=y, columns=x, values="value")
     else:
-        df = data.pivot(index=x, columns=hue, values=y)
+        df = data2.pivot(index=x, columns=y, values="value")
     contingency = df.copy()
-    if hue_order is not None:
+    if stack_order is not None:
         df.columns = pd.CategoricalIndex(
-            df.columns.values, ordered=True, categories=hue_order, name=hue
+            df.columns.values, ordered=True, categories=stack_order, name=y
         )
         df = df.sort_index(axis=1)
     if normalize:
@@ -355,9 +356,9 @@ def stackplot(
         value_label = "Frequency"
     else:
         value_label = "Count"
-    df = df.reindex(index=order)
+    df = df.reindex(index=bar_order)
     ax = plt.gca()
-    if barh:
+    if horizontal:
         ax = df.plot.barh(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel("")
         ax.set_xlabel(value_label)
@@ -367,27 +368,32 @@ def stackplot(
         ax.set_xlabel("")
     cns.take_legend_out()
     if addtip and normalize:
-        tips = contingency.sum(axis=1).astype(int).reindex(index=order).reset_index()
+        tips = (
+            contingency.sum(axis=1).astype(int).reindex(index=bar_order).reset_index()
+        )
         tips = tips.rename(columns={0: "value"})
         for _, row in tips.iterrows():
             ax.text(
                 row.name,
                 1 + 0.02,
-                row[y],
+                row["value"],
                 color="black",
                 ha="center",
                 rotation=0,
                 size=6,
             )
     if pairs is not None:
-        plotting = {"data": data, "x": x, "y": y, "order": order}
+        if horizontal:
+            plotting = {"data": data2, "x": "value", "y": y, "order": bar_order}
+        else:
+            plotting = {"data": data2, "x": x, "y": "value", "order": bar_order}
         if contingency.shape[1] == 2:
             cns._utils._p_value_helper(
-                "fisher-exact", data, ax, plotting, pairs, contingency
+                "fisher-exact", data2, ax, plotting, pairs, contingency
             )
         else:
             cns._utils._p_value_helper(
-                "chi-squared", data, ax, plotting, pairs, contingency
+                "chi-squared", data2, ax, plotting, pairs, contingency
             )
 
 
@@ -471,8 +477,10 @@ def donutplot(data, x, hue_order=None):
     cns._utils._remove_edge_from_legend_items(ax)
 
 
-def survivalplot(data, duration, event, hue, hue_order):
+def survivalplot(data, duration, event, hue, hue_order=None):
     ax = None
+    if hue_order is None:
+        hue_order = list(data[hue].unique())
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
     kmf = ll.KaplanMeierFitter()
