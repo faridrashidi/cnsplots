@@ -29,7 +29,7 @@ from cnsplots._plots import (
 from cnsplots._setup import setup_matplotlib
 from cnsplots._utils import (
     figure,
-    get_specific_hex_colors_from_set1,
+    get_hexcolors_from_apalette,
     palettes,
     take_legend_out,
 )
@@ -40,7 +40,7 @@ __all__ = (
     figure,
     palettes,
     take_legend_out,
-    get_specific_hex_colors_from_set1,
+    get_hexcolors_from_apalette,
     barplot,
     boxplot,
     confusionplot,

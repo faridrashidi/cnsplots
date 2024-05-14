@@ -21,21 +21,21 @@ gradient = np.vstack((gradient, gradient))
 
 
 def plot_palettes(cmap_list):
+    cns.figure(1000, 600)
+    fig = plt.gcf()
     nrows = len(cmap_list)
-    figh = (nrows + (nrows - 1) * 0.2) * 3
-    _, axs = plt.subplots(nrows=nrows + 1, figsize=(40, figh))
-    for ax, name in zip(axs, cmap_list):
-        ax.imshow(gradient, aspect="auto", cmap=plt.get_cmap(name))
+    for i, name in enumerate(cmap_list):
+        ax = fig.add_subplot(nrows, 1, i + 1)
+        ax.pcolormesh(gradient, cmap=plt.get_cmap(name))
         ax.text(
             -0.01,
             0.5,
             name,
             va="center",
             ha="right",
-            fontsize=120,
+            fontsize=30,
             transform=ax.transAxes,
         )
-    for ax in axs:
         ax.set_axis_off()
 
 
@@ -70,8 +70,15 @@ tips = sns.load_dataset("tips")
 cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors)
 cns.barplot(data=tips, x="day", y="total_bill")
 
-cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors[::-1])
+cns.figure(color_cycle=palettable.colorbrewer.qualitative.Accent_8.hex_colors[::-1])
 cns.barplot(data=tips, x="day", y="total_bill")
 
-cns.figure(color_cycle=cns.get_specific_hex_colors_from_set1([0, 2, 4, 6]))
+cns.figure(color_cycle=cns.get_hexcolors_from_apalette([0, 2, 4, 6]))
+cns.barplot(data=tips, x="day", y="total_bill")
+
+cns.figure(
+    color_cycle=cns.get_hexcolors_from_apalette(
+        [5, 1, 3, 7], palette=palettable.colorbrewer.qualitative.Paired_12.hex_colors
+    )
+)
 cns.barplot(data=tips, x="day", y="total_bill")
