@@ -32,6 +32,12 @@ def take_legend_out(title=None):
     )
 
 
+def get_hexcolors_from_apalette(
+    alist, palette=palettable.colorbrewer.qualitative.Set1_9.hex_colors
+):
+    return list(operator.itemgetter(*alist)(palette))
+
+
 def _is_qualitative_cmap(cmap_name):
     if isinstance(cmap_name, list) or isinstance(cmap_name, dict):
         return True
@@ -138,12 +144,6 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="f
         print("   ---> P-values were determined by two-sided Chi-squared test.")
 
 
-def get_hexcolors_from_apalette(
-    alist, palette=palettable.colorbrewer.qualitative.Set1_9.hex_colors
-):
-    return list(operator.itemgetter(*alist)(palette))
-
-
 def palettes(color):
     if isinstance(color, list):
         return sns.color_palette(color)
@@ -191,9 +191,46 @@ def palettes(color):
             ]
             return sns.color_palette(colors)
         elif color == "Ecotyper1":
-            colors = ["#EB7D5B", "#FED23F", "#B5D33D", "#6CA2EA", "#442288"]
+            colors = [
+                "#D6372E",
+                "#5189BB",
+                "#70B460",
+                "#985EA8",
+                "#F08F35",
+                "#FADD4B",
+                "#A3A3A3",
+                "#B7D3E5",
+                "#E6D8C2",
+            ]
+            # colors = [
+            #     "#D6372E",
+            #     "#FADD4B",
+            #     "#70B460",
+            #     "#E690C1",
+            #     "#985EA8",
+            #     "#A3A3A3",
+            #     "#B7D3E5",
+            #     "#E6D8C2",
+            #     "#F08F35",
+            #     "#5189BB",
+            # ]
             return sns.color_palette(colors)
         elif color == "Ecotyper2":
+            colors = ["#EB7D5B", "#FED23F", "#B5D33D", "#6CA2EA", "#442288"]
+            return sns.color_palette(colors)
+        elif color == "Ecotyper3":
+            colors = [
+                "#D13570",
+                "#569AB4",
+                "#70AC58",
+                "#74509D",
+                "#ED7E30",
+                "#F5C945",
+                "#9C5732",
+                "#E787E5",
+            ]
+            return sns.color_palette(colors)
+        elif color == "Ecotyper4":
             colors = [
                 "#386cb0",
                 "#fdb462",
@@ -206,8 +243,65 @@ def palettes(color):
                 "#ffff33",
             ]
             return sns.color_palette(colors)
-        elif color == "":
-            pass
+        elif color == "Ecotyper5":
+            colors = [
+                "#E41A71",
+                "#379DB8",
+                "#5BAF4A",
+                "#7B4EA3",
+                "#FF7600",
+                "#FFC800",
+                "#A65328",
+                "#F781EC",
+                "#999999",
+                "#A6DCE3",
+                "#BBDF8A",
+                "#FB9A99",
+                "#FDB96F",
+                "#BEB2D6",
+                "#1B9E5E",
+                "#D95802",
+                "#707EB3",
+                "#E729D3",
+                "#E69F02",
+                "#8DD3B9",
+                "#FFFAB3",
+                "#BABFDA",
+                "#FB7F72",
+                "#80C5D3",
+                "#FDAE62",
+                "#BEDE69",
+                "#FCCDF7",
+            ]
+            return sns.color_palette(colors)
+        elif color == "Ecotyper6":
+            colors = [
+                "#FDC086",
+                "#386CB0",
+                "#F0027F",
+                "#FFFF99",
+                "#BF5B17",
+                "#7FC97F",
+                "lightblue",
+                "#BEAED4",
+                "#66C2A5",
+                "#FC8D62",
+                "#8DA0CB",
+                "#E78AC3",
+                "#A6D854",
+                "#FFD92F",
+                "#E5C494",
+                "#B3B3B3",
+                "#FBB4AE",
+                "#B3CDE3",
+                "#CCEBC5",
+                "#DECBE4",
+                "#FED9A6",
+                "#FFFFCC",
+                "#E5D8BD",
+                "#FDDAEC",
+            ]
+            return sns.color_palette(colors)
         elif color == "parula":
             cm_data = [
                 [0.2081, 0.1663, 0.5292],

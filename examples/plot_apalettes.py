@@ -21,7 +21,7 @@ gradient = np.vstack((gradient, gradient))
 
 
 def plot_palettes(cmap_list):
-    cns.figure(1000, 600)
+    cns.figure(1500, 600)
     fig = plt.gcf()
     nrows = len(cmap_list)
     for i, name in enumerate(cmap_list):
@@ -56,8 +56,13 @@ plot_palettes(
         "ECharts",
         "Ecotyper1",
         "Ecotyper2",
+        "Ecotyper3",
+        "Ecotyper4",
+        "Ecotyper5",
+        "Ecotyper6",
         "parula",
         "gnuplot",
+        "hot",
     ]
 )
 

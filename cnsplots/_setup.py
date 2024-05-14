@@ -66,12 +66,16 @@ def setup_matplotlib(color_cycle="Set1", color_map="parula"):
         "ECharts",
         "Ecotyper1",
         "Ecotyper2",
+        "Ecotyper3",
+        "Ecotyper4",
+        "Ecotyper5",
+        "Ecotyper6",
     ]:
         if categorical not in mpl.colormaps:
             mpl.colormaps.register(
                 mpl.colors.ListedColormap(cns.palettes(categorical)), name=categorical
             )
-    for continues in ["parula", "gnuplot"]:
+    for continues in ["parula", "gnuplot", "hot"]:
         if continues not in mpl.colormaps:
             mpl.colormaps.register(cns.palettes(continues), name=continues)
 
