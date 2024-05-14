@@ -51,7 +51,22 @@ def setup_matplotlib(color_cycle="Set1", color_map="parula"):
             "ytick.alignment": "center_baseline",
         }
 
-    for categorical in ["Set1", "Tableau", "Bold", "BlueRed", "ECharts"]:
+    for categorical in [
+        "Set1",
+        "Set2",
+        "Set3",
+        "Pastel1",
+        "Pastel2",
+        "Paired",
+        "Dark2",
+        "Accent",
+        "Tableau",
+        "Bold",
+        "BlueRed",
+        "ECharts",
+        "Ecotyper1",
+        "Ecotyper2",
+    ]:
         if categorical not in mpl.colormaps:
             mpl.colormaps.register(
                 mpl.colors.ListedColormap(cns.palettes(categorical)), name=categorical

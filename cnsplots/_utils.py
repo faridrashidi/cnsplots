@@ -152,6 +152,20 @@ def palettes(color):
     else:
         if color == "Set1":
             return palettable.colorbrewer.qualitative.Set1_9.mpl_colors
+        elif color == "Set2":
+            return palettable.colorbrewer.qualitative.Set2_8.mpl_colors
+        elif color == "Set3":
+            return palettable.colorbrewer.qualitative.Set3_12.mpl_colors
+        elif color == "Pastel1":
+            return palettable.colorbrewer.qualitative.Pastel1_9.mpl_colors
+        elif color == "Pastel2":
+            return palettable.colorbrewer.qualitative.Pastel2_8.mpl_colors
+        elif color == "Paired":
+            return palettable.colorbrewer.qualitative.Paired_12.mpl_colors
+        elif color == "Dark2":
+            return palettable.colorbrewer.qualitative.Dark2_8.mpl_colors
+        elif color == "Accent":
+            return palettable.colorbrewer.qualitative.Accent_8.mpl_colors
         elif color == "Tableau":
             return palettable.tableau.Tableau_10.mpl_colors
         elif color == "Bold":
@@ -178,6 +192,24 @@ def palettes(color):
                 "#f4e001",
             ]
             return sns.color_palette(colors)
+        elif color == "Ecotyper1":
+            colors = ["#EB7D5B", "#FED23F", "#B5D33D", "#6CA2EA", "#442288"]
+            return sns.color_palette(colors)
+        elif color == "Ecotyper2":
+            colors = [
+                "#386cb0",
+                "#fdb462",
+                "#7fc97f",
+                "#ef3b2c",
+                "#662506",
+                "#a6cee3",
+                "#fb9a99",
+                "#984ea3",
+                "#ffff33",
+            ]
+            return sns.color_palette(colors)
+        elif color == "":
+            pass
         elif color == "parula":
             cm_data = [
                 [0.2081, 0.1663, 0.5292],

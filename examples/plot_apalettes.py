@@ -22,11 +22,8 @@ gradient = np.vstack((gradient, gradient))
 
 def plot_palettes(cmap_list):
     nrows = len(cmap_list)
-    figh = 0.35 + 0.15 + (nrows + (nrows - 1) * 0.1) * 0.3
-    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(10, figh))
-    fig.subplots_adjust(top=1 - 0.35 / figh, bottom=0.15 / figh, left=0.2, right=0.99)
-    axs[0].set_title("Color Palettes", fontsize=10)
-
+    figh = (nrows + (nrows - 1) * 0.2) * 3
+    _, axs = plt.subplots(nrows=nrows + 1, figsize=(40, figh))
     for ax, name in zip(axs, cmap_list):
         ax.imshow(gradient, aspect="auto", cmap=plt.get_cmap(name))
         ax.text(
@@ -35,7 +32,7 @@ def plot_palettes(cmap_list):
             name,
             va="center",
             ha="right",
-            fontsize=8,
+            fontsize=120,
             transform=ax.transAxes,
         )
     for ax in axs:
@@ -43,7 +40,26 @@ def plot_palettes(cmap_list):
 
 
 cns.setup_matplotlib()
-plot_palettes(["Set1", "Tableau", "Bold", "BlueRed", "ECharts", "parula", "gnuplot"])
+plot_palettes(
+    [
+        "Set1",
+        "Set2",
+        "Set3",
+        "Pastel1",
+        "Pastel2",
+        "Paired",
+        "Dark2",
+        "Accent",
+        "Tableau",
+        "Bold",
+        "BlueRed",
+        "ECharts",
+        "Ecotyper1",
+        "Ecotyper2",
+        "parula",
+        "gnuplot",
+    ]
+)
 
 
 # %%
