@@ -11,9 +11,9 @@ import seaborn as sns
 
 import cnsplots as cns
 
-iris = sns.load_dataset("iris")
+tips = sns.load_dataset("tips")
 
 # %%
 # plot distplot using :func:`cnsplots.distplot`
 cns.figure(150, 150)
-cns.distplot(data=iris, x="sepal_width")
+cns.distplot(data=tips, x="total_bill", hue="sex")
