@@ -61,7 +61,7 @@ def _remove_edge_from_legend_items(ax):
             legpatch.set_edgecolor("None")
 
 
-def _showcounts_helper(data, attr, ax):
+def _addcount_helper(data, attr, ax):
     xtick_labels = ax.get_xticklabels()
     new_xtick_labels = []
     for label in xtick_labels:

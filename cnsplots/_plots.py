@@ -36,16 +36,19 @@ def heatmapplot(
     col_split=None,
     cmap="parula",
     label="value",
+    xlabel="xlabel",
+    ylabel="ylabel",
     legend_width=20,
     legend_hpad=10,
     legend_vpad=0,
     linewidth=0,
     colors=None,
     rasterized=True,
+    xticklabels_rotation=45,
     **kwargs,
 ):
-    cat_palettes = ["Set1", "Dark2", "Set3"]
-    cont_palettes = ["parula", "gnuplot", "bwr"]
+    cat_palettes = ["Ecotyper1", "Ecotyper2", "Set1", "Dark2", "Set3"]
+    cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
     cbar_titles = [label]
     if cmap in cat_palettes:
         cat_palettes.remove(cmap)
@@ -65,6 +68,7 @@ def heatmapplot(
                         colors="black",
                         va="top",
                         ha="right",
+                        relpos=(0, 0.4),
                     )
                 else:
                     rc_dict[annot] = pch.anno_simple(
@@ -99,6 +103,12 @@ def heatmapplot(
         row_annotation = pch.HeatmapAnnotation(
             axis=0,
             verbose=0,
+            label_side="bottom",
+            label_kws={
+                "horizontalalignment": "right",
+                "rotation": xticklabels_rotation,
+                "rotation_mode": "anchor",
+            },
             **rc_dict,
         )
     if col_annotation is not None:
@@ -116,7 +126,7 @@ def heatmapplot(
         df = adata.to_df(layer=layer)
     cmp = helper_heatmap.ClusterMapPlotterNew(
         data=df,
-        right_annotation=row_annotation,
+        left_annotation=row_annotation,
         top_annotation=col_annotation,
         row_cluster=row_cluster,
         col_cluster=col_cluster,
@@ -125,13 +135,17 @@ def heatmapplot(
         cmap=cmap,
         rasterized=rasterized,
         label=label,
+        xlabel=xlabel,
+        ylabel=ylabel,
         legend_width=legend_width,
         legend_hpad=legend_hpad,
         legend_vpad=legend_vpad,
         row_dendrogram_size=10,
         col_dendrogram_size=10,
         linewidth=linewidth,
-        xticklabels_kws={"labelrotation": 90},
+        xticklabels_kws={"labelrotation": xticklabels_rotation},
+        ylabel_kws={"labelpad": 3},
+        xlabel_kws={"labelpad": 5},
         verbose=0,
         row_names_side="left" if row_annotation is None else "right",
         **kwargs,
@@ -143,10 +157,10 @@ def heatmapplot(
     for ax in cmp.legend_axes[0].figure.axes:
         if ax.get_ylabel() in cbar_titles:
             ax.yaxis.set_label_position("left")
-            # if ax.get_ylabel() == "value":
-            #     ax.set_aspect(0.5)
+            # if ax.get_ylabel() == label:
+            #     ax.set_aspect(0.3)
             # else:
-            #     ax.set_aspect(12)
+            #     ax.set_aspect(6)
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
@@ -163,7 +177,7 @@ def boxplot(
     y: str,
     pairs: Optional[List[Tuple[str, str]]] = None,
     showoutliers: bool = False,
-    showcounts: bool = False,
+    addcount: bool = False,
     **kwargs,
 ) -> None:
     """Create a box plot.
@@ -243,8 +257,8 @@ def boxplot(
     if pairs is not None:
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
-    if showcounts:
-        cns._utils._showcounts_helper(data, x, ax)
+    if addcount:
+        cns._utils._addcount_helper(data, x, ax)
 
 
 def violinplot(

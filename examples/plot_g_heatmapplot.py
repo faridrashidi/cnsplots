@@ -16,9 +16,7 @@ import cnsplots as cns
 blobs = sc.datasets.blobs()
 blobs.obs["mitf"] = np.random.random(blobs.shape[0])
 blobs.var["ensemble"] = [f"ens{x}" for x in np.random.randint(0, 3, blobs.shape[1])]
-blobs.obs["selected"] = np.where(
-    blobs.obs["mitf"] > 0.95, blobs.obs["mitf"].index, None
-)
+blobs.obs["selected"] = np.where(blobs.obs["mitf"] > 0.95, "o", None)
 
 discrete = sc.AnnData(pd.DataFrame(np.random.randint(0, 3, size=(20, 8))))
 discrete.var["ensemble"] = [
@@ -31,6 +29,9 @@ discrete.obs["mitf"] = [f"gene{x}" for x in np.random.randint(0, 3, discrete.sha
 cns.figure(300, 250)
 cmp = cns.heatmapplot(
     blobs,
+    label="measurement",
+    xlabel="xlabel",
+    ylabel="ylabel",
     row_annotation=["selected", "mitf", "blobs"],
     col_annotation=["ensemble"],
     row_split=5,
@@ -62,6 +63,9 @@ print(len(cmp.col_order), cmp.col_order[0][:5])
 cns.figure(300, 200)
 cmp = cns.heatmapplot(
     discrete,
+    label="measurement",
+    xlabel="xlabel",
+    ylabel="ylabel",
     row_annotation=["mitf"],
     col_annotation=["ensemble"],
     show_rownames=True,

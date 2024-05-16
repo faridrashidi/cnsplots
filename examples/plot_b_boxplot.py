@@ -29,7 +29,7 @@ cns.boxplot(
     x="species",
     y="sepal_width",
     pairs="all",
-    showcounts=True,
+    addcount=True,
 )
 
 # %%
