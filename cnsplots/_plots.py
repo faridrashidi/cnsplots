@@ -488,8 +488,8 @@ def donutplot(data, x, hue_order=None):
         )
     )
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
-    cns.take_legend_out()
     cns._utils._remove_edge_from_legend_items(ax)
+    cns.take_legend_out()
 
 
 def survivalplot(data, duration, event, hue, hue_order=None):

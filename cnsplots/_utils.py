@@ -56,9 +56,10 @@ def _get_hex_colors_from_colorbar(cmap_name, n_colors):
 
 
 def _remove_edge_from_legend_items(ax):
-    if ax.legend_ is not None:
-        for legpatch in ax.legend_.get_patches():
-            legpatch.set_edgecolor("None")
+    handles, labels = ax.get_legend_handles_labels()
+    for handle in handles:
+        handle.set_edgecolor("none")
+    ax.legend(handles, labels)
 
 
 def _addcount_helper(data, attr, ax):
