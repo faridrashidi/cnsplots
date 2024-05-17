@@ -14,6 +14,7 @@ import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
 import seaborn as sns
+import statsmodels.api as sm
 import upsetplot as usp
 from matplotlib.transforms import ScaledTranslation
 from natsort import natsort_keygen
@@ -878,12 +879,12 @@ def slopeplot(data, x, y, hue):
         for hi, di, ci, ai in zip(h, d, line_colors, alphas):
             ax.plot([x1, x2], [hi, di], c=ci, alpha=ai)
 
-        ax.scatter(len(h) * [x1 - 0.01], h, c=blue, s=10, lw=0.5, label=hues[0])
-        ax.scatter(len(d) * [x2 + 0.01], d, c=red, s=10, lw=0.5, label=hues[1])
+        ax.scatter(len(h) * [x1], h, c=blue, s=10, lw=0.5, label=hues[0])
+        ax.scatter(len(d) * [x2], d, c=red, s=10, lw=0.5, label=hues[1])
 
         i += 1
 
-    ax.set_xticks([1, 2, 3])
+    ax.set_xticks(list(1 + np.arange(len(sites))))
     _ = ax.set_xticklabels(sites)
 
     handles, labels = ax.get_legend_handles_labels()
@@ -891,9 +892,20 @@ def slopeplot(data, x, y, hue):
         handles[0:2],
         labels[0:2],
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.25),
+        bbox_to_anchor=(0.5, 1.1),
         ncol=2,
-        scatterpoints=1,
     )
-    lgd.legendHandles[0]._sizes = [30]
-    lgd.legendHandles[1]._sizes = [30]
+    for handle in lgd.legend_handles:
+        handle.set_sizes([12])
+
+
+def qqplot(data, x, **kwargs):
+    ax = plt.gca()
+    sm.qqplot(
+        data[x],
+        ax=ax,
+        markerfacecolor="black",
+        markeredgewidth=0,
+        markersize=3,
+        **kwargs,
+    )

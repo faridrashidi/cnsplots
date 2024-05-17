@@ -12,8 +12,8 @@ including Seaborn.
 
 [![Overview](docs/_static/images/overview.png?raw=true)](https://farid.one/cnsplots/auto_examples/index.html)
 
-
 ## Usage
+
 To install:
 
 ```bash
@@ -33,11 +33,14 @@ cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
 plt.savefig("figure.pdf")  # Save the figure
 ```
 
-
 ## TODO:
+
 - add examples to the end of each function: [see](https://sphinx-gallery.github.io/stable/configuration.html?highlight=mini#references-to-examples)
 - heatmapplot truncate dendrogram: [see](https://stackoverflow.com/questions/66180002/scipy-cluster-hierarchy-dendrogram-exactly-what-does-truncate-mode-level-do)
 - heatmapplot adjust labels: [see](https://jokergoo.github.io/ComplexHeatmap-reference/book/more-examples.html#visualize-cell-heterogeneity-from-single-cell-rnaseq)
 - gseaplot: [example](https://gseapy.readthedocs.io/en/latest/gseapy_example.html)
 - networkplot
 - phyloplot: [stream](https://github.com/pinellolab/STREAM)
+- add sns.FacetGrid: [see](https://seaborn.pydata.org/tutorial/axis_grids.html)
+- save directly in svg
+- shrink heatmap cbar width
