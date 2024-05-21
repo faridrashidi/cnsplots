@@ -18,6 +18,7 @@ import statsmodels.api as sm
 import upsetplot as usp
 from matplotlib.transforms import ScaledTranslation
 from natsort import natsort_keygen
+from PyComplexHeatmap import DotClustermapPlotter
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 import cnsplots as cns
@@ -164,6 +165,29 @@ def heatmapplot(
             #     ax.set_aspect(6)
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
+    )
+    cmp.ax_heatmap.set_axis_on()
+    sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
+    for s in ["top", "bottom", "left", "right"]:
+        cmp.ax_heatmap.spines[s].set_linewidth(1.2)
+    return cmp
+
+
+def dotplot(data, x, y, color, size, value):
+    cmp = DotClustermapPlotter(
+        data=data,
+        x=x,
+        y=y,
+        c=color,
+        s=size,
+        value=value,
+        row_cluster=False,
+        col_cluster=False,
+        show_rownames=True,
+        show_colnames=True,
+        verbose=0,
+        cmap="gnuplot",
+        rasterized=True,
     )
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
