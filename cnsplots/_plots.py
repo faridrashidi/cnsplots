@@ -173,7 +173,15 @@ def heatmapplot(
     return cmp
 
 
-def dotplot(data, x, y, color, size, value):
+def dotplot(
+    data,
+    x,
+    y,
+    color,
+    size,
+    value,
+    **kwargs,
+):
     cmp = DotClustermapPlotter(
         data=data,
         x=x,
@@ -188,6 +196,8 @@ def dotplot(data, x, y, color, size, value):
         verbose=0,
         cmap="gnuplot",
         rasterized=True,
+        row_names_side="left",
+        **kwargs,
     )
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
@@ -518,12 +528,12 @@ def donutplot(data, x, hue_order=None):
 
 def survivalplot(data, duration, event, hue, hue_order=None):
     ax = None
-    if hue_order is None:
+    if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
     kmf = ll.KaplanMeierFitter()
-    for i, group in enumerate(data[hue].unique()):
+    for i, group in enumerate(hue_order):
         df = data[data[hue] == group]
         label = f"{group} (n={df.shape[0]})"
         kmf.fit(df[duration], df[event], label=label)
@@ -544,21 +554,39 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     plt.ylabel("Overall survival probability")
     plt.xlabel("Time (Months)")
 
-    df = data.copy()
-    df[hue] = pd.Categorical(df[hue], categories=df[hue].unique()).codes + 1
-    p_value = ll.statistics.multivariate_logrank_test(
-        data[duration], data[hue], df[event]
-    )
     df = data[[duration, hue, event]].copy()
+    df[hue] = df[hue].cat.codes
+
+    if len(hue_order) == 2:
+        logrank_test = ll.statistics.multivariate_logrank_test(
+            df[duration], df[hue], df[event]
+        )
+        p = num2tex.num2tex(logrank_test.p_value, precision=2)
+        print("   ---> P-value was determined by two-sided multivariate log-rank test.")
+    else:
+        cph = ll.CoxPHFitter()
+        cph.fit(df, duration_col=duration, event_col=event)
+        trend_test = cph.log_likelihood_ratio_test()
+        p = num2tex.num2tex(trend_test.p_value, precision=2)
+        print(
+            "   ---> P-value was determined by two-sided multivariate log-rank test for"
+            " trend."
+        )
+
+    df = data[[duration, hue, event]].copy()
+    df = df[df[hue].isin([hue_order[0], hue_order[-1]])]
+    df[hue] = pd.Categorical(
+        df[hue], categories=[hue_order[0], hue_order[-1]], ordered=True
+    )
     df[hue] = df[hue].cat.codes
     cph = ll.CoxPHFitter()
     cph.fit(df, duration_col=duration, event_col=event)
-    hr = cph.hazard_ratios_.iloc[0]
-    hr1 = cph.summary["exp(coef) lower 95%"].iloc[0]
-    hr2 = cph.summary["exp(coef) upper 95%"].iloc[0]
-    p = num2tex.num2tex(p_value.p_value, precision=2)
-    ax.text(0, 0, f"HR = {hr:.2f} ({hr1:.2f}-{hr2:.2f})\nP = " + rf"${p:.2g}$")
-    print("   ---> P-value was determined by two-sided log-rank test.")
+    hazard_ratio = cph.hazard_ratios_.iloc[0]
+    ci1 = cph.summary["exp(coef) lower 95%"].iloc[0]
+    ci2 = cph.summary["exp(coef) upper 95%"].iloc[0]
+    ax.text(
+        0, 0, f"HR = {hazard_ratio:.2f} ({ci1:.2f}-{ci2:.2f})\nP = " + rf"${p:.2g}$"
+    )
 
 
 def volcanoplot(data, symbol="symbol", show_list=None):
