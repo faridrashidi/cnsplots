@@ -180,8 +180,23 @@ def dotplot(
     color,
     size,
     value,
+    legend_width=20,
+    legend_hpad=10,
+    legend_vpad=0,
+    xticklabels_rotation=45,
     **kwargs,
 ):
+    row_annotation = pch.HeatmapAnnotation(
+        axis=0,
+        verbose=0,
+        label=pch.anno_label(
+            data.pivot(index="day", columns="sex", values=y)[data[x].unique()[0]],
+            colors="black",
+            va="center",
+            ha="right",
+            relpos=(1, 0.5),
+        ),
+    )
     cmp = DotClustermapPlotter(
         data=data,
         x=x,
@@ -191,15 +206,39 @@ def dotplot(
         value=value,
         row_cluster=False,
         col_cluster=False,
-        show_rownames=True,
+        show_rownames=False,
         show_colnames=True,
+        left_annotation=row_annotation,
         verbose=0,
         cmap="gnuplot",
         rasterized=True,
         row_names_side="left",
+        xlabel=x,
+        ylabel=y,
+        ylabel_kws={"labelpad": 10},
+        xlabel_kws={"labelpad": 15},
+        legend_width=legend_width,
+        legend_hpad=legend_hpad,
+        legend_vpad=legend_vpad,
+        xticklabels_kws={"labelrotation": xticklabels_rotation},
+        dot_legend_kws={"frameon": False},
         **kwargs,
     )
+    for cbar in cmp.cbars:
+        if isinstance(cbar, mpl.colorbar.Colorbar):
+            cbar.outline.set_linewidth(0.3)
+            cbar.ax.tick_params(size=0)
+    for ax in cmp.legend_axes[0].figure.axes:
+        if ax.get_ylabel() in color:
+            ax.yaxis.set_label_position("left")
+            # if ax.get_ylabel() == label:
+            #     ax.set_aspect(0.3)
+            # else:
+            #     ax.set_aspect(6)
     cmp.ax_heatmap.set_axis_on()
+    plt.setp(
+        cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
+    )
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
         cmp.ax_heatmap.spines[s].set_linewidth(1.2)
