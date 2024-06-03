@@ -44,3 +44,5 @@ plt.savefig("figure.pdf")  # Save the figure
 - add sns.FacetGrid: [see](https://seaborn.pydata.org/tutorial/axis_grids.html)
 - save directly in svg
 - shrink heatmap cbar width
+- number of dots in the dot size legend of dotplot: [see](https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/dotHeatmap.py#L608)
+- add hue to regplot
