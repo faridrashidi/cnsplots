@@ -823,7 +823,6 @@ def hazardplot(data, duration, event, hue=None):
         df = cph.summary.copy()
         df["-log10(p)"] = -np.log10(df["p"])
         df["hazard_ratios"] = cph.hazard_ratios_
-        df[["hazard_ratios", "exp(coef) lower 95%", "exp(coef) upper 95%", "-log10(p)"]]
         df["exp(coef) lower 95%"] = df["hazard_ratios"] - df["exp(coef) lower 95%"]
         df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["hazard_ratios"]
         return df
@@ -876,7 +875,7 @@ def hazardplot(data, duration, event, hue=None):
     dfs2 = dfs.pivot(index="covariate", columns=hue, values="-log10(p)")
     dfs2 = dfs2[hue_order]
     dfs2 = dfs2.reindex(index=order)
-    dfs2.plot.barh(width=0.5, ax=ax2, rot=0, edgecolor="white", linewidth=1)
+    dfs2.plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
     ax2.set_ylabel("")
     ax2.set_xlabel("–log10(p-value)")
     ax2.plot(
@@ -900,6 +899,52 @@ def hazardplot(data, duration, event, hue=None):
     #         hue,
     #     ]
     # ]
+
+
+def forestplot(data):
+    df = data.iloc[::-1].copy()
+    df["exp(coef) lower 95%"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
+    df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
+    df["log10_pvalue"] = -np.log10(df["p"])
+
+    fig = plt.gcf()
+    gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
+
+    ax1 = fig.add_subplot(gs[0])
+    ax1.errorbar(
+        df["exp(coef)"],
+        df["covariate"],
+        xerr=df[["exp(coef) lower 95%", "exp(coef) upper 95%"]].T.values,
+        fmt="s",
+        markeredgewidth=0.8,
+        elinewidth=0.8,
+        capsize=1.5,
+        markersize=3,
+    )
+    ax1.locator_params(axis="y", tight=True, nbins=2)
+    ax1.plot(
+        [1, 1],
+        [0, len(df) - 1],
+        color="red",
+        linestyle="--",
+        linewidth=0.8,
+        dashes=(3, 2),
+    )
+    ax1.set_xlabel("Hazard ratio (95% CI)")
+
+    ax2 = fig.add_subplot(gs[1])
+    df["log10_pvalue"].plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
+    ax2.set_ylabel("")
+    ax2.set_xlabel("–log10(p-value)")
+    ax2.plot(
+        [-np.log10(0.05), -np.log10(0.05)],
+        [-1, len(df)],
+        color="red",
+        linestyle="--",
+        linewidth=0.8,
+        dashes=(3, 2),
+    )
+    ax2.yaxis.set_ticks([])
 
 
 def ridgeplot(data, x, y):
