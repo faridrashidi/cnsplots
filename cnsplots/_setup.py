@@ -7,7 +7,7 @@ def setup_matplotlib(
     color_cycle="Set1",
     color_map="parula",
     fontsize_title=8,
-    fontsize_legend=8,
+    fontsize_legend=7,
     linewidth_axes=0.5,
 ):
     def config():
@@ -35,7 +35,7 @@ def setup_matplotlib(
             "axes.ymargin": 0.05,
             "axes.prop_cycle": mpl.cycler(color=cns.palettes(color_cycle)),
             "image.cmap": color_map,
-            "legend.fontsize": fontsize_legend,
+            "legend.fontsize": fontsize_title,
             "legend.title_fontsize": fontsize_title,
             "legend.frameon": False,
             "legend.markerscale": 0.5,

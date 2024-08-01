@@ -425,6 +425,7 @@ def stackplot(
     normalize=True,
     pairs=None,
     addtip=False,
+    n_factor=1,
 ):
     """Plot the value of y categorized by x and grouped by hue."""
     data2 = data.value_counts([x, y]).reset_index().rename(columns={0: "value"})
@@ -445,6 +446,7 @@ def stackplot(
     else:
         value_label = "Count"
     df = df.reindex(index=bar_order)
+    df = df / n_factor
     ax = plt.gca()
     if horizontal:
         ax = df.plot.barh(stacked=True, width=width, ax=ax, rot=0)
