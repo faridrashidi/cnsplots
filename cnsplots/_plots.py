@@ -568,6 +568,38 @@ def donutplot(data, x, hue_order=None):
     cns.take_legend_out()
 
 
+def cumulativeincidenceplot(
+    data, duration, event, hue, hue_order=None, pvalue_position=(0, 0.5)
+):
+    ax = None
+    if hue_order is None or set(data[hue].unique()) != set(hue_order):
+        hue_order = list(data[hue].unique())
+    data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
+    data = data.sort_values(hue)
+    ajf = ll.AalenJohansenFitter()
+    for i, group in enumerate(hue_order):
+        df = data[data[hue] == group]
+        label = f"{group} (n={df.shape[0]})"
+        ajf.fit(df[duration], df[event], label=label, event_of_interest=1)
+        if i == 0:
+            ax = ajf.plot(linewidth=1.2, ci_show=False)
+        else:
+            ax = ajf.plot(ax=ax, linewidth=1.2, ci_show=False)
+    plt.ylim(-0.05, 1.01)
+    plt.ylabel("Cumulative incidence probability")
+    plt.xlabel("Time (Years)")
+
+    try:
+        from cmprsk import cmprsk
+
+        pvalue = cmprsk.cuminc(data[duration], data[event], group=data[hue].cat.codes)
+        p = num2tex.num2tex(pvalue.stats["pv"].values[0], precision=2)
+        print("   ---> P-value was determined by two-sided Gray's test.")
+        ax.text(pvalue_position[0], pvalue_position[1], f"P = " + rf"${p:.2g}$")
+    except ImportError:
+        print("pip install cmprsk")
+
+
 def survivalplot(data, duration, event, hue, hue_order=None):
     ax = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
