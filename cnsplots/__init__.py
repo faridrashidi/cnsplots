@@ -32,6 +32,15 @@ from cnsplots._plots import (
 )
 from cnsplots._setup import setup_matplotlib
 from cnsplots._utils import (
+    BLUE,
+    BROWN,
+    GRAY,
+    GREEN,
+    ORANGE,
+    PINK,
+    PURPLE,
+    RED,
+    YELLOW,
     figure,
     get_hexcolors_from_apalette,
     palettes,

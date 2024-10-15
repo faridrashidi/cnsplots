@@ -15,6 +15,16 @@ from statannotations.utils import DEFAULT
 
 import cnsplots as cns
 
+RED = "#E41A1C"
+BLUE = "#377EB8"
+GREEN = "#4DAF4A"
+PURPLE = "#984EA3"
+ORANGE = "#FF7F00"
+YELLOW = "#FFFF33"
+BROWN = "#A65628"
+PINK = "#F781BF"
+GRAY = "#999999"
+
 
 def figure(height=150, width=150, color_cycle="Set1", color_map="parula"):
     cns.setup_matplotlib(color_cycle, color_map)
