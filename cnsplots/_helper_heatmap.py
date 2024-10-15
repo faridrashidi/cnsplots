@@ -1,3 +1,4 @@
+import numpy as np
 from PyComplexHeatmap import *
 
 import cnsplots as cns
