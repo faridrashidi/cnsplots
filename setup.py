@@ -22,7 +22,7 @@ setup(
         "palettable",
         "numpy",
         "pandas<=1.5.3",
-        "scipy",
+        "scipy<=1.12.0",
         "natsort",
         "num2tex",
         "statannotations",
