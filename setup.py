@@ -21,7 +21,7 @@ setup(
         "pycomplexheatmap",
         "palettable",
         "numpy",
-        "pandas<=1.5.3",
+        "pandas",
         "scipy",
         "natsort",
         "num2tex",
