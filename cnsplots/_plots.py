@@ -624,7 +624,10 @@ def survivalplot(data, duration, event, hue, hue_order=None):
                 censor_styles={"ms": 3},
             )
     plt.ylim(-0.05, 1.01)
-    ax.xaxis.set_major_locator(plt.MultipleLocator(12))
+    if ax.get_xlim()[1] > 120:
+        ax.xaxis.set_major_locator(plt.MultipleLocator(24))
+    else:
+        ax.xaxis.set_major_locator(plt.MultipleLocator(12))
     plt.ylabel("Overall survival probability")
     plt.xlabel("Time (Months)")
 
@@ -935,8 +938,12 @@ def hazardplot(data, duration, event, hue=None):
     # ]
 
 
-def forestplot(data):
-    df = data.iloc[::-1].copy()
+def forestplot(data, duration, event, formula=None):
+    cph = ll.CoxPHFitter()
+    cph.fit(data, duration_col=duration, event_col=event, formula=formula)
+
+    df = cph.summary.reset_index()
+    df = df.sort_values("exp(coef)").copy()
     df["exp(coef) lower 95%"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
     df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
     df["log10_pvalue"] = -np.log10(df["p"])
