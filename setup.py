@@ -10,7 +10,7 @@ setup(
     name="cnsplots",
     version=__version__,
     install_requires=[
-        "matplotlib",
+        "matplotlib<=3.8.4",
         "seaborn<=0.12.2",
         "scanpy",
         "lifelines",
