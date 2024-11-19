@@ -11,7 +11,7 @@ setup(
     version=__version__,
     install_requires=[
         "matplotlib<=3.8.4",
-        "seaborn<=0.12.2",
+        "seaborn",
         "scanpy",
         "lifelines",
         "pydeseq2",
@@ -25,7 +25,7 @@ setup(
         "scipy<=1.12.0",
         "natsort",
         "num2tex",
-        "statannotations",
+        "statannotations @ git+https://github.com/trevismd/statannotations@master",
         "scikit_learn",
     ],
     extras_require={
