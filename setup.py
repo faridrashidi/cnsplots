@@ -10,7 +10,7 @@ setup(
     name="cnsplots",
     version=__version__,
     install_requires=[
-        "matplotlib",
+        "matplotlib<=3.8.4",
         "seaborn",
         "scanpy",
         "lifelines",
@@ -21,7 +21,7 @@ setup(
         "pycomplexheatmap",
         "palettable",
         "numpy",
-        "pandas<=1.5.3",
+        "pandas",
         "scipy",
         "natsort",
         "num2tex",
