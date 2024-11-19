@@ -22,7 +22,7 @@ setup(
         "palettable",
         "numpy",
         "pandas<=1.5.3",
-        "scipy<=1.12.0",
+        "scipy",
         "natsort",
         "num2tex",
         "statannotations @ git+https://github.com/trevismd/statannotations@master",
