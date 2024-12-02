@@ -626,10 +626,14 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     plt.ylim(-0.05, 1.01)
     if ax.get_xlim()[1] > 120:
         ax.xaxis.set_major_locator(plt.MultipleLocator(24))
-    else:
+        plt.xlabel("Time (Months)")
+    elif ax.get_xlim()[1] > 12:
         ax.xaxis.set_major_locator(plt.MultipleLocator(12))
+        plt.xlabel("Time (Months)")
+    else:
+        ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+        plt.xlabel("Time (Years)")
     plt.ylabel("Overall survival probability")
-    plt.xlabel("Time (Months)")
 
     df = data[[duration, hue, event]].copy()
     df[hue] = df[hue].cat.codes
