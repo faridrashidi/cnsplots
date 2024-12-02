@@ -771,7 +771,9 @@ def scatterplot(data, x, y, s=7, **kwargs):
 
 
 def upsetplot(data, **kwargs):
-    usp.plot(data, **kwargs)
+    upset = usp.UpSet(data, **kwargs)
+    upset.plot()
+    plt.grid(False)
 
 
 def vennplot(lists, labels):
