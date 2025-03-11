@@ -49,7 +49,7 @@ def heatmapplot(
     xticklabels_rotation=45,
     **kwargs,
 ):
-    cat_palettes = ["Ecotyper1", "Ecotyper2", "Set1", "Dark2", "Set3"]
+    cat_palettes = ["Set1", "Dark2", "Ecotyper1", "Ecotyper2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
     cbar_titles = [label]
     if cmap in cat_palettes:
