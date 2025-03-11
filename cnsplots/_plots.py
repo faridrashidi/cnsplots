@@ -801,21 +801,17 @@ def vennplot(lists, labels):
 
 def confusionplot(data, x, y, add_pvalue=False):
     labels = data[x].unique()
-    # labels = [*data[x].unique(), *data[y].unique()]
-    cm = confusion_matrix(data[x], data[y], labels=labels)
+    cm = confusion_matrix(data[y], data[x], labels=labels)
     cmd = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
 
     ax = plt.gca()
     cmd.plot(ax=ax, cmap=plt.cm.Blues)
     cmd.ax_.spines["right"].set_visible(True)
     cmd.ax_.spines["top"].set_visible(True)
-    cmd.ax_.set_xlabel(y)
-    cmd.ax_.set_ylabel(x)
+    cmd.ax_.set_xlabel(x)
+    cmd.ax_.set_ylabel(y)
     plt.yticks(rotation=90, va="center")
     colorbar = cmd.ax_.images[-1].colorbar
-    # colorbar.outline.set_linewidth(0.3)
-    # colorbar.ax.set_aspect(0.5)
-    # colorbar.ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True, nbins=5))
     colorbar.remove()
 
     if add_pvalue:
