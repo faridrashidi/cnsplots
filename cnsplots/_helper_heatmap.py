@@ -169,12 +169,12 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                     cmap = self.cmap
                     cmap = {v: k for v, k in zip(unique_values, cmap)}
                 elif isinstance(self.cmap, dict):
-                    cmap = self.cmap  # TODO: bug
+                    cmap = self.cmap  # FIXME: bug
                 else:
                     cmap = cns._utils._get_hex_colors_from_colorbar(
                         self.cmap, len(unique_values)
                     )
-                    cmap = {v: k for v, k in zip(unique_values, cmap)}  # TODO: bug
+                    cmap = {v: k for v, k in zip(unique_values, cmap)}  # FIXME: bug
                 self.legend_kws.setdefault("frameon", False)
                 self.legend_kws.setdefault("labelspacing", 0.2)
                 self.legend_kws.setdefault("handletextpad", 0.4)

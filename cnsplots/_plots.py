@@ -16,7 +16,6 @@ import scipy as sp
 import seaborn as sns
 import statsmodels.api as sm
 import upsetplot as usp
-from matplotlib.transforms import ScaledTranslation
 from natsort import natsort_keygen
 from PyComplexHeatmap import DotClustermapPlotter
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
@@ -49,7 +48,7 @@ def heatmapplot(
     xticklabels_rotation=45,
     **kwargs,
 ):
-    cat_palettes = ["Set1", "Dark2", "Ecotyper1", "Ecotyper2", "Set3"]
+    cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
     cbar_titles = [label]
     if cmap in cat_palettes:
@@ -399,7 +398,7 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
     if addtip:
-        groupedvalues = data.groupby(x).mean().reset_index()
+        groupedvalues = data.groupby(x)[[y]].mean().reset_index()
         for _, row in groupedvalues.iterrows():
             ax.text(
                 row.name,
@@ -428,12 +427,11 @@ def stackplot(
     n_factor=1,
 ):
     """Plot the value of y categorized by x and grouped by hue."""
-    data2 = data.value_counts([x, y]).reset_index().rename(columns={0: "value"})
-    # horizontal = pd.api.types.is_numeric_dtype(data[x])
+    data2 = data.value_counts([x, y]).reset_index()
     if horizontal:
-        df = data2.pivot(index=y, columns=x, values="value")
+        df = data2.pivot(index=y, columns=x, values="count")
     else:
-        df = data2.pivot(index=x, columns=y, values="value")
+        df = data2.pivot(index=x, columns=y, values="count")
     contingency = df.copy()
     if stack_order is not None:
         df.columns = pd.CategoricalIndex(
@@ -474,9 +472,9 @@ def stackplot(
             )
     if pairs is not None:
         if horizontal:
-            plotting = {"data": data2, "x": "value", "y": y, "order": bar_order}
+            plotting = {"data": data2, "x": "count", "y": y, "order": bar_order}
         else:
-            plotting = {"data": data2, "x": x, "y": "value", "order": bar_order}
+            plotting = {"data": data2, "x": x, "y": "count", "order": bar_order}
         if contingency.shape[1] == 2:
             cns._utils._p_value_helper(
                 "fisher-exact", data2, ax, plotting, pairs, contingency
