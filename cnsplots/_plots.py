@@ -779,14 +779,16 @@ def vennplot(lists, labels):
         areas = ["10", "01", "11"]
         func = venn.venn2
         names = ["A", "B"]
+        colors = cns.palettes("Set1")[:2]
     else:
         areas = ["100", "010", "001", "110", "101", "011", "111"]
         func = venn.venn3
         names = ["A", "B", "C"]
+        colors = cns.palettes("Set1")[:3]
     ax = func(
         lists,
         labels,
-        set_colors=cns.palettes("Set1"),
+        set_colors=colors,
         alpha=0.8,
     )
     for area in areas:

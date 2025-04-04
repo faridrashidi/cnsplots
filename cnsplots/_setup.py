@@ -13,8 +13,7 @@ def setup_matplotlib(
     def config():
         return {
             "mathtext.fontset": "custom",
-            "font.family": "sans-serif",
-            "font.sans-serif": "Helvetica",
+            "font.family": ["Helvetica", "DejaVu Sans", "sans-serif"],
             "font.size": fontsize_title,
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0.01,

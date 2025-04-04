@@ -64,7 +64,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         ylabel_bbox_kws=None,
         legend_delta_x=None,
         verbose=1,
-        **kwargs
+        **kwargs,
     ):
         self.data = data
         self.kwargs = kwargs if not kwargs is None else {}

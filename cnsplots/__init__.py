@@ -1,5 +1,7 @@
 """CNSPlots Module."""
 
+import warnings
+
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -81,3 +83,5 @@ __all__ = (
     violinplot,
     volcanoplot,
 )
+
+warnings.filterwarnings("ignore", message="findfont:", module="cnsplots.*")
