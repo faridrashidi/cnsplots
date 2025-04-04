@@ -1,17 +1,42 @@
-[project]
+[tool.poetry]
 name = "cnsplots"
-version = "0.1.0"
+version = "0.0.1"
 description = ""
-authors = [
-    {name = "Farid Rashidi",email = "farid.rsh@gmail.com"}
-]
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "numpy (>=2.2.4,<3.0.0)"
-]
+authors = ["Your Name <your.email@example.com>"]
 
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+matplotlib = "*"
+seaborn = "*"
+scanpy = "*"
+lifelines = "*"
+pydeseq2 = "*"
+upsetplot = "*"
+adjustText = "*"
+matplotlib-venn = "*"
+pycomplexheatmap = "*"
+palettable = "*"
+numpy = "*"
+pandas = "*"
+scipy = "*"
+natsort = "*"
+num2tex = "*"
+scikit-learn = "*"
+statannotations = { git = "https://github.com/trevismd/statannotations", branch = "master" }
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "*"
+
+[tool.poetry.group.doc.dependencies]
+sphinx = "*"
+furo = "*"
+sphinx-gallery = "*"
+sphinx_design = "*"
+sphinx-copybutton = "*"
+sphinx-hoverxref = "*"
+sphinx-autodoc-typehints = "*"
+myst-parser = "*"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
