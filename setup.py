@@ -20,7 +20,7 @@ setup(
         "matplotlib_venn",
         "pycomplexheatmap",
         "palettable",
-        "numpy",
+        "numpy>=1.26.0",
         "pandas",
         "scipy",
         "natsort",
