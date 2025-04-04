@@ -1,7 +1,5 @@
 """CNSPlots Module."""
 
-import warnings
-
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -84,4 +82,11 @@ __all__ = (
     volcanoplot,
 )
 
-warnings.filterwarnings("ignore", message="findfont:", module="cnsplots.*")
+import warnings
+
+warnings.filterwarnings("ignore", message="findfont: Font family 'Helvetica' not found")
+
+import logging
+
+mpl_logger = logging.getLogger("matplotlib")
+mpl_logger.setLevel(logging.ERROR)
