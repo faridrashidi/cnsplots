@@ -1,0 +1,17 @@
+[project]
+name = "cnsplots"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Farid Rashidi",email = "farid.rsh@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy (>=2.2.4,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
