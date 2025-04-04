@@ -24,18 +24,20 @@ num2tex = "*"
 scikit-learn = "*"
 statannotations = { git = "https://github.com/trevismd/statannotations", branch = "master" }
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "*"
-
-[tool.poetry.group.doc.dependencies]
-sphinx = "*"
-furo = "*"
-sphinx-gallery = "*"
-sphinx_design = "*"
-sphinx-copybutton = "*"
-sphinx-hoverxref = "*"
-sphinx-autodoc-typehints = "*"
-myst-parser = "*"
+[tool.poetry.extras]
+doc = [
+    "sphinx",
+    "furo",
+    "sphinx-gallery",
+    "sphinx_design",
+    "sphinx-copybutton",
+    "sphinx-hoverxref",
+    "sphinx-autodoc-typehints",
+    "myst-parser"
+]
+dev = [
+    "pre-commit"
+]
 
 [build-system]
 requires = ["poetry-core"]
