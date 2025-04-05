@@ -1,5 +1,6 @@
 import itertools
 import operator
+import os
 
 import matplotlib as mpl
 import matplotlib.colors as mcolors
@@ -14,6 +15,7 @@ from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
 
 import cnsplots as cns
+from cnsplots._svg import _save_svg
 
 RED = "#E41A1C"
 BLUE = "#377EB8"
@@ -29,6 +31,16 @@ GRAY = "#999999"
 def figure(height=150, width=150, color_cycle="Set1", color_map="parula"):
     cns.setup_matplotlib(color_cycle, color_map)
     plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
+
+
+def savefig(filepath):
+    filepath = os.path.expanduser(filepath)
+    root, ext = os.path.splitext(filepath)
+
+    if ext.lower() == ".svg":
+        _save_svg(filepath, root)
+    else:
+        plt.savefig(filepath)
 
 
 def take_legend_out(title=None):

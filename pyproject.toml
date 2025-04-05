@@ -19,6 +19,7 @@ dependencies = [
     "scipy",
     "natsort",
     "num2tex",
+    "lxml",
     "scikit-learn",
     "statannotations @ git+https://github.com/trevismd/statannotations@master",
 ]

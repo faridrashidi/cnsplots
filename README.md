@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 df = sns.load_dataset("tips")  # Generate the data
 cns.figure(150, 100)  # Create figure size (height x weight) in pixels
 cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
-plt.savefig("figure.pdf")  # Save the figure
+cns.savefig("figure.svg")  # Save the figure
 ```
 
 ## TODO:
@@ -42,7 +42,6 @@ plt.savefig("figure.pdf")  # Save the figure
 - networkplot
 - phyloplot: [stream](https://github.com/pinellolab/STREAM)
 - add sns.FacetGrid: [see](https://seaborn.pydata.org/tutorial/axis_grids.html)
-- save directly in svg
 - shrink heatmap cbar width
 - number of dots in the dot size legend of dotplot: [see](https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/dotHeatmap.py#L608)
 - add hue to regplot

@@ -43,6 +43,7 @@ from cnsplots._utils import (
     figure,
     get_hexcolors_from_apalette,
     palettes,
+    savefig,
     take_legend_out,
 )
 
@@ -50,6 +51,7 @@ __version__ = "0.0.1"
 __all__ = (
     setup_matplotlib,
     figure,
+    savefig,
     palettes,
     take_legend_out,
     get_hexcolors_from_apalette,
