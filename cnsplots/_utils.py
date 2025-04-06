@@ -86,10 +86,12 @@ def _remove_edge_from_legend_items(ax):
 
 def _addcount_helper(data, attr, ax):
     xtick_labels = ax.get_xticklabels()
+    tick_positions = ax.get_xticks()
     new_xtick_labels = []
     for label in xtick_labels:
         n = len(data[data[attr] == label.get_text()])
         new_xtick_labels.append(f"{label.get_text()}\n(n={n})")
+    ax.set_xticks(tick_positions)
     ax.set_xticklabels(new_xtick_labels)
 
 

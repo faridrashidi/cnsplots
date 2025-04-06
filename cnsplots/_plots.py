@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
+import matplotlib.category
 import matplotlib.gridspec as grid_spec
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
@@ -392,8 +393,11 @@ def violinplot(
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     """Plot the mean of y categorized by x."""
-    args = {"edgecolor": None, "linewidth": 1, "ci": None}
+    args = {"edgecolor": None, "linewidth": 1, "errorbar": None}
     plotting = {"data": data, "x": x, "y": y}
+    if "palette" in kwargs and "hue" not in kwargs:
+        plotting["hue"] = x
+        plotting["legend"] = False
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
@@ -495,7 +499,7 @@ def kdeplot(data, x, **kwargs):
     sns.kdeplot(data=data, x=x, **kwargs)
     if "hue" in kwargs:
         if data[kwargs["hue"]].nunique() == 2:
-            grouped = data.groupby(kwargs["hue"])
+            grouped = data.groupby(kwargs["hue"], observed=True)
             args = [group_df[x].values for _, group_df in grouped]
             p_value = sp.stats.ks_2samp(*args)
             ax = plt.gca()
@@ -757,7 +761,7 @@ def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, **kwargs):
 
 
 def histplot(**kwargs):
-    sns.histplot(**kwargs)
+    _ = sns.histplot(**kwargs)
 
 
 def lineplot(**kwargs):
@@ -884,7 +888,10 @@ def forestplot(data, duration, event, formula=None):
         capsize=1.5,
         markersize=3,
     )
-    ax1.locator_params(axis="y", tight=True, nbins=2)
+    if not isinstance(
+        ax1.get_yaxis().get_major_locator(), matplotlib.category.StrCategoryLocator
+    ):
+        ax1.locator_params(axis="y", tight=True, nbins=2)
     ax1.plot(
         [1, 1],
         [0, len(df) - 1],
@@ -927,7 +934,7 @@ def ridgeplot(data, x, y):
         ax_objs.append(fig.add_subplot(gs[i : i + 1, 0:]))
 
         # plotting the distribution
-        ax = sns.distplot(x_v, hist=False, ax=ax_objs[-1], color="#f0f0f0")
+        ax = sns.kdeplot(x=x_v, ax=ax_objs[-1], color="#f0f0f0", fill=False)
         l1 = ax.lines[0]
         x1 = l1.get_xydata()[:, 0]
         y1 = l1.get_xydata()[:, 1]
