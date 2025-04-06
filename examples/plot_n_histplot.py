@@ -17,7 +17,7 @@ tips = sns.load_dataset("tips")
 # %%
 # plot histplot using :func:`cnsplots.histplot`
 cns.figure(150, 150)
-sns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot")
+cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot")
 
 # %%
 # plot histplot using :func:`cnsplots.histplot`
