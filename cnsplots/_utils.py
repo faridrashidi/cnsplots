@@ -36,7 +36,6 @@ def figure(height=150, width=150, color_cycle="Set1", color_map="parula"):
 def savefig(filepath):
     filepath = os.path.expanduser(filepath)
     root, ext = os.path.splitext(filepath)
-
     if ext.lower() == ".svg":
         _save_svg(filepath, root)
     else:

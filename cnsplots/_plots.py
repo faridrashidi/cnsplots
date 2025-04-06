@@ -398,6 +398,13 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     if "palette" in kwargs and "hue" not in kwargs:
         plotting["hue"] = x
         plotting["legend"] = False
+        if isinstance(kwargs["palette"], str) and kwargs["palette"] in plt.colormaps():
+            n_categories = data[x].nunique()
+            cmap = plt.get_cmap(kwargs["palette"])
+            kwargs["palette"] = [
+                cmap(i / max(1, n_categories - 1)) for i in range(n_categories)
+            ]
+
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
@@ -499,7 +506,7 @@ def kdeplot(data, x, **kwargs):
     sns.kdeplot(data=data, x=x, **kwargs)
     if "hue" in kwargs:
         if data[kwargs["hue"]].nunique() == 2:
-            grouped = data.groupby(kwargs["hue"], observed=True)
+            grouped = data.groupby(kwargs["hue"])
             args = [group_df[x].values for _, group_df in grouped]
             p_value = sp.stats.ks_2samp(*args)
             ax = plt.gca()
@@ -761,7 +768,7 @@ def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, **kwargs):
 
 
 def histplot(**kwargs):
-    _ = sns.histplot(**kwargs)
+    sns.histplot(**kwargs)
 
 
 def lineplot(**kwargs):
