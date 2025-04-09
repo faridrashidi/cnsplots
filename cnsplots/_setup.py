@@ -86,3 +86,11 @@ def setup_matplotlib(
             mpl.colormaps.register(cns.palettes(continues), name=continues)
 
     mpl.rcParams.update(config())
+
+
+def setup_scanpy():
+    import scanpy
+
+    scanpy.set_figure_params(
+        scanpy=False, figsize=(2.5, 2.5), color_map="inferno", facecolor="white"
+    )

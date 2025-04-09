@@ -4,23 +4,21 @@ version = "0.0.1"
 description = ""
 requires-python = ">=3.8,<4.0"
 dependencies = [
-    "matplotlib",
-    "seaborn",
-    "scanpy",
-    "lifelines",
-    "pydeseq2",
-    "upsetplot",
     "adjustText",
+    "lifelines",
+    "lxml",
+    "matplotlib",
     "matplotlib-venn",
-    "pycomplexheatmap",
-    "palettable",
-    "numpy",
-    "pandas",
-    "scipy",
     "natsort",
     "num2tex",
-    "lxml",
+    "numpy",
+    "palettable",
+    "pandas",
+    "pycomplexheatmap",
     "scikit-learn",
+    "scipy",
+    "seaborn",
+    "upsetplot",
     "statannotations @ git+https://github.com/trevismd/statannotations@master",
 ]
 
@@ -28,14 +26,15 @@ dependencies = [
 doc = [
     "sphinx",
     "furo",
-    "sphinx-gallery",
-    "sphinx_design",
-    "sphinx-copybutton",
-    "sphinx-hoverxref",
-    "sphinx-autodoc-typehints",
     "myst-parser",
+    "sphinx-autodoc-typehints",
+    "sphinx-copybutton",
+    "sphinx-gallery",
+    "sphinx-hoverxref",
+    "sphinx_design",
 ]
 dev = [
+    "scanpy",
     "pre-commit",
 ]
 
