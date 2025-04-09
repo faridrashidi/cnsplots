@@ -47,7 +47,7 @@ def _correct_svg(input_file, output_file):
         output_file (str): Path to save the processed SVG file
     """
     # Read the SVG file
-    with open(input_file, "r") as f:
+    with open(input_file) as f:
         svg_content = f.read()
 
     # Step 1: First handle clip paths directly in the content
