@@ -32,6 +32,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         col_split=None,
         row_dendrogram_kws=None,
         col_dendrogram_kws=None,
+        bezier=False,
+        dotsize=1,
         tree_kws=None,
         row_split_order=None,
         col_split_order=None,
@@ -97,6 +99,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.col_dendrogram_kws = (
             {} if col_dendrogram_kws is None else col_dendrogram_kws
         )
+        self.bezier = bezier
+        self.dotsize = dotsize
         self.tree_kws = {} if tree_kws is None else tree_kws
         self.row_split = row_split
         self.col_split = col_split
