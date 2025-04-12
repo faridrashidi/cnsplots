@@ -36,6 +36,7 @@ doc = [
 dev = [
     "scanpy",
     "pre-commit",
+    "cmprsk",
 ]
 
 [build-system]

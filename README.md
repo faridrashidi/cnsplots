@@ -33,6 +33,13 @@ cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
 cns.savefig("figure.svg")  # Save the figure
 ```
 
+## Installation
+
+```
+poetry lock
+poetry install --extras "dev doc"
+```
+
 ## TODO:
 
 - add examples to the end of each function: [see](https://sphinx-gallery.github.io/stable/configuration.html?highlight=mini#references-to-examples)
