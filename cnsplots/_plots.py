@@ -395,9 +395,6 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     """Plot the mean of y categorized by x."""
     args = {"edgecolor": None, "linewidth": 1, "errorbar": None}
     plotting = {"data": data, "x": x, "y": y}
-    if "palette" in kwargs and "hue" not in kwargs:
-        plotting["hue"] = x
-        plotting["legend"] = False
 
     plotting.update(args)
     plotting.update(kwargs)
