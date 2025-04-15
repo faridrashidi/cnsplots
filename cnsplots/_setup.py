@@ -2,13 +2,17 @@ import matplotlib as mpl
 
 import cnsplots as cns
 
+FONTSIZE_TITLE = 8
+FONTSIZE_LEGEND = 7
+LINEWIDTH_AXES = 0.5
+
 
 def setup_matplotlib(
     color_cycle="Set1",
     color_map="parula",
-    fontsize_title=8,
-    fontsize_legend=7,
-    linewidth_axes=0.5,
+    fontsize_title=FONTSIZE_TITLE,
+    fontsize_legend=FONTSIZE_LEGEND,
+    linewidth_axes=LINEWIDTH_AXES,
 ):
     def config():
         return {
@@ -95,3 +99,43 @@ def setup_scanpy():
     scanpy.set_figure_params(
         scanpy=False, figsize=(2.5, 2.5), color_map="inferno", facecolor="white"
     )
+
+
+def setup_ax(
+    ax,
+    fontsize_title=FONTSIZE_TITLE,
+    fontsize_legend=FONTSIZE_LEGEND,
+    linewidth_axes=LINEWIDTH_AXES,
+):
+    ax.set_title(ax.get_title(), fontsize=fontsize_title, pad=4)
+    ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
+    ax.set_ylabel(ax.get_ylabel(), fontsize=fontsize_title, color="black")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["bottom"].set_linewidth(linewidth_axes)
+    ax.spines["left"].set_linewidth(linewidth_axes)
+    ax.spines["bottom"].set_color("black")
+    ax.spines["left"].set_color("black")
+    ax.tick_params(
+        axis="x",
+        labelsize=fontsize_legend,
+        colors="black",
+        length=2,
+        width=0.6,
+        pad=1,
+        labelrotation=0,
+    )
+    ax.tick_params(
+        axis="y",
+        labelsize=fontsize_legend,
+        colors="black",
+        length=2,
+        width=0.6,
+        pad=1,
+        labelrotation=0,
+    )
+    ax.grid(False)
+    ax.margins(x=0.05, y=0.05)
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=fontsize_legend)
+    cbar.set_label("FDR q-val", fontsize=fontsize_title, color="black")

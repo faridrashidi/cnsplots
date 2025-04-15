@@ -29,7 +29,7 @@ from cnsplots._plots import (
     violinplot,
     volcanoplot,
 )
-from cnsplots._setup import setup_matplotlib, setup_scanpy
+from cnsplots._setup import setup_ax, setup_matplotlib, setup_scanpy
 from cnsplots._utils import (
     BLUE,
     BROWN,

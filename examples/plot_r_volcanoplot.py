@@ -18,4 +18,4 @@ de = pd.read_csv(
 # %%
 # plot volcanoplot using :func:`cnsplots.volcanoplot`
 cns.figure(200, 200)
-cns.volcanoplot(de, symbol="symbol")
+cns.volcanoplot(de, lfc="log2FoldChange", padj="padj", symbol="symbol")

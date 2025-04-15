@@ -38,7 +38,7 @@ cns.savefig("figure.svg")  # Save the figure
 ```
 poetry lock
 poetry install --extras "dev doc"
-rm -rf .Rprofile && Rscript -e 'renv::init(project = ".renv"); renv::settings$use.cache(FALSE)'
+rm -rf .Rprofile && Rscript -e 'renv::init(); renv::settings$use.cache(FALSE)'
 poetry run python install_r_packages.py
 ```
 
