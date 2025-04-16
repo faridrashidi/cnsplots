@@ -772,7 +772,7 @@ def lineplot(**kwargs):
 
 
 def scatterplot(data, x, y, s=7, **kwargs):
-    sns.scatterplot(data=data, x=x, y=y, s=s, **kwargs)
+    sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
 
 
 def upsetplot(data, **kwargs):
