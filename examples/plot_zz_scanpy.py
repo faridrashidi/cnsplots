@@ -35,7 +35,10 @@ plt.title("")
 cns.figure(150, 150)
 cns.setup_scanpy()
 ax = plt.gca()
-sc.pl.dotplot(blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False)
+dp = sc.pl.dotplot(
+    blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False, return_fig=True
+)
+dp.style(dot_edge_color=None, largest_dot=90, cmap="gnuplot").show()
 
 # %%
 # plot scanpy matrixplot
