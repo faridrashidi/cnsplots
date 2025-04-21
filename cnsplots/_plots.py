@@ -672,22 +672,19 @@ def survivalplot(data, duration, event, hue, hue_order=None):
 
 def volcanoplot(
     data,
-    lfc="log2FoldChange",
-    padj="padj",
+    x="log2FoldChange",
+    y="-log10(adjp)",
     symbol="symbol",
     show_list=None,
 ):
-    x = lfc
-    y = "-log10(adjp)"
     hue = "DEG"
     n_show = 10
     de = data.copy()
 
-    de[y] = -np.log10(de[padj])
     de[hue] = "NS"
-    de.loc[de[padj] < 0.05, hue] = "p_adj < 0.05"
-    up = (de[padj] < 0.05) & (de[x] > 0.5)
-    down = (de[padj] < 0.05) & (de[x] < -0.5)
+    de.loc[de[y] > -np.log10(0.05), hue] = "p_adj < 0.05"
+    up = (de[y] > -np.log10(0.05)) & (de[x] > 0.5)
+    down = (de[y] > -np.log10(0.05)) & (de[x] < -0.5)
     if show_list is None:
         de.loc[de.loc[up].nlargest(n_show, y).index, hue] = "Up"
         de.loc[de.loc[down].nlargest(n_show, y).index, hue] = "Down"
