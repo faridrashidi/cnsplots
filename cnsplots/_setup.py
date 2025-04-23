@@ -139,3 +139,52 @@ def setup_ax(
     cbar = ax.collections[0].colorbar
     cbar.ax.tick_params(labelsize=fontsize_legend)
     cbar.set_label("FDR q-val", fontsize=fontsize_title, color="black")
+
+
+def setup_ggplot():
+    return """
+    fontsize <- 10
+    theme_custom <- theme(
+      text = element_text(
+        size = fontsize,
+        color = 'black',
+        family = "sans",
+        face = "plain"
+      ),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+
+      axis.text.x = element_text(
+        size = fontsize,
+        color = 'black'
+      ),
+      axis.text.y = element_text(
+        size = fontsize,
+        color = 'black'
+      ),
+
+      axis.title.x = element_text(
+        size = fontsize,
+        color = 'black'
+      ),
+      axis.title.y = element_text(
+        size = fontsize,
+        color = 'black'
+      ),
+
+      axis.title = element_text(
+        size = fontsize,
+        color = 'black',
+        face = "plain"
+      ),
+
+      plot.title = element_text(
+        size = fontsize,
+        color = 'black',
+        face = "plain"
+      ),
+
+      legend.text = element_text(size = fontsize),
+      legend.title = element_text(size = fontsize)
+    )
+    """
