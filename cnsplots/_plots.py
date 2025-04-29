@@ -493,8 +493,10 @@ def distplot(data, x, **kwargs):
     sns.histplot(data=data, x=x, **args)
 
 
-def kdeplot(data, x, **kwargs):
-    sns.kdeplot(data=data, x=x, **kwargs)
+def kdeplot(data, x, add_mode=True, **kwargs):
+    ax = sns.kdeplot(data=data, x=x, linewidth=1, **kwargs)
+    ax = plt.gca()
+    modes = []
     if "hue" in kwargs:
         if data[kwargs["hue"]].nunique() == 2:
             grouped = data.groupby(kwargs["hue"])
@@ -511,6 +513,30 @@ def kdeplot(data, x, **kwargs):
                 va="top",
             )
             print("   ---> P-value was determined by Anderson-Darling test.")
+    else:
+        if add_mode:
+            kde_data = ax.get_lines()[-1].get_data()
+            x_vals, y_vals = kde_data[0], kde_data[1]
+            mode_idx = np.argmax(y_vals)
+            mode = x_vals[mode_idx]
+            modes.append(mode)
+            kde_color = ax.get_lines()[-1].get_color()
+            y_mode = y_vals[mode_idx]
+            y_lim = ax.get_ylim()
+            ymax = (y_mode - y_lim[0]) / (y_lim[1] - y_lim[0])
+            ax.axvline(
+                mode, ymin=0, ymax=ymax, color=kde_color, linewidth=0.8, linestyle="--"
+            )
+            ax.text(
+                mode,
+                y_lim[0] + (y_lim[1] - y_lim[0]) * 0.05,
+                f"{mode:.2f}",
+                ha="center",
+                va="bottom",
+                fontsize=7,
+                color=kde_color,
+                bbox=dict(facecolor="white", edgecolor="none", pad=2),
+            )
 
 
 def regplot(data, x, y):
