@@ -7,11 +7,11 @@ create forestplot
 
 # %%
 # load data
-from lifelines.datasets import load_rossi
+import lifelines as ll
 
 import cnsplots as cns
 
-rossi = load_rossi()
+rossi = ll.datasets.load_rossi()
 
 # %%
 # plot forestplot using :func:`cnsplots.forestplot`

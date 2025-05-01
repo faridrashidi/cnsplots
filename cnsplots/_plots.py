@@ -888,6 +888,7 @@ def sankeyplot(data, x, y):
 
 
 def phyloplot(adata):
+    # TODO: write examples
     helper_phylo.phyloplot(adata)
 
 

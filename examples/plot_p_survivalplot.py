@@ -7,12 +7,12 @@ create survivalplot
 
 # %%
 # load data
+import lifelines as ll
 import matplotlib.pyplot as plt
-from lifelines.datasets import load_waltons
 
 import cnsplots as cns
 
-waltons = load_waltons()
+waltons = ll.datasets.load_waltons()
 
 # %%
 # plot survivalplot using :func:`cnsplots.survivalplot`
