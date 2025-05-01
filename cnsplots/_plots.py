@@ -910,7 +910,13 @@ def forestplot(data, duration, event, variates):
     df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
     df["log10_pvalue"] = -np.log10(df["p"])
 
-    df["display_label"] = df["analysis"] + " (" + df["covariate"] + ")"
+    def display_label_helper(x):
+        if "+" in x["analysis"]:
+            return x["analysis"] + " (" + x["covariate"] + ")"
+        else:
+            return x["analysis"]
+
+    df["display_label"] = df.apply(display_label_helper, axis=1)
 
     fig = plt.gcf()
     gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])

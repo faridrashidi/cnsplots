@@ -1,5 +1,6 @@
 .sphx-glr-single-img {
   margin: auto;
   display: block;
-  max-width: 30%;
+  width: auto;
+  max-height: 80% !important;
 }

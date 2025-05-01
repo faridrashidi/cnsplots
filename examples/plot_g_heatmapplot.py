@@ -17,12 +17,7 @@ blobs = sc.datasets.blobs()
 blobs.obs["mitf"] = np.random.random(blobs.shape[0])
 blobs.var["ensemble"] = [f"ens{x}" for x in np.random.randint(0, 3, blobs.shape[1])]
 blobs.obs["selected"] = np.where(blobs.obs["mitf"] > 0.95, "o", None)
-
-discrete = sc.AnnData(pd.DataFrame(np.random.randint(0, 3, size=(20, 8))))
-discrete.var["ensemble"] = [
-    f"ens{x}" for x in np.random.randint(0, 3, discrete.shape[1])
-]
-discrete.obs["mitf"] = [f"gene{x}" for x in np.random.randint(0, 3, discrete.shape[0])]
+blobs.obs.head()
 
 # %%
 # plot heatmapplot using :func:`cnsplots.heatmapplot`
@@ -58,6 +53,14 @@ cmp = cns.heatmapplot(
 )
 print(len(cmp.row_order), cmp.row_order[0][:5])
 print(len(cmp.col_order), cmp.col_order[0][:5])
+
+# %%
+# load another data
+discrete = sc.AnnData(pd.DataFrame(np.random.randint(0, 3, size=(20, 8))))
+discrete.var["ensemble"] = [
+    f"ens{x}" for x in np.random.randint(0, 3, discrete.shape[1])
+]
+discrete.obs["mitf"] = [f"gene{x}" for x in np.random.randint(0, 3, discrete.shape[0])]
 
 # %%
 # plot heatmapplot using :func:`cnsplots.heatmapplot`
