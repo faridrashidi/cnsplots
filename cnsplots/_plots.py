@@ -892,20 +892,25 @@ def phyloplot(adata):
     helper_phylo.phyloplot(adata)
 
 
-def forestplot(data, duration, event, formula=None):
-    if formula is not None:
-        features = formula.split(" + ")
-        df = data.dropna(subset=features).copy()
-    else:
-        df = data.copy()
-    cph = ll.CoxPHFitter()
-    cph.fit(df, duration_col=duration, event_col=event, formula=formula)
+def forestplot(data, duration, event, variates):
+    df = data.copy()
+    all_results = []
+    for var in variates:
+        cph = ll.CoxPHFitter()
+        cph.fit(df, duration_col=duration, event_col=event, formula=var)
 
-    df = cph.summary.reset_index()
+        summary = cph.summary.reset_index()
+        summary["analysis"] = var
+        all_results.append(summary)
+
+    df = pd.concat(all_results, ignore_index=True)
     df = df.sort_values("exp(coef)").copy()
+
     df["exp(coef) lower 95%"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
     df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
     df["log10_pvalue"] = -np.log10(df["p"])
+
+    df["display_label"] = df["analysis"] + " (" + df["covariate"] + ")"
 
     fig = plt.gcf()
     gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
@@ -913,7 +918,7 @@ def forestplot(data, duration, event, formula=None):
     ax1 = fig.add_subplot(gs[0])
     ax1.errorbar(
         df["exp(coef)"],
-        df["covariate"],
+        df["display_label"],
         xerr=df[["exp(coef) lower 95%", "exp(coef) upper 95%"]].T.values,
         fmt="s",
         markeredgewidth=0.8,
