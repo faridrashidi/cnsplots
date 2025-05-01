@@ -19,7 +19,7 @@ import statsmodels.api as sm
 import upsetplot as usp
 from natsort import natsort_keygen
 from PyComplexHeatmap import DotClustermapPlotter
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay, auc, confusion_matrix, roc_curve
 
 import cnsplots as cns
 import cnsplots._helper_heatmap as helper_heatmap
@@ -525,7 +525,13 @@ def kdeplot(data, x, add_mode=True, **kwargs):
             y_lim = ax.get_ylim()
             ymax = (y_mode - y_lim[0]) / (y_lim[1] - y_lim[0])
             ax.axvline(
-                mode, ymin=0, ymax=ymax, color=kde_color, linewidth=0.8, linestyle="--"
+                mode,
+                ymin=0,
+                ymax=ymax,
+                color=kde_color,
+                linestyle="--",
+                linewidth=0.8,
+                dashes=(8, 5),
             )
             ax.text(
                 mode,
@@ -1044,3 +1050,24 @@ def qqplot(data, x, **kwargs):
         markersize=3,
         **kwargs,
     )
+
+
+def rocplot(data, true_label_col, pred_prob_cols):
+    if isinstance(pred_prob_cols, str):
+        pred_prob_cols = [pred_prob_cols]
+
+    for col in pred_prob_cols:
+        fpr, tpr, _ = roc_curve(data[true_label_col], data[col])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label=f"{col} (AUC={roc_auc:.2f})", linewidth=1)
+
+    plt.plot(
+        [0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5)
+    )
+    plt.xlim([-0.02, 1.02])
+    plt.ylim([-0.02, 1.02])
+    plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+    plt.yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend(loc="lower right")
