@@ -902,14 +902,18 @@ def forestplot(model):
         x1label = "Hazard ratio (95% CI)"
         x2label = "–log10(p-value)"
     else:
-        y = "display_label"
-        x1 = "exp(coef)"
-        x2 = "log10_pvalue"
-        x1err = ["exp(coef) lower 95%", "exp(coef) upper 95%"]
-        x1label = "Hazard ratio (95% CI)"
-        x2label = "–log10(p-value)"
+        y = "predictor"
+        x1 = "auc"
+        x2 = ""
+        x1err = ["lower_ci", "upper_ci"]
+        x1label = "AUC (95% CI)"
+        x2label = ""
     fig = plt.gcf()
-    gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
+
+    if model.name == "cox":
+        gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
+    else:
+        gs = grid_spec.GridSpec(1, 1)
 
     ax1 = fig.add_subplot(gs[0])
     ax1.errorbar(
@@ -926,31 +930,44 @@ def forestplot(model):
         ax1.get_yaxis().get_major_locator(), matplotlib.category.StrCategoryLocator
     ):
         ax1.locator_params(axis="y", tight=True, nbins=2)
-    ax1.plot(
-        [1, 1],
-        [0, len(data) - 1],
-        color="red",
-        linestyle="--",
-        linewidth=0.8,
-        dashes=(3, 2),
-    )
     ax1.set_xlabel(x1label)
-    ax1.xaxis.set_major_locator(plt.MultipleLocator(1))
 
-    ax2 = fig.add_subplot(gs[1])
-    data[x2].plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
-    ax2.set_ylabel("")
-    ax2.set_xlabel(x2label)
-    ax2.plot(
-        [-np.log10(0.05), -np.log10(0.05)],
-        [-1, len(data)],
-        color="red",
-        linestyle="--",
-        linewidth=0.8,
-        dashes=(3, 2),
-    )
-    ax2.yaxis.set_ticks([])
-    ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
+    if model.name == "cox":
+        ax1.plot(
+            [1, 1],
+            [0, len(data) - 1],
+            color="red",
+            linestyle="--",
+            linewidth=0.8,
+            dashes=(3, 2),
+        )
+        ax1.xaxis.set_major_locator(plt.MultipleLocator(1))
+    else:
+        ax1.plot(
+            [0.5, 0.5],
+            [0, len(data) - 1],
+            color="red",
+            linestyle="--",
+            linewidth=0.8,
+            dashes=(3, 2),
+        )
+        # ax1.set_xlim(0.47, 1.03)
+
+    if model.name == "cox":
+        ax2 = fig.add_subplot(gs[1])
+        data[x2].plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
+        ax2.set_ylabel("")
+        ax2.set_xlabel(x2label)
+        ax2.plot(
+            [-np.log10(0.05), -np.log10(0.05)],
+            [-1, len(data)],
+            color="red",
+            linestyle="--",
+            linewidth=0.8,
+            dashes=(3, 2),
+        )
+        ax2.yaxis.set_ticks([])
+        ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
 
 
 def ridgeplot(data, x, y):

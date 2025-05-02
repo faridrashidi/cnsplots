@@ -20,6 +20,7 @@ blobs.obs["axl"] = np.random.random(blobs.shape[0])
 sc.pp.neighbors(blobs)
 sc.tl.umap(blobs)
 
+
 # %%
 # plot scanpy umap
 cns.figure(150, 150)
@@ -30,6 +31,7 @@ plt.xlabel("UMAP-1")
 plt.ylabel("UMAP-2")
 plt.title("")
 
+
 # %%
 # plot scanpy dotplot
 cns.figure(150, 150)
@@ -39,12 +41,14 @@ sc.pl.dotplot(
     blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False, return_fig=True
 ).style(dot_edge_color=None, largest_dot=90, cmap="gnuplot").show()
 
+
 # %%
 # plot scanpy matrixplot
 cns.figure(100, 100)
 cns.setup_scanpy()
 ax = plt.gca()
 sc.pl.matrixplot(blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False)
+
 
 # %%
 # plot scanpy matrixplot
@@ -53,6 +57,7 @@ cns.setup_scanpy()
 ax = plt.gca()
 sc.pl.stacked_violin(blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False)
 
+
 # %%
 # plot scanpy violin
 cns.figure(150, 150)
@@ -60,12 +65,14 @@ cns.setup_scanpy()
 ax = plt.gca()
 sc.pl.violin(blobs, keys="mitf", groupby="blobs", ax=ax, show=False)
 
+
 # %%
 # plot scanpy violin
 cns.figure(150, 150)
 cns.setup_scanpy()
 ax = plt.gca()
 sc.pl.scatter(blobs, x="mitf", y="axl", color="blobs", size=10, ax=ax, show=False)
+
 
 # %%
 # plot scanpy heatmap, tracksplot and clustermap

@@ -14,6 +14,7 @@ import cnsplots as cns
 
 iris = sns.load_dataset("iris")
 
+
 # %%
 # plot scatterplot using :func:`cnsplots.scatterplot`
 cns.figure(120, 120)

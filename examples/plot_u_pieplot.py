@@ -13,6 +13,7 @@ import cnsplots as cns
 
 iris = sns.load_dataset("iris")
 
+
 # %%
 # plot pieplot using :func:`cnsplots.pieplot`
 cns.figure(100, 100)

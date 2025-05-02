@@ -13,6 +13,7 @@ import cnsplots as cns
 
 tips = sns.load_dataset("tips")
 
+
 # %%
 # plot distplot using :func:`cnsplots.distplot`
 cns.figure(150, 150)

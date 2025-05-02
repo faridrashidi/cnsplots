@@ -10,6 +10,8 @@ create forestplot
 import lifelines as ll
 import numpy as np
 import pandas as pd
+import patsy
+import sklearn as skl
 
 import cnsplots as cns
 
@@ -58,10 +60,71 @@ class CoxModel:
         ]
 
 
+class LogisticModel:
+    def __init__(self, data, event, variates):
+        self.data = data
+        self.event = event
+        self.variates = variates
+        self.results = None
+        self.name = "logistic"
+
+    def _compute_auc_ci(self, y_true, y_pred_proba, n_bootstrap=1000, alpha=0.05):
+        aucs = []
+        np.random.seed(42)
+        n = len(y_true)
+        for _ in range(n_bootstrap):
+            indices = np.random.choice(n, n, replace=True)
+            if len(np.unique(y_true[indices])) < 2:
+                continue
+            auc = skl.metrics.roc_auc_score(y_true[indices], y_pred_proba[indices])
+            aucs.append(auc)
+        aucs = np.array(aucs)
+        auc_mean = skl.metrics.roc_auc_score(y_true, y_pred_proba)
+        lower = np.percentile(aucs, 100 * alpha / 2)
+        upper = np.percentile(aucs, 100 * (1 - alpha / 2))
+        return auc_mean, lower, upper
+
+    def fit(self):
+        df = self.data.copy()
+        all_results = []
+        for var in self.variates:
+            X = patsy.dmatrix(var, df, return_type="dataframe").drop(
+                "Intercept", axis=1
+            )
+            y = df[self.event].values
+
+            model = skl.linear_model.LogisticRegressionCV(
+                cv=5,
+                penalty="l1",
+                solver="liblinear",
+                random_state=42,
+                scoring="roc_auc",
+            )
+            model.fit(X, y)
+
+            y_pred_proba = model.predict_proba(X)[:, 1]
+            auc, auc_lower, auc_upper = self._compute_auc_ci(y, y_pred_proba)
+
+            model_result = {
+                "predictor": var,
+                "auc": auc,
+                "auc_lower": auc_lower,
+                "auc_upper": auc_upper,
+            }
+            all_results.append(model_result)
+
+        results_df = pd.DataFrame(all_results)
+        results_df = results_df.sort_values("auc")
+        results_df["lower_ci"] = results_df["auc"] - results_df["auc_lower"]
+        results_df["upper_ci"] = results_df["auc_upper"] - results_df["auc"]
+        self.results = results_df
+
+
 # %%
 # load data
 rossi = ll.datasets.load_rossi()
 rossi.head()
+
 
 # %%
 # plot forestplot using :func:`cnsplots.forestplot`
@@ -81,6 +144,7 @@ model.fit()
 cns.figure(150, 210, ["black"])
 cns.forestplot(model)
 model.results.head()
+
 
 # %%
 # load another data
@@ -102,6 +166,7 @@ gbsg2["progrec_cat"] = pd.Categorical(
 
 gbsg2.head()
 
+
 # %%
 # plot forestplot using :func:`cnsplots.forestplot`
 model = CoxModel(
@@ -120,5 +185,30 @@ model = CoxModel(
 )
 model.fit()
 cns.figure(200, 210, ["black"])
+cns.forestplot(model)
+model.results.head()
+
+
+# %%
+# plot forestplot using :func:`cnsplots.forestplot`
+model = LogisticModel(
+    data=gbsg2,
+    event="cens",
+    variates=[
+        "horTh",
+        "age",
+        "menostat",
+        "tsize",
+        "tgrade",
+        "pnodes",
+        "progrec",
+        "estrec",
+        "estrec_cat",
+        "progrec_cat",
+        "pnodes + progrec",
+    ],
+)
+model.fit()
+cns.figure(150, 150, ["black"])
 cns.forestplot(model)
 model.results.head()

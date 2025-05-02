@@ -20,6 +20,7 @@ tips = sns.load_dataset("tips")
 cns.figure(150, 100)
 cns.barplot(data=tips, x="day", y="total_bill")
 
+
 # %%
 # plot barplot using :func:`cnsplots.barplot`
 mean_bills = tips.groupby("day")["total_bill"].mean()
@@ -27,15 +28,18 @@ cols = ["grey" if x < 21.0 else "orange" for x in mean_bills]
 cns.figure(150, 100)
 cns.barplot(data=tips, x="day", y="total_bill", palette=cols)
 
+
 # %%
 # plot barplot using :func:`cnsplots.barplot`
 cns.figure(150, 100, "Tableau")
 cns.barplot(data=tips, x="day", y="total_bill", pairs="all", addtip=True)
 
+
 # %%
 # plot barplot using :func:`cnsplots.barplot`
 cns.figure(150, 100, "Bold")
 cns.barplot(data=iris, x="species", y="sepal_width", pairs="all", addtip=True)
+
 
 # %%
 # plot barplot using :func:`cnsplots.barplot`
@@ -49,6 +53,7 @@ cns.barplot(
 )
 cns.take_legend_out()
 
+
 # %%
 # plot barplot using :func:`cnsplots.barplot`
 cns.figure(100, 180, "Set1")
@@ -60,6 +65,7 @@ cns.barplot(
     pairs=[("Sun", "Fri")],
 )
 
+
 # %%
 # plot barplot using :func:`cnsplots.barplot`
 tips["total_bill"] = tips["total_bill"] - tips["total_bill"].mean()
@@ -68,6 +74,7 @@ cns.barplot(data=tips, x="day", y="total_bill")
 ax = plt.gca()
 ax.axhline(0, color="k", clip_on=False, lw=0.8)
 ax.spines["bottom"].set_visible(False)
+
 
 # %%
 # plot barplot using :func:`cnsplots.barplot`

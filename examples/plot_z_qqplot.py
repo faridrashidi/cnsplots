@@ -14,6 +14,7 @@ import cnsplots as cns
 
 tips = sns.load_dataset("tips")
 
+
 # %%
 # plot qqplot using :func:`cnsplots.qqplot`
 cns.figure(150, 150)

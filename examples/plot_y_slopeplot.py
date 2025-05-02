@@ -12,8 +12,6 @@ import pandas as pd
 
 import cnsplots as cns
 
-# %%
-# generate data
 np.random.seed(2023)
 data = np.concatenate(
     [
@@ -28,6 +26,7 @@ data = np.concatenate(
 )
 data = pd.DataFrame(columns=["value", "site", "label"], data=data.T)
 data["value"] = data["value"].astype(float)
+
 
 # %%
 # plot slopeplot using :func:`cnsplots.slopeplot`

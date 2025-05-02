@@ -16,6 +16,7 @@ tips = tips.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips.columns = ["min", "size"]
 tips = tips.reset_index()
 
+
 # %%
 # plot dotplot using :func:`cnsplots.dotplot`
 cns.figure(150, 50)

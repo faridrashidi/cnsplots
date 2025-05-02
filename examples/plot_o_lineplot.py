@@ -13,6 +13,7 @@ import cnsplots as cns
 
 fmri = sns.load_dataset("fmri")
 
+
 # %%
 # plot lineplot using :func:`cnsplots.lineplot`
 cns.figure(150, 150)

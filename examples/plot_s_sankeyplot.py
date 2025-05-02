@@ -18,6 +18,7 @@ data = pd.DataFrame(
     }
 )
 
+
 # %%
 # plot sankeyplot using :func:`cnsplots.sankeyplot`
 cns.figure(100, 80)

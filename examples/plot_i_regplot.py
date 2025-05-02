@@ -13,6 +13,7 @@ import cnsplots as cns
 
 tips = sns.load_dataset("tips")
 
+
 # %%
 # plot regplot using :func:`cnsplots.regplot`
 cns.figure(150, 150)

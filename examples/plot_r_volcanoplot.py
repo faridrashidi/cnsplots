@@ -18,6 +18,7 @@ de = pd.read_csv(
 de["-log10(adjp)"] = -np.log10(de["padj"])
 de.head()
 
+
 # %%
 # plot volcanoplot using :func:`cnsplots.volcanoplot`
 cns.figure(200, 200)

@@ -24,6 +24,7 @@ iris["model2_prob"] = np.clip(
 )
 iris["model3_prob"] = np.random.uniform(0, 1, n_samples)
 
+
 # %%
 # plot rocplot using :func:`cnsplots.rocplot`
 cns.figure(150, 150)
