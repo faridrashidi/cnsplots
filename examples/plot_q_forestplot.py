@@ -117,27 +117,43 @@ class LogisticModel:
         results_df = results_df.sort_values("auc")
         results_df["lower_ci"] = results_df["auc"] - results_df["auc_lower"]
         results_df["upper_ci"] = results_df["auc_upper"] - results_df["auc"]
-        self.results = results_df
+        self.results = results_df[["predictor", "auc", "lower_ci", "upper_ci"]]
 
 
 # %%
 # load data
-rossi = ll.datasets.load_rossi()
-rossi.head()
+np.random.seed(42)
+n_patients = 242
+liver = {
+    "Survival": np.random.exponential(scale=50, size=n_patients),
+    "Event": np.random.binomial(1, 0.5, n_patients),
+    "Predictor": np.random.choice(
+        ["low risk", "high risk"], size=n_patients, p=[0.6, 0.4]
+    ),
+    "AFP": np.random.lognormal(mean=5, sigma=1, size=n_patients),
+    "Cirrhosis": np.random.choice(["no", "yes"], size=n_patients, p=[0.55, 0.45]),
+    "TNM_staging": np.random.choice(["I", "I-II"], size=n_patients, p=[0.5, 0.5]),
+    "BCLC_staging": np.random.choice(["A-0", "B-C"], size=n_patients, p=[0.6, 0.4]),
+}
+liver = pd.DataFrame(liver)
+liver["AFP_cat"] = liver["AFP"].apply(
+    lambda x: ">300 ng/mL" if x > 300 else "<=300 ng/mL"
+)
+liver.head()
 
 
 # %%
 # plot forestplot using :func:`cnsplots.forestplot`
 model = CoxModel(
-    data=rossi,
-    duration="week",
-    event="arrest",
+    data=liver,
+    duration="Event",
+    event="Survival",
     variates=[
-        "age",
-        "race",
-        "fin + age",
-        "mar + paro + prio",
-        "fin + age + race + wexp",
+        "C(Predictor, levels=['low risk', 'high risk'])",
+        "C(AFP_cat, levels=['<=300 ng/mL', '>300 ng/mL'])",
+        "C(Cirrhosis, levels=['no', 'yes'])",
+        "C(TNM_staging, levels=['I', 'I-II'])",
+        "Predictor + AFP_cat + Cirrhosis + C(TNM_staging, levels=['I', 'I-II'])",
     ],
 )
 model.fit()
