@@ -892,40 +892,30 @@ def phyloplot(adata):
     helper_phylo.phyloplot(adata)
 
 
-def forestplot(data, duration, event, variates):
-    df = data.copy()
-    all_results = []
-    for var in variates:
-        cph = ll.CoxPHFitter()
-        cph.fit(df, duration_col=duration, event_col=event, formula=var)
-
-        summary = cph.summary.reset_index()
-        summary["analysis"] = var
-        all_results.append(summary)
-
-    df = pd.concat(all_results, ignore_index=True)
-    df = df.sort_values("exp(coef)").copy()
-
-    df["exp(coef) lower 95%"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
-    df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
-    df["log10_pvalue"] = -np.log10(df["p"])
-
-    def display_label_helper(x):
-        if "+" in x["analysis"]:
-            return x["analysis"] + " (" + x["covariate"] + ")"
-        else:
-            return x["analysis"]
-
-    df["display_label"] = df.apply(display_label_helper, axis=1)
-
+def forestplot(model):
+    data = model.results
+    if model.name == "cox":
+        y = "display_label"
+        x1 = "exp(coef)"
+        x2 = "log10_pvalue"
+        x1err = ["exp(coef) lower 95%", "exp(coef) upper 95%"]
+        x1label = "Hazard ratio (95% CI)"
+        x2label = "–log10(p-value)"
+    else:
+        y = "display_label"
+        x1 = "exp(coef)"
+        x2 = "log10_pvalue"
+        x1err = ["exp(coef) lower 95%", "exp(coef) upper 95%"]
+        x1label = "Hazard ratio (95% CI)"
+        x2label = "–log10(p-value)"
     fig = plt.gcf()
     gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
 
     ax1 = fig.add_subplot(gs[0])
     ax1.errorbar(
-        df["exp(coef)"],
-        df["display_label"],
-        xerr=df[["exp(coef) lower 95%", "exp(coef) upper 95%"]].T.values,
+        data[x1],
+        data[y],
+        xerr=data[x1err].T.values,
         fmt="s",
         markeredgewidth=0.8,
         elinewidth=0.8,
@@ -938,22 +928,22 @@ def forestplot(data, duration, event, variates):
         ax1.locator_params(axis="y", tight=True, nbins=2)
     ax1.plot(
         [1, 1],
-        [0, len(df) - 1],
+        [0, len(data) - 1],
         color="red",
         linestyle="--",
         linewidth=0.8,
         dashes=(3, 2),
     )
-    ax1.set_xlabel("Hazard ratio (95% CI)")
+    ax1.set_xlabel(x1label)
     ax1.xaxis.set_major_locator(plt.MultipleLocator(1))
 
     ax2 = fig.add_subplot(gs[1])
-    df["log10_pvalue"].plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
+    data[x2].plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
     ax2.set_ylabel("")
-    ax2.set_xlabel("–log10(p-value)")
+    ax2.set_xlabel(x2label)
     ax2.plot(
         [-np.log10(0.05), -np.log10(0.05)],
-        [-1, len(df)],
+        [-1, len(data)],
         color="red",
         linestyle="--",
         linewidth=0.8,

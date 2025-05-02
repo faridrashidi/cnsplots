@@ -6,21 +6,67 @@ create forestplot
 """
 
 # %%
-# load data
+# load packages
 import lifelines as ll
 import numpy as np
 import pandas as pd
 
 import cnsplots as cns
 
+
+# %%
+# create models
+class CoxModel:
+    def __init__(self, data, duration, event, variates):
+        self.data = data
+        self.duration = duration
+        self.event = event
+        self.variates = variates
+        self.results = None
+        self.name = "cox"
+
+    def fit(self):
+        df = self.data.copy()
+        all_results = []
+        for var in self.variates:
+            cph = ll.CoxPHFitter()
+            cph.fit(df, duration_col=self.duration, event_col=self.event, formula=var)
+            summary = cph.summary.reset_index()
+            summary["analysis"] = var
+            all_results.append(summary)
+        df = pd.concat(all_results, ignore_index=True)
+        df = df.sort_values("exp(coef)").copy()
+        df["exp(coef) lower 95%"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
+        df["exp(coef) upper 95%"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
+        df["log10_pvalue"] = -np.log10(df["p"])
+
+        def display_label_helper(x):
+            if "+" in x["analysis"]:
+                return x["analysis"] + " (" + x["covariate"] + ")"
+            else:
+                return x["analysis"]
+
+        df["display_label"] = df.apply(display_label_helper, axis=1)
+        self.results = df[
+            [
+                "display_label",
+                "exp(coef)",
+                "exp(coef) lower 95%",
+                "exp(coef) upper 95%",
+                "log10_pvalue",
+            ]
+        ]
+
+
+# %%
+# load data
 rossi = ll.datasets.load_rossi()
 rossi.head()
 
 # %%
 # plot forestplot using :func:`cnsplots.forestplot`
-cns.figure(150, 210, ["black"])
-cns.forestplot(
-    rossi,
+model = CoxModel(
+    data=rossi,
     duration="week",
     event="arrest",
     variates=[
@@ -31,6 +77,10 @@ cns.forestplot(
         "fin + age + race + wexp",
     ],
 )
+model.fit()
+cns.figure(150, 210, ["black"])
+cns.forestplot(model)
+model.results.head()
 
 # %%
 # load another data
@@ -54,9 +104,8 @@ gbsg2.head()
 
 # %%
 # plot forestplot using :func:`cnsplots.forestplot`
-cns.figure(200, 210, ["black"])
-cns.forestplot(
-    gbsg2,
+model = CoxModel(
+    data=gbsg2,
     duration="time",
     event="cens",
     variates=[
@@ -69,3 +118,7 @@ cns.forestplot(
         "C(progrec_cat)",
     ],
 )
+model.fit()
+cns.figure(200, 210, ["black"])
+cns.forestplot(model)
+model.results.head()
