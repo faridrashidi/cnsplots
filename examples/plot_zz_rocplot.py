@@ -17,10 +17,10 @@ iris = sns.load_dataset("iris")
 iris["true_labels"] = (iris["species"] == "setosa").astype(int)
 n_samples = len(iris)
 iris["model1_prob"] = np.clip(
-    iris["true_labels"] + np.random.normal(0, 0.2, n_samples), 0, 1
+    iris["true_labels"] + np.random.normal(0, 0.4, n_samples), 0, 1
 )
 iris["model2_prob"] = np.clip(
-    iris["true_labels"] + np.random.normal(0, 0.4, n_samples), 0, 1
+    iris["true_labels"] + np.random.normal(0, 0.7, n_samples), 0, 1
 )
 iris["model3_prob"] = np.random.uniform(0, 1, n_samples)
 
