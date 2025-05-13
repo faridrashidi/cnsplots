@@ -20,7 +20,15 @@ tips = sns.load_dataset("tips")
 # plot boxplot using :func:`cnsplots.boxplot`
 cns.figure(150, 100)
 cns.boxplot(data=tips, x="day", y="total_bill")
+
 _ = plt.xticks(rotation=40, ha="right", rotation_mode="anchor")
+
+xtick_labels = plt.gca().get_xticklabels()
+for index in range(tips["day"].nunique()):
+    if xtick_labels[index].get_text() in ["Thur", "Fri"]:
+        xtick_labels[index].set_color("red")
+    else:
+        xtick_labels[index].set_color("blue")
 
 
 # %%

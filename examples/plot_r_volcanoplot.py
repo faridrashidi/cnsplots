@@ -22,4 +22,10 @@ de.head()
 # %%
 # plot volcanoplot using :func:`cnsplots.volcanoplot`
 cns.figure(200, 200)
-cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol")
+cns.volcanoplot(
+    de,
+    x="log2FoldChange",
+    y="-log10(adjp)",
+    symbol="symbol",
+    show_list=["NRAS", "USP53", "GMNN", "EPDR1"],
+)
