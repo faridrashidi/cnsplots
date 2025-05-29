@@ -393,7 +393,12 @@ def violinplot(
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     """Plot the mean of y categorized by x."""
-    args = {"edgecolor": None, "linewidth": 1, "errorbar": None}
+    args = {
+        "edgecolor": None,
+        "errorbar": None,
+        "err_kws": {"color": "black", "linewidth": 0.7},
+        "capsize": 0.2,
+    }
     plotting = {"data": data, "x": x, "y": y}
 
     plotting.update(args)
