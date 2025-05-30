@@ -18,7 +18,7 @@ tips = sns.load_dataset("tips")
 # %%
 # plot barplot using :func:`cnsplots.barplot`
 cns.figure(150, 100)
-cns.barplot(data=tips, x="day", y="total_bill")
+cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
 
 
 # %%

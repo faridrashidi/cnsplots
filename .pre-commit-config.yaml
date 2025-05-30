@@ -36,7 +36,6 @@ repos:
         exclude: ^.bumpversion.cfg$
       - id: check-case-conflict
       - id: check-docstring-first
-      # -   id: check-yaml
       - id: check-toml
       - id: requirements-txt-fixer
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
@@ -46,9 +45,11 @@ repos:
         name: Check executable files use .sh extension
         types: [shell, executable]
   - repo: https://github.com/myint/rstcheck
-    rev: 3f92957478422df87bd730abde66f089cc1ee19b
+    rev: v6.2.4
     hooks:
       - id: rstcheck
+        additional_dependencies: [sphinx]
+        args: ["--ignore-directives=autoclass,autofunction,minigallery"]
   - repo: https://github.com/asottile/blacken-docs
     rev: v1.11.0
     hooks:
@@ -64,7 +65,6 @@ repos:
     hooks:
       - id: python-no-eval
       - id: python-use-type-annotations
-      # -   id: python-check-blanket-noqa
       - id: rst-backticks
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
@@ -73,24 +73,3 @@ repos:
     hooks:
       - id: doc8
         args: [--max-line-length=88]
-# -   repo: https://github.com/PyCQA/flake8
-#     rev: 4.0.1
-#     hooks:
-#     -   id: flake8
-#         additional_dependencies: [flake8-tidy-imports, flake8-docstrings, flake8-comprehensions, flake8-bugbear, flake8-blind-except]
-#         args: [--max-line-length=88, --config=setup.cfg]
-# -   repo: https://github.com/asottile/yesqa
-#     rev: v1.3.0
-#     hooks:
-#     -   id: yesqa
-#         additional_dependencies: [flake8-tidy-imports, flake8-docstrings, flake8-comprehensions, flake8-bugbear, flake8-blind-except]
-# -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-#     rev: v2.0.0
-#     hooks:
-#     -   id: pretty-format-yaml
-#         args: [--autofix, --indent, '4']
-# -   repo: https://github.com/pre-commit/mirrors-mypy
-#     rev: v0.800
-#     hooks:
-#     -   id: mypy
-#         additional_dependencies: [numpy, scipy, pandas]

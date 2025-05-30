@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import patsy
 import sklearn as skl
+from sklearn.linear_model import LogisticRegressionCV
 
 import cnsplots as cns
 
@@ -93,7 +94,7 @@ class LogisticModel:
             )
             y = df[self.event].values
 
-            model = skl.linear_model.LogisticRegressionCV(
+            model = LogisticRegressionCV(
                 cv=5,
                 penalty="l1",
                 solver="liblinear",

@@ -44,13 +44,12 @@ poetry run python install_r_packages.py
 
 ## TODO:
 
-- add examples to the end of each function: [see](https://sphinx-gallery.github.io/stable/configuration.html?highlight=mini#references-to-examples)
+- gseaplot: [example](https://gseapy.readthedocs.io/en/latest/gseapy_example.html)
 - heatmapplot truncate dendrogram: [see](https://stackoverflow.com/questions/66180002/scipy-cluster-hierarchy-dendrogram-exactly-what-does-truncate-mode-level-do)
 - heatmapplot adjust labels: [see](https://jokergoo.github.io/ComplexHeatmap-reference/book/more-examples.html#visualize-cell-heterogeneity-from-single-cell-rnaseq)
-- gseaplot: [example](https://gseapy.readthedocs.io/en/latest/gseapy_example.html)
+- heatmapplot shrink cbar width
 - networkplot
 - phyloplot: [stream](https://github.com/pinellolab/STREAM)
-- add sns.FacetGrid: [see](https://seaborn.pydata.org/tutorial/axis_grids.html)
-- shrink heatmap cbar width
-- number of dots in the dot size legend of dotplot: [see](https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/dotHeatmap.py#L608)
-- add hue to regplot
+- dotplot number of dots in the dot size legend: [see](https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/dotHeatmap.py#L608)
+- regplot hue
+- sns.FacetGrid: [see](https://seaborn.pydata.org/tutorial/axis_grids.html)
