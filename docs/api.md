@@ -12,6 +12,7 @@ import cnsplots as cns
    :toctree: .
    :nosignatures:
 
+      barplot
       violinplot
       boxplot
 ```

@@ -392,7 +392,41 @@ def violinplot(
 
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
-    """Plot the mean of y categorized by x."""
+    """Creates a bar plot showing the mean value of a variable across different categories.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame that holds the data to be plotted.
+    x : str
+        The column name in `data` to use for categorical values on the x-axis.
+    y : str
+        The column name in `data` whose mean values will be plotted on the y-axis.
+    pairs : List[Tuple[str, str]], optional
+        A list of pairs of x attributes for calculating pairwise statistical significance.
+        Each pair should be a tuple of two category names present in the x column.
+        Default is None (no statistical tests).
+    addtip : bool, optional
+        If True, adds text labels showing the mean value above each bar.
+        Default is False.
+    **kwargs
+        Additional keyword arguments passed to the `seaborn.barplot` function.
+        Common options include:
+        - color: Set the bar color
+        - palette: Color palette for different categories
+        - alpha: Transparency of the bars
+        - order: Specify the order of categories on the x-axis
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
+
+    Notes
+    -----
+    - Statistical significance is calculated using Welch's t-test when pairs are provided.
+    - Error bars can be controlled through kwargs (e.g., errorbar='se', errorbar='sd', errorbar=None)
+    """
     args = {
         "edgecolor": None,
         "errorbar": None,
