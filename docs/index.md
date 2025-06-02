@@ -1,5 +1,25 @@
-Documentation!
-==============
+# Documentation
+
+**cnsplots** is a Python visualization library designed to create publication-ready
+plots for scientific journals, including high-impact publications like Cell, Nature,
+and Science. Built on top of matplotlib and fully compatible with seaborn, cnsplots
+enhances the aesthetic quality of your scientific visualizations while maintaining
+simplicity and clarity. The library ensures PDF font compatibility with
+Adobe Illustrator for seamless integration into publication workflows.
+With an intuitive API, cnsplots makes it easy to generate professional-quality
+figures with just a few lines of code, helping researchers present their data with the
+visual excellence expected in top-tier scientific publications. To use:
+
+```python
+import cnsplots as cns
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = sns.load_dataset("tips")  # The data in pandas format
+cns.figure(150, 100)  # Create figure size (height x weight) in pixels
+cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
+plt.savefig("figure.svg")  # Save the figure
+```
 
 ::::{grid} 2
 :gutter: 2
@@ -23,8 +43,7 @@ the cnsplots API.
 :link: auto_examples/index
 :link-type: doc
 
-The gallery of examples provides detailed examples for what you can do
-with cnsplots.
+The gallery of examples provides detailed examples for what you can do with cnsplots.
 :::
 
 :::{grid-item-card} GitHub {octicon}`mark-github;1em;`
@@ -40,7 +59,7 @@ for the latest developments.
 :maxdepth: 2
 :titlesonly: true
 
-auto_examples/index
 installation
 api
+auto_examples/index
 ```

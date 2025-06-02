@@ -27,10 +27,10 @@ import cnsplots as cns
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = sns.load_dataset("tips")  # Generate the data
+df = sns.load_dataset("tips")  # The data in pandas format
 cns.figure(150, 100)  # Create figure size (height x weight) in pixels
 cns.boxplot(data=df, x="day", y="total_bill")  # Generate the boxplot from data
-cns.savefig("figure.svg")  # Save the figure
+plt.savefig("figure.svg")  # Save the figure
 ```
 
 ## Installation
