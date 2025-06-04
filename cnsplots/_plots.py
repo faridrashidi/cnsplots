@@ -584,18 +584,48 @@ def kdeplot(data, x, add_mode=True, **kwargs):
             )
 
 
-def regplot(data, x, y):
+def regplot(data, x, y, hue=None):
     args = {
-        "line_kws": {"color": "#377EB8", "lw": 1.5},
-        "scatter_kws": {"s": 3, "color": "black", "edgecolor": "black", "alpha": 1},
+        "line_kws": {"lw": 1.2},
+        "scatter_kws": {"s": 3, "alpha": 1, "edgecolor": None},
     }
-    rho, p_value = sp.stats.pearsonr(data[x], data[y])
-    ax = sns.regplot(data=data, x=x, y=y, **args)
-    ax.text(
-        ax.get_xlim()[0] * 2,
-        ax.get_ylim()[1] * 0.9,
-        rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
-    )
+    palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    if hue:
+        for idx, hue_val in enumerate(data[hue].unique()):
+            subset = data[data[hue] == hue_val]
+            ax = sns.regplot(
+                data=subset,
+                x=x,
+                y=y,
+                color=palette[idx],
+                label=hue_val,
+                **args,
+            )
+            rho, p_value = sp.stats.pearsonr(subset[x], subset[y])
+            ax.text(
+                ax.get_xlim()[0] * 2,
+                ax.get_ylim()[1] * (0.9 - 0.05 * idx),
+                rf"{hue_val}: $\rho$={rho:.2f},"
+                rf" $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+                color=palette[idx],
+            )
+    else:
+        ax = sns.regplot(
+            data=data,
+            x=x,
+            y=y,
+            color="black",
+            **args,
+        )
+        rho, p_value = sp.stats.pearsonr(data[x], data[y])
+        ax.text(
+            ax.get_xlim()[0] * 2,
+            ax.get_ylim()[1] * 0.9,
+            rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+            color="black",
+        )
+    if hue:
+        plt.legend(title=hue)
 
 
 def pieplot(data, x, hue_order=None):

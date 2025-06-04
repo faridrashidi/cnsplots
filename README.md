@@ -51,5 +51,4 @@ poetry run python install_r_packages.py
 - networkplot
 - phyloplot: [stream](https://github.com/pinellolab/STREAM)
 - dotplot number of dots in the dot size legend: [see](https://github.com/DingWB/PyComplexHeatmap/blob/main/PyComplexHeatmap/dotHeatmap.py#L608)
-- regplot hue
 - sns.FacetGrid: [see](https://seaborn.pydata.org/tutorial/axis_grids.html)
