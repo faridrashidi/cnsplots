@@ -584,11 +584,12 @@ def kdeplot(data, x, add_mode=True, **kwargs):
             )
 
 
-def regplot(data, x, y, hue=None):
+def regplot(data, x, y, hue=None, **kwargs):
     args = {
         "line_kws": {"lw": 1.2},
         "scatter_kws": {"s": 3, "alpha": 1, "edgecolor": None},
     }
+    args.update(kwargs)
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     if hue:
         for idx, hue_val in enumerate(data[hue].unique()):
