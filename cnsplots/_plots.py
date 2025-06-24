@@ -17,6 +17,7 @@ import scipy as sp
 import seaborn as sns
 import statsmodels.api as sm
 import upsetplot as usp
+from matplotlib.patches import Patch
 from natsort import natsort_keygen
 from PyComplexHeatmap import DotClustermapPlotter
 from sklearn.metrics import ConfusionMatrixDisplay, auc, confusion_matrix, roc_curve
@@ -391,17 +392,23 @@ def violinplot(
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
-    """Creates a bar plot showing the mean value of a variable across different categories.
+    """
+    Creates a bar plot showing the mean value of a variable across different categories.
 
     Parameters
     ----------
     data : pd.DataFrame
         The input DataFrame that holds the data to be plotted.
     x : str
-        The column name in `data` to use for categorical values on the x-axis.
+        The column name in data to use for categorical values on the x-axis.
     y : str
-        The column name in `data` whose mean values will be plotted on the y-axis.
+        The column name in data whose mean values will be plotted on the y-axis.
     pairs : List[Tuple[str, str]], optional
         A list of pairs of x attributes for calculating pairwise statistical significance.
         Each pair should be a tuple of two category names present in the x column.
@@ -410,10 +417,10 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
         If True, adds text labels showing the mean value above each bar.
         Default is False.
     **kwargs
-        Additional keyword arguments passed to the `seaborn.barplot` function.
+        Additional keyword arguments passed to the seaborn.barplot function.
         Common options include:
         - color: Set the bar color
-        - palette: Color palette for different categories
+        - palette: Color palette for different categories or a column name
         - alpha: Transparency of the bars
         - order: Specify the order of categories on the x-axis
 
@@ -421,11 +428,6 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     -------
     matplotlib.axes.Axes
         The matplotlib Axes object containing the plot.
-
-    Notes
-    -----
-    - Statistical significance is calculated using Welch's t-test when pairs are provided.
-    - Error bars can be controlled through kwargs (e.g., errorbar='se', errorbar='sd', errorbar=None)
     """
     args = {
         "edgecolor": None,
@@ -433,8 +435,53 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
         "err_kws": {"color": "black", "linewidth": 0.7},
         "capsize": 0.2,
     }
-    plotting = {"data": data, "x": x, "y": y}
+    palette = kwargs.pop("palette", None)
+    show_legend = False
+    legend_handles = []
+    # if isinstance(palette, str) and palette in data.columns:
+    #     unique_labels = data[palette].unique()
+    #     palette_colors = sns.color_palette(n_colors=len(unique_labels))
+    #     label_to_color = dict(zip(unique_labels, palette_colors))
+    #     target_column = palette
+    #     which_numeric = None
+    #     if not pd.api.types.is_numeric_dtype(data[x]):
+    #         which_numeric = x
+    #     else:
+    #         which_numeric = y
+    #     mapping_index = (
+    #         data[[which_numeric, target_column]]
+    #         .drop_duplicates()
+    #         .set_index(which_numeric)[target_column]
+    #         .to_dict()
+    #     )
+    #     palette = {k: label_to_color[v] for k, v in mapping_index.items()}
+    if isinstance(palette, str) and palette in data.columns:
+        # Use palette column to assign group label colors
+        group_col = palette
+        category = y if data[y].nunique() <= data[x].nunique() else x
 
+        # Build color mapping
+        unique_groups = data[group_col].unique()
+        color_list = sns.color_palette(n_colors=len(unique_groups))
+        group_to_color = dict(zip(unique_groups, color_list))
+
+        # Map each category (x or y) to a group
+        cat_to_group = (
+            data[[category, group_col]]
+            .drop_duplicates()
+            .set_index(category)[group_col]
+            .to_dict()
+        )
+        final_palette = {k: group_to_color[v] for k, v in cat_to_group.items()}
+
+        # Prepare legend
+        legend_handles = [
+            Patch(facecolor=color, label=label)
+            for label, color in group_to_color.items()
+        ]
+        palette = final_palette
+        show_legend = True
+    plotting = {"data": data, "x": x, "y": y, "palette": palette}
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
@@ -452,6 +499,13 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
             )
     if pairs is not None:
         cns._utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+    if show_legend:
+        ax.legend(
+            handles=legend_handles,
+            title=group_col,
+            bbox_to_anchor=(1.05, 1),
+            loc="upper left",
+        )
 
 
 def stackplot(
