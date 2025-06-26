@@ -1,5 +1,6 @@
 """CNSPlots Module."""
 
+import cnsplots._methods as methods
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -50,6 +51,7 @@ from cnsplots._utils import (
 
 __version__ = "0.0.1"
 __all__ = (
+    methods,
     setup_matplotlib,
     setup_scanpy,
     figure,
