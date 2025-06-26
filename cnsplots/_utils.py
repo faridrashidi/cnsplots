@@ -28,7 +28,7 @@ PINK = "#F781BF"
 GRAY = "#999999"
 
 
-def figure(height=150, width=150, color_cycle="Set1", color_map="parula"):
+def figure(height=150, width=150, color_cycle="Ecotyper1", color_map="parula"):
     cns.setup_matplotlib(color_cycle, color_map)
     plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
 
