@@ -56,7 +56,11 @@ def take_legend_out(title=None):
 def get_hexcolors_from_apalette(
     alist, palette=palettable.colorbrewer.qualitative.Set1_9.hex_colors
 ):
-    return list(operator.itemgetter(*alist)(palette))
+    if isinstance(palette, str):
+        colors = palettes(palette)
+        return list(operator.itemgetter(*alist)(colors))
+    else:
+        return list(operator.itemgetter(*alist)(palette))
 
 
 def _is_qualitative_cmap(cmap_name):
