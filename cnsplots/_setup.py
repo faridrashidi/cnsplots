@@ -8,7 +8,7 @@ LINEWIDTH_AXES = 0.5
 
 
 def setup_matplotlib(
-    color_cycle="Set1",
+    color_cycle="Ecotyper1",
     color_map="parula",
     fontsize_title=FONTSIZE_TITLE,
     fontsize_legend=FONTSIZE_LEGEND,
