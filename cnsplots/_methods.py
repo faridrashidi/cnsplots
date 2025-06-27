@@ -1,3 +1,5 @@
+import re
+
 import lifelines as ll
 import numpy as np
 import pandas as pd
@@ -26,7 +28,7 @@ class CoxModel:
                 cph.fit(
                     df, duration_col=self.duration, event_col=self.event, formula=var
                 )
-                summary = cph.summary.reset_index()
+                summary = cph.summary.iloc[[0]].reset_index()
                 summary["analysis"] = var
                 summary["hue_group"] = "All"
                 all_results.append(summary)
@@ -42,7 +44,7 @@ class CoxModel:
                         event_col=self.event,
                         formula=var,
                     )
-                    summary = cph.summary.reset_index()
+                    summary = cph.summary.iloc[[0]].reset_index()
                     summary["analysis"] = var
                     summary["hue_group"] = str(hue_group)
                     all_results.append(summary)
@@ -50,16 +52,20 @@ class CoxModel:
         df = pd.concat(all_results, ignore_index=True)
         df = df.sort_values(["exp(coef)", "hue_group"], ascending=False).copy()
 
-        # Calculate error bars for plotting
         df["exp(coef) lower_err"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
         df["exp(coef) upper_err"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
         df["log10_pvalue"] = -np.log10(df["p"])
 
         def display_label_helper(x):
+            pattern = r'(?:Q\((?:\'|")?(.*?)(?:\'|")?\)|C\(|np\.log\(|^|\+|\s)([a-zA-Z_]+)?(?=\s|\+|,|$|\))'
+            matches = re.findall(pattern, x["analysis"])
+            out = None
+            for match in matches:
+                out = match[0] if match[0] else match[1]
             if "+" in x["analysis"]:
-                return x["analysis"] + " (" + x["covariate"] + ")"
+                return out + "*"
             else:
-                return x["analysis"]
+                return out
 
         df["display_label"] = df.apply(display_label_helper, axis=1)
 

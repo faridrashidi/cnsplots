@@ -48,6 +48,7 @@ model = cns.methods.CoxModel(
         "C(Cirrhosis, levels=['no', 'yes'])",
         "C(TNM_staging, levels=['I', 'I-II'])",
         "Predictor + AFP_cat + Cirrhosis + C(TNM_staging, levels=['I', 'I-II'])",
+        "AFP_cat + Predictor + Cirrhosis + C(TNM_staging, levels=['I', 'I-II'])",
     ],
     hue="Group",
 )
