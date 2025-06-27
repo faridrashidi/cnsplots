@@ -1108,7 +1108,7 @@ def forestplot(model):
     if model.name == "cox":
         ax2 = fig.add_subplot(gs[1])
         bar_width = 0.8 / len(unique_hue_groups) if len(unique_hue_groups) > 1 else 0.6
-        for i, label in enumerate(unique_labels):
+        for i, label in enumerate(reversed(unique_labels)):
             label_data = data[data[y] == label]
             for j, hue_group in enumerate(unique_hue_groups):
                 hue_data = label_data[label_data["hue_group"] == hue_group]
@@ -1126,13 +1126,14 @@ def forestplot(model):
                         edgecolor=None,
                     )
 
-        ax2.set_yticks(list(y_positions.values()))
+        ax2.set_yticks(list(range(len(unique_labels))))
         ax2.set_yticklabels([])
         ax2.set_xlabel(x2label)
         ax2.axvline(
             x=-np.log10(0.05), color="red", linestyle="--", linewidth=0.8, alpha=0.7
         )
         ax2.set_ylim(-0.5, len(unique_labels) - 0.5)
+        ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
 
 
 def ridgeplot(data, x, y):
