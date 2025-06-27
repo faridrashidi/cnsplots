@@ -16,7 +16,7 @@ import cnsplots as cns
 # %%
 # load data
 np.random.seed(42)
-n_patients = 242
+n_patients = 300
 liver = {
     "Survival": np.random.exponential(scale=50, size=n_patients),
     "Event": np.random.binomial(1, 0.5, n_patients),
@@ -27,6 +27,7 @@ liver = {
     "Cirrhosis": np.random.choice(["no", "yes"], size=n_patients, p=[0.55, 0.45]),
     "TNM_staging": np.random.choice(["I", "I-II"], size=n_patients, p=[0.5, 0.5]),
     "BCLC_staging": np.random.choice(["A-0", "B-C"], size=n_patients, p=[0.6, 0.4]),
+    "Group": np.random.choice(["CCA", "HCC"], size=n_patients, p=[0.6, 0.4]),
 }
 liver = pd.DataFrame(liver)
 liver["AFP_cat"] = liver["AFP"].apply(
@@ -48,9 +49,10 @@ model = cns.methods.CoxModel(
         "C(TNM_staging, levels=['I', 'I-II'])",
         "Predictor + AFP_cat + Cirrhosis + C(TNM_staging, levels=['I', 'I-II'])",
     ],
+    hue="Group",
 )
 model.fit()
-cns.figure(150, 210, ["black"])
+cns.figure(150, 210)
 cns.forestplot(model)
 model.results.head()
 
@@ -58,12 +60,10 @@ model.results.head()
 # %%
 # load another data
 gbsg2 = ll.datasets.load_gbsg2()
-
 gbsg2["estrec_cat"] = np.where(gbsg2["estrec"] <= 36, "Low", "High")
 gbsg2["estrec_cat"] = pd.Categorical(
     gbsg2["estrec_cat"], categories=["Low", "High"], ordered=True
 )
-
 bins = [-float("inf"), 20, 50, float("inf")]
 labels = ["<=20", "20<x<=50", "<50"]
 gbsg2["progrec_cat"] = pd.cut(
@@ -72,7 +72,6 @@ gbsg2["progrec_cat"] = pd.cut(
 gbsg2["progrec_cat"] = pd.Categorical(
     gbsg2["progrec_cat"], categories=labels, ordered=True
 )
-
 gbsg2.head()
 
 
@@ -106,7 +105,6 @@ model = cns.methods.LogisticModel(
     variates=[
         "horTh",
         "age",
-        "menostat",
         "tsize",
         "tgrade",
         "pnodes",
@@ -116,8 +114,9 @@ model = cns.methods.LogisticModel(
         "progrec_cat",
         "pnodes + progrec",
     ],
+    hue="menostat",
 )
 model.fit()
-cns.figure(150, 150, ["black"])
+cns.figure(150, 150)
 cns.forestplot(model)
 model.results.head()

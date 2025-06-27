@@ -638,10 +638,10 @@ def kdeplot(data, x, add_mode=True, **kwargs):
             )
 
 
-def regplot(data, x, y, hue=None, **kwargs):
+def regplot(data, x, y, hue=None, s=3, **kwargs):
     args = {
         "line_kws": {"lw": 1.2},
-        "scatter_kws": {"s": 3, "alpha": 1, "edgecolor": None},
+        "scatter_kws": {"s": s, "alpha": 1, "edgecolor": None},
     }
     args.update(kwargs)
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
@@ -1027,12 +1027,13 @@ def phyloplot(adata):
 
 
 def forestplot(model):
-    data = model.results
+    data = model.results.copy()
+
     if model.name == "cox":
         y = "display_label"
         x1 = "exp(coef)"
         x2 = "log10_pvalue"
-        x1err = ["exp(coef) lower 95%", "exp(coef) upper 95%"]
+        x1err = ["exp(coef) lower_err", "exp(coef) upper_err"]
         x1label = "Hazard ratio (95% CI)"
         x2label = "–log10(p-value)"
     else:
@@ -1048,60 +1049,90 @@ def forestplot(model):
         gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
     else:
         gs = grid_spec.GridSpec(1, 1)
-
     ax1 = fig.add_subplot(gs[0])
-    ax1.errorbar(
-        data[x1],
-        data[y],
-        xerr=data[x1err].T.values,
-        fmt="s",
-        markeredgewidth=0.8,
-        elinewidth=0.8,
-        capsize=1.5,
-        markersize=3,
-    )
-    if not isinstance(
-        ax1.get_yaxis().get_major_locator(), matplotlib.category.StrCategoryLocator
-    ):
-        ax1.locator_params(axis="y", tight=True, nbins=2)
+
+    unique_hue_groups = data["hue_group"].unique()
+    colors = sns.color_palette(n_colors=len(unique_hue_groups))
+    color_map = dict(zip(unique_hue_groups, colors))
+    unique_labels = data[y].drop_duplicates().tolist()
+    y_positions = {label: i for i, label in enumerate(reversed(unique_labels))}
+
+    max_offset = 0.15
+    n_hue_groups = len(unique_hue_groups)
+    if n_hue_groups > 1:
+        offsets = np.linspace(-max_offset, max_offset, n_hue_groups)
+    else:
+        offsets = [0]
+    hue_offset_map = dict(zip(unique_hue_groups, offsets))
+
+    for hue_group in unique_hue_groups:
+        hue_data = data[data["hue_group"] == hue_group]
+        color = color_map[hue_group]
+        y_coords = []
+        x_coords = []
+        x_errs_lower = []
+        x_errs_upper = []
+        for _, row in hue_data.iterrows():
+            y_pos = y_positions[row[y]] + hue_offset_map[hue_group]
+            y_coords.append(y_pos)
+            x_coords.append(row[x1])
+            x_errs_lower.append(row[x1err[0]])
+            x_errs_upper.append(row[x1err[1]])
+
+        ax1.errorbar(
+            x_coords,
+            y_coords,
+            xerr=[x_errs_lower, x_errs_upper],
+            fmt="s",
+            color=color,
+            markeredgewidth=0.8,
+            elinewidth=0.8,
+            capsize=2,
+            markersize=3,
+            label=hue_group,
+        )
+
+    ax1.set_yticks(list(y_positions.values()))
+    ax1.set_yticklabels(list(y_positions.keys()))
+    ax1.set_ylim(-0.5, len(unique_labels) - 0.5)
     ax1.set_xlabel(x1label)
+    if len(unique_hue_groups) > 1:
+        ax1.legend(title=model.hue, loc="lower right")
 
     if model.name == "cox":
-        ax1.plot(
-            [1, 1],
-            [0, len(data) - 1],
-            color="red",
-            linestyle="--",
-            linewidth=0.8,
-            dashes=(3, 2),
-        )
-        ax1.xaxis.set_major_locator(plt.MultipleLocator(1))
+        ax1.axvline(x=1, color="red", linestyle="--", linewidth=0.8)
+        ax1.xaxis.set_major_locator(plt.MultipleLocator(0.5))
     else:
-        ax1.plot(
-            [0.5, 0.5],
-            [0, len(data) - 1],
-            color="red",
-            linestyle="--",
-            linewidth=0.8,
-            dashes=(3, 2),
-        )
-        # ax1.set_xlim(0.47, 1.03)
+        ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
     if model.name == "cox":
         ax2 = fig.add_subplot(gs[1])
-        data[x2].plot.barh(width=0.5, ax=ax2, rot=0, edgecolor=None, linewidth=1)
-        ax2.set_ylabel("")
+        bar_width = 0.8 / len(unique_hue_groups) if len(unique_hue_groups) > 1 else 0.6
+        for i, label in enumerate(unique_labels):
+            label_data = data[data[y] == label]
+            for j, hue_group in enumerate(unique_hue_groups):
+                hue_data = label_data[label_data["hue_group"] == hue_group]
+                if len(hue_data) > 0:
+                    color = color_map[hue_group]
+                    if len(unique_hue_groups) > 1:
+                        bar_pos = i + (j - (len(unique_hue_groups) - 1) / 2) * bar_width
+                    else:
+                        bar_pos = i
+                    ax2.barh(
+                        bar_pos,
+                        hue_data[x2].iloc[0],
+                        height=bar_width,
+                        color=color,
+                        edgecolor=None,
+                    )
+
+        ax2.set_yticks(list(y_positions.values()))
+        ax2.set_yticklabels([])
         ax2.set_xlabel(x2label)
-        ax2.plot(
-            [-np.log10(0.05), -np.log10(0.05)],
-            [-1, len(data)],
-            color="red",
-            linestyle="--",
-            linewidth=0.8,
-            dashes=(3, 2),
+        ax2.axvline(
+            x=-np.log10(0.05), color="red", linestyle="--", linewidth=0.8, alpha=0.7
         )
-        ax2.yaxis.set_ticks([])
-        ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
+        ax2.set_ylim(-0.5, len(unique_labels) - 0.5)
 
 
 def ridgeplot(data, x, y):
