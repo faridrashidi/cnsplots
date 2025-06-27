@@ -57,15 +57,18 @@ class CoxModel:
         df["log10_pvalue"] = -np.log10(df["p"])
 
         def display_label_helper(x):
-            pattern = r'(?:Q\((?:\'|")?(.*?)(?:\'|")?\)|C\(|np\.log\(|^|\+|\s)([a-zA-Z_]+)?(?=\s|\+|,|$|\))'
-            matches = re.findall(pattern, x["analysis"])
-            out = None
+            analysis_str = (
+                x["analysis"].split(" + ")[0] if "+" in x["analysis"] else x["analysis"]
+            )
+            pattern = re.compile(
+                r'(?:Q\((?:\'|")?(.*?)(?:\'|")?\)|C\(|np\.log\(|^|\+|\s)([a-zA-Z_]+)?(?=\s|\+|,|$|\))'
+            )
+            matches = pattern.findall(analysis_str)
             for match in matches:
-                out = match[0] if match[0] else match[1]
-            if "+" in x["analysis"]:
-                return out + "*"
-            else:
-                return out
+                result = match[0] if match[0] else match[1]
+                if result:
+                    return result + ("*" if "+" in x["analysis"] else "")
+            return None
 
         df["display_label"] = df.apply(display_label_helper, axis=1)
 
