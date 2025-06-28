@@ -1065,6 +1065,7 @@ def forestplot(model):
         offsets = [0]
     hue_offset_map = dict(zip(unique_hue_groups, offsets))
 
+    factor = 0.5
     for hue_group in unique_hue_groups:
         hue_data = data[data["hue_group"] == hue_group]
         color = color_map[hue_group]
@@ -1091,17 +1092,18 @@ def forestplot(model):
             markersize=3,
             label=hue_group,
         )
-
+        if max(x_errs_upper) + max(x_coords) > 7:
+            factor = 1
+            ax1.set_xlim(0, 7)
     ax1.set_yticks(list(y_positions.values()))
     ax1.set_yticklabels(list(y_positions.keys()))
     ax1.set_ylim(-0.5, len(unique_labels) - 0.5)
     ax1.set_xlabel(x1label)
     if len(unique_hue_groups) > 1:
         ax1.legend(title=model.hue, loc="lower right")
-
     if model.name == "cox":
         ax1.axvline(x=1, color="red", linestyle="--", linewidth=0.8)
-        ax1.xaxis.set_major_locator(plt.MultipleLocator(0.5))
+        ax1.xaxis.set_major_locator(plt.MultipleLocator(factor))
     else:
         ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
