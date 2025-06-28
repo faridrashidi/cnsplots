@@ -98,14 +98,15 @@ def _addcount_helper(data, attr, ax):
     ax.set_xticklabels(new_xtick_labels)
 
 
-def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="full"):
+def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="star"):
+    # format {star, full}
     class PValueFormatNew(PValueFormat):
         def __init__(self):
             super(PValueFormat, self).__init__()
             self._pvalue_format_string = "{:.3e}"
             self._simple_format_string = "{:.2f}"
             self._text_format = "star"
-            self.fontsize = "medium"
+            self.fontsize = "small"
             self._default_pvalue_thresholds = True
             self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
             self._correction_format = "{star} ({suffix})"
@@ -136,11 +137,11 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="f
     annotator.configure(
         test=test if contingency is None else None,
         text_format=format,
-        loc="outside",
-        line_width=0.8,
+        loc="inside",
+        line_width=0.5,
         line_offset=0,
         line_offset_to_group=0,
-        text_offset=0.5,
+        text_offset=0,
         color="black",
         show_test_name=False,
         pvalue_format_string="{:.1e}",
