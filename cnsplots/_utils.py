@@ -17,6 +17,11 @@ from statannotations.utils import DEFAULT
 import cnsplots as cns
 from cnsplots._svg import _save_svg
 
+PALETTE_QUAL = "Ecotyper1"
+PALETTE_SEQ = "parula"
+FONTSIZE_TITLE = 8
+FONTSIZE_LEGEND = 7
+LINEWIDTH_AXES = 0.5
 RED = "#E41A1C"
 BLUE = "#377EB8"
 GREEN = "#4DAF4A"
@@ -28,7 +33,7 @@ PINK = "#F781BF"
 GRAY = "#999999"
 
 
-def figure(height=150, width=150, color_cycle="Ecotyper1", color_map="parula"):
+def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SEQ):
     cns.setup_matplotlib(color_cycle, color_map)
     plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
 

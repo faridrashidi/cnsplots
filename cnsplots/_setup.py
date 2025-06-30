@@ -2,17 +2,13 @@ import matplotlib as mpl
 
 import cnsplots as cns
 
-FONTSIZE_TITLE = 8
-FONTSIZE_LEGEND = 7
-LINEWIDTH_AXES = 0.5
-
 
 def setup_matplotlib(
-    color_cycle="Ecotyper1",
-    color_map="parula",
-    fontsize_title=FONTSIZE_TITLE,
-    fontsize_legend=FONTSIZE_LEGEND,
-    linewidth_axes=LINEWIDTH_AXES,
+    color_cycle=cns.PALETTE_QUAL,
+    color_map=cns.PALETTE_SEQ,
+    fontsize_title=cns.FONTSIZE_TITLE,
+    fontsize_legend=cns.FONTSIZE_LEGEND,
+    linewidth_axes=cns.LINEWIDTH_AXES,
 ):
     def config():
         return {

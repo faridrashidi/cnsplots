@@ -37,7 +37,7 @@ def heatmapplot(
     col_cluster=False,
     row_split=None,
     col_split=None,
-    cmap="parula",
+    cmap=cns.PALETTE_SEQ,
     label="value",
     xlabel="xlabel",
     ylabel="ylabel",
@@ -949,22 +949,20 @@ def vennplot(lists, labels):
         areas = ["10", "01", "11"]
         func = venn.venn2
         names = ["A", "B"]
-        colors = cns.palettes("Ecotyper1")[:2]
+        colors = cns.palettes(cns.PALETTE_QUAL)[:2]
     else:
         areas = ["100", "010", "001", "110", "101", "011", "111"]
         func = venn.venn3
         names = ["A", "B", "C"]
-        colors = cns.palettes("Ecotyper1")[:3]
-    ax = func(
-        lists,
-        labels,
-        set_colors=colors,
-        alpha=0.8,
-    )
+        colors = cns.palettes(cns.PALETTE_QUAL)[:3]
+    ax = func(lists, labels, set_colors=colors, alpha=0.8)
     for area in areas:
-        ax.get_label_by_id(area).set_fontsize(6)
-        ax.get_patch_by_id(area).set_edgecolor("black")
-        ax.get_patch_by_id(area).set_linewidth(0.5)
+        try:
+            ax.get_label_by_id(area).set_fontsize(6)
+            ax.get_patch_by_id(area).set_edgecolor("black")
+            ax.get_patch_by_id(area).set_linewidth(0.5)
+        except:
+            pass
     for area in names:
         ax.get_label_by_id(area).set_fontsize(7)
 
@@ -1257,4 +1255,5 @@ def rocplot(data, true_label_col, pred_prob_cols):
     plt.yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
+    plt.legend(loc="lower right")
     plt.legend(loc="lower right")
