@@ -99,9 +99,9 @@ def setup_scanpy():
 
 def setup_ax(
     ax,
-    fontsize_title=FONTSIZE_TITLE,
-    fontsize_legend=FONTSIZE_LEGEND,
-    linewidth_axes=LINEWIDTH_AXES,
+    fontsize_title=cns.FONTSIZE_TITLE,
+    fontsize_legend=cns.FONTSIZE_LEGEND,
+    linewidth_axes=cns.LINEWIDTH_AXES,
 ):
     ax.set_title(ax.get_title(), fontsize=fontsize_title, pad=4)
     ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
