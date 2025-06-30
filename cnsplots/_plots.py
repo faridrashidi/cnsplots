@@ -3,7 +3,6 @@ from typing import List, Optional, Tuple
 import adjustText as at
 import lifelines as ll
 import matplotlib as mpl
-import matplotlib.category
 import matplotlib.gridspec as grid_spec
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
@@ -26,6 +25,7 @@ import cnsplots as cns
 import cnsplots._helper_heatmap as helper_heatmap
 import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
+from cnsplots._utils import PALETTE_QUAL, PALETTE_SEQ
 
 
 def heatmapplot(
@@ -37,7 +37,7 @@ def heatmapplot(
     col_cluster=False,
     row_split=None,
     col_split=None,
-    cmap=cns.PALETTE_SEQ,
+    cmap=PALETTE_SEQ,
     label="value",
     xlabel="xlabel",
     ylabel="ylabel",
@@ -949,12 +949,12 @@ def vennplot(lists, labels):
         areas = ["10", "01", "11"]
         func = venn.venn2
         names = ["A", "B"]
-        colors = cns.palettes(cns.PALETTE_QUAL)[:2]
+        colors = palettes(PALETTE_QUAL)[:2]
     else:
         areas = ["100", "010", "001", "110", "101", "011", "111"]
         func = venn.venn3
         names = ["A", "B", "C"]
-        colors = cns.palettes(cns.PALETTE_QUAL)[:3]
+        colors = palettes(PALETTE_QUAL)[:3]
     ax = func(lists, labels, set_colors=colors, alpha=0.8)
     for area in areas:
         try:
