@@ -1,14 +1,21 @@
 import matplotlib as mpl
 
 import cnsplots as cns
+from cnsplots._utils import (
+    FONTSIZE_LEGEND,
+    FONTSIZE_TITLE,
+    LINEWIDTH_AXES,
+    PALETTE_QUAL,
+    PALETTE_SEQ,
+)
 
 
 def setup_matplotlib(
-    color_cycle=cns.PALETTE_QUAL,
-    color_map=cns.PALETTE_SEQ,
-    fontsize_title=cns.FONTSIZE_TITLE,
-    fontsize_legend=cns.FONTSIZE_LEGEND,
-    linewidth_axes=cns.LINEWIDTH_AXES,
+    color_cycle=PALETTE_QUAL,
+    color_map=PALETTE_SEQ,
+    fontsize_title=FONTSIZE_TITLE,
+    fontsize_legend=FONTSIZE_LEGEND,
+    linewidth_axes=LINEWIDTH_AXES,
 ):
     def config():
         return {
@@ -99,9 +106,9 @@ def setup_scanpy():
 
 def setup_ax(
     ax,
-    fontsize_title=cns.FONTSIZE_TITLE,
-    fontsize_legend=cns.FONTSIZE_LEGEND,
-    linewidth_axes=cns.LINEWIDTH_AXES,
+    fontsize_title=FONTSIZE_TITLE,
+    fontsize_legend=FONTSIZE_LEGEND,
+    linewidth_axes=LINEWIDTH_AXES,
 ):
     ax.set_title(ax.get_title(), fontsize=fontsize_title, pad=4)
     ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
