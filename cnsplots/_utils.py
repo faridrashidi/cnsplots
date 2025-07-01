@@ -22,15 +22,16 @@ PALETTE_SEQ = "parula"
 FONTSIZE_TITLE = 8
 FONTSIZE_LEGEND = 7
 LINEWIDTH_AXES = 0.5
-RED = "#E41A1C"
-BLUE = "#377EB8"
-GREEN = "#4DAF4A"
-PURPLE = "#984EA3"
-ORANGE = "#FF7F00"
-YELLOW = "#FFFF33"
-BROWN = "#A65628"
-PINK = "#F781BF"
-GRAY = "#999999"
+RED = "#D6372E"
+BLUE = "#5189BB"
+GREEN = "#70B460"
+PURPLE = "#985EA8"
+ORANGE = "#F08F35"
+YELLOW = "#FADD4B"
+BROWN = "#9C5732"
+PINK = "#E787E5"
+GRAY = "#A3A3A3"
+VIOLET = "#442288"
 
 
 def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SEQ):
@@ -238,18 +239,6 @@ def palettes(color):
                 "#B7D3E5",
                 "#E6D8C2",
             ]
-            # colors = [
-            #     "#D6372E",
-            #     "#FADD4B",
-            #     "#70B460",
-            #     "#E690C1",
-            #     "#985EA8",
-            #     "#A3A3A3",
-            #     "#B7D3E5",
-            #     "#E6D8C2",
-            #     "#F08F35",
-            #     "#5189BB",
-            # ]
             return sns.color_palette(colors)
         elif color == "Ecotyper2":
             colors = ["#EB7D5B", "#FED23F", "#B5D33D", "#6CA2EA", "#442288"]

@@ -859,6 +859,8 @@ def volcanoplot(
         de.loc[de[symbol].isin(show_list) & down, hue] = "Down"
     de = de.sort_values(hue)
 
+    blue = cns.get_hexcolors_from_apalette([1], "BlueRed")
+    red = cns.get_hexcolors_from_apalette([0], "BlueRed")
     ax = sns.scatterplot(
         data=de,
         x=x,
@@ -867,12 +869,12 @@ def volcanoplot(
         sizes={"Down": 10, "NS": 2, "Up": 10, "p_adj < 0.05": 2},
         hue=hue,
         edgecolor=None,
-        palette={"Down": "blue", "NS": "grey", "Up": "red", "p_adj < 0.05": "black"},
+        palette={"Down": blue, "NS": "grey", "Up": red, "p_adj < 0.05": "black"},
         rasterized=True,
     )
 
     annotations = []
-    for mode, color in [("Up", "red"), ("Down", "blue")]:
+    for mode, color in [("Up", red), ("Down", blue)]:
         for _, (x0, y0, t) in de.loc[de[hue] == mode, [x, y, symbol]].iterrows():
             annotations.append(
                 plt.annotate(
