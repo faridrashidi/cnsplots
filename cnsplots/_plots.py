@@ -859,8 +859,8 @@ def volcanoplot(
         de.loc[de[symbol].isin(show_list) & down, hue] = "Down"
     de = de.sort_values(hue)
 
-    blue = cns.get_hexcolors_from_apalette([1], "BlueRed")
-    red = cns.get_hexcolors_from_apalette([0], "BlueRed")
+    blue = cns.get_hexcolors_from_apalette([0], "BlueRed")
+    red = cns.get_hexcolors_from_apalette([1], "BlueRed")
     ax = sns.scatterplot(
         data=de,
         x=x,
@@ -951,12 +951,12 @@ def vennplot(lists, labels):
         areas = ["10", "01", "11"]
         func = venn.venn2
         names = ["A", "B"]
-        colors = cns.palettes(PALETTE_QUAL)[:2]
+        colors = sns.color_palette(n_colors=2)
     else:
         areas = ["100", "010", "001", "110", "101", "011", "111"]
         func = venn.venn3
         names = ["A", "B", "C"]
-        colors = cns.palettes(PALETTE_QUAL)[:3]
+        colors = sns.color_palette(n_colors=3)
     ax = func(lists, labels, set_colors=colors, alpha=0.8)
     for area in areas:
         try:
