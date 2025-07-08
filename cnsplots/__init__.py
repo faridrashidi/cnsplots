@@ -35,6 +35,7 @@ from cnsplots._setup import setup_ax, setup_matplotlib, setup_scanpy
 from cnsplots._utils import (
     BLUE,
     BROWN,
+    CHOCOLATE,
     FONTSIZE_LEGEND,
     FONTSIZE_TITLE,
     GRAY,
@@ -59,6 +60,7 @@ __version__ = "0.0.1"
 __all__ = (
     BLUE,
     BROWN,
+    CHOCOLATE,
     FONTSIZE_LEGEND,
     FONTSIZE_TITLE,
     GRAY,

@@ -18,7 +18,7 @@ import cnsplots as cns
 from cnsplots._svg import _save_svg
 
 PALETTE_QUAL = "Ecotyper1"
-PALETTE_SEQ = "parula"
+PALETTE_SEQ = "gnuplot"
 FONTSIZE_TITLE = 8
 FONTSIZE_LEGEND = 7
 LINEWIDTH_AXES = 0.5
@@ -32,6 +32,7 @@ BROWN = "#9C5732"
 PINK = "#E787E5"
 GRAY = "#A3A3A3"
 VIOLET = "#442288"
+CHOCOLATE = "#662506"
 
 
 def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SEQ):
