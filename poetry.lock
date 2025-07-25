@@ -249,7 +249,7 @@ description = "Python package for providing Mozilla's CA Bundle."
 optional = true
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "extra == \"doc\""
+markers = "extra == \"doc\" or extra == \"dev\""
 files = [
     {file = "certifi-2025.1.31-py3-none-any.whl", hash = "sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe"},
     {file = "certifi-2025.1.31.tar.gz", hash = "sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651"},
@@ -356,7 +356,7 @@ description = "The Real First Universal Charset Detector. Open, modern and activ
 optional = true
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "extra == \"doc\""
+markers = "extra == \"doc\" or extra == \"dev\""
 files = [
     {file = "charset_normalizer-3.4.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:91b36a978b5ae0ee86c394f5a54d6ef44db1de0815eb43de826d41d21e4af3de"},
     {file = "charset_normalizer-3.4.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7461baadb4dc00fd9e0acbe254e3d7d2112e7f92ced2adc96e54ef6501c5f176"},
@@ -888,6 +888,63 @@ files = [
 ]
 
 [[package]]
+name = "gseapy"
+version = "1.1.9"
+description = "Gene Set Enrichment Analysis in Python"
+optional = true
+python-versions = ">=3.7"
+groups = ["main"]
+markers = "extra == \"dev\""
+files = [
+    {file = "gseapy-1.1.9-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:77f711aacb0ecf15c11b3befd466c6526319dc18d20a6e5ecb66407f49312e64"},
+    {file = "gseapy-1.1.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:3410a910708963314fd3406d33b17cbe201ba8d4610de2813719f9e547f4a569"},
+    {file = "gseapy-1.1.9-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:181edec71c8652a99ad36b173447125ddaf1ad2bc1b6d27a261bcaafd107a35c"},
+    {file = "gseapy-1.1.9-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:809eaa16416bd2a2ddffbc47fb4657e932f78e7ceb9df34b25570ec8dda1991f"},
+    {file = "gseapy-1.1.9-cp310-cp310-win32.whl", hash = "sha256:5ba05327ab2aec8eb9de75258f33e4324e21ed79fb0a76c62a069b26c02ddb38"},
+    {file = "gseapy-1.1.9-cp310-cp310-win_amd64.whl", hash = "sha256:f41f570dcf282a5197960344f14de41500fb656d8f807258cfaf45b64bbe95ed"},
+    {file = "gseapy-1.1.9-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:dad5c1af577b3ed6d4ff2c4de7d133fb0e4c03d7e19b738bd73f695a132f88c0"},
+    {file = "gseapy-1.1.9-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:c1ea94f9266396fa4b042175b20d9c82fe6bb3fca5e741284870fe32c219c502"},
+    {file = "gseapy-1.1.9-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1068cc52de9a379df06ce207d1c95345fb1b919071bfbe933d5d9703257358db"},
+    {file = "gseapy-1.1.9-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:cc38026aa92f9e1b69731cc30ee12d9eba16f1e3ac07636d586f3e38f2d3bda5"},
+    {file = "gseapy-1.1.9-cp311-cp311-win32.whl", hash = "sha256:fc7666b1066e23e4eb4496e41455b6466a65d13c4a1a4b60a5dde9380df44535"},
+    {file = "gseapy-1.1.9-cp311-cp311-win_amd64.whl", hash = "sha256:8c69d61848918bcc3bee6384b7a46a782e3a5bafd1f0b8607be4043cfb10ea60"},
+    {file = "gseapy-1.1.9-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4dcc0b488114c6adda9ee0c68a42a96b5661117f641ba3c3efb6f14f79a45499"},
+    {file = "gseapy-1.1.9-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:b2e99c73f4ba2412ce1f4df387e78fea468fcb85486237be9eaf671c5ff74725"},
+    {file = "gseapy-1.1.9-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0a7f88fb02fc6be1fa62a64ff6169035d4eadfa2440b896eaa6cba6f1948504e"},
+    {file = "gseapy-1.1.9-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8df8e9d188e140b2e4a8a71381dbbd844a0585bdaeacc53f43d35362e53de4d3"},
+    {file = "gseapy-1.1.9-cp312-cp312-win32.whl", hash = "sha256:860c5995d65f9f957be2ea2f53d67231081bc7f692ac87504b21f8bea95c16a3"},
+    {file = "gseapy-1.1.9-cp312-cp312-win_amd64.whl", hash = "sha256:75d24a4e7fc2c907d906a9286ab02f0c5ac8429a819f159358d3fececb819bb1"},
+    {file = "gseapy-1.1.9-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:4a2d227ab9fe355367bfb180cc3c664de81be4a46d10ac3d0f14030ae04d5636"},
+    {file = "gseapy-1.1.9-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:261901e555e0c5dbad8473fecab6af8028836592925a99dbee9be63e820202c0"},
+    {file = "gseapy-1.1.9-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e59b16f28acea655c1e78aad50fe6dc9b0e93340b4dac6a26de3961f1b51a080"},
+    {file = "gseapy-1.1.9-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:20aa82f9067a8df762b260b0b35754ec2d19162550a3b0b64cdbc36489bab645"},
+    {file = "gseapy-1.1.9-cp313-cp313-win32.whl", hash = "sha256:4002ad67ede0fafbae2b310add1fe6f6b3f5be16d2794947c4eb6a24a2018293"},
+    {file = "gseapy-1.1.9-cp313-cp313-win_amd64.whl", hash = "sha256:6314ee3de4aad4cade3a184a9ac2860a3c15ab2fddb9d092b941fcacf8e70523"},
+    {file = "gseapy-1.1.9-cp37-cp37m-win32.whl", hash = "sha256:83d1f8f251485d296a45d309078921d964e56e7fd76bb3dbc5975b2a09d371f3"},
+    {file = "gseapy-1.1.9-cp37-cp37m-win_amd64.whl", hash = "sha256:5f28e150b0b0a8595d7e76b0810c6af97b92d5c08b7c94a2acf554cd3638fa90"},
+    {file = "gseapy-1.1.9-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:996bb37e2c31763c5ca48204f57cc216c5d0df08c55dc4b32b9d1ef429f6c68f"},
+    {file = "gseapy-1.1.9-cp38-cp38-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ef54f3a784badc234aad604257404f71e9d3e706fa5ecaba6231d6578c863b9a"},
+    {file = "gseapy-1.1.9-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a75ee029d087ead0a5b6119b7d54921aa92162eceb2ea09e0e9bae005b9ae7c8"},
+    {file = "gseapy-1.1.9-cp38-cp38-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d796650bb397a8cba358587371b289a6ac89f16788e8c2539b312c6cf5e3f3d5"},
+    {file = "gseapy-1.1.9-cp38-cp38-win32.whl", hash = "sha256:84864bb98ea59e31764c19cdf352f50a198d6ca89a2d11b902ed95653860deac"},
+    {file = "gseapy-1.1.9-cp38-cp38-win_amd64.whl", hash = "sha256:1c494f9e66e32604fe510aefe000a26cc54139f06385b325ab41eb961fd62060"},
+    {file = "gseapy-1.1.9-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:81e253c912ba6cecf38259808f6afea5dccc8eea0ab162baf789521e51f2da0f"},
+    {file = "gseapy-1.1.9-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:42999431c77952e108450dabb8d2894b62850d54e0c316159e09a7e31e35c3b4"},
+    {file = "gseapy-1.1.9-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:03e689c8b67bfb8e0342eca138def4138be3846956da60c7aa5f8ed3561a1d8f"},
+    {file = "gseapy-1.1.9-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2fdb537508f9a9689f15426dbe003a9be4a633f24edf7d8241cf88c8bd6af0cc"},
+    {file = "gseapy-1.1.9-cp39-cp39-win32.whl", hash = "sha256:a4f0b4a05537f49d6bbdd0961293adc444b220307abe2aad446ec2bef6898f44"},
+    {file = "gseapy-1.1.9-cp39-cp39-win_amd64.whl", hash = "sha256:986519e0df153890be95174c9ea67927780918a86f9de2f8b405eb08a526c08a"},
+    {file = "gseapy-1.1.9.tar.gz", hash = "sha256:987670922885c6d38caa72aa9a104680a814eff1073e2a345b2b8c7190791d62"},
+]
+
+[package.dependencies]
+matplotlib = ">=2.2"
+numpy = ">=1.13.0"
+pandas = "*"
+requests = "*"
+scipy = "*"
+
+[[package]]
 name = "h5py"
 version = "3.11.0"
 description = "Read and write HDF5 files from Python"
@@ -1001,7 +1058,7 @@ description = "Internationalized Domain Names in Applications (IDNA)"
 optional = true
 python-versions = ">=3.6"
 groups = ["main"]
-markers = "extra == \"doc\""
+markers = "extra == \"doc\" or extra == \"dev\""
 files = [
     {file = "idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"},
     {file = "idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9"},
@@ -2973,7 +3030,7 @@ description = "Python HTTP for Humans."
 optional = true
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "extra == \"doc\""
+markers = "extra == \"doc\" or extra == \"dev\""
 files = [
     {file = "requests-2.32.4-py3-none-any.whl", hash = "sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c"},
     {file = "requests-2.32.4.tar.gz", hash = "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422"},
@@ -4258,7 +4315,7 @@ description = "HTTP library with thread-safe connection pooling, file post, and 
 optional = true
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "python_version < \"3.10\" and extra == \"doc\""
+markers = "python_version < \"3.10\" and (extra == \"doc\" or extra == \"dev\")"
 files = [
     {file = "urllib3-2.2.3-py3-none-any.whl", hash = "sha256:ca899ca043dcb1bafa3e262d73aa25c465bfb49e0bd9dd5d59f1d0acba2f8fac"},
     {file = "urllib3-2.2.3.tar.gz", hash = "sha256:e7d814a81dad81e6caf2ec9fdedb284ecc9c73076b62654547cc64ccdcae26e9"},
@@ -4277,7 +4334,7 @@ description = "HTTP library with thread-safe connection pooling, file post, and 
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version >= \"3.10\" and extra == \"doc\""
+markers = "python_version >= \"3.10\" and (extra == \"doc\" or extra == \"dev\")"
 files = [
     {file = "urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc"},
     {file = "urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"},
@@ -4422,10 +4479,10 @@ test = ["big-O", "importlib-resources ; python_version < \"3.9\"", "jaraco.funct
 type = ["pytest-mypy"]
 
 [extras]
-dev = ["cmprsk", "pre-commit"]
+dev = ["cmprsk", "gseapy", "pre-commit"]
 doc = ["furo", "myst-parser", "sphinx", "sphinx-autodoc-typehints", "sphinx-copybutton", "sphinx-gallery", "sphinx-hoverxref", "sphinx_design"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.8,<4.0"
-content-hash = "f30ba930d87d4b0618b980b7f7b5c16f6e1800522d670c7363bd464d6fbfbffa"
+content-hash = "eff42263ea916f215fee451993743099b0c0c2a194a5e8b7464e3fcb6526d1eb"
