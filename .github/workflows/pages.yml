@@ -14,7 +14,7 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          pip install -e ".[doc]"
+          pip install -e ".[doc,dev]"
       - id: deployment
         uses: sphinx-notes/pages@v3
         with:
