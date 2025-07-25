@@ -38,6 +38,7 @@ doc = [
 dev = [
     "pre-commit",
     "cmprsk",
+    "gseapy",
 ]
 
 [build-system]

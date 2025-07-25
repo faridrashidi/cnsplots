@@ -198,3 +198,45 @@ class LogisticModel:
         self.results = results_df[
             ["predictor", "auc", "lower_ci", "upper_ci", "hue_group"]
         ]
+
+
+def prerank(data, gene_sets, name_gene=None, name_rank=None, permutation_num=1000):
+    try:
+        import gseapy as gp
+    except ImportError:
+        print("pip install gseapy")
+
+    rnk = data.copy()
+    rnk = rnk[[name_gene, name_rank]]
+    rnk.columns = ["Gene", "Rank"]
+    rnk["Gene"] = rnk["Gene"].str.strip().str.upper()
+    gsea_res = gp.prerank(
+        rnk=rnk,
+        gene_sets=gene_sets,
+        min_size=15,
+        max_size=1000,
+        permutation_num=permutation_num,
+        seed=42,
+    )
+
+    def clean_term(term):
+        term = re.sub(r"^(HALLMARK_|KEGG_|REACTOME_|GO_|BIOCARTA_)", "", term)
+        term = term.replace("_", " ")
+        term = term.title()
+
+        term = re.sub(r"Nfk[ab]", "NF-κB", term, flags=re.IGNORECASE)
+        term = re.sub(r"Il(\d+)", r"IL-\1", term)
+        term = re.sub(r"Tgf", "TGF", term, flags=re.IGNORECASE)
+        term = re.sub(r"Mtor", "mTOR", term, flags=re.IGNORECASE)
+        term = re.sub(r"Dna", "DNA", term, flags=re.IGNORECASE)
+        term = re.sub(r"Mrna", "mRNA", term, flags=re.IGNORECASE)
+
+        term = term.replace("Via ", "via ")
+        term = term.replace("And ", "and ")
+        return term
+
+    gsea_df = gsea_res.res2d.copy()
+    gsea_df["Clean_Term"] = gsea_df["Term"].apply(clean_term)
+    gsea_df = gsea_df[(gsea_df["FDR q-val"] < 0.25) & (gsea_df["NES"].abs() > 1.5)]
+    gsea_df = gsea_df.sort_values(by="NES", key=abs, ascending=False)
+    return gsea_df
