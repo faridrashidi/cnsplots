@@ -26,6 +26,7 @@ dependencies = [
 
 [project.optional-dependencies]
 doc = [
+    "gseapy",
     "sphinx",
     "furo",
     "myst-parser",
@@ -38,7 +39,6 @@ doc = [
 dev = [
     "pre-commit",
     "cmprsk",
-    "gseapy",
 ]
 
 [build-system]
