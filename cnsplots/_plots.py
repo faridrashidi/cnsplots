@@ -438,49 +438,55 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     palette = kwargs.pop("palette", None)
     show_legend = False
     legend_handles = []
-    # if isinstance(palette, str) and palette in data.columns:
-    #     unique_labels = data[palette].unique()
-    #     palette_colors = sns.color_palette(n_colors=len(unique_labels))
-    #     label_to_color = dict(zip(unique_labels, palette_colors))
-    #     target_column = palette
-    #     which_numeric = None
-    #     if not pd.api.types.is_numeric_dtype(data[x]):
-    #         which_numeric = x
-    #     else:
-    #         which_numeric = y
-    #     mapping_index = (
-    #         data[[which_numeric, target_column]]
-    #         .drop_duplicates()
-    #         .set_index(which_numeric)[target_column]
-    #         .to_dict()
-    #     )
-    #     palette = {k: label_to_color[v] for k, v in mapping_index.items()}
     if isinstance(palette, str) and palette in data.columns:
-        # Use palette column to assign group label colors
         group_col = palette
-        category = y if data[y].nunique() <= data[x].nunique() else x
-
-        # Build color mapping
+        unique_labels = data[palette].unique()
+        palette_colors = sns.color_palette(n_colors=len(unique_labels))
+        label_to_color = dict(zip(unique_labels, palette_colors))
+        target_column = palette
+        which_numeric = None
+        if not pd.api.types.is_numeric_dtype(data[x]):
+            which_numeric = x
+        else:
+            which_numeric = y
+        mapping_index = (
+            data[[which_numeric, target_column]]
+            .drop_duplicates()
+            .set_index(which_numeric)[target_column]
+            .to_dict()
+        )
+        palette = {k: label_to_color[v] for k, v in mapping_index.items()}
+        show_legend = True
         unique_groups = data[group_col].unique()
         color_list = sns.color_palette(n_colors=len(unique_groups))
         group_to_color = dict(zip(unique_groups, color_list))
-
-        # Map each category (x or y) to a group
-        cat_to_group = (
-            data[[category, group_col]]
-            .drop_duplicates()
-            .set_index(category)[group_col]
-            .to_dict()
-        )
-        final_palette = {k: group_to_color[v] for k, v in cat_to_group.items()}
-
-        # Prepare legend
         legend_handles = [
             Patch(facecolor=color, label=label)
             for label, color in group_to_color.items()
         ]
-        palette = final_palette
-        show_legend = True
+    # if isinstance(palette, str) and palette in data.columns:
+    #     # Use palette column to assign group label colors
+    #     group_col = palette
+    #     category = y if data[y].nunique() <= data[x].nunique() else x
+    #     # Build color mapping
+    #     unique_groups = data[group_col].unique()
+    #     color_list = sns.color_palette(n_colors=len(unique_groups))
+    #     group_to_color = dict(zip(unique_groups, color_list))
+    #     # Map each category (x or y) to a group
+    #     cat_to_group = (
+    #         data[[category, group_col]]
+    #         .drop_duplicates()
+    #         .set_index(category)[group_col]
+    #         .to_dict()
+    #     )
+    #     final_palette = {k: group_to_color[v] for k, v in cat_to_group.items()}
+    #     # Prepare legend
+    #     legend_handles = [
+    #         Patch(facecolor=color, label=label)
+    #         for label, color in group_to_color.items()
+    #     ]
+    #     palette = final_palette
+    #     show_legend = True
     plotting = {"data": data, "x": x, "y": y, "palette": palette}
     plotting.update(args)
     plotting.update(kwargs)
