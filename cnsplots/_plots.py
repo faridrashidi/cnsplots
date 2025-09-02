@@ -341,6 +341,8 @@ def violinplot(
     x: str,
     y: str,
     pairs: Optional[List[Tuple[str, str]]] = None,
+    width=0.6,
+    add_box=True,
     **kwargs,
 ) -> None:
     """Create a violin plot.
@@ -384,17 +386,13 @@ def violinplot(
     }
     plotting = {"data": data, "x": x, "y": y}
     plotting.update(kwargs)
-    ax = sns.violinplot(linewidth=0, width=0.6, **plotting)
+    ax = sns.violinplot(linewidth=0, width=width, **plotting)
     plotting.update(args)
     plotting.update(kwargs)
-    sns.boxplot(**plotting)
+    if add_box:
+        sns.boxplot(**plotting)
     if pairs is not None:
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
-
-
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
 
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
