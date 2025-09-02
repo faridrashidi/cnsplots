@@ -464,29 +464,6 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
             Patch(facecolor=color, label=label)
             for label, color in group_to_color.items()
         ]
-    # if isinstance(palette, str) and palette in data.columns:
-    #     # Use palette column to assign group label colors
-    #     group_col = palette
-    #     category = y if data[y].nunique() <= data[x].nunique() else x
-    #     # Build color mapping
-    #     unique_groups = data[group_col].unique()
-    #     color_list = sns.color_palette(n_colors=len(unique_groups))
-    #     group_to_color = dict(zip(unique_groups, color_list))
-    #     # Map each category (x or y) to a group
-    #     cat_to_group = (
-    #         data[[category, group_col]]
-    #         .drop_duplicates()
-    #         .set_index(category)[group_col]
-    #         .to_dict()
-    #     )
-    #     final_palette = {k: group_to_color[v] for k, v in cat_to_group.items()}
-    #     # Prepare legend
-    #     legend_handles = [
-    #         Patch(facecolor=color, label=label)
-    #         for label, color in group_to_color.items()
-    #     ]
-    #     palette = final_palette
-    #     show_legend = True
     plotting = {"data": data, "x": x, "y": y, "palette": palette}
     plotting.update(args)
     plotting.update(kwargs)

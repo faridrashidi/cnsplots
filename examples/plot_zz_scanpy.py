@@ -55,7 +55,15 @@ sc.pl.matrixplot(blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False)
 cns.figure(150, 150)
 cns.setup_scanpy()
 ax = plt.gca()
-sc.pl.stacked_violin(blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False)
+sc.pl.stacked_violin(
+    blobs,
+    ["mitf", "axl"],
+    groupby="blobs",
+    ax=ax,
+    show=False,
+    edgecolor=None,
+    stripplot=False,
+)
 
 
 # %%
