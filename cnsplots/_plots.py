@@ -885,7 +885,9 @@ def volcanoplot(
     cns.take_legend_out()
 
 
-def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, **kwargs):
+def stripplot(
+    data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs
+):
     ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
         data=data,
@@ -907,6 +909,8 @@ def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, **kwargs):
         ax=ax,
         showmeans=showmeans,
     )
+    if addcount:
+        cns._utils._addcount_helper(data, x, ax)
 
 
 def histplot(**kwargs):
