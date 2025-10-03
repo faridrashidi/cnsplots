@@ -19,6 +19,7 @@ import upsetplot as usp
 from matplotlib.patches import Patch
 from natsort import natsort_keygen
 from PyComplexHeatmap import DotClustermapPlotter
+from scipy.stats import fisher_exact
 from sklearn.metrics import ConfusionMatrixDisplay, auc, confusion_matrix, roc_curve
 
 import cnsplots as cns
@@ -954,38 +955,142 @@ def vennplot(lists, labels):
         ax.get_label_by_id(area).set_fontsize(7)
 
 
-def confusionplot(data, x, y, add_pvalue=False):
-    labels = data[x].unique()
-    cm = confusion_matrix(data[y], data[x], labels=labels)
-    cmd = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+def confusionplot(
+    data,
+    x,
+    y,
+    add_pvalue=False,
+    x_order=None,
+    y_order=None,
+    positive_x=None,
+    positive_y=None,
+    annot=True,
+    cmap=plt.cm.Blues,
+    pvalue_pad=1.5,
+):
+    """
+    Plot a confusion matrix even when predicted (x) and true (y) labels
+    use different vocabularies or types (e.g., str vs int).
 
+    Parameters
+    ----------
+    data : pd.DataFrame
+    x : str
+        Column with predictions.
+    y : str
+        Column with ground truth.
+    x_order, y_order : list, optional
+        Explicit label orders for columns (pred) and rows (truth).
+        Defaults to the order of first appearance.
+    positive_x, positive_y : hashable, optional
+        The label to treat as 'positive' in predictions and truth when computing
+        binary metrics. If not given, the second label in the corresponding order
+        is used (i.e., last of the two).
+    add_pvalue : bool
+        If True and the matrix is 2×2, compute specificity, sensitivity, PPV, NPV,
+        Cohen’s kappa, Fisher’s exact p-value, and odds ratio.
+    annot : bool
+        Write the integer counts in each cell.
+    cmap : matplotlib colormap
+    """
+
+    if y_order is None:
+        y_order = pd.unique(data[y])
+    if x_order is None:
+        x_order = pd.unique(data[x])
+
+    y_cat = pd.Categorical(data[y], categories=y_order, ordered=True)
+    x_cat = pd.Categorical(data[x], categories=x_order, ordered=True)
+
+    cm_df = pd.crosstab(y_cat, x_cat, dropna=False)
+
+    # Plot
     ax = plt.gca()
-    cmd.plot(ax=ax, cmap=plt.cm.Blues)
-    cmd.ax_.spines["right"].set_visible(True)
-    cmd.ax_.spines["top"].set_visible(True)
-    cmd.ax_.set_xlabel(x)
-    cmd.ax_.set_ylabel(y)
-    plt.yticks(rotation=90, va="center")
-    colorbar = cmd.ax_.images[-1].colorbar
-    colorbar.remove()
+    fig = plt.gcf()
+    im = ax.imshow(cm_df.values, interpolation="nearest", cmap=cmap)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
 
+    # Ticks & tick labels
+    ax.set_xticks(np.arange(len(x_order)))
+    ax.set_yticks(np.arange(len(y_order)))
+    ax.set_xticklabels([str(v) for v in x_order], rotation=0, ha="center")
+    ax.set_yticklabels([str(v) for v in y_order], rotation=0, va="center")
+
+    # Draw cell borders for readability
+    for edge, spine in ax.spines.items():
+        spine.set_visible(True)
+
+    # Optional annotations
+    if annot:
+        for i in range(cm_df.shape[0]):
+            for j in range(cm_df.shape[1]):
+                ax.text(j, i, int(cm_df.iat[i, j]), ha="center", va="center")
+
+    # Remove colorbar to match your original style
+    # (comment these two lines if you'd like to keep it)
+    cb = fig.colorbar(im, ax=ax)
+    cb.remove()
+
+    # Optional stats (binary only)
     if add_pvalue:
-        tn, fp, fn, tp = cm.ravel()
-        specificity = tn / (tn + fp)
-        sensitivity = tp / (tp + fn)
-        ppv = tp / (tp + fp)
-        npv = tn / (tn + fn)
-        po = (tp + tn) / (tp + tn + fp + fn)
-        pe = ((tp + fp) * (tp + fn) + (tn + fp) * (tn + fn)) / (tp + tn + fp + fn) ** 2
-        kappa = (po - pe) / (1 - pe)
-        _, p_value = sp.stats.fisher_exact([[tp, fp], [fn, tn]])
-        odds_ratio = (tp * tn) / (fp * fn)
+        if cm_df.shape != (2, 2):
+            raise ValueError(
+                "add_pvalue=True requires a 2×2 confusion matrix. "
+                "Provide y_order and x_order with exactly two labels each."
+            )
 
-        fig = plt.gcf()
+        # Decide which labels are positive/negative on each axis
+        if positive_y is None:
+            pos_y = y_order[-1]  # default: last of the two
+        else:
+            pos_y = positive_y
+        neg_y = [lbl for lbl in y_order if lbl != pos_y][0]
+
+        if positive_x is None:
+            pos_x = x_order[-1]
+        else:
+            pos_x = positive_x
+        neg_x = [lbl for lbl in x_order if lbl != pos_x][0]
+
+        # Extract counts in tn/fp/fn/tp layout:
+        # rows = true (neg_y, pos_y), cols = pred (neg_x, pos_x)
+        try:
+            tn = int(cm_df.loc[neg_y, neg_x])
+            fp = int(cm_df.loc[neg_y, pos_x])
+            fn = int(cm_df.loc[pos_y, neg_x])
+            tp = int(cm_df.loc[pos_y, pos_x])
+        except KeyError as e:
+            raise ValueError(
+                "Could not find a required cell for stats. "
+                f"Check x_order/y_order and positive_x/positive_y. Missing: {e}"
+            )
+
+        # Compute stats safely (avoid zero-division)
+        def _safe_div(a, b):
+            return np.nan if b == 0 else a / b
+
+        specificity = _safe_div(tn, tn + fp)
+        sensitivity = _safe_div(tp, tp + fn)
+        ppv = _safe_div(tp, tp + fp)
+        npv = _safe_div(tn, tn + fn)
+        total = tp + tn + fp + fn
+        po = _safe_div(tp + tn, total)
+
+        # Expected agreement for kappa (binary)
+        pe = _safe_div((tp + fp) * (tp + fn) + (tn + fp) * (tn + fn), total**2)
+        kappa = np.nan if (pe is np.nan or pe == 1) else _safe_div(po - pe, 1 - pe)
+
+        # Fisher exact & odds ratio
+        _, p_value = fisher_exact([[tp, fp], [fn, tn]])
+        odds_ratio = _safe_div(tp * tn, fp * fn)
+
+        # Overlay the stats block
         ax2 = fig.add_axes(ax.get_position(), frameon=False)
         ax2.tick_params(
             labelcolor="none", top=False, bottom=False, left=False, right=False
         )
+
         msg = rf"""
         Specificity: {specificity:.2f}
         Sensitivity: {sensitivity:.2f}
@@ -995,7 +1100,8 @@ def confusionplot(data, x, y, add_pvalue=False):
         Fisher's exact test: ${num2tex.num2tex(p_value, precision=2):.2g}$
         Odds ratio: {odds_ratio:.2f}
         """
-        ax2.text(-0.25, -1.5, msg, ha="left", va="bottom")
+        # place just below the plot area; tweak as needed
+        ax2.text(-0.25, -pvalue_pad, msg, ha="left", va="bottom")
 
 
 def sankeyplot(data, x, y):
