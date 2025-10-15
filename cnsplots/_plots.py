@@ -777,20 +777,33 @@ def survivalplot(data, duration, event, hue, hue_order=None):
 
 
 def cumulativeincidenceplot(
-    data, duration, event, hue, hue_order=None, pvalue_position=(0, 0.5)
+    data,
+    duration,
+    event,
+    hue,
+    hue_order=None,
+    pvalue_position=(0, 0.5),
+    show_risk_table=False,
+    risk_table_rows=("At risk",),
+    risk_table_ypos=-0.2,
+    xticks=None,
 ):
     ax = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
-    ajf = ll.AalenJohansenFitter()
+    fitters = []
     for i, group in enumerate(hue_order):
         df = data[data[hue] == group]
         label = f"{group} (n={df.shape[0]})"
-        ajf.fit(df[duration], df[event], label=label, event_of_interest=1)
+        if show_risk_table:
+            label = group
+        fitter = ll.AalenJohansenFitter()
+        fitter.fit(df[duration], df[event], label=label, event_of_interest=1)
+        fitters.append(fitter)
         df = pd.merge(
-            ajf.cumulative_density_.reset_index(drop=False),
+            fitter.cumulative_density_.reset_index(drop=False),
             df,
             how="outer",
             left_on="event_at",
@@ -798,14 +811,27 @@ def cumulativeincidenceplot(
         )
         df = df.loc[df[event] == 0].copy()
         if i == 0:
-            ax = ajf.plot(linewidth=1, ci_show=False)
+            ax = fitter.plot(linewidth=1, ci_show=False)
         else:
-            ax = ajf.plot(ax=ax, linewidth=1, ci_show=False)
+            ax = fitter.plot(ax=ax, linewidth=1, ci_show=False)
         line_color = ax.get_lines()[-1].get_color()
         ax.plot(df[duration], df["CIF_1"], "+", markersize=3, color=line_color)
-    plt.ylim(-0.05, 1.01)
-    plt.ylabel("Cumulative incidence probability")
-    plt.xlabel("Time (Years)")
+    if ax is None:
+        return
+    ax.set_ylim(-0.05, 1.01)
+    ax.set_ylabel("Cumulative incidence probability")
+    ax.set_xlabel("Time (Years)")
+    specified_xticks = None
+    if xticks is not None:
+        specified_xticks = np.asarray(list(xticks), dtype=float)
+        if specified_xticks.size > 0:
+            ax.set_xticks(specified_xticks)
+            current_xlim = ax.get_xlim()
+            new_xlim = (
+                min(current_xlim[0], specified_xticks.min()),
+                max(current_xlim[1], specified_xticks.max()),
+            )
+            ax.set_xlim(new_xlim)
 
     try:
         from cmprsk import cmprsk
@@ -816,6 +842,20 @@ def cumulativeincidenceplot(
         ax.text(pvalue_position[0], pvalue_position[1], f"P = " + rf"${p:.2g}$")
     except ImportError:
         print("pip install cmprsk")
+
+    if show_risk_table:
+        rows = None if risk_table_rows is None else list(risk_table_rows)
+        xticks = np.asarray(ax.get_xticks())
+        xticks = xticks[
+            (xticks >= ax.get_xlim()[0] - 1e-8) & (xticks <= ax.get_xlim()[1] + 1e-8)
+        ]
+        ll.plotting.add_at_risk_counts(
+            *fitters,
+            ax=ax,
+            rows_to_show=rows,
+            ypos=risk_table_ypos,
+            xticks=xticks.tolist(),
+        )
 
 
 def volcanoplot(

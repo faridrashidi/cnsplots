@@ -9,6 +9,7 @@ create survivalplot
 # load data
 import lifelines as ll
 import matplotlib.pyplot as plt
+import numpy as np
 
 import cnsplots as cns
 
@@ -28,7 +29,14 @@ _ = plt.legend(loc="upper right")
 # plot cumulativeincidenceplot using :func:`cnsplots.cumulativeincidenceplot`
 cns.figure(150, 150)
 cns.cumulativeincidenceplot(
-    data=waltons, duration="T", event="E", hue="group", hue_order=["miR-137", "control"]
+    data=waltons,
+    duration="T",
+    event="E",
+    hue="group",
+    hue_order=["miR-137", "control"],
+    xticks=np.arange(0, waltons["T"].max() + 2, 12),
+    show_risk_table=True,
+    risk_table_ypos=-0.2,
 )
 plt.xlabel("Time (Months)")
 _ = plt.legend(loc="upper left")
