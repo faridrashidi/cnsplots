@@ -816,8 +816,6 @@ def cumulativeincidenceplot(
             ax = fitter.plot(ax=ax, linewidth=1, ci_show=False)
         line_color = ax.get_lines()[-1].get_color()
         ax.plot(df[duration], df["CIF_1"], "+", markersize=3, color=line_color)
-    if ax is None:
-        return
     ax.set_ylim(-0.05, 1.01)
     ax.set_ylabel("Cumulative incidence probability")
     ax.set_xlabel("Time (Years)")
@@ -832,7 +830,6 @@ def cumulativeincidenceplot(
                 max(current_xlim[1], specified_xticks.max()),
             )
             ax.set_xlim(new_xlim)
-
     try:
         from cmprsk import cmprsk
 
@@ -856,6 +853,7 @@ def cumulativeincidenceplot(
             ypos=risk_table_ypos,
             xticks=xticks.tolist(),
         )
+    return ax
 
 
 def volcanoplot(

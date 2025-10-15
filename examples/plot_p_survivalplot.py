@@ -28,7 +28,7 @@ _ = plt.legend(loc="upper right")
 # %%
 # plot cumulativeincidenceplot using :func:`cnsplots.cumulativeincidenceplot`
 cns.figure(150, 150)
-cns.cumulativeincidenceplot(
+ax = cns.cumulativeincidenceplot(
     data=waltons,
     duration="T",
     event="E",
@@ -38,5 +38,5 @@ cns.cumulativeincidenceplot(
     show_risk_table=True,
     risk_table_ypos=-0.2,
 )
-plt.xlabel("Time (Months)")
+ax.set_xlabel("Time (Months)")
 _ = plt.legend(loc="upper left")
