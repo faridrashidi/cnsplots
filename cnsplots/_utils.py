@@ -131,13 +131,43 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
                     text, num2tex.num2tex(result.pvalue), result.significance_suffix
                 )
 
-    if pd.api.types.is_numeric_dtype(data[plotting["x"]]):
+    x_is_numeric = pd.api.types.is_numeric_dtype(data[plotting["x"]])
+    if x_is_numeric:
         plotting["orient"] = "h"
-        if pairs == "all":
-            pairs = list(itertools.combinations(data[plotting["y"]].unique(), 2))
+        primary_col = plotting["y"]
     else:
-        if pairs == "all":
-            pairs = list(itertools.combinations(data[plotting["x"]].unique(), 2))
+        primary_col = plotting["x"]
+
+    primary_levels = list(pd.unique(data[primary_col].dropna()))
+    order = plotting.get("order")
+    if order is not None:
+        primary_levels = [level for level in order if level in primary_levels]
+
+    if pairs == "all":
+        pairs = list(itertools.combinations(primary_levels, 2))
+    elif pairs == "hue":
+        hue_col = plotting.get("hue")
+        if hue_col is None:
+            raise ValueError(
+                "`pairs='hue'` requires a hue column in the plotting data."
+            )
+        hue_levels = list(pd.unique(data[hue_col].dropna()))
+        hue_order = plotting.get("hue_order")
+        if hue_order is not None:
+            hue_levels = [level for level in hue_order if level in hue_levels]
+        hue_pairs = []
+        for category in primary_levels:
+            subset = data[data[primary_col] == category]
+            present_hues = [
+                level
+                for level in hue_levels
+                if level in pd.unique(subset[hue_col].dropna())
+            ]
+            hue_pairs.extend(
+                ((category, first), (category, second))
+                for first, second in itertools.combinations(present_hues, 2)
+            )
+        pairs = hue_pairs
 
     annotator = Annotator(ax, pairs, **plotting)
     annotator._pvalue_format = PValueFormatNew()
