@@ -36,8 +36,6 @@ plt.savefig("figure.svg")  # Save the figure
 ## Installation
 
 ```
-poetry lock
 poetry install --extras "dev doc"
-rm -rf .Rprofile && Rscript -e 'renv::init(); renv::settings$use.cache(FALSE)'
-poetry run python install_r_packages.py
+Rscript -e 'renv::restore()'
 ```
