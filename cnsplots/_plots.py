@@ -927,7 +927,7 @@ def volcanoplot(
 def stripplot(
     data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs
 ):
-    ax = sns.stripplot(data=data, x=x, y=y, size=size, dodge=True, **kwargs)
+    ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
         data=data,
         x=x,
