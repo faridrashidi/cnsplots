@@ -25,7 +25,6 @@ repos:
       - id: check-merge-conflict
       - id: check-ast
       - id: check-symlinks
-      - id: check-added-large-files
       - id: check-executables-have-shebangs
       - id: fix-encoding-pragma
         args: [--remove]

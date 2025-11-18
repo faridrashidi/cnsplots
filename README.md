@@ -36,6 +36,6 @@ plt.savefig("figure.svg")  # Save the figure
 ## Installation
 
 ```
-poetry install --extras "dev doc"
+uv sync --extra doc --extra dev
 Rscript -e 'renv::restore()'
 ```
