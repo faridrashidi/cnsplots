@@ -27,9 +27,9 @@ example2 = usp.from_memberships(memberships)
 
 # %%
 # plot upsetplot using :func:`cnsplots.upsetplot`
-cns.upsetplot(example1, element_size=30, show_counts="{:,}", totals_plot_elements=0)
+cns.upsetplot(example1, totals_plot_elements=0, facecolor=cns.VIOLET)
 
 
 # %%
 # plot upsetplot using :func:`cnsplots.upsetplot`
-cns.upsetplot(example2, element_size=30, show_counts="{:,}", subset_size="count")
+cns.upsetplot(example2, subset_size="count")

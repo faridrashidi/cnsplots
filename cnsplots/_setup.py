@@ -108,7 +108,15 @@ def setup_ax(
     fontsize_title=FONTSIZE_TITLE,
     fontsize_legend=FONTSIZE_LEGEND,
     linewidth_axes=LINEWIDTH_AXES,
+    colorbar_label="FDR q-val",
 ):
+    mpl.rcParams.update(
+        {
+            "mathtext.fontset": "custom",
+            "font.family": "sans-serif",
+            "font.sans-serif": "Helvetica",
+        }
+    )
     ax.set_title(ax.get_title(), fontsize=fontsize_title, pad=4)
     ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
     ax.set_ylabel(ax.get_ylabel(), fontsize=fontsize_title, color="black")
@@ -138,9 +146,11 @@ def setup_ax(
     )
     ax.grid(False)
     ax.margins(x=0.05, y=0.05)
-    cbar = ax.collections[0].colorbar
-    cbar.ax.tick_params(labelsize=fontsize_legend)
-    cbar.set_label("FDR q-val", fontsize=fontsize_title, color="black")
+    cbar = ax.collections[0].colorbar if ax.collections else None
+    if cbar is not None:
+        cbar.ax.tick_params(labelsize=fontsize_legend)
+        if colorbar_label:
+            cbar.set_label(colorbar_label, fontsize=fontsize_title, color="black")
 
 
 def setup_ggplot():

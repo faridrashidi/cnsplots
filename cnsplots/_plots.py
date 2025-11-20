@@ -965,9 +965,24 @@ def scatterplot(data, x, y, s=7, **kwargs):
 
 
 def upsetplot(data, **kwargs):
-    upset = usp.UpSet(data, **kwargs)
-    upset.plot()
+    upset = usp.UpSet(data, element_size=17, show_counts="{:,}", **kwargs)
+    axes = upset.plot()
     plt.grid(False)
+    ax_tot = axes.get("totals")
+    cns.setup_ax(axes["matrix"])
+    cns.setup_ax(axes["shading"])
+    cns.setup_ax(axes["intersections"])
+    axes["matrix"].tick_params(axis="both", which="both", length=0)
+    for txt in axes["intersections"].texts:
+        txt.set_size(cns.FONTSIZE_LEGEND)
+    if ax_tot is not None:
+        cns.setup_ax(ax_tot)
+        for txt in ax_tot.texts:
+            txt.set_size(cns.FONTSIZE_LEGEND)
+        pos_mat = ax_tot.get_position()
+        dx = 0.03
+        new_pos = [pos_mat.x0 + dx, pos_mat.y0, pos_mat.width, pos_mat.height]
+        ax_tot.set_position(new_pos)
 
 
 def vennplot(lists, labels):
