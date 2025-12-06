@@ -640,11 +640,14 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
             )
             rho, p_value = sp.stats.pearsonr(subset[x], subset[y])
             ax.text(
-                ax.get_xlim()[0] * 2,
-                ax.get_ylim()[1] * (0.9 - 0.05 * idx),
+                0.05,
+                0.95 - 0.08 * idx,
                 rf"{hue_val}: $\rho$={rho:.2f},"
-                rf" $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+                rf" P=${num2tex.num2tex(p_value, precision=2):.2g}$",
                 color=palette[idx],
+                transform=ax.transAxes,
+                ha="left",
+                va="top",
             )
     else:
         ax = sns.regplot(
@@ -656,10 +659,13 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
         )
         rho, p_value = sp.stats.pearsonr(data[x], data[y])
         ax.text(
-            ax.get_xlim()[0] * 2,
-            ax.get_ylim()[1] * 0.9,
+            0.05,
+            0.95,
             rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
             color="black",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
         )
     if hue:
         plt.legend(title=hue)
