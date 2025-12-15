@@ -254,6 +254,7 @@ def boxplot(
     pairs: Optional[List[Tuple[str, str]]] = None,
     showoutliers: bool = False,
     addcount: bool = False,
+    whis=1.5,
     **kwargs,
 ) -> None:
     """Create a box plot.
@@ -271,6 +272,9 @@ def boxplot(
         A list of pairs of x attributes for calculating the p-values.
     showoutliers
         A Boolean to show outliers on the boxes.
+    whis
+        The proportion of the IQR past the low and high quartiles to extend the plot whiskers.
+        Use (0, 100) to extend the whiskers to the minimum and maximum values.
     **kwargs
         Keyword arguments passed to the `seaborn.boxplot` function.
 
@@ -284,6 +288,7 @@ def boxplot(
         "showcaps": False,
         "showbox": True,
         "linewidth": 0.8,
+        "whis": whis,
         "boxprops": {"edgecolor": "none"},
         "medianprops": {"color": "white"},
         "whiskerprops": {"color": "black"},
@@ -326,9 +331,18 @@ def boxplot(
                 line.set_mec("white")
 
     cns._utils._remove_edge_from_legend_items(ax)
+    whis_str = (
+        "minimum and maximum values"
+        if whis == (0, 100)
+        else (
+            f"{whis} times the interquartile range"
+            if isinstance(whis, (int, float))
+            else str(whis)
+        )
+    )
     print(
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
-        " correspond to 1.5 times the interquartile range."
+        f" correspond to the {whis_str}."
     )
     if pairs is not None:
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
