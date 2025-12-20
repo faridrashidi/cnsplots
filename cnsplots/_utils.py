@@ -60,6 +60,17 @@ def take_legend_out(title=None):
     )
 
 
+def add_panel_name(name="A", offset_x=-0.25, offset_y=1.1):
+    plt.text(
+        offset_x,
+        offset_y,
+        name,
+        transform=plt.gca().transAxes,
+        fontsize=FONTSIZE_TITLE,
+        fontweight="bold",
+    )
+
+
 def get_hexcolors_from_apalette(
     alist, palette=palettable.colorbrewer.qualitative.Set1_9.hex_colors
 ):
