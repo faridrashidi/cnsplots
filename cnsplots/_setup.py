@@ -94,7 +94,7 @@ def setup_matplotlib(
         "gnuplot",
         "hot",
         "RdBu_custom",
-        "OrBl_custom",
+        "OrBu_custom",
         "YlGnBu_custom",
     ]:
         if continues not in mpl.colormaps:
