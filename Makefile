@@ -14,6 +14,7 @@ clean:
 	rm -rf docs/cnsplots*
 	rm -rf docs/auto_examples
 	rm -rf docs/gen_modules
+	rm -rf examples/renv
 
 lint:
 	pre-commit run --all-files
