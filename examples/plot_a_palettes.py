@@ -64,7 +64,7 @@ plot_palettes(
         "gnuplot",
         "hot",
         "RdBu_custom",
-        "OrBl_custom",
+        "OrBu_custom",
         "YlGnBu_custom",
     ]
 )

@@ -20,13 +20,13 @@ dependencies = [
     "scipy",
     "seaborn",
     "upsetplot",
+    "gseapy",
     "statsmodels ; python_version >= '3.9' and python_version < '4.0'",
     "statannotations @ git+https://github.com/trevismd/statannotations@master",
 ]
 
 [project.optional-dependencies]
 doc = [
-    "gseapy",
     "sphinx",
     "furo",
     "myst-parser",
@@ -36,10 +36,7 @@ doc = [
     "sphinx-hoverxref",
     "sphinx_design",
 ]
-dev = [
-    "pre-commit",
-    "cmprsk",
-]
+dev = ["pre-commit", "cmprsk"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

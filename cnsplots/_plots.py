@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 import adjustText as at
+import gseapy as gp
 import lifelines as ll
 import matplotlib as mpl
 import matplotlib.gridspec as grid_spec
@@ -1430,3 +1431,41 @@ def rocplot(data, true_label_col, pred_prob_cols):
     plt.ylabel("True Positive Rate")
     plt.legend(loc="lower right")
     plt.legend(loc="lower right")
+
+
+def gseaplot(
+    data, y, color="NES", cutoff=0.05, cmap="RdBu_custom", top_term=20, size=1.8
+):
+    ax = plt.gca()
+    gp.dotplot(
+        data,
+        cmap=cmap,
+        y=y,
+        x="NES",
+        cutoff=cutoff,
+        column=color,
+        ax=ax,
+        top_term=top_term,
+        size=size,
+    )
+    fig = plt.gcf()
+    cbar_ax = fig.axes[-1]
+    pos = cbar_ax.get_position()
+    cbar_ax.set_position([pos.x0 + 0.1, pos.y0 - 0.1, pos.width, pos.height])
+    cbar_ax.yaxis.set_label_position("left")
+    cbar_ax.yaxis.labelpad = 1
+    cbar_ax.set_ylabel("")
+    legend = ax.get_legend()
+    handles = legend.legend_handles
+    labels = [t.get_text() for t in legend.get_texts()]
+    title = legend.get_title().get_text()
+    ax.legend(
+        handles,
+        labels,
+        title=title,
+        bbox_to_anchor=(1.2, 1),
+        labelspacing=0.2,
+        markerscale=1.5,
+    )
+    cns.setup_ax(ax, colorbar_label="")
+    plt.xlabel("Normalized Enrichment Score (NES)")

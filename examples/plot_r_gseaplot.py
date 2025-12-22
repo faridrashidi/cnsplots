@@ -27,15 +27,5 @@ de.head()
 # %%
 # plot volcanoplot using :func:`cnsplots.volcanoplot`
 gsea_res = cns.methods.prerank(de, "GO_Biological_Process_2021", "symbol", "rank")
-cns.figure(120, 130)
-ax = plt.gca()
-gp.dotplot(
-    gsea_res,
-    cmap="gnuplot",
-    y="Clean_Term",
-    cutoff=0.05,
-    column="FDR q-val",
-    ax=ax,
-    size=1.8,
-)
-cns.setup_ax(ax)
+cns.figure(250, 130)
+cns.gseaplot(gsea_res, y="Clean_Term", top_term=20, size=1.8)
