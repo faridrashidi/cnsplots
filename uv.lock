@@ -650,6 +650,7 @@ version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "adjusttext" },
+    { name = "gseapy" },
     { name = "lifelines", version = "0.27.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "lifelines", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "lxml" },
@@ -693,7 +694,6 @@ dev = [
 doc = [
     { name = "furo", version = "2024.8.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "furo", version = "2025.9.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-    { name = "gseapy" },
     { name = "myst-parser", version = "3.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "myst-parser", version = "4.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "sphinx", version = "7.1.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
@@ -716,7 +716,7 @@ requires-dist = [
     { name = "adjusttext" },
     { name = "cmprsk", marker = "extra == 'dev'" },
     { name = "furo", marker = "extra == 'doc'" },
-    { name = "gseapy", marker = "extra == 'doc'" },
+    { name = "gseapy" },
     { name = "lifelines" },
     { name = "lxml" },
     { name = "matplotlib" },
