@@ -63,6 +63,9 @@ plot_palettes(
         "parula",
         "gnuplot",
         "hot",
+        "RdBu_custom",
+        "OrBl_custom",
+        "YlGnBu_custom",
     ]
 )
 

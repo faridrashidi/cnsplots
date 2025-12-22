@@ -89,7 +89,14 @@ def setup_matplotlib(
             mpl.colormaps.register(
                 mpl.colors.ListedColormap(cns.palettes(categorical)), name=categorical
             )
-    for continues in ["parula", "gnuplot", "hot"]:
+    for continues in [
+        "parula",
+        "gnuplot",
+        "hot",
+        "RdBu_custom",
+        "OrBl_custom",
+        "YlGnBu_custom",
+    ]:
         if continues not in mpl.colormaps:
             mpl.colormaps.register(cns.palettes(continues), name=continues)
 
