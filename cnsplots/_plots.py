@@ -1434,7 +1434,9 @@ def rocplot(data, true_label_col, pred_prob_cols):
     plt.legend(loc="lower right")
 
 
-def gseaplot(data, y, color="NES", cutoff=0.05, cmap="coolwarm", top_term=20, size=1.8):
+def gseaplot(
+    data, y, color="NES", cutoff=0.05, cmap="BuRd_custom", top_term=20, size=1.8
+):
     ax = plt.gca()
     gp.dotplot(
         data,

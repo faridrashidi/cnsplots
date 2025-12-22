@@ -93,7 +93,8 @@ def setup_matplotlib(
         "parula",
         "gnuplot",
         "hot",
-        "coolwarm",
+        "WhYlOrRd_custom",
+        "BuRd_custom",
         "OrBu_custom",
         "YlGnBu_custom",
     ]:
