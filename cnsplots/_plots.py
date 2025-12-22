@@ -942,6 +942,13 @@ def volcanoplot(
         dashes=(8, 5),
     )
     cns.take_legend_out()
+    if ax.get_legend() is not None:
+        for handle in ax.get_legend().legend_handles:
+            legend_dot_size = 20
+            if hasattr(handle, "set_sizes"):
+                handle.set_sizes([legend_dot_size])
+            elif hasattr(handle, "set_markersize"):
+                handle.set_markersize(2 * np.sqrt(legend_dot_size / np.pi))
 
 
 def stripplot(
