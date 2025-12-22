@@ -893,8 +893,9 @@ def volcanoplot(
     up = (de[y] > -np.log10(0.05)) & (de[x] > 0.5)
     down = (de[y] > -np.log10(0.05)) & (de[x] < -0.5)
     if show_list is None:
-        de.loc[de.loc[up].nlargest(n_show, y).index, hue] = "Up"
-        de.loc[de.loc[down].nlargest(n_show, y).index, hue] = "Down"
+        de["rank"] = de[y] * de[x].abs()
+        de.loc[de.loc[up].nlargest(n_show, "rank").index, hue] = "Up"
+        de.loc[de.loc[down].nlargest(n_show, "rank").index, hue] = "Down"
     else:
         de.loc[de[symbol].isin(show_list) & up, hue] = "Up"
         de.loc[de[symbol].isin(show_list) & down, hue] = "Down"
