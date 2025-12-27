@@ -15,7 +15,6 @@ from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
 
 import cnsplots as cns
-from cnsplots._svg import _save_svg
 
 PALETTE_QUAL = "Ecotyper1"
 PALETTE_SEQ = "gnuplot"
@@ -42,11 +41,14 @@ def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SE
 
 def savefig(filepath):
     filepath = os.path.expanduser(filepath)
-    root, ext = os.path.splitext(filepath)
-    if ext.lower() == ".svg":
-        _save_svg(filepath, root)
-    else:
-        plt.savefig(filepath)
+    directory = os.path.dirname(filepath)
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    # root, ext = os.path.splitext(filepath)
+    # if ext.lower() == ".svg":
+    # _save_svg(filepath, root)
+    # else:
+    plt.savefig(filepath)
 
 
 def take_legend_out(title=None):
