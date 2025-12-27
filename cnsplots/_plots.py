@@ -21,13 +21,13 @@ from matplotlib.patches import Patch
 from natsort import natsort_keygen
 from PyComplexHeatmap import DotClustermapPlotter
 from scipy.stats import fisher_exact
-from sklearn.metrics import ConfusionMatrixDisplay, auc, confusion_matrix, roc_curve
+from sklearn.metrics import auc, roc_curve
 
 import cnsplots as cns
 import cnsplots._helper_heatmap as helper_heatmap
 import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
-from cnsplots._utils import PALETTE_QUAL, PALETTE_SEQ
+from cnsplots._utils import PALETTE_SEQ
 
 
 def heatmapplot(
@@ -66,7 +66,7 @@ def heatmapplot(
         rc_dict = {}
         global cat_counter, cont_counter
         for annot in rc_annotation:
-            if df.dtypes[annot] == object:
+            if isinstance(df.dtypes[annot], object):
                 if df[annot].isna().any():
                     rc_dict[annot] = pch.anno_label(
                         df[annot],
@@ -309,7 +309,7 @@ def boxplot(
     ax = sns.boxplot(**plotting)
 
     box_patches = [
-        patch for patch in ax.patches if type(patch) == mpl.patches.PathPatch
+        patch for patch in ax.patches if isinstance(patch, mpl.patches.PathPatch)
     ]
     if len(box_patches) == 0:
         box_patches = ax.artists
@@ -857,7 +857,7 @@ def cumulativeincidenceplot(
         pvalue = cmprsk.cuminc(data[duration], data[event], group=data[hue].cat.codes)
         p = num2tex.num2tex(pvalue.stats["pv"].values[0], precision=2)
         print("   ---> P-value was determined by two-sided Gray's test.")
-        ax.text(pvalue_position[0], pvalue_position[1], f"P = " + rf"${p:.2g}$")
+        ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
     except ImportError:
         print("pip install cmprsk")
 
@@ -1031,7 +1031,7 @@ def vennplot(lists, labels):
             ax.get_label_by_id(area).set_fontsize(6)
             ax.get_patch_by_id(area).set_edgecolor("black")
             ax.get_patch_by_id(area).set_linewidth(0.5)
-        except:
+        except AttributeError:
             pass
     for area in names:
         ax.get_label_by_id(area).set_fontsize(7)
