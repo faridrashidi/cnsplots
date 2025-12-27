@@ -146,7 +146,9 @@ def _heatmap(
     # Turn data into numeric values
     vmap = {c: i for i, c in enumerate(unique_values)}
 
-    mapper = lambda t: vmap[str(t)]
+    def mapper(t):
+        return vmap[str(t)]
+
     vfunc = np.vectorize(mapper)
 
     if isinstance(data, pd.DataFrame):
