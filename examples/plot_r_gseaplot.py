@@ -7,8 +7,6 @@ create gseaplot
 
 # %%
 # load data
-import gseapy as gp
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
