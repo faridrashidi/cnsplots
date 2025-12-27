@@ -240,8 +240,7 @@ def _gen_colors(pal, n):
     elif isinstance(pal, (list, np.ndarray)):
         if len(pal) < n:
             raise ValueError(
-                "Must provide at least as many colors as there are unique entries: {}"
-                .format(len(n))
+                f"Must provide at least as many colors as there are unique entries: {len(n)}"
             )
         else:
             colors = pal
