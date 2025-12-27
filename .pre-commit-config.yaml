@@ -6,39 +6,29 @@ default_stages:
   - pre-push
 minimum_pre_commit_version: 2.9.3
 repos:
-  - repo: https://github.com/psf/black
-    rev: 23.11.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
     hooks:
-      - id: black
-        additional_dependencies: [toml]
-        args: [--line-length=88, --experimental-string-processing]
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        additional_dependencies: [toml]
-        args: [--order-by-type, --profile, black]
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: detect-private-key
       - id: check-merge-conflict
-      - id: check-ast
       - id: check-symlinks
       - id: check-executables-have-shebangs
-      - id: fix-encoding-pragma
-        args: [--remove]
       - id: end-of-file-fixer
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: trailing-whitespace
         exclude: ^.bumpversion.cfg$
       - id: check-case-conflict
-      - id: check-docstring-first
       - id: check-toml
       - id: requirements-txt-fixer
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 2.1.5
+    rev: 3.0.0
     hooks:
       - id: script-must-have-extension
         name: Check executable files use .sh extension
@@ -50,25 +40,24 @@ repos:
         additional_dependencies: [sphinx]
         args: ["--ignore-directives=autoclass,autofunction,minigallery"]
   - repo: https://github.com/asottile/blacken-docs
-    rev: v1.11.0
+    rev: 1.18.0
     hooks:
       - id: blacken-docs
-        additional_dependencies: [black==20.8b1]
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.0
-    hooks:
-      - id: pyupgrade
-        args: [--py3-plus, --py37-plus]
+        additional_dependencies: [black==24.4.2]
+  # - repo: https://github.com/codespell-project/codespell
+  #   rev: v2.3.0
+  #   hooks:
+  #     - id: codespell
+  #       additional_dependencies:
+  #         - tomli
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
-      - id: python-no-eval
-      - id: python-use-type-annotations
       - id: rst-backticks
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
   - repo: https://github.com/PyCQA/doc8
-    rev: 0.10.1
+    rev: v1.1.2
     hooks:
       - id: doc8
         args: [--max-line-length=88]
