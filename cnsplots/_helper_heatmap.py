@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from PyComplexHeatmap import *
+from PyComplexHeatmap import ClusterMapPlotter
 
 import cnsplots as cns
 
@@ -70,7 +70,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         **kwargs,
     ):
         self.data = data
-        self.kwargs = kwargs if not kwargs is None else {}
+        self.kwargs = kwargs if kwargs is not None else {}
         self.rasterized = rasterized
         self.data2d = self.format_data(data, mask, z_score, standard_scale)
         self.verbose = verbose
@@ -110,10 +110,10 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.row_split_order = row_split_order
         self.col_split_order = col_split_order
         self.legend = legend
-        self.legend_kws = legend_kws if not legend_kws is None else {}
+        self.legend_kws = legend_kws if legend_kws is not None else {}
         self.legend_side = legend_side
         self.cmap = cmap
-        self.label = label if not label is None else "heatmap"
+        self.label = label if label is not None else "heatmap"
         self.legend_gap = legend_gap
         self.legend_width = legend_width
         self.legend_hpad = legend_hpad
@@ -122,8 +122,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.legend_delta_x = legend_delta_x
         self.xlabel = xlabel
         self.ylabel = ylabel
-        self.xlabel_kws = xlabel_kws if not xlabel_kws is None else {}
-        self.ylabel_kws = ylabel_kws if not ylabel_kws is None else {}
+        self.xlabel_kws = xlabel_kws if xlabel_kws is not None else {}
+        self.ylabel_kws = ylabel_kws if ylabel_kws is not None else {}
         self.xlabel_side = xlabel_side
         self.ylabel_side = ylabel_side
         self.xlabel_bbox_kws = xlabel_bbox_kws
@@ -133,7 +133,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
             if plot_legend:
                 if legend_anchor == "auto":
                     if (
-                        not self.right_annotation is None
+                        self.right_annotation is not None
                         and self.legend_side == "right"
                     ):
                         legend_anchor = "ax"
@@ -157,7 +157,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
             self.left_annotation,
             self.right_annotation,
         ]:
-            if not annotation is None:
+            if annotation is not None:
                 annotation.collect_legends()
                 if annotation.plot_legend and len(annotation.legend_list) > 0:
                     self.legend_list.extend(annotation.legend_list)
