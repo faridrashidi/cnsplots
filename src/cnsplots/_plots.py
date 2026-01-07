@@ -1,3 +1,4 @@
+from collections.abc import Set as AbstractSet
 from typing import List, Optional, Tuple
 
 import adjustText as at
@@ -1015,6 +1016,7 @@ def upsetplot(data, **kwargs):
 
 
 def vennplot(lists, labels):
+    lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
     if len(lists) == 2:
         areas = ["10", "01", "11"]
         func = venn.venn2
