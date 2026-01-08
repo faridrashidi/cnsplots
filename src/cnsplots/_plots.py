@@ -994,7 +994,13 @@ def scatterplot(data, x, y, s=7, **kwargs):
     sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
 
 
-def upsetplot(data, **kwargs):
+def upsetplot(sets, **kwargs):
+    sets = {k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()}
+    memberships = []
+    for item in set.union(*sets.values()):
+        membership = [name for name, s in sets.items() if item in s]
+        memberships.append(membership)
+    data = usp.from_memberships(memberships)
     upset = usp.UpSet(data, element_size=17, show_counts="{:,}", **kwargs)
     axes = upset.plot()
     plt.grid(False)
