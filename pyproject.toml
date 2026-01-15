@@ -21,6 +21,7 @@ dependencies = [
     "seaborn",
     "upsetplot",
     "gseapy",
+    "numba>=0.58.1",
     "statsmodels ; python_version >= '3.9' and python_version < '4.0'",
     "statannotations @ git+https://github.com/trevismd/statannotations@master",
 ]
