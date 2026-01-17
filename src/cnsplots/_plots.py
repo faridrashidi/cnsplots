@@ -855,7 +855,7 @@ def cumulativeincidenceplot(
     try:
         from cmprsk import cmprsk
 
-        if data[hue].value_counts().min() > 0:
+        if data[hue].nunique() > 1:
             pvalue = cmprsk.cuminc(
                 data[duration], data[event], group=data[hue].cat.codes
             )
