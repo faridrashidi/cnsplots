@@ -855,10 +855,13 @@ def cumulativeincidenceplot(
     try:
         from cmprsk import cmprsk
 
-        pvalue = cmprsk.cuminc(data[duration], data[event], group=data[hue].cat.codes)
-        p = num2tex.num2tex(pvalue.stats["pv"].values[0], precision=2)
-        print("   ---> P-value was determined by two-sided Gray's test.")
-        ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
+        if data[hue].value_counts().min() > 0:
+            pvalue = cmprsk.cuminc(
+                data[duration], data[event], group=data[hue].cat.codes
+            )
+            p = num2tex.num2tex(pvalue.stats["pv"].values[0], precision=2)
+            print("   ---> P-value was determined by two-sided Gray's test.")
+            ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
     except ImportError:
         print("pip install cmprsk")
 
