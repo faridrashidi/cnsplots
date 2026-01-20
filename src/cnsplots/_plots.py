@@ -51,6 +51,8 @@ def heatmapplot(
     colors=None,
     rasterized=True,
     xticklabels_rotation=45,
+    xticklabels_fontsize=7,
+    yticklabels_fontsize=7,
     **kwargs,
 ):
     cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
@@ -149,11 +151,17 @@ def heatmapplot(
         row_dendrogram_size=10,
         col_dendrogram_size=10,
         linewidth=linewidth,
-        xticklabels_kws={"labelrotation": xticklabels_rotation},
+        xticklabels_kws={
+            "labelrotation": xticklabels_rotation,
+            "labelsize": xticklabels_fontsize,
+        },
+        yticklabels_kws={"labelsize": yticklabels_fontsize},
         ylabel_kws={"labelpad": 3},
         xlabel_kws={"labelpad": 5},
         verbose=0,
         row_names_side="left" if row_annotation is None else "right",
+        xticklabels=True,
+        yticklabels=True,
         **kwargs,
     )
     for cbar in cmp.cbars:
@@ -188,6 +196,8 @@ def dotplot(
     legend_hpad=10,
     legend_vpad=0,
     xticklabels_rotation=45,
+    xticklabels_fontsize=7,
+    yticklabels_fontsize=7,
     **kwargs,
 ):
     row_annotation = pch.HeatmapAnnotation(
@@ -224,7 +234,11 @@ def dotplot(
         legend_width=legend_width,
         legend_hpad=legend_hpad,
         legend_vpad=legend_vpad,
-        xticklabels_kws={"labelrotation": xticklabels_rotation},
+        xticklabels_kws={
+            "labelrotation": xticklabels_rotation,
+            "labelsize": xticklabels_fontsize,
+        },
+        yticklabels_kws={"labelsize": yticklabels_fontsize},
         dot_legend_kws={"frameon": False},
         **kwargs,
     )
