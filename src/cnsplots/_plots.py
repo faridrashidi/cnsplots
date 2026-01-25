@@ -649,6 +649,11 @@ def kdeplot(data, x, add_mode=True, **kwargs):
                 bbox=dict(facecolor="white", edgecolor="none", pad=2),
             )
 
+    if ax.get_legend() is not None:
+        for handle in ax.get_legend().legend_handles:
+            if hasattr(handle, "set_linewidth"):
+                handle.set_linewidth(1.7)
+
 
 def regplot(data, x, y, hue=None, s=3, **kwargs):
     args = {
