@@ -13,3 +13,7 @@ article table.align-default {
   margin-left: 0;
   margin-right: auto;
 }
+
+.sidebar-tree .toctree-l2 {
+  display: none;
+}
