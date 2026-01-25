@@ -58,7 +58,7 @@ Detailed description of all cnsplots functions and parameters.
 
 ```{toctree}
 :hidden: true
-:maxdepth: 2
+:maxdepth: 1
 :titlesonly: true
 
 getting_started
