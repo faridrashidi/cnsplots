@@ -62,7 +62,7 @@ def take_legend_out(title=None):
     )
 
 
-def add_panel_name(name="A", offset_x=-0.25, offset_y=1.1):
+def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
     plt.text(
         offset_x,
         offset_y,
