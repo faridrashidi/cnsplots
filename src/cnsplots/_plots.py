@@ -55,6 +55,84 @@ def heatmapplot(
     yticklabels_fontsize=7,
     **kwargs,
 ):
+    """
+    Create a clustered heatmap with optional annotations and dendrograms.
+
+    This function generates a complex heatmap visualization using PyComplexHeatmap,
+    supporting hierarchical clustering, row/column annotations, and customizable
+    color schemes.
+
+    Parameters
+    ----------
+    adata : AnnData
+        Annotated data matrix containing observations and variables.
+    layer : str, optional
+        Key in `adata.layers` to use for the heatmap data. If None, uses `adata.X`.
+    row_annotation : list of str, optional
+        Column names from `adata.obs` to display as row annotations.
+    col_annotation : list of str, optional
+        Column names from `adata.var` to display as column annotations.
+    row_cluster : bool, default: False
+        Whether to perform hierarchical clustering on rows.
+    col_cluster : bool, default: False
+        Whether to perform hierarchical clustering on columns.
+    row_split : str or int, optional
+        Column name from `adata.obs` or number of splits for row grouping.
+    col_split : str or int, optional
+        Column name from `adata.var` or number of splits for column grouping.
+    cmap : str, default: PALETTE_SEQ
+        Colormap for the heatmap. Can be categorical (Set1, Set2, Ecotyper1, Dark2,
+        Ecotyper2, Set3) or continuous (parula, gnuplot, bwr, hot).
+    label : str, default: 'value'
+        Label for the colorbar.
+    xlabel : str, default: 'xlabel'
+        Label for the x-axis.
+    ylabel : str, default: 'ylabel'
+        Label for the y-axis.
+    legend_width : int, default: 20
+        Width of the legend area.
+    legend_hpad : int, default: 10
+        Horizontal padding for the legend.
+    legend_vpad : int, default: 0
+        Vertical padding for the legend.
+    linewidth : float, default: 0
+        Width of lines between heatmap cells.
+    colors : dict, optional
+        Custom color mapping for categorical annotations.
+    rasterized : bool, default: True
+        Whether to rasterize the heatmap for reduced file size.
+    xticklabels_rotation : int, default: 45
+        Rotation angle for x-axis tick labels.
+    xticklabels_fontsize : int, default: 7
+        Font size for x-axis tick labels.
+    yticklabels_fontsize : int, default: 7
+        Font size for y-axis tick labels.
+    **kwargs
+        Additional keyword arguments passed to `ClusterMapPlotterNew`.
+
+    Returns
+    -------
+    ClusterMapPlotterNew
+        The heatmap plotter object containing axes and layout information.
+
+    See Also
+    --------
+    dotplot : Create a dot plot matrix with size and color encoding.
+    confusionplot : Plot confusion matrix as a heatmap.
+
+    Notes
+    -----
+    Categorical annotations automatically use predefined color palettes (Set1, Set2, etc.),
+    while continuous annotations use sequential colormaps (parula, gnuplot, bwr, hot).
+    The function cycles through available palettes when multiple annotations are present.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.heatmapplot(
+    ...     adata, row_annotation=["cell_type", "batch"], col_cluster=True, cmap="bwr"
+    ... )
+    """
     cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
     cbar_titles = [label]
@@ -200,6 +278,69 @@ def dotplot(
     yticklabels_fontsize=7,
     **kwargs,
 ):
+    """
+    Create a dot plot matrix with color and size encodings.
+
+    This function generates a dot matrix plot where each dot's size and color
+    represent different data dimensions, commonly used for visualizing expression
+    patterns across groups.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Input DataFrame containing the data to plot.
+    x : str
+        Column name to use for x-axis categories.
+    y : str
+        Column name to use for y-axis categories.
+    color : str
+        Column name to use for dot color encoding.
+    size : str
+        Column name to use for dot size encoding.
+    value : str
+        Column name containing the values to display.
+    legend_width : int, default: 20
+        Width of the legend area.
+    legend_hpad : int, default: 10
+        Horizontal padding for the legend.
+    legend_vpad : int, default: 0
+        Vertical padding for the legend.
+    xticklabels_rotation : int, default: 45
+        Rotation angle for x-axis tick labels.
+    xticklabels_fontsize : int, default: 7
+        Font size for x-axis tick labels.
+    yticklabels_fontsize : int, default: 7
+        Font size for y-axis tick labels.
+    **kwargs
+        Additional keyword arguments passed to `DotClustermapPlotter`.
+
+    Returns
+    -------
+    DotClustermapPlotter
+        The dot plot plotter object containing axes and layout information.
+
+    See Also
+    --------
+    heatmapplot : Create a clustered heatmap.
+    scatterplot : Create a scatter plot with optional hue encoding.
+
+    Notes
+    -----
+    The dot size and color scales are automatically determined from the data range.
+    Uses the 'gnuplot' colormap by default for color encoding.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.dotplot(
+    ...     data=df,
+    ...     x="condition",
+    ...     y="gene",
+    ...     color="expression",
+    ...     size="pct_expressed",
+    ...     value="mean_expr",
+    ... )
+    """
     row_annotation = pch.HeatmapAnnotation(
         axis=0,
         verbose=0,
@@ -273,31 +414,69 @@ def boxplot(
     whis=1.5,
     **kwargs,
 ) -> None:
-    """Create a box plot.
-    Plot the median of y categorized by x.
+    """
+    Create a box plot showing the distribution of a continuous variable across categories.
+
+    This function creates a box plot displaying the median, quartiles, and outliers
+    of a continuous variable grouped by a categorical variable. Statistical
+    comparisons can be added between specified groups.
 
     Parameters
     ----------
-    data
-        The input DataFrame that holds the data to be plotted.
-    x
-        The label for the x-axis.
-    y
-        The label for the y-axis.
-    pairs
-        A list of pairs of x attributes for calculating the p-values.
-    showoutliers
-        A Boolean to show outliers on the boxes.
-    whis
-        The proportion of the IQR past the low and high quartiles to extend the plot whiskers.
-        Use (0, 100) to extend the whiskers to the minimum and maximum values.
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the categorical variable on the x-axis.
+    y : str
+        Column name for the continuous variable on the y-axis.
+    pairs : list of tuple of str, optional
+        List of pairs of category names from x for pairwise statistical comparisons
+        using Mann-Whitney U test. Each pair should be a tuple of two category names.
+        Default is None (no statistical tests).
+    showoutliers : bool, default: False
+        Whether to display outlier points beyond the whiskers.
+    addcount : bool, default: False
+        Whether to add sample size (n) labels above each box.
+    whis : float or tuple of float, default: 1.5
+        The proportion of the IQR past the low and high quartiles to extend the
+        plot whiskers. Use (0, 100) to extend whiskers to minimum and maximum values.
     **kwargs
-        Keyword arguments passed to the `seaborn.boxplot` function.
+        Additional keyword arguments passed to `seaborn.boxplot`.
+        Common options include:
+        - hue: Column name for nested grouping
+        - palette: Color palette or column name for coloring
+        - order: Order of categories on the x-axis
+        - hue_order: Order of hue categories
 
     Returns
     -------
     None
-        This function creates a plot and does not return anything.
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    violinplot : Create a violin plot showing full distribution shape.
+    stripplot : Create a strip plot showing all individual points.
+    barplot : Create a bar plot showing means with error bars.
+
+    Notes
+    -----
+    The box shows the first quartile (Q1), median, and third quartile (Q3).
+    Whiskers extend to the most extreme data point within whis * IQR from the box.
+    The function prints a message describing what the whiskers represent.
+
+    Statistical comparisons use the two-sided Mann-Whitney U test (Wilcoxon rank-sum test).
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.boxplot(
+    ...     data=df,
+    ...     x="treatment",
+    ...     y="response",
+    ...     pairs=[("control", "treated")],
+    ...     showoutliers=True,
+    ... )
     """
     args = {
         "showfliers": showoutliers,
@@ -376,25 +555,67 @@ def violinplot(
     add_box=True,
     **kwargs,
 ) -> None:
-    """Create a violin plot.
+    """
+    Create a violin plot showing the distribution of a continuous variable.
+
+    This function creates a violin plot that combines a kernel density estimate
+    with an optional embedded box plot to show both the shape and summary statistics
+    of the distribution.
 
     Parameters
     ----------
-    data
-        The input DataFrame that holds the data to be plotted.
-    x
-        The label for the x-axis.
-    y
-        The label for the y-axis.
-    pairs
-        A list of pairs of x attributes for calculating the p-values.
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the categorical variable on the x-axis.
+    y : str
+        Column name for the continuous variable on the y-axis.
+    pairs : list of tuple of str, optional
+        List of pairs of category names from x for pairwise statistical comparisons
+        using Mann-Whitney U test. Each pair should be a tuple of two category names.
+        Default is None (no statistical tests).
+    width : float, default: 0.6
+        Width of each violin body.
+    add_box : bool, default: True
+        Whether to overlay a narrow box plot inside each violin showing quartiles
+        and median.
     **kwargs
-        Keyword arguments passed to the `seaborn.violinplot` function.
+        Additional keyword arguments passed to `seaborn.violinplot`.
+        Common options include:
+        - hue: Column name for nested grouping
+        - palette: Color palette for coloring categories
+        - split: Whether to split violins when using hue
+        - inner: Representation of data inside violin (box, quartile, point, stick, None)
 
     Returns
     -------
     None
-        This function creates a plot and does not return anything.
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    boxplot : Create a box plot showing quartiles without density.
+    kdeplot : Create a kernel density plot.
+    distplot : Create a distribution plot with histogram and KDE.
+
+    Notes
+    -----
+    The violin width at each value represents the kernel density estimate of the
+    underlying distribution. The embedded box plot (when add_box=True) shows the
+    median, quartiles, and whiskers following standard box plot conventions.
+
+    Statistical comparisons use the two-sided Mann-Whitney U test.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.violinplot(
+    ...     data=df,
+    ...     x="condition",
+    ...     y="expression",
+    ...     pairs=[("control", "treated")],
+    ...     add_box=True,
+    ... )
     """
     args = {
         "showfliers": False,
@@ -428,35 +649,72 @@ def violinplot(
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     """
-    Creates a bar plot showing the mean value of a variable across different categories.
+    Create a bar plot showing mean values across categories with optional statistics.
+
+    This function creates a bar plot displaying the mean of a continuous variable
+    grouped by a categorical variable. Error bars are not displayed by default.
+    Statistical comparisons and value labels can be added.
 
     Parameters
     ----------
     data : pd.DataFrame
-        The input DataFrame that holds the data to be plotted.
+        The input DataFrame containing the data to be plotted.
     x : str
-        The column name in data to use for categorical values on the x-axis.
+        Column name for the categorical variable on the x-axis.
     y : str
-        The column name in data whose mean values will be plotted on the y-axis.
-    pairs : List[Tuple[str, str]], optional
-        A list of pairs of x attributes for calculating pairwise statistical significance.
-        Each pair should be a tuple of two category names present in the x column.
+        Column name for the continuous variable whose means are plotted on the y-axis.
+    pairs : list of tuple of str, optional
+        List of pairs of category names from x for pairwise statistical comparisons
+        using Welch's t-test. Each pair should be a tuple of two category names.
         Default is None (no statistical tests).
-    addtip : bool, optional
-        If True, adds text labels showing the mean value above each bar.
-        Default is False.
+    addtip : bool, default: False
+        Whether to add text labels showing the mean value above each bar.
     **kwargs
-        Additional keyword arguments passed to the seaborn.barplot function.
+        Additional keyword arguments passed to `seaborn.barplot`.
         Common options include:
-        - color: Set the bar color
-        - palette: Color palette for different categories or a column name
-        - alpha: Transparency of the bars
-        - order: Specify the order of categories on the x-axis
+
+        - palette : str or list or dict
+            Color palette for bars. If a column name is provided, bars are colored
+            by that column's values with automatic legend generation.
+        - hue : str
+            Column name for nested grouping within each category.
+        - order : list
+            Order of categories on the x-axis.
+        - estimator : callable
+            Statistical function to estimate within each categorical bin.
 
     Returns
     -------
     matplotlib.axes.Axes
         The matplotlib Axes object containing the plot.
+
+    See Also
+    --------
+    boxplot : Create a box plot showing full distribution.
+    violinplot : Create a violin plot with distribution shape.
+    stackplot : Create a stacked bar plot for categorical data.
+
+    Notes
+    -----
+    Error bars are disabled by default (errorbar=None). Statistical comparisons
+    use Welch's t-test, which does not assume equal variances.
+
+    When palette is a column name, the function creates a color mapping and
+    automatically generates a legend.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.barplot(
+    ...     data=df,
+    ...     x="treatment",
+    ...     y="response",
+    ...     pairs=[("control", "drug_a"), ("control", "drug_b")],
+    ...     addtip=True,
+    ... )
+
+    >>> # Color by group with automatic legend
+    >>> cns.barplot(data=df, x="treatment", y="response", palette="cell_type")
     """
     args = {
         "edgecolor": None,
@@ -533,7 +791,77 @@ def stackplot(
     addtip=False,
     n_factor=1,
 ):
-    """Plot the value of y categorized by x and grouped by hue."""
+    """
+    Create a stacked bar plot showing categorical distributions.
+
+    This function creates a stacked bar plot (or horizontal stacked bar plot)
+    displaying the distribution or count of one categorical variable across
+    levels of another categorical variable.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the categorical variable determining bar positions.
+    y : str
+        Column name for the categorical variable determining stack segments.
+    bar_order : list, optional
+        Order of categories from x to display. Default is None (natural order).
+    stack_order : list, optional
+        Order of categories from y for stacking. Default is None (natural order).
+    horizontal : bool, default: False
+        Whether to create horizontal bars instead of vertical bars.
+    width : float, default: 0.5
+        Width of the bars.
+    normalize : bool, default: True
+        Whether to normalize counts to frequencies (proportions summing to 1).
+    pairs : list of tuple of str, optional
+        List of pairs of category names from x for pairwise statistical comparisons.
+        Uses Fisher's exact test for 2×2 tables or chi-squared test otherwise.
+    addtip : bool, default: False
+        Whether to add total count labels above/beside each bar when normalize=True.
+    n_factor : int or float, default: 1
+        Scaling factor to divide all values (useful for displaying per-n-samples).
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    barplot : Create a bar plot of means.
+    pieplot : Create a pie chart for categorical proportions.
+    donutplot : Create a donut chart for categorical proportions.
+
+    Notes
+    -----
+    When normalize=True, displays proportions (frequencies) with ylabel "Frequency".
+    When normalize=False, displays raw counts with ylabel "Count".
+
+    Statistical tests are applied to the contingency table:
+    - Fisher's exact test for 2×2 tables
+    - Chi-squared test for larger tables
+
+    The legend is automatically moved outside the plot area.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.stackplot(
+    ...     data=df,
+    ...     x="tissue",
+    ...     y="cell_type",
+    ...     normalize=True,
+    ...     pairs=[("lung", "liver")],
+    ... )
+
+    >>> # Horizontal stacked bar plot
+    >>> cns.stackplot(
+    ...     data=df, x="patient", y="mutation", horizontal=True, normalize=False
+    ... )
+    """
     data2 = data.value_counts([x, y]).reset_index()
     if horizontal:
         df = data2.pivot(index=y, columns=x, values="count")
@@ -593,12 +921,123 @@ def stackplot(
 
 
 def distplot(data, x, **kwargs):
+    """
+    Create a distribution plot combining histogram and kernel density estimate.
+
+    This function creates a histogram with an overlaid kernel density estimate (KDE)
+    to visualize the distribution of a continuous variable.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the continuous variable to plot.
+    **kwargs
+        Additional keyword arguments passed to `seaborn.histplot`.
+        Common options include:
+
+        - bins : int or sequence
+            Number of bins or bin edges for the histogram.
+        - hue : str
+            Column name for grouping and color-coding.
+        - stat : str
+            Statistic to compute ('count', 'frequency', 'probability', 'density').
+        - element : str
+            Visual representation ('bars', 'step', 'poly').
+        - fill : bool
+            Whether to fill the histogram bars.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    kdeplot : Create a kernel density estimate plot only.
+    histplot : Create a histogram without KDE.
+    violinplot : Create a violin plot showing distribution shape.
+
+    Notes
+    -----
+    The KDE is enabled by default. Edge color of histogram bars is removed
+    for a cleaner appearance.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.distplot(data=df, x="age")
+
+    >>> # With grouping by category
+    >>> cns.distplot(data=df, x="expression", hue="treatment")
+    """
     args = {"kde": True, "edgecolor": None}
     args.update(kwargs)
     sns.histplot(data=data, x=x, **args)
 
 
 def kdeplot(data, x, add_mode=True, **kwargs):
+    """
+    Create a kernel density estimate plot with optional mode annotation.
+
+    This function creates a smooth kernel density estimate plot to visualize
+    the distribution of a continuous variable. Can automatically annotate the
+    mode (peak) of the distribution and perform statistical tests for comparisons.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the continuous variable to plot.
+    add_mode : bool, default: True
+        Whether to add a vertical dashed line at the mode (peak) of the distribution
+        with a text label showing the mode value. Only applies when hue is not used.
+    **kwargs
+        Additional keyword arguments passed to `seaborn.kdeplot`.
+        Common options include:
+
+        - hue : str
+            Column name for grouping. When two groups are present, automatically
+            performs Kolmogorov-Smirnov test and displays p-value.
+        - fill : bool
+            Whether to fill the area under the curve.
+        - multiple : str
+            How to handle multiple distributions ('layer', 'stack', 'fill').
+        - bw_adjust : float
+            Bandwidth adjustment factor for smoothing.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    distplot : Create a distribution plot with histogram and KDE.
+    violinplot : Create a violin plot showing distribution shape.
+    ridgeplot : Create ridge plots for multiple distributions.
+
+    Notes
+    -----
+    When hue is specified with exactly two groups, the function performs a
+    two-sample Kolmogorov-Smirnov test and displays the p-value in the upper-right
+    corner of the plot.
+
+    The mode is identified as the x-value with maximum kernel density and marked
+    with a dashed vertical line and label.
+
+    Legend line width is automatically increased to 1.7 for better visibility.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.kdeplot(data=df, x="expression", add_mode=True)
+
+    >>> # Compare two groups with automatic statistics
+    >>> cns.kdeplot(data=df, x="score", hue="treatment", fill=True)
+    """
     ax = sns.kdeplot(data=data, x=x, linewidth=1, **kwargs)
     ax = plt.gca()
     modes = []
@@ -656,6 +1095,66 @@ def kdeplot(data, x, add_mode=True, **kwargs):
 
 
 def regplot(data, x, y, hue=None, s=3, **kwargs):
+    """
+    Create a regression plot with linear fit and correlation statistics.
+
+    This function creates a scatter plot with a fitted regression line and displays
+    Pearson correlation coefficient and p-value. Supports grouping by a categorical
+    variable to show multiple regression lines.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the independent variable (x-axis).
+    y : str
+        Column name for the dependent variable (y-axis).
+    hue : str, optional
+        Column name for grouping. When specified, creates separate regression lines
+        and correlation statistics for each group using different colors.
+    s : float, default: 3
+        Size of scatter plot markers.
+    **kwargs
+        Additional keyword arguments passed to `seaborn.regplot`.
+        Common options include:
+
+        - order : int
+            Order of polynomial regression (1 for linear, 2 for quadratic, etc.).
+        - logx : bool
+            Fit regression in log(x) space.
+        - robust : bool
+            Fit a robust regression resistant to outliers.
+        - ci : int
+            Confidence interval size (0-100) for regression line shading.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    scatterplot : Create a scatter plot without regression line.
+    kdeplot : Create a kernel density plot for distributions.
+
+    Notes
+    -----
+    Pearson correlation coefficient (ρ) and p-value are displayed in the upper-left
+    corner of the plot. When hue is specified, statistics are shown for each group
+    in matching colors.
+
+    The p-value tests the null hypothesis that the correlation is zero (no linear
+    relationship). P-values are formatted using scientific notation when needed.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.regplot(data=df, x="age", y="expression")
+
+    >>> # Grouped regression with separate fits
+    >>> cns.regplot(data=df, x="dose", y="response", hue="cell_line")
+    """
     args = {
         "line_kws": {"lw": 1.2},
         "scatter_kws": {"s": s, "alpha": 1, "edgecolor": None},
@@ -707,6 +1206,47 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
 
 
 def pieplot(data, x, hue_order=None):
+    """
+    Create a pie chart showing categorical proportions.
+
+    This function creates a pie chart visualizing the distribution of categories
+    in a single categorical variable, with percentage labels and a legend.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the categorical variable to visualize.
+    hue_order : list, optional
+        Order of categories to display in the pie chart. Default is None
+        (order by frequency from value_counts).
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    donutplot : Create a donut chart (pie chart with center hole).
+    stackplot : Create a stacked bar plot for categorical distributions.
+    barplot : Create a bar plot showing category frequencies.
+
+    Notes
+    -----
+    Percentages are displayed as white text within each pie slice. The legend
+    is automatically positioned outside the plot area and shows category names
+    with the column name as the title.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.pieplot(data=df, x="cell_type")
+
+    >>> # Specify category order
+    >>> cns.pieplot(data=df, x="response", hue_order=["CR", "PR", "SD", "PD"])
+    """
     df = data[x].value_counts()
     if hue_order is None:
         hue_order = df.index
@@ -726,6 +1266,48 @@ def pieplot(data, x, hue_order=None):
 
 
 def donutplot(data, x, hue_order=None):
+    """
+    Create a donut chart showing categorical proportions.
+
+    This function creates a donut chart (pie chart with a center hole) visualizing
+    the distribution of categories in a single categorical variable, with the
+    variable name displayed in the center.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the categorical variable to visualize.
+    hue_order : list, optional
+        Order of categories to display in the donut chart. Default is None
+        (order by frequency from value_counts).
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    pieplot : Create a pie chart without center hole.
+    stackplot : Create a stacked bar plot for categorical distributions.
+    vennplot : Create a Venn diagram for set overlaps.
+
+    Notes
+    -----
+    The column name (x) is displayed as a label in the center of the donut.
+    The legend is automatically positioned outside the plot area and shows
+    category names without edge colors.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.donutplot(data=df, x="tissue_type")
+
+    >>> # Specify category order
+    >>> cns.donutplot(data=df, x="grade", hue_order=["I", "II", "III", "IV"])
+    """
     df = data[x].value_counts()
     if hue_order is None:
         hue_order = df.index
@@ -748,6 +1330,69 @@ def donutplot(data, x, hue_order=None):
 
 
 def survivalplot(data, duration, event, hue, hue_order=None):
+    """
+    Create a Kaplan-Meier survival plot with statistical comparisons.
+
+    This function generates Kaplan-Meier survival curves comparing survival
+    probabilities across groups, with automatic statistical testing and
+    hazard ratio calculation.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing survival data.
+    duration : str
+        Column name for the time-to-event or time-to-censoring variable.
+    event : str
+        Column name for the event indicator (1 = event occurred, 0 = censored).
+    hue : str
+        Column name for the grouping variable to compare survival curves.
+    hue_order : list, optional
+        Order of groups from hue to display and compare. Default is None
+        (uses unique values from data). If provided, should match existing groups.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    cumulativeincidenceplot : Create a cumulative incidence plot for competing risks.
+    forestplot : Create a forest plot from a Cox model.
+
+    Notes
+    -----
+    The function automatically performs statistical testing:
+
+    - For two groups: Two-sided multivariate log-rank test
+    - For >2 groups: Log-rank test for trend using Cox proportional hazards model
+
+    Hazard ratio (HR) with 95% confidence interval is calculated comparing the
+    last group to the first group in hue_order. HR > 1 indicates higher hazard
+    (worse survival) in the last group.
+
+    The x-axis automatically adjusts tick spacing based on the time range:
+
+    - Range > 120: Major ticks every 24 units (months)
+    - Range > 12: Major ticks every 12 units (months)
+    - Range ≤ 12: Major ticks every 1 unit (years)
+
+    Each group label shows the group name and sample size as "group (n=N)".
+
+    Statistical results are printed to console and displayed on the plot.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.survivalplot(
+    ...     data=df,
+    ...     duration="time_months",
+    ...     event="death",
+    ...     hue="treatment",
+    ...     hue_order=["control", "drug_a", "drug_b"],
+    ... )
+    """
     ax = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
@@ -834,6 +1479,87 @@ def cumulativeincidenceplot(
     risk_table_ypos=-0.2,
     xticks=None,
 ):
+    """
+    Create a cumulative incidence plot for competing risks analysis.
+
+    This function generates cumulative incidence curves using the Aalen-Johansen
+    estimator for competing risks data, with automatic statistical testing and
+    optional at-risk table.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing time-to-event data with competing risks.
+    duration : str
+        Column name for the time-to-event or time-to-censoring variable.
+    event : str
+        Column name for the event indicator (0 = censored, 1 = event of interest,
+        2+ = competing events).
+    hue : str
+        Column name for the grouping variable to compare cumulative incidence curves.
+    hue_order : list, optional
+        Order of groups from hue to display and compare. Default is None
+        (uses unique values from data). If provided, should match existing groups.
+    pvalue_position : tuple of float, default: (0, 0.5)
+        (x, y) coordinates in data space for placing the p-value text annotation.
+    show_risk_table : bool, default: False
+        Whether to display a risk table below the plot showing the number of
+        subjects at risk at each time point.
+    risk_table_rows : tuple of str, default: ('At risk',)
+        Which rows to show in the risk table. Options include 'At risk'.
+    risk_table_ypos : float, default: -0.2
+        Vertical position of the risk table relative to the plot.
+    xticks : array-like, optional
+        Specific x-axis tick positions. If provided, adjusts x-axis limits to
+        include all specified ticks.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
+
+    See Also
+    --------
+    survivalplot : Create a Kaplan-Meier survival plot.
+    forestplot : Create a forest plot from a Cox model.
+
+    Notes
+    -----
+    The function uses the Aalen-Johansen estimator to calculate cumulative
+    incidence functions in the presence of competing risks. Event of interest
+    is assumed to be event=1.
+
+    Censored observations (event=0) are marked with '+' symbols on the curves.
+
+    Statistical testing requires the `cmprsk` package:
+
+    - Uses Gray's test for comparing cumulative incidence curves across groups
+    - The p-value is displayed on the plot at pvalue_position
+
+    Each group label shows the group name and sample size (when show_risk_table=False)
+    or just the group name (when show_risk_table=True).
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> ax = cns.cumulativeincidenceplot(
+    ...     data=df,
+    ...     duration="time_years",
+    ...     event="event_type",
+    ...     hue="treatment",
+    ...     hue_order=["placebo", "drug"],
+    ...     show_risk_table=True,
+    ... )
+
+    >>> # With custom tick positions
+    >>> ax = cns.cumulativeincidenceplot(
+    ...     data=df,
+    ...     duration="months",
+    ...     event="outcome",
+    ...     hue="risk_group",
+    ...     xticks=[0, 12, 24, 36, 48, 60],
+    ... )
+    """
     ax = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
@@ -912,6 +1638,73 @@ def volcanoplot(
     symbol="symbol",
     show_list=None,
 ):
+    """
+    Create a volcano plot for differential expression analysis.
+
+    This function generates a volcano plot to visualize statistical significance
+    versus fold change in genomics data, with automatic labeling of top
+    differentially expressed genes.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing differential expression results.
+    x : str, default: 'log2FoldChange'
+        Column name for log2 fold change values (x-axis).
+    y : str, default: '-log10(adjp)'
+        Column name for -log10 adjusted p-values (y-axis).
+    symbol : str, default: 'symbol'
+        Column name for gene symbols or feature names to label.
+    show_list : list, optional
+        List of specific gene symbols to highlight and label. If None,
+        automatically selects top 10 upregulated and top 10 downregulated
+        genes based on combined significance and fold change.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    gseaplot : Create a GSEA dot plot.
+    scatterplot : Create a general scatter plot.
+
+    Notes
+    -----
+    Genes are categorized into four groups:
+
+    - 'Up': Upregulated (log2FC > 0.5, adj.p < 0.05) and selected for labeling
+    - 'Down': Downregulated (log2FC < -0.5, adj.p < 0.05) and selected for labeling
+    - 'p_adj < 0.05': Significant but not selected for labeling
+    - 'NS': Not significant
+
+    When show_list=None, genes are ranked by the product of significance and
+    absolute fold change, and the top 10 up/down genes are labeled.
+
+    Gene labels are automatically positioned to avoid overlap using the
+    adjustText library, with arrows pointing to the corresponding points.
+
+    A vertical dashed line at x=0 indicates no change.
+
+    Colors: Blue for downregulated, red for upregulated, black/grey for others.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.volcanoplot(
+    ...     data=de_results, x="log2FoldChange", y="-log10(padj)", symbol="gene_name"
+    ... )
+
+    >>> # Highlight specific genes
+    >>> cns.volcanoplot(
+    ...     data=de_results,
+    ...     x="log2FoldChange",
+    ...     y="-log10(padj)",
+    ...     symbol="gene_name",
+    ...     show_list=["TP53", "EGFR", "KRAS"],
+    ... )
+    """
     hue = "DEG"
     n_show = 10
     de = data.copy()
@@ -984,6 +1777,72 @@ def volcanoplot(
 def stripplot(
     data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs
 ):
+    """
+    Create a strip plot showing individual data points with optional summary statistics.
+
+    This function creates a categorical scatter plot (strip plot) where all individual
+    data points are displayed, optionally overlaid with median or mean markers.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the categorical variable on the x-axis.
+    y : str
+        Column name for the continuous variable on the y-axis.
+    size : float, default: 2
+        Size of individual data point markers.
+    showmedian : bool, default: True
+        Whether to overlay a horizontal line at the median for each category.
+    showmeans : bool, default: False
+        Whether to overlay a marker at the mean for each category.
+    addcount : bool, default: False
+        Whether to add sample size (n) labels above each category.
+    **kwargs
+        Additional keyword arguments passed to `seaborn.stripplot`.
+        Common options include:
+
+        - hue : str
+            Column name for nested grouping and color-coding.
+        - dodge : bool
+            Whether to separate hue levels along the categorical axis.
+        - jitter : bool or float
+            Amount of jitter (horizontal displacement) to apply.
+        - order : list
+            Order of categories on the x-axis.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    boxplot : Create a box plot showing quartiles.
+    violinplot : Create a violin plot showing distribution shape.
+    scatterplot : Create a general scatter plot.
+
+    Notes
+    -----
+    The median is shown as a thin black horizontal line within each category.
+    The mean (when showmeans=True) is shown as a white circle with black edge.
+
+    All individual data points are visible, making this plot suitable for
+    smaller datasets or when transparency of raw data is important.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.stripplot(
+    ...     data=df, x="treatment", y="response", showmedian=True, addcount=True
+    ... )
+
+    >>> # With grouping and means
+    >>> cns.stripplot(
+    ...     data=df, x="tissue", y="expression", hue="genotype", showmeans=True, size=3
+    ... )
+    """
     ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
         data=data,
@@ -1017,15 +1876,174 @@ def stripplot(
 
 
 def histplot(**kwargs):
+    """
+    Create a histogram plot (wrapper around seaborn.histplot).
+
+    This is a convenience wrapper that creates a histogram with edge colors
+    removed by default for a cleaner appearance.
+
+    Parameters
+    ----------
+    **kwargs
+        Keyword arguments passed directly to `seaborn.histplot`.
+        Common options include:
+
+        - data : pd.DataFrame
+            Input DataFrame.
+        - x : str
+            Column name for the variable to plot.
+        - bins : int or sequence
+            Number of bins or bin edges.
+        - kde : bool
+            Whether to overlay a kernel density estimate.
+        - hue : str
+            Column name for grouping and color-coding.
+        - stat : str
+            Statistic to compute ('count', 'frequency', 'probability', 'density').
+        - multiple : str
+            How to handle multiple distributions ('layer', 'dodge', 'stack', 'fill').
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    distplot : Create a distribution plot with histogram and KDE.
+    kdeplot : Create a kernel density plot only.
+    barplot : Create a bar plot of means.
+
+    Notes
+    -----
+    Edge color is set to None by default but can be overridden by passing
+    edgecolor in kwargs.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.histplot(data=df, x="age", bins=20)
+
+    >>> # With KDE overlay
+    >>> cns.histplot(data=df, x="expression", kde=True, hue="treatment")
+    """
     kwargs.setdefault("edgecolor", None)
     sns.histplot(**kwargs)
 
 
 def lineplot(**kwargs):
+    """
+    Create a line plot (wrapper around seaborn.lineplot).
+
+    This is a convenience wrapper that creates a line plot with automatic
+    aggregation and confidence intervals.
+
+    Parameters
+    ----------
+    **kwargs
+        Keyword arguments passed directly to `seaborn.lineplot`.
+        Common options include:
+
+        - data : pd.DataFrame
+            Input DataFrame.
+        - x : str
+            Column name for the x-axis variable.
+        - y : str
+            Column name for the y-axis variable.
+        - hue : str
+            Column name for grouping and color-coding lines.
+        - style : str
+            Column name for grouping with different line styles.
+        - markers : bool or list
+            Whether to show markers at data points.
+        - dashes : bool or list
+            Whether to use different line styles for hue levels.
+        - errorbar : str or tuple
+            Method for computing confidence intervals ('ci', 'sd', 'se', etc.).
+        - estimator : str or callable
+            Aggregation function ('mean', 'median', etc.).
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    regplot : Create a regression plot with linear fit.
+    scatterplot : Create a scatter plot without connecting lines.
+    survivalplot : Create a Kaplan-Meier survival plot.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.lineplot(data=df, x="time", y="value")
+
+    >>> # Multiple groups with error bands
+    >>> cns.lineplot(
+    ...     data=df, x="timepoint", y="expression", hue="treatment", errorbar="se"
+    ... )
+    """
     sns.lineplot(**kwargs)
 
 
 def scatterplot(data, x, y, s=7, **kwargs):
+    """
+    Create a scatter plot with automatic legend size correction.
+
+    This function creates a scatter plot with marker edge colors removed by default
+    and automatically adjusts legend marker sizes to match the plot markers.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the x-axis variable.
+    y : str
+        Column name for the y-axis variable.
+    s : float, default: 7
+        Size of scatter plot markers.
+    **kwargs
+        Additional keyword arguments passed to `seaborn.scatterplot`.
+        Common options include:
+
+        - hue : str
+            Column name for grouping and color-coding points.
+        - style : str
+            Column name for grouping with different marker styles.
+        - size : str
+            Column name for grouping with different marker sizes.
+        - palette : str or list
+            Color palette for hue levels.
+        - alpha : float
+            Transparency level (0-1) for markers.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    regplot : Create a scatter plot with regression line.
+    stripplot : Create a categorical scatter plot.
+    volcanoplot : Create a volcano plot for differential expression.
+
+    Notes
+    -----
+    Edge color is removed (edgecolor=None) for cleaner marker appearance.
+    Legend marker sizes are automatically corrected to match the plot marker size,
+    which prevents the default seaborn behavior of using different sizes in the legend.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.scatterplot(data=df, x="PC1", y="PC2", s=10)
+
+    >>> # With grouping by category
+    >>> cns.scatterplot(data=df, x="UMAP1", y="UMAP2", hue="cell_type", s=5, alpha=0.7)
+    """
     ax = sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
 
     if ax.get_legend() is not None:
@@ -1037,6 +2055,66 @@ def scatterplot(data, x, y, s=7, **kwargs):
 
 
 def upsetplot(sets, **kwargs):
+    """
+    Create an UpSet plot for visualizing set intersections.
+
+    This function creates an UpSet plot, an advanced alternative to Venn diagrams
+    for visualizing intersections among multiple sets. It displays both set sizes
+    and intersection sizes in a matrix layout.
+
+    Parameters
+    ----------
+    sets : dict
+        Dictionary mapping set names (str) to sets or array-like collections.
+        Each value is converted to a set if not already.
+    **kwargs
+        Additional keyword arguments passed to `upsetplot.UpSet`.
+        Common options include:
+
+        - min_subset_size : int
+            Minimum intersection size to display.
+        - max_subset_rank : int
+            Maximum number of intersections to show.
+        - sort_by : str
+            How to sort intersections ('cardinality' or 'degree').
+        - sort_categories_by : str
+            How to sort set categories.
+
+    Returns
+    -------
+    None
+        This function modifies the current figure and returns nothing.
+
+    See Also
+    --------
+    vennplot : Create a Venn diagram for 2-3 sets.
+
+    Notes
+    -----
+    UpSet plots are more scalable than Venn diagrams and can clearly show
+    intersections among many sets without the visual complexity of overlapping
+    circles.
+
+    The plot consists of:
+    - A bar chart showing total set sizes (top or left)
+    - A matrix showing which sets participate in each intersection
+    - A bar chart showing intersection sizes
+
+    Intersection counts are displayed with comma separators for readability.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> sets = {
+    ...     "Set A": [1, 2, 3, 4, 5],
+    ...     "Set B": [3, 4, 5, 6, 7],
+    ...     "Set C": [5, 6, 7, 8, 9],
+    ... }
+    >>> cns.upsetplot(sets)
+
+    >>> # Limit to larger intersections
+    >>> cns.upsetplot(sets, min_subset_size=10)
+    """
     sets = {k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()}
     memberships = []
     for item in set.union(*sets.values()):
@@ -1064,6 +2142,55 @@ def upsetplot(sets, **kwargs):
 
 
 def vennplot(lists, labels):
+    """
+    Create a Venn diagram for 2 or 3 sets.
+
+    This function generates a Venn diagram showing overlaps between 2 or 3 sets
+    using colored, semi-transparent circles with intersection counts.
+
+    Parameters
+    ----------
+    lists : list of set or array-like
+        List of 2 or 3 sets or array-like collections to compare. Each element
+        is converted to a set if not already.
+    labels : tuple or list of str
+        Labels for each set, in the same order as lists.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    upsetplot : Create an UpSet plot for multiple set intersections.
+
+    Notes
+    -----
+    The function automatically determines whether to create a 2-set or 3-set
+    Venn diagram based on the length of the lists parameter.
+
+    Set labels are displayed outside the circles, and intersection counts are
+    shown inside overlapping regions. All circles have black edges and are
+    semi-transparent (alpha=0.8) for clear visualization of overlaps.
+
+    Font sizes:
+    - Intersection counts: 6 pt
+    - Set labels: 7 pt
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> set1 = {1, 2, 3, 4, 5}
+    >>> set2 = {3, 4, 5, 6, 7}
+    >>> set3 = {5, 6, 7, 8, 9}
+    >>> cns.vennplot([set1, set2], labels=["Group A", "Group B"])
+
+    >>> # Three-way Venn diagram
+    >>> cns.vennplot(
+    ...     [set1, set2, set3], labels=["Treatment A", "Treatment B", "Treatment C"]
+    ... )
+    """
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
     if len(lists) == 2:
         areas = ["10", "01", "11"]
@@ -1101,29 +2228,87 @@ def confusionplot(
     pvalue_pad=1.5,
 ):
     """
-    Plot a confusion matrix even when predicted (x) and true (y) labels
-    use different vocabularies or types (e.g., str vs int).
+    Create a confusion matrix heatmap with optional classification metrics.
+
+    This function creates a confusion matrix visualization comparing predicted
+    versus true labels. For binary classification (2×2 matrix), it can compute
+    and display comprehensive classification metrics.
 
     Parameters
     ----------
     data : pd.DataFrame
+        The input DataFrame containing predicted and true labels.
     x : str
-        Column with predictions.
+        Column name containing predicted labels.
     y : str
-        Column with ground truth.
-    x_order, y_order : list, optional
-        Explicit label orders for columns (pred) and rows (truth).
-        Defaults to the order of first appearance.
-    positive_x, positive_y : hashable, optional
-        The label to treat as 'positive' in predictions and truth when computing
-        binary metrics. If not given, the second label in the corresponding order
-        is used (i.e., last of the two).
-    add_pvalue : bool
-        If True and the matrix is 2×2, compute specificity, sensitivity, PPV, NPV,
-        Cohen’s kappa, Fisher’s exact p-value, and odds ratio.
-    annot : bool
-        Write the integer counts in each cell.
-    cmap : matplotlib colormap
+        Column name containing true (ground truth) labels.
+    add_pvalue : bool, default: False
+        Whether to compute and display classification metrics. Only applicable
+        for 2×2 confusion matrices. Metrics include: specificity, sensitivity,
+        PPV, NPV, Cohen's kappa, Fisher's exact test p-value, and odds ratio.
+    x_order : list, optional
+        Explicit ordering of prediction labels (columns). Default is None
+        (order of first appearance in data).
+    y_order : list, optional
+        Explicit ordering of true labels (rows). Default is None
+        (order of first appearance in data).
+    positive_x : hashable, optional
+        The label to treat as 'positive' class in predictions when computing
+        binary metrics. Default is None (uses last label in x_order).
+    positive_y : hashable, optional
+        The label to treat as 'positive' class in true labels when computing
+        binary metrics. Default is None (uses last label in y_order).
+    annot : bool, default: True
+        Whether to display count values in each cell of the matrix.
+    cmap : matplotlib colormap, default: plt.cm.Blues
+        Colormap for the heatmap.
+    pvalue_pad : float, default: 1.5
+        Vertical padding for positioning the statistics text below the plot.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    heatmapplot : Create a general heatmap with clustering.
+    rocplot : Create an ROC curve for binary classification.
+
+    Notes
+    -----
+    The confusion matrix is displayed with true labels on rows and predicted
+    labels on columns.
+
+    For binary classification (when add_pvalue=True), the following metrics
+    are computed and displayed:
+
+    - **Specificity**: TN / (TN + FP)
+    - **Sensitivity (Recall)**: TP / (TP + FN)
+    - **PPV (Precision)**: TP / (TP + FP)
+    - **NPV**: TN / (TN + FN)
+    - **Cohen's kappa**: Agreement measure correcting for chance
+    - **Fisher's exact test**: Two-sided p-value for association
+    - **Odds ratio**: (TP × TN) / (FP × FN)
+
+    The colorbar is removed by default for a cleaner appearance.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.confusionplot(data=df, x="predicted", y="true_label")
+
+    >>> # Binary classification with metrics
+    >>> cns.confusionplot(
+    ...     data=df,
+    ...     x="prediction",
+    ...     y="actual",
+    ...     add_pvalue=True,
+    ...     x_order=["Negative", "Positive"],
+    ...     y_order=["Negative", "Positive"],
+    ...     positive_x="Positive",
+    ...     positive_y="Positive",
+    ... )
     """
 
     if y_order is None:
@@ -1237,6 +2422,48 @@ def confusionplot(
 
 
 def sankeyplot(data, x, y):
+    """
+    Create a Sankey diagram showing flows between two categorical variables.
+
+    This function generates a Sankey (alluvial) diagram visualizing the flow
+    and connections between categories in two variables, with ribbon widths
+    proportional to frequencies.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to visualize.
+    x : str
+        Column name for the source (left-side) categorical variable.
+    y : str
+        Column name for the target (right-side) categorical variable.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    stackplot : Create a stacked bar plot for categorical distributions.
+    vennplot : Create a Venn diagram for set overlaps.
+
+    Notes
+    -----
+    Categories are automatically colored using the current matplotlib color cycle.
+    The same color is used for a category whether it appears in x or y.
+
+    The width of each ribbon (flow) is proportional to the number of observations
+    that share that combination of x and y values.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.sankeyplot(data=df, x="initial_diagnosis", y="final_diagnosis")
+
+    >>> # Patient flow across treatment stages
+    >>> cns.sankeyplot(data=df, x="stage_1_response", y="stage_2_response")
+    """
     ax = plt.gca()
     current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
@@ -1245,11 +2472,108 @@ def sankeyplot(data, x, y):
 
 
 def phyloplot(adata):
+    """
+    Create a phylogenetic tree plot with associated heatmaps.
+
+    This function generates a phylogenetic tree visualization with optional
+    heatmap annotations showing additional data for tree tips.
+
+    Parameters
+    ----------
+    adata : AnnData
+        Annotated data matrix containing tree structure and annotations.
+        Should contain phylogenetic information in the appropriate format.
+
+    Returns
+    -------
+    None
+        This function modifies the current figure and returns nothing.
+
+    See Also
+    --------
+    heatmapplot : Create a clustered heatmap.
+
+    Notes
+    -----
+    This function is a wrapper around the phylogenetic plotting functionality
+    in the helper_phylo module. The exact structure and requirements for the
+    AnnData object depend on the phylogenetic data format.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # adata should contain phylogenetic tree information
+    >>> cns.phyloplot(adata)
+    """
     # TODO: write examples
     helper_phylo.phyloplot(adata)
 
 
 def forestplot(model):
+    """
+    Create a forest plot displaying effect sizes from a regression model.
+
+    This function generates a forest plot showing hazard ratios (from Cox models)
+    or AUC values (from logistic models) with confidence intervals. Optionally
+    displays -log10(p-values) for Cox models.
+
+    Parameters
+    ----------
+    model : CoxModel or LogisticModel
+        Fitted regression model object containing results to plot. Must have:
+        - `results`: DataFrame with effect sizes, confidence intervals, p-values
+        - `name`: Model type ('cox' or other)
+        - `hue`: Optional grouping variable name
+
+    Returns
+    -------
+    None
+        This function modifies the current figure and returns nothing.
+
+    See Also
+    --------
+    survivalplot : Create a Kaplan-Meier survival plot.
+    rocplot : Create an ROC curve plot.
+    boxplot : Create a box plot with statistical comparisons.
+
+    Notes
+    -----
+    **For Cox proportional hazards models (model.name='cox'):**
+
+    - Left panel: Hazard ratios with 95% confidence intervals
+    - Right panel: -log10(p-values) as horizontal bars
+    - Reference line at HR = 1 (no effect)
+    - Variables with HR > 1 have increased hazard (worse outcome)
+    - P-value threshold line at p = 0.05 shown in right panel
+
+    **For Logistic regression models:**
+
+    - Single panel: AUC values with 95% confidence intervals
+    - Reference line at AUC = 0.5 (no discrimination)
+
+    When multiple hue groups are present, effect sizes are displayed with slight
+    vertical offsets and different colors for each group.
+
+    The function automatically adjusts x-axis limits if confidence intervals
+    extend beyond 7 units.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> from cnsplots import CoxModel
+    >>>
+    >>> # Fit Cox model
+    >>> model = CoxModel(data=df, duration="time", event="death")
+    >>> model.fit(predictors=["age", "stage", "treatment"])
+    >>>
+    >>> # Create forest plot
+    >>> cns.forestplot(model)
+
+    >>> # With grouping variable
+    >>> model = CoxModel(data=df, duration="time", event="death", hue="cohort")
+    >>> model.fit(predictors=["biomarker_a", "biomarker_b"])
+    >>> cns.forestplot(model)
+    """
     data = model.results.copy()
 
     if model.name == "cox":
@@ -1362,6 +2686,53 @@ def forestplot(model):
 
 
 def ridgeplot(data, x, y):
+    """
+    Create a ridge plot (joyplot) showing distributions across categories.
+
+    This function generates a ridge plot with overlapping kernel density curves
+    for a continuous variable across multiple categories, creating a "mountain range"
+    visualization effect.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to visualize.
+    x : str
+        Column name for the continuous variable to plot as distributions.
+    y : str
+        Column name for the categorical variable determining separate curves.
+        Each unique value creates one ridge.
+
+    Returns
+    -------
+    None
+        This function modifies the current figure and returns nothing.
+
+    See Also
+    --------
+    kdeplot : Create a kernel density plot.
+    violinplot : Create a violin plot showing distribution shapes.
+    distplot : Create a distribution plot with histogram and KDE.
+
+    Notes
+    -----
+    The ridge plots are stacked vertically with overlapping to create a compact
+    visualization of many distributions. Each category is represented by a filled
+    density curve with a color from the 'viridis' colormap.
+
+    The curves are partially transparent and overlap (negative hspace) to create
+    the characteristic ridge plot appearance.
+
+    Category labels are displayed to the left of each ridge.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.ridgeplot(data=df, x="expression", y="tissue_type")
+
+    >>> # Time series data
+    >>> cns.ridgeplot(data=df, x="temperature", y="month")
+    """
     countries = data[y].unique()
     colors = cns._utils._get_hex_colors_from_colorbar("viridis", len(countries))
     gs = grid_spec.GridSpec(len(countries), 1)
@@ -1405,6 +2776,65 @@ def ridgeplot(data, x, y):
 
 
 def slopeplot(data, x, y, hue):
+    """
+    Create a slope plot showing paired changes between two conditions.
+
+    This function generates a slope plot (also called slope graph) that visualizes
+    changes in a continuous variable between two time points or conditions for
+    multiple subjects or groups.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing paired observations.
+    x : str
+        Column name for the categorical variable defining the two conditions
+        or time points being compared.
+    y : str
+        Column name for the continuous variable to plot.
+    hue : str
+        Column name for the grouping variable. Must have exactly two unique values
+        representing the two conditions to compare.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    lineplot : Create a line plot for time series.
+    scatterplot : Create a scatter plot.
+    regplot : Create a regression plot.
+
+    Notes
+    -----
+    Each line connects paired observations (same x value) between the two hue
+    conditions. Lines are colored based on direction of change:
+
+    - Blue: Increase (left to right)
+    - Red: Decrease (left to right)
+
+    Points are colored to match their respective hue group (blue for first,
+    red for second).
+
+    The slope and color of each line make it easy to see the magnitude and
+    direction of change for each subject/group.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # Compare before/after measurements for multiple patients
+    >>> cns.slopeplot(
+    ...     data=df,
+    ...     x="patient_id",
+    ...     y="tumor_size",
+    ...     hue="timepoint",  # e.g., 'baseline' and 'week_12'
+    ... )
+
+    >>> # Compare two treatments across sites
+    >>> cns.slopeplot(data=df, x="site", y="response_rate", hue="treatment")
+    """
     # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
     red = palettable.colorbrewer.qualitative.Set1_9.hex_colors[0]
     blue = palettable.colorbrewer.qualitative.Set1_9.hex_colors[1]
@@ -1451,6 +2881,58 @@ def slopeplot(data, x, y, hue):
 
 
 def qqplot(data, x, **kwargs):
+    """
+    Create a quantile-quantile (Q-Q) plot to assess normality.
+
+    This function generates a Q-Q plot comparing the quantiles of a variable
+    against the theoretical quantiles of a normal distribution to assess whether
+    the data follows a normal distribution.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to plot.
+    x : str
+        Column name for the variable to test for normality.
+    **kwargs
+        Additional keyword arguments passed to `statsmodels.api.qqplot`.
+        Common options include:
+
+        - line : str
+            Type of reference line ('45', 's', 'r', 'q', or None).
+        - fit : bool
+            Whether to fit a regression line.
+        - dist : scipy.stats distribution
+            Theoretical distribution to compare against (default is normal).
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    distplot : Create a distribution plot with histogram and KDE.
+    kdeplot : Create a kernel density plot.
+
+    Notes
+    -----
+    If data points fall approximately along the 45-degree reference line, the
+    data is approximately normally distributed.
+
+    Deviations from the line indicate departures from normality:
+    - S-shaped pattern: Skewed distribution
+    - Curved pattern: Heavy or light tails compared to normal distribution
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.qqplot(data=df, x="residuals")
+
+    >>> # With custom distribution
+    >>> from scipy import stats
+    >>> cns.qqplot(data=df, x="values", dist=stats.t, distargs=(10,))
+    """
     ax = plt.gca()
     sm.qqplot(
         data[x],
@@ -1463,6 +2945,63 @@ def qqplot(data, x, **kwargs):
 
 
 def rocplot(data, true_label_col, pred_prob_cols):
+    """
+    Create a receiver operating characteristic (ROC) curve plot.
+
+    This function generates ROC curves for one or more binary classifiers,
+    showing the trade-off between true positive rate and false positive rate
+    at various classification thresholds.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing true labels and predicted probabilities.
+    true_label_col : str
+        Column name for the true binary labels (0 or 1).
+    pred_prob_cols : str or list of str
+        Column name(s) for predicted probabilities. Can be a single column name
+        or a list of column names to compare multiple models.
+
+    Returns
+    -------
+    None
+        This function modifies the current axes and returns nothing.
+
+    See Also
+    --------
+    confusionplot : Create a confusion matrix heatmap.
+    forestplot : Create a forest plot from a logistic model.
+
+    Notes
+    -----
+    The ROC curve plots the True Positive Rate (Sensitivity) on the y-axis
+    versus the False Positive Rate (1 - Specificity) on the x-axis.
+
+    The area under the ROC curve (AUC) is calculated and displayed in the legend
+    for each classifier:
+
+    - AUC = 1.0: Perfect classifier
+    - AUC = 0.5: Random classifier (diagonal reference line)
+    - AUC < 0.5: Worse than random
+
+    A diagonal dashed line represents the performance of a random classifier.
+
+    Legend line width is automatically increased to 1.7 for better visibility.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.rocplot(
+    ...     data=df, true_label_col="disease", pred_prob_cols="model_probability"
+    ... )
+
+    >>> # Compare multiple models
+    >>> cns.rocplot(
+    ...     data=df,
+    ...     true_label_col="outcome",
+    ...     pred_prob_cols=["model_a_prob", "model_b_prob", "model_c_prob"],
+    ... )
+    """
     if isinstance(pred_prob_cols, str):
         pred_prob_cols = [pred_prob_cols]
 
@@ -1492,6 +3031,73 @@ def rocplot(data, true_label_col, pred_prob_cols):
 def gseaplot(
     data, y, color="NES", cutoff=0.05, cmap="BuRd_custom", top_term=20, size=1.8
 ):
+    """
+    Create a Gene Set Enrichment Analysis (GSEA) dot plot.
+
+    This function generates a dot plot visualizing GSEA results, with gene sets
+    on the y-axis, normalized enrichment scores on the x-axis, and dot size/color
+    representing statistical significance and enrichment strength.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing GSEA results. Typically output from
+        gseapy or similar GSEA analysis tools.
+    y : str
+        Column name for gene set names or pathway names (y-axis labels).
+    color : str, default: 'NES'
+        Column name for the variable to use for dot color encoding.
+        Typically 'NES' (Normalized Enrichment Score) or adjusted p-value.
+    cutoff : float, default: 0.05
+        Significance cutoff for filtering gene sets. Gene sets with adjusted
+        p-value < cutoff are displayed.
+    cmap : str, default: 'BuRd_custom'
+        Colormap for encoding the color variable.
+    top_term : int, default: 20
+        Maximum number of top gene sets to display.
+    size : float, default: 1.8
+        Scaling factor for dot sizes.
+
+    Returns
+    -------
+    None
+        This function modifies the current figure and returns nothing.
+
+    See Also
+    --------
+    volcanoplot : Create a volcano plot for differential expression.
+    dotplot : Create a dot plot matrix.
+
+    Notes
+    -----
+    This function is a wrapper around `gseapy.dotplot` with customized styling
+    and layout adjustments for publication-quality figures.
+
+    The plot typically shows:
+    - Dot position along x-axis: Normalized Enrichment Score (NES)
+    - Dot size: Statistical significance (-log10 p-value or similar)
+    - Dot color: Enrichment strength or significance
+
+    Positive NES indicates enrichment in the first phenotype, negative NES
+    indicates enrichment in the second phenotype (for two-class comparisons).
+
+    The colorbar and legend are automatically adjusted for optimal positioning.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # GSEA results from gseapy
+    >>> cns.gseaplot(data=gsea_results, y="Term", color="NES", top_term=15, cutoff=0.05)
+
+    >>> # Color by adjusted p-value instead
+    >>> cns.gseaplot(
+    ...     data=gsea_results,
+    ...     y="Term",
+    ...     color="Adjusted P-value",
+    ...     cmap="viridis",
+    ...     top_term=30,
+    ... )
+    """
     ax = plt.gca()
     gp.dotplot(
         data,

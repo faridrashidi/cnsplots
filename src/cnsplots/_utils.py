@@ -35,11 +35,102 @@ CHOCOLATE = "#662506"
 
 
 def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SEQ):
+    """
+    Initialize a new figure with custom size and styling.
+
+    This function creates a new matplotlib figure with specified dimensions and
+    applies the cnsplots style configuration including color palette and colormap.
+
+    Parameters
+    ----------
+    height : int, default: 150
+        Height of the figure in pixels.
+    width : int, default: 150
+        Width of the figure in pixels.
+    color_cycle : str, default: PALETTE_QUAL
+        Name of the qualitative color palette to use for the color cycle.
+        Options include: 'Ecotyper1', 'Set1', 'Set2', 'Dark2', 'Tableau', etc.
+    color_map : str, default: PALETTE_SEQ
+        Name of the sequential colormap to use for continuous data.
+        Options include: 'gnuplot', 'parula', 'bwr', 'hot', etc.
+
+    Returns
+    -------
+    None
+        This function creates a figure and returns nothing.
+
+    See Also
+    --------
+    multipanel : Create multi-panel figures with automatic layout.
+    savefig : Save the current figure to a file.
+    setup_matplotlib : Configure matplotlib styling.
+
+    Notes
+    -----
+    The function converts pixel dimensions to inches assuming 72 DPI base resolution
+    and sets the actual DPI to 144 for high-quality output.
+
+    The figure size formula: inches = pixels / 72, with DPI = 144
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.figure(height=200, width=300)
+    >>> cns.boxplot(data=df, x="group", y="value")
+    >>> cns.savefig("plot.pdf")
+
+    >>> # With custom color scheme
+    >>> cns.figure(height=150, width=150, color_cycle="Set2", color_map="parula")
+    >>> cns.heatmapplot(adata)
+    """
     cns.setup_matplotlib(color_cycle, color_map)
     plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
 
 
 def savefig(filepath):
+    """
+    Save the current figure to a file, creating directories if needed.
+
+    This function saves the current matplotlib figure to the specified file path,
+    automatically creating any missing parent directories.
+
+    Parameters
+    ----------
+    filepath : str
+        Path where the figure should be saved. Can include home directory shorthand
+        (~). The file format is determined by the extension (e.g., .pdf, .png, .svg).
+
+    Returns
+    -------
+    None
+        This function saves the figure and returns nothing.
+
+    See Also
+    --------
+    figure : Initialize a new figure with custom size and styling.
+    multipanel : Create multi-panel figures.
+
+    Notes
+    -----
+    The function automatically:
+    - Expands user home directory (~) in the path
+    - Creates all necessary parent directories if they don't exist
+    - Determines the file format from the file extension
+
+    Supported formats include: PDF, PNG, SVG, JPG, EPS, and more (any format
+    supported by matplotlib.pyplot.savefig).
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.figure()
+    >>> cns.boxplot(data=df, x="group", y="value")
+    >>> cns.savefig("~/results/figures/boxplot.pdf")
+
+    >>> # Save in multiple formats
+    >>> cns.savefig("output/plot.png")
+    >>> cns.savefig("output/plot.svg")
+    """
     filepath = os.path.expanduser(filepath)
     directory = os.path.dirname(filepath)
     if not os.path.exists(directory):
@@ -52,6 +143,48 @@ def savefig(filepath):
 
 
 def take_legend_out(title=None):
+    """
+    Move the legend outside the plot area to the upper-left of the right margin.
+
+    This function repositions the current axes legend to appear outside and to
+    the right of the plot area, preventing overlap with the plotted data.
+
+    Parameters
+    ----------
+    title : str, optional
+        Title for the legend. If None, uses the existing legend title from
+        the current axes.
+
+    Returns
+    -------
+    None
+        This function modifies the current legend and returns nothing.
+
+    See Also
+    --------
+    figure : Initialize a new figure.
+    multipanel : Create multi-panel figures with automatic layout.
+
+    Notes
+    -----
+    The legend is positioned with:
+    - bbox_to_anchor=(1, 1.02): Slight offset above the upper-right corner
+    - loc='upper left': Legend's upper-left corner is anchored to that point
+
+    This ensures the legend appears just to the right of the plot area without
+    obscuring data points.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.figure()
+    >>> cns.scatterplot(data=df, x="PC1", y="PC2", hue="cell_type")
+    >>> cns.take_legend_out()
+
+    >>> # With custom title
+    >>> cns.barplot(data=df, x="treatment", y="response", hue="batch")
+    >>> cns.take_legend_out(title="Batch")
+    """
     if title is None:
         ax = plt.gca()
         title = ax.get_legend().get_title().get_text()
@@ -63,6 +196,55 @@ def take_legend_out(title=None):
 
 
 def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
+    """
+    Add a panel label (e.g., 'A', 'B', 'C') to the current axes.
+
+    This function adds a bold text label to the current axes, typically used
+    for labeling panels in multi-panel figures for publication.
+
+    Parameters
+    ----------
+    name : str, default: 'A'
+        The label text to display (typically a single letter).
+    offset_x : float, default: -0.25
+        Horizontal offset in axes coordinates. Negative values place the label
+        to the left of the axes.
+    offset_y : float, default: 1.1
+        Vertical offset in axes coordinates. Values > 1.0 place the label above
+        the axes.
+
+    Returns
+    -------
+    None
+        This function adds text to the axes and returns nothing.
+
+    See Also
+    --------
+    multipanel : Create multi-panel figures with automatic labeling.
+    figure : Initialize a new figure.
+
+    Notes
+    -----
+    The label is positioned using axes coordinates where:
+    - (0, 0) is the lower-left corner of the axes
+    - (1, 1) is the upper-right corner of the axes
+    - Values outside [0, 1] place the label outside the axes area
+
+    The label uses Arial font (bold) at 8pt size (FONTSIZE_TITLE) for consistency
+    with publication standards.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.figure()
+    >>> cns.boxplot(data=df, x="group", y="value")
+    >>> cns.add_panel_label("A")
+
+    >>> # Custom positioning
+    >>> cns.figure()
+    >>> cns.barplot(data=df, x="treatment", y="response")
+    >>> cns.add_panel_label("B", offset_x=-0.3, offset_y=1.15)
+    """
     plt.text(
         offset_x,
         offset_y,
@@ -436,6 +618,53 @@ class multipanel:
 def get_hexcolors_from_apalette(
     alist, palette=palettable.colorbrewer.qualitative.Set1_9.hex_colors
 ):
+    """
+    Extract specific colors from a palette by index.
+
+    This function retrieves a subset of colors from a color palette based on
+    the provided indices.
+
+    Parameters
+    ----------
+    alist : list of int
+        List of indices specifying which colors to extract from the palette.
+        Indices are 0-based.
+    palette : str or list, default: Set1_9.hex_colors
+        Either a palette name (str) that can be resolved by the palettes() function,
+        or a list of hex color codes.
+
+    Returns
+    -------
+    list
+        List of hex color codes corresponding to the requested indices.
+
+    See Also
+    --------
+    palettes : Get a complete color palette by name.
+
+    Notes
+    -----
+    When palette is a string, it is first resolved to a list of colors using
+    the palettes() function, which supports many predefined palettes including:
+    - ColorBrewer palettes: 'Set1', 'Set2', 'Set3', 'Dark2', 'Paired', etc.
+    - Custom palettes: 'Ecotyper1'-'Ecotyper6', 'BlueRed', 'ECharts', etc.
+
+    When palette is a list, colors are extracted directly by index.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # Extract first two colors from Set1
+    >>> colors = cns.get_hexcolors_from_apalette([0, 1], "Set1")
+    >>> colors
+    ['#E41A1C', '#377EB8']
+
+    >>> # Extract specific colors from custom palette
+    >>> custom = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00"]
+    >>> selected = cns.get_hexcolors_from_apalette([0, 2], custom)
+    >>> selected
+    ['#FF0000', '#0000FF']
+    """
     if isinstance(palette, str):
         colors = palettes(palette)
         return list(operator.itemgetter(*alist)(colors))
@@ -587,6 +816,81 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
 
 
 def palettes(color):
+    """
+    Get a color palette by name.
+
+    This function returns a predefined color palette as a list of colors in
+    matplotlib-compatible format. Supports ColorBrewer palettes, custom scientific
+    palettes, and specialized colormaps.
+
+    Parameters
+    ----------
+    color : str or list
+        Palette name or list of color values. If a list is provided, it is
+        converted to a seaborn color palette.
+
+        **Supported palette names:**
+
+        **ColorBrewer Qualitative:**
+        - 'Set1', 'Set2', 'Set3'
+        - 'Pastel1', 'Pastel2'
+        - 'Paired'
+        - 'Dark2'
+        - 'Accent'
+
+        **Other Qualitative:**
+        - 'Tableau': Tableau 10 colors
+        - 'Bold': Cartographic bold colors
+        - 'BlueRed': Tableau blue-red diverging palette
+        - 'ECharts': ECharts library default colors
+        - 'Ecotyper1'-'Ecotyper6': Custom palettes for cell type visualization
+
+        **Sequential/Diverging (for use with colormaps):**
+        - 'BuRd_custom': Custom blue-white-red diverging
+        - 'WhYlOrRd_custom': White-yellow-orange-red sequential
+        - 'OrBu_custom': Orange-white-blue diverging
+        - 'YlGnBu_custom': Yellow-green-blue sequential
+        - 'parula': MATLAB parula colormap
+
+    Returns
+    -------
+    list or matplotlib.colors.LinearSegmentedColormap
+        For qualitative palettes: list of RGB tuples or color objects
+        For sequential/diverging palettes: LinearSegmentedColormap object
+
+    See Also
+    --------
+    get_hexcolors_from_apalette : Extract specific colors from a palette by index.
+    figure : Initialize a figure with custom color cycle.
+
+    Notes
+    -----
+    Ecotyper palettes are custom color schemes designed for biological data
+    visualization, particularly for distinguishing cell types and molecular
+    subtypes in tumor microenvironment studies.
+
+    The function returns:
+    - Qualitative palettes as lists of matplotlib color objects (RGB tuples)
+    - Sequential/diverging palettes as LinearSegmentedColormap objects
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # Get Set1 palette
+    >>> colors = cns.palettes("Set1")
+    >>> len(colors)
+    9
+
+    >>> # Get Ecotyper1 palette
+    >>> eco_colors = cns.palettes("Ecotyper1")
+
+    >>> # Use parula colormap
+    >>> parula_cmap = cns.palettes("parula")
+
+    >>> # Pass a custom list
+    >>> custom = ["#FF0000", "#00FF00", "#0000FF"]
+    >>> palette = cns.palettes(custom)
+    """
     if isinstance(color, list):
         return sns.color_palette(color)
     else:

@@ -9,6 +9,84 @@ from sklearn.linear_model import LogisticRegressionCV
 
 
 class CoxModel:
+    """
+    Cox proportional hazards regression model for survival analysis.
+
+    This class fits Cox proportional hazards models to assess the relationship
+    between predictor variables and time-to-event data. Supports multiple
+    covariates and optional stratification by a grouping variable.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Input DataFrame containing survival data and covariates.
+    duration : str
+        Column name for the time-to-event or time-to-censoring variable.
+    event : str
+        Column name for the event indicator (1 = event occurred, 0 = censored).
+    variates : list of str
+        List of formula strings specifying the covariates to test. Each formula
+        can be a simple variable name or a Patsy formula (e.g., 'age',
+        'C(treatment)', 'age + C(stage)').
+    hue : str, optional
+        Column name for grouping variable. If provided, fits separate models
+        for each group. Default is None (single model for all data).
+
+    Attributes
+    ----------
+    results : pd.DataFrame
+        Results DataFrame containing hazard ratios, confidence intervals,
+        p-values, and -log10(p-values) for all fitted models. Available after
+        calling fit().
+    name : str
+        Model type identifier, always 'cox'.
+
+    See Also
+    --------
+    survivalplot : Create a Kaplan-Meier survival plot.
+    forestplot : Create a forest plot from model results.
+    LogisticModel : Logistic regression for binary outcomes.
+
+    Notes
+    -----
+    The fit() method performs univariate Cox regression for each variate,
+    optionally stratified by hue groups. Results include:
+
+    - exp(coef): Hazard ratio
+    - exp(coef) lower 95%, exp(coef) upper 95%: 95% confidence interval
+    - p: P-value from Wald test
+    - log10_pvalue: -log10(p-value) for visualization
+
+    Hazard ratio interpretation:
+    - HR = 1: No effect
+    - HR > 1: Increased hazard (worse outcome)
+    - HR < 1: Decreased hazard (better outcome)
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # Simple Cox model
+    >>> model = cns.CoxModel(
+    ...     data=df,
+    ...     duration="time_months",
+    ...     event="death",
+    ...     variates=["age", "C(stage)", "biomarker"],
+    ... )
+    >>> model.fit()
+    >>> cns.forestplot(model)
+
+    >>> # Stratified by treatment group
+    >>> model = cns.CoxModel(
+    ...     data=df,
+    ...     duration="time_months",
+    ...     event="death",
+    ...     variates=["age", "stage"],
+    ...     hue="treatment",
+    ... )
+    >>> model.fit()
+    >>> print(model.results)
+    """
+
     def __init__(self, data, duration, event, variates, hue=None):
         self.data = data
         self.duration = duration
@@ -19,6 +97,40 @@ class CoxModel:
         self.name = "cox"
 
     def fit(self):
+        """
+        Fit Cox proportional hazards models for all specified variates.
+
+        This method fits a separate Cox model for each variate, optionally
+        stratified by hue groups. Results are stored in the results attribute.
+
+        Returns
+        -------
+        None
+            Results are stored in self.results as a DataFrame.
+
+        Notes
+        -----
+        The results DataFrame contains:
+        - display_label: Cleaned variable name for plotting
+        - exp(coef): Hazard ratio
+        - exp(coef) lower_err, upper_err: Error bars for forest plot
+        - exp(coef) lower 95%, upper 95%: Confidence interval bounds
+        - log10_pvalue: -log10(p-value)
+        - analysis: Original formula string
+        - covariate: Variable name from model
+        - hue_group: Group name (or 'All' if no grouping)
+        - p: P-value
+
+        The display_label is automatically extracted from formula strings,
+        removing formula syntax (Q(), C(), np.log(), etc.) for cleaner
+        visualization.
+
+        Examples
+        --------
+        >>> model = cns.CoxModel(df, "time", "event", ["age", "treatment"])
+        >>> model.fit()
+        >>> print(model.results[["display_label", "exp(coef)", "p"]])
+        """
         df = self.data.copy()
         all_results = []
 
@@ -90,6 +202,75 @@ class CoxModel:
 
 
 class LogisticModel:
+    """
+    Logistic regression model with cross-validation for binary classification.
+
+    This class fits L1-regularized logistic regression models with 5-fold
+    cross-validation to predict binary outcomes and assess predictor performance
+    using ROC-AUC with bootstrap confidence intervals.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Input DataFrame containing the outcome variable and predictors.
+    event : str
+        Column name for the binary outcome variable (0 or 1).
+    variates : list of str
+        List of formula strings specifying the predictors to test. Each formula
+        can be a simple variable name or a Patsy formula (e.g., 'age',
+        'C(treatment)', 'age + stage').
+    hue : str, optional
+        Column name for grouping variable. If provided, fits separate models
+        for each group. Default is None (single model for all data).
+
+    Attributes
+    ----------
+    results : pd.DataFrame
+        Results DataFrame containing AUC values and confidence intervals for
+        all fitted models. Available after calling fit().
+    name : str
+        Model type identifier, always 'logistic'.
+
+    See Also
+    --------
+    CoxModel : Cox proportional hazards model for survival data.
+    forestplot : Create a forest plot from model results.
+    rocplot : Create ROC curves for binary classifiers.
+
+    Notes
+    -----
+    The fit() method performs:
+    - L1-regularized logistic regression with 5-fold cross-validation
+    - Automatic penalty parameter selection via cross-validation
+    - Bootstrap confidence intervals for AUC (1000 iterations, alpha=0.05)
+
+    Models use the liblinear solver optimized for L1 regularization and are
+    scored using ROC-AUC during cross-validation.
+
+    AUC interpretation:
+    - AUC = 1.0: Perfect discrimination
+    - AUC = 0.5: No discrimination (random)
+    - AUC > 0.7: Acceptable discrimination
+    - AUC > 0.8: Excellent discrimination
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # Simple logistic model
+    >>> model = cns.LogisticModel(
+    ...     data=df, event="disease", variates=["age", "C(treatment)", "biomarker"]
+    ... )
+    >>> model.fit()
+    >>> cns.forestplot(model)
+
+    >>> # Stratified by cohort
+    >>> model = cns.LogisticModel(
+    ...     data=df, event="response", variates=["age", "stage"], hue="cohort"
+    ... )
+    >>> model.fit()
+    >>> print(model.results)
+    """
+
     def __init__(self, data, event, variates, hue=None):
         self.data = data
         self.event = event
@@ -99,6 +280,25 @@ class LogisticModel:
         self.name = "logistic"
 
     def _compute_auc_ci(self, y_true, y_pred_proba, n_bootstrap=1000, alpha=0.05):
+        """
+        Compute bootstrap confidence interval for ROC-AUC.
+
+        Parameters
+        ----------
+        y_true : array-like
+            True binary labels.
+        y_pred_proba : array-like
+            Predicted probabilities.
+        n_bootstrap : int, default: 1000
+            Number of bootstrap iterations.
+        alpha : float, default: 0.05
+            Significance level for confidence interval (0.05 = 95% CI).
+
+        Returns
+        -------
+        tuple of float
+            (auc_mean, lower_bound, upper_bound)
+        """
         aucs = []
         np.random.seed(42)
         n = len(y_true)
@@ -115,6 +315,41 @@ class LogisticModel:
         return auc_mean, lower, upper
 
     def fit(self):
+        """
+        Fit logistic regression models for all specified variates.
+
+        This method fits a separate L1-regularized logistic regression model
+        with 5-fold cross-validation for each variate, optionally stratified
+        by hue groups. Results are stored in the results attribute.
+
+        Returns
+        -------
+        None
+            Results are stored in self.results as a DataFrame.
+
+        Notes
+        -----
+        The results DataFrame contains:
+        - predictor: Formula string for the predictor(s)
+        - auc: Area under ROC curve
+        - lower_ci: Lower error bound (auc - lower confidence limit)
+        - upper_ci: Upper error bound (upper confidence limit - auc)
+        - hue_group: Group name (or 'All' if no grouping)
+
+        For each model:
+        1. Design matrix is created using Patsy (supports formulas)
+        2. LogisticRegressionCV fits with L1 penalty and 5-fold CV
+        3. AUC and 95% CI are computed via bootstrap (1000 iterations)
+
+        Warnings are printed for hue groups with no outcome variance.
+        Errors during fitting are caught and reported.
+
+        Examples
+        --------
+        >>> model = cns.LogisticModel(df, "outcome", ["age", "treatment"])
+        >>> model.fit()
+        >>> print(model.results[["predictor", "auc", "hue_group"]])
+        """
         df = self.data.copy()
         all_results = []
 
@@ -201,6 +436,86 @@ class LogisticModel:
 
 
 def prerank(data, gene_sets, name_gene=None, name_rank=None, permutation_num=1000):
+    """
+    Perform pre-ranked Gene Set Enrichment Analysis (GSEA).
+
+    This function runs GSEA using a pre-ranked gene list, identifying gene sets
+    that are enriched at the top or bottom of the ranking. Results are filtered
+    and formatted for visualization.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Input DataFrame containing genes and their ranking metric.
+    gene_sets : str or dict
+        Gene set database name (e.g., 'KEGG_2021_Human', 'GO_Biological_Process_2021')
+        or a dictionary mapping set names to lists of genes.
+    name_gene : str
+        Column name for gene symbols/identifiers.
+    name_rank : str
+        Column name for the ranking metric (e.g., log2 fold change, -log10 p-value,
+        or a composite metric like log2FC * -log10(p)).
+    permutation_num : int, default: 1000
+        Number of permutations for significance testing.
+
+    Returns
+    -------
+    pd.DataFrame
+        Filtered and formatted GSEA results containing:
+
+        - Term: Gene set name
+        - Clean_Term: Cleaned gene set name with improved formatting
+        - NES: Normalized Enrichment Score
+        - FDR q-val: False Discovery Rate q-value
+        - Other columns from gseapy results
+
+        Results are filtered for FDR q-val < 0.25 and |NES| > 1.5, and sorted
+        by absolute NES value (descending).
+
+    See Also
+    --------
+    gseaplot : Create a GSEA dot plot visualization.
+    volcanoplot : Create a volcano plot for differential expression.
+
+    Notes
+    -----
+    The function performs several preprocessing steps:
+
+    1. Renames columns to 'Gene' and 'Rank'
+    2. Converts gene names to uppercase and strips whitespace
+    3. Runs gseapy.prerank with min_size=15, max_size=1000
+    4. Cleans term names by:
+       - Removing common prefixes (HALLMARK_, KEGG_, REACTOME_, GO_, BIOCARTA_)
+       - Replacing underscores with spaces
+       - Converting to title case
+       - Fixing common abbreviations (NF-κB, IL-n, TGF, mTOR, DNA, mRNA)
+       - Lowercasing "via" and "and"
+
+    NES interpretation:
+    - NES > 0: Enriched in genes with positive ranking metric
+    - NES < 0: Enriched in genes with negative ranking metric
+    - |NES| > 1.5: Moderate enrichment
+    - |NES| > 2.0: Strong enrichment
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> # Prepare ranked gene list
+    >>> de_results["rank"] = de_results["log2FC"] * -np.log10(de_results["pvalue"])
+    >>> de_results = de_results.sort_values("rank", ascending=False)
+    >>>
+    >>> # Run pre-ranked GSEA
+    >>> gsea_results = cns.prerank(
+    ...     data=de_results,
+    ...     gene_sets="KEGG_2021_Human",
+    ...     name_gene="gene_symbol",
+    ...     name_rank="rank",
+    ...     permutation_num=1000,
+    ... )
+    >>>
+    >>> # Visualize results
+    >>> cns.gseaplot(gsea_results, y="Clean_Term", top_term=20)
+    """
     try:
         import gseapy as gp
     except ImportError:
