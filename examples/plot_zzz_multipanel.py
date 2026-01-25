@@ -23,16 +23,16 @@ tips = sns.load_dataset("tips")
 
 mp = cns.multipanel((2, 2), max_width=540, hgap=50, vgap=40)
 
-mp.panel("A", 100, 150)
+mp.panel("A", 70, 70)
 cns.boxplot(data=tips, x="day", y="total_bill")
 
-mp.panel("B", 100, 150)
+mp.panel("B", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
 
-mp.panel("C", 100, 150)
+mp.panel("C", 80, 100)
 cns.violinplot(data=iris, x="species", y="sepal_width")
 
-mp.panel("D", 100, 150)
+mp.panel("D", 120, 80)
 cns.stripplot(data=tips, x="day", y="tip", hue="sex")
 
 
