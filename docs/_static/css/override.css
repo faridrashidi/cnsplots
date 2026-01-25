@@ -4,3 +4,8 @@
   width: auto;
   max-height: 80% !important;
 }
+
+.table-wrapper.autosummary {
+  margin-left: 0;
+  margin-right: auto;
+}
