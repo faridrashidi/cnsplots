@@ -998,6 +998,13 @@ def stripplot(
     if addcount:
         cns._utils._addcount_helper(data, x, ax)
 
+    if ax.get_legend() is not None:
+        for handle in ax.get_legend().legend_handles:
+            if hasattr(handle, "set_sizes"):
+                handle.set_sizes([size**2])
+            elif hasattr(handle, "set_markersize"):
+                handle.set_markersize(size * 2)
+
 
 def histplot(**kwargs):
     sns.histplot(**kwargs)
