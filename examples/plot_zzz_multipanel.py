@@ -37,31 +37,6 @@ cns.stripplot(data=tips, x="day", y="tip", hue="sex")
 
 
 # %%
-# Create panels with different sizes in the same figure.
-# Row height = max height of panels in that row.
-# Column width = max width of panels in that column.
-# Example: A(50x100), B(100x100), C(50x100), D(120x80)
-# Row 0: max(50, 100) = 100, Row 1: max(50, 120) = 120
-# Col 0: max(100, 100) = 100, Col 1: max(100, 80) = 100
-# Total content: 100+50+100 = 250 wide, 100+40+120 = 260 tall
-# Figure is max_width=540 wide with blank space on right.
-
-mp = cns.multipanel((2, 2), max_width=540, hgap=50, vgap=40)
-
-mp.panel("A", 50, 100)
-cns.boxplot(data=tips, x="day", y="total_bill")
-
-mp.panel("B", 100, 100)
-cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
-
-mp.panel("C", 50, 100)
-cns.violinplot(data=iris, x="species", y="sepal_width")
-
-mp.panel("D", 120, 80)
-cns.stripplot(data=tips, x="day", y="tip", hue="sex")
-
-
-# %%
 # Create a 1x3 multi-panel figure
 
 mp = cns.multipanel((1, 3), max_width=540, hgap=40)
@@ -102,7 +77,3 @@ cns.stripplot(data=iris, x="species", y="petal_length")
 
 mp.panel("F", 100, 120)
 cns.stripplot(data=iris, x="species", y="petal_width")
-
-# Save first figure to test
-mp.fig.savefig("test_multipanel.png", dpi=150, bbox_inches="tight")
-print(f"Figure saved! Size: {mp.fig.get_size_inches()} inches")
