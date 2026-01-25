@@ -210,7 +210,7 @@ class multipanel:
         for i in range(self._rows - 1):
             y_positions.append(y_positions[-1] - self._row_heights[i + 1] - self._vgap)
 
-        # Create all axes at their precise positions
+        # Create axes for panels defined so far
         for idx, (label, height, width) in enumerate(self._panel_info):
             rows_span, cols_span = self._get_panel_position(idx)
 
@@ -222,7 +222,9 @@ class multipanel:
 
             # Calculate axes position in figure coordinates (0-1)
             left = x_positions[col] / fig_width_px
-            bottom = y_positions[row] / fig_height_px
+            bottom = (
+                y_positions[row] + self._row_heights[row] - height
+            ) / fig_height_px
             ax_width = width / fig_width_px
             ax_height = height / fig_height_px
 
@@ -231,11 +233,28 @@ class multipanel:
             self.axes.append(ax)
             self._created_axes[label] = ax
 
+            # Calculate adjusted offsets to align labels at same absolute position
+            # For panels with different heights/widths in the same row/column
+            original_offset_x = self._label_offsets_x[label]
+            original_offset_y = self._label_offsets_y[label]
+
+            # Adjust x-offset based on column width
+            offset_left_of_panel = (
+                original_offset_x  # Negative value, distance to the left
+            )
+            adjusted_offset_x = (offset_left_of_panel * self._col_widths[col]) / width
+
+            # Adjust y-offset based on row height
+            offset_above_top = original_offset_y - 1.0  # Extract the offset above top
+            adjusted_offset_y = (
+                1.0 + (offset_above_top * self._row_heights[row]) / height
+            )
+
             # Add panel label - bold, 8pt, positioned above and to the left
             # Use Arial explicitly for reliable bold rendering across systems
             label_text = ax.text(
-                self._label_offsets_x[label],
-                self._label_offsets_y[label],
+                adjusted_offset_x,
+                adjusted_offset_y,
                 label,
                 transform=ax.transAxes,
                 fontsize=FONTSIZE_TITLE,
@@ -245,6 +264,101 @@ class multipanel:
                 ha="right",
             )
             self._label_texts[label] = label_text
+
+    def _update_figure(self):
+        """Update figure size and reposition axes as new panels are added."""
+        # Recalculate total content size
+        content_height = sum(self._row_heights) + (self._rows - 1) * self._vgap
+        fig_width_px = self._max_width
+        fig_height_px = content_height
+
+        # Update figure size
+        fig_width = fig_width_px / 72
+        fig_height = fig_height_px / 72
+        self.fig.set_size_inches(fig_width, fig_height)
+
+        # Recalculate positions
+        x_positions = [0]
+        for i in range(self._cols - 1):
+            x_positions.append(x_positions[-1] + self._col_widths[i] + self._hgap)
+
+        y_positions = [fig_height_px - self._row_heights[0]]
+        for i in range(self._rows - 1):
+            y_positions.append(y_positions[-1] - self._row_heights[i + 1] - self._vgap)
+
+        # Update or create axes for all panels
+        for idx, (label, height, width) in enumerate(self._panel_info):
+            rows_span, cols_span = self._get_panel_position(idx)
+            row = min(rows_span)
+            col = min(cols_span)
+
+            # Calculate position
+            left = x_positions[col] / fig_width_px
+            bottom = (
+                y_positions[row] + self._row_heights[row] - height
+            ) / fig_height_px
+            ax_width = width / fig_width_px
+            ax_height = height / fig_height_px
+
+            # Update or create axes
+            ax = self._created_axes.get(label)
+            if ax is not None:
+                # Update existing axes position
+                ax.set_position([left, bottom, ax_width, ax_height])
+
+                # Update label position
+                label_text = self._label_texts.get(label)
+                if label_text is not None:
+                    original_offset_x = self._label_offsets_x[label]
+                    original_offset_y = self._label_offsets_y[label]
+
+                    # Adjust x-offset based on column width
+                    offset_left_of_panel = original_offset_x
+                    adjusted_offset_x = (
+                        offset_left_of_panel * self._col_widths[col]
+                    ) / width
+
+                    # Adjust y-offset based on row height
+                    offset_above_top = original_offset_y - 1.0
+                    adjusted_offset_y = (
+                        1.0 + (offset_above_top * self._row_heights[row]) / height
+                    )
+                    label_text.set_position((adjusted_offset_x, adjusted_offset_y))
+            else:
+                # Create new axes for this panel
+                ax = self.fig.add_axes([left, bottom, ax_width, ax_height])
+                self.axes.append(ax)
+                self._created_axes[label] = ax
+
+                # Calculate adjusted offsets for label
+                original_offset_x = self._label_offsets_x[label]
+                original_offset_y = self._label_offsets_y[label]
+
+                # Adjust x-offset based on column width
+                offset_left_of_panel = original_offset_x
+                adjusted_offset_x = (
+                    offset_left_of_panel * self._col_widths[col]
+                ) / width
+
+                # Adjust y-offset based on row height
+                offset_above_top = original_offset_y - 1.0
+                adjusted_offset_y = (
+                    1.0 + (offset_above_top * self._row_heights[row]) / height
+                )
+
+                # Add panel label
+                label_text = ax.text(
+                    adjusted_offset_x,
+                    adjusted_offset_y,
+                    label,
+                    transform=ax.transAxes,
+                    fontsize=FONTSIZE_TITLE,
+                    fontweight="bold",
+                    fontname="Arial",
+                    va="bottom",
+                    ha="right",
+                )
+                self._label_texts[label] = label_text
 
     def panel(self, label=None, height=150, width=150, offset_x=-0.25, offset_y=1.1):
         """
@@ -285,19 +399,22 @@ class multipanel:
 
         # Store panel info
         self._panel_info.append((label, height, width))
+
+        # Create or update figure as we go
+        if self.fig is None:
+            # First panel - create the figure
+            self._create_figure()
+        else:
+            # Subsequent panels - need to update figure and reposition all axes
+            self._update_figure()
+
         self._panel_index += 1
 
-        # Check if all panels have been defined
-        if self._panel_index == self._n_panels:
-            self._create_figure()
-
-        # Return the axes if figure is created
-        if self.fig is not None:
-            ax = self._created_axes.get(label)
-            if ax is not None:
-                plt.sca(ax)
-            return ax
-        return None
+        # Get the axes for this panel and set it as current
+        ax = self._created_axes.get(label)
+        if ax is not None:
+            plt.sca(ax)
+        return ax
 
     def get_axes(self, label):
         """
