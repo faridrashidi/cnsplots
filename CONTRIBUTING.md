@@ -92,41 +92,27 @@ Documentation improvements are always welcome! You can:
 
 ## Development Setup
 
-### 1. Clone the Repository
+### 1. Install uv
+
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### 2. Clone and Install
 
 ```bash
 git clone https://github.com/faridrashidi/cnsplots.git
 cd cnsplots
+make install
 ```
 
-### 2. Create a Virtual Environment
+This uses `uv sync --all-extras` to install the package in editable mode with all dependencies, and sets up pre-commit hooks.
 
-```bash
-# Using venv
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Or using conda
-conda create -n cnsplots-dev python=3.10
-conda activate cnsplots-dev
-```
-
-### 3. Install Development Dependencies
-
-```bash
-# Install package in editable mode with all dependencies
-pip install -e ".[dev,doc,all]"
-```
-
-### 4. Install Pre-commit Hooks
-
-```bash
-pre-commit install
-```
-
-This will automatically run linters and formatters before each commit.
-
-### 5. Verify Installation
+### 3. Verify Installation
 
 ```bash
 python -c "import cnsplots as cns; print(cns.__version__)"
@@ -136,17 +122,10 @@ python -c "import cnsplots as cns; print(cns.__version__)"
 
 We use [Ruff](https://github.com/astral-sh/ruff) for code formatting and linting.
 
-### Running Ruff
+### Running Linters
 
 ```bash
-# Check for issues
-ruff check .
-
-# Auto-fix issues
-ruff check --fix .
-
-# Format code
-ruff format .
+make lint
 ```
 
 ### Style Guidelines
@@ -193,17 +172,7 @@ def example_function(param1, param2):
 ### Running Tests
 
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=cnsplots --cov-report=html
-
-# Run specific test file
-pytest tests/test_boxplot.py
-
-# Run specific test
-pytest tests/test_boxplot.py::test_basic_boxplot
+make test
 ```
 
 ### Writing Tests
