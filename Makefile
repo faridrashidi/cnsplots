@@ -15,6 +15,7 @@ clean:
 	rm -rf docs/auto_examples
 	rm -rf docs/gen_modules
 	rm -rf examples/renv
+	rm -rf docs/sg_execution_times.rst
 
 lint:
 	pre-commit run --all-files
@@ -25,12 +26,8 @@ test:
 serve:
 	cd docs/build/html && python -m http.server 8080
 
-doc:
-	rm -rf docs/build
-	rm -rf docs/cnsplots*
-	rm -rf docs/auto_examples
-	rm -rf docs/gen_modules
-	cd docs && $(MAKE) clean html
+doc: clean
+	cd docs && $(MAKE) html
 	cd docs/build/html && python -m http.server 8080
 
 install:
