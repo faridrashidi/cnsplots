@@ -816,6 +816,11 @@ def survivalplot(data, duration, event, hue, hue_order=None):
         0, 0, f"HR = {hazard_ratio:.2f} ({ci1:.2f}-{ci2:.2f})\nP = " + rf"${p:.2g}$"
     )
 
+    if ax.get_legend() is not None:
+        for handle in ax.get_legend().legend_handles:
+            if hasattr(handle, "set_linewidth"):
+                handle.set_linewidth(1.7)
+
 
 def cumulativeincidenceplot(
     data,
@@ -1475,8 +1480,13 @@ def rocplot(data, true_label_col, pred_prob_cols):
     plt.yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.legend(loc="lower right")
-    plt.legend(loc="lower right")
+    ax = plt.gca()
+    ax.legend(loc="lower right")
+
+    if ax.get_legend() is not None:
+        for handle in ax.get_legend().legend_handles:
+            if hasattr(handle, "set_linewidth"):
+                handle.set_linewidth(1.7)
 
 
 def gseaplot(
