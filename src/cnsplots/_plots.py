@@ -1015,7 +1015,14 @@ def lineplot(**kwargs):
 
 
 def scatterplot(data, x, y, s=7, **kwargs):
-    sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
+    ax = sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
+
+    if ax.get_legend() is not None:
+        for handle in ax.get_legend().legend_handles:
+            if hasattr(handle, "set_sizes"):
+                handle.set_sizes([s])
+            elif hasattr(handle, "set_markersize"):
+                handle.set_markersize(2 * np.sqrt(s / np.pi))
 
 
 def upsetplot(sets, **kwargs):
