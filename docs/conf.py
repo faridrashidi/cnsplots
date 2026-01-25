@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+from datetime import datetime
 from typing import Any
 
 import cnsplots as cns
@@ -11,7 +12,7 @@ import cnsplots as cns
 # -- Project information -----------------------------------------------------
 
 project = "cnsplots"
-copyright = "2023, Farid Rashidi"
+copyright = f"2023-{datetime.now().year}, Farid Rashidi"
 author = "Farid Rashidi"
 version = cns.__version__
 release = cns.__version__
