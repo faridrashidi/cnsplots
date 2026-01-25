@@ -157,6 +157,14 @@ def heatmapplot(
                         relpos=(0, 0.4),
                     )
                 else:
+                    annot_colors = colors.get(annot) if colors else None
+                    # Only use custom colors if they cover all unique values
+                    # Compare using string representation to handle int/str mismatches
+                    if annot_colors is not None:
+                        unique_vals_str = {str(v) for v in df[annot].dropna().unique()}
+                        color_keys_str = {str(k) for k in annot_colors.keys()}
+                        if not unique_vals_str.issubset(color_keys_str):
+                            annot_colors = None
                     rc_dict[annot] = pch.anno_simple(
                         df[annot].sort_values(key=natsort_keygen()),
                         cmap=cat_palettes[cat_counter % len(cat_palettes)],
@@ -169,7 +177,7 @@ def heatmapplot(
                         height=3,
                         rasterized=True,
                         linewidth=0,
-                        colors=colors,
+                        colors=annot_colors,
                     )
                     cat_counter += 1
             else:
@@ -638,11 +646,13 @@ def violinplot(
     }
     plotting = {"data": data, "x": x, "y": y}
     plotting.update(kwargs)
-    ax = sns.violinplot(linewidth=0, width=width, **plotting)
+    ax = sns.violinplot(linewidth=0.001, width=width, **plotting)
     plotting.update(args)
     plotting.update(kwargs)
+    # Remove violin-only arguments that boxplot doesn't support
+    boxplot_kwargs = {k: v for k, v in plotting.items() if k not in ("split", "inner")}
     if add_box:
-        sns.boxplot(**plotting)
+        sns.boxplot(**boxplot_kwargs)
     if pairs is not None:
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
@@ -1038,7 +1048,8 @@ def kdeplot(data, x, add_mode=True, **kwargs):
     >>> # Compare two groups with automatic statistics
     >>> cns.kdeplot(data=df, x="score", hue="treatment", fill=True)
     """
-    ax = sns.kdeplot(data=data, x=x, linewidth=1, **kwargs)
+    linewidth = kwargs.pop("linewidth", 1)
+    ax = sns.kdeplot(data=data, x=x, linewidth=linewidth, **kwargs)
     ax = plt.gca()
     modes = []
     if "hue" in kwargs:
@@ -1058,7 +1069,7 @@ def kdeplot(data, x, add_mode=True, **kwargs):
             )
             print("   ---> P-value was determined by Anderson-Darling test.")
     else:
-        if add_mode:
+        if add_mode and ax.get_lines():
             kde_data = ax.get_lines()[-1].get_data()
             x_vals, y_vals = kde_data[0], kde_data[1]
             mode_idx = np.argmax(y_vals)
@@ -2121,6 +2132,8 @@ def upsetplot(sets, **kwargs):
         membership = [name for name, s in sets.items() if item in s]
         memberships.append(membership)
     data = usp.from_memberships(memberships)
+    # Set default subset_size to "count" to handle non-unique groups
+    kwargs.setdefault("subset_size", "count")
     upset = usp.UpSet(data, element_size=17, show_counts="{:,}", **kwargs)
     axes = upset.plot()
     plt.grid(False)

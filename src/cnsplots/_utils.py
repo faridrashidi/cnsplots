@@ -187,7 +187,11 @@ def take_legend_out(title=None):
     """
     if title is None:
         ax = plt.gca()
-        title = ax.get_legend().get_title().get_text()
+        legend = ax.get_legend()
+        if legend is not None:
+            title = legend.get_title().get_text()
+        else:
+            title = ""
     plt.legend(
         bbox_to_anchor=(1, 1.02),
         loc="upper left",
