@@ -33,17 +33,25 @@ print(cnsplots.__version__)
 
 ## Development Installation
 
-To contribute or modify cnsplots, install it in development mode:
+To contribute or modify cnsplots, first install [uv](https://docs.astral.sh/uv/):
+
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Then clone the repository and install:
 
 ```bash
 git clone https://github.com/faridrashidi/cnsplots
 cd cnsplots
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 make install
 ```
 
-This installs the package in editable mode with development and documentation dependencies, and sets up pre-commit hooks.
+This uses `uv sync --all-extras` to install the package in editable mode with all optional dependencies, and sets up pre-commit hooks.
 
 ### Development Commands
 
