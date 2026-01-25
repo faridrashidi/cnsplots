@@ -1012,6 +1012,7 @@ def stripplot(
 
 
 def histplot(**kwargs):
+    kwargs.setdefault("edgecolor", None)
     sns.histplot(**kwargs)
 
 
