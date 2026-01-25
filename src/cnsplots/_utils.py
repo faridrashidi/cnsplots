@@ -69,8 +69,251 @@ def add_panel_name(name="A", offset_x=-0.25, offset_y=1.1):
         name,
         transform=plt.gca().transAxes,
         fontsize=FONTSIZE_TITLE,
+        fontname="Arial",
         fontweight="bold",
     )
+
+
+class multipanel:
+    """
+    Create multi-panel figures in Cell, Nature, Science journal style.
+
+    This class provides a simple API for creating publication-quality
+    multi-panel figures with automatic subplot labeling (A, B, C, ...).
+
+    The figure size is calculated from individual panel sizes:
+    - Row heights: maximum height of panels in each row
+    - Column widths: maximum width of panels in each column
+    - Total width: sum of column widths + gaps (capped at max_width)
+    - Total height: sum of row heights + gaps
+
+    Parameters
+    ----------
+    layout : tuple or list
+        Grid layout as (rows, cols) or a list of lists for custom layouts.
+        For example: (2, 3) creates a 2x3 grid.
+        For custom layouts, use a list like [[1, 1, 2], [3, 4, 4]] where
+        numbers represent subplot indices (1-based).
+    max_width : int, optional
+        Maximum figure width in pixels (default: 540). If panel widths + gaps
+        are less than this, blank space remains on the right.
+    hgap : int, optional
+        Horizontal gap between panels in pixels (default: 40).
+    vgap : int, optional
+        Vertical gap between panels in pixels (default: 40).
+    color_cycle : str, optional
+        Color palette name (default: PALETTE_QUAL).
+    color_map : str, optional
+        Colormap name (default: PALETTE_SEQ).
+
+    Attributes
+    ----------
+    fig : matplotlib.figure.Figure
+        The matplotlib figure object.
+    axes : list
+        List of matplotlib axes objects.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> mp = cns.multipanel((2, 2), max_width=540)
+    >>> mp.panel("A", 100, 150)  # height=100, width=150
+    >>> cns.boxplot(...)
+    >>> mp.panel("B", 100, 150)
+    >>> cns.barplot(...)
+    """
+
+    def __init__(
+        self,
+        layout,
+        max_width=540,
+        hgap=40,
+        vgap=40,
+        color_cycle=PALETTE_QUAL,
+        color_map=PALETTE_SEQ,
+    ):
+        cns.setup_matplotlib(color_cycle, color_map)
+
+        # Store layout info
+        if isinstance(layout, tuple):
+            self._rows, self._cols = layout
+            self._layout_type = "grid"
+            self._n_panels = self._rows * self._cols
+        else:
+            self._rows = len(layout)
+            self._cols = max(len(row) for row in layout)
+            self._layout_type = "mosaic"
+            self._mosaic = layout
+            self._n_panels = max(max(row) for row in layout)
+
+        self._hgap = hgap
+        self._vgap = vgap
+        self._max_width = max_width
+
+        # Track panel sizes for each row and column
+        self._row_heights = [0] * self._rows
+        self._col_widths = [0] * self._cols
+        self._panel_info = []  # Store (label, height, width) for each panel
+
+        self.fig = None
+        self._gs = None
+        self.axes = []
+        self._panel_index = 0
+        self._labels = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        self._created_axes = {}
+        self._label_texts = {}
+        self._label_offsets_x = {}
+        self._label_offsets_y = {}
+
+    def _get_panel_position(self, panel_idx):
+        """Get the row and column spans for a panel."""
+        if self._layout_type == "grid":
+            row = panel_idx // self._cols
+            col = panel_idx % self._cols
+            return [row], [col]
+        else:
+            panel_num = panel_idx + 1
+            rows_span = []
+            cols_span = []
+            for r, rowlist in enumerate(self._mosaic):
+                for c, val in enumerate(rowlist):
+                    if val == panel_num:
+                        rows_span.append(r)
+                        cols_span.append(c)
+            return rows_span, cols_span
+
+    def _create_figure(self):
+        """Create the figure with calculated dimensions based on panel sizes."""
+        # Calculate total content size
+        content_height = sum(self._row_heights) + (self._rows - 1) * self._vgap
+
+        # Figure width is max_width, height is based on content
+        fig_width_px = self._max_width
+        fig_height_px = content_height
+
+        # Convert pixels to inches (matplotlib uses 72 dpi base)
+        fig_width = fig_width_px / 72
+        fig_height = fig_height_px / 72
+
+        self.fig = plt.figure(figsize=(fig_width, fig_height), dpi=72 * 2)
+
+        # Calculate positions manually for precise control
+        # We'll place axes using figure coordinates (0-1 range)
+
+        # Calculate the left margin to position content at the left
+        # Content starts at x=0 (left-aligned within the figure)
+        x_positions = [0]
+        for i in range(self._cols - 1):
+            x_positions.append(x_positions[-1] + self._col_widths[i] + self._hgap)
+
+        y_positions = [fig_height_px - self._row_heights[0]]  # Start from top
+        for i in range(self._rows - 1):
+            y_positions.append(y_positions[-1] - self._row_heights[i + 1] - self._vgap)
+
+        # Create all axes at their precise positions
+        for idx, (label, height, width) in enumerate(self._panel_info):
+            rows_span, cols_span = self._get_panel_position(idx)
+
+            if not rows_span:
+                raise ValueError(f"Panel {idx + 1} not found in layout")
+
+            row = min(rows_span)
+            col = min(cols_span)
+
+            # Calculate axes position in figure coordinates (0-1)
+            left = x_positions[col] / fig_width_px
+            bottom = y_positions[row] / fig_height_px
+            ax_width = width / fig_width_px
+            ax_height = height / fig_height_px
+
+            ax = self.fig.add_axes([left, bottom, ax_width, ax_height])
+
+            self.axes.append(ax)
+            self._created_axes[label] = ax
+
+            # Add panel label - bold, 8pt, positioned above and to the left
+            # Use Arial explicitly for reliable bold rendering across systems
+            label_text = ax.text(
+                self._label_offsets_x[label],
+                self._label_offsets_y[label],
+                label,
+                transform=ax.transAxes,
+                fontsize=FONTSIZE_TITLE,
+                fontweight="bold",
+                fontname="Arial",
+                va="bottom",
+                ha="right",
+            )
+            self._label_texts[label] = label_text
+
+    def panel(self, label=None, height=150, width=150, offset_x=-0.25, offset_y=1.1):
+        """
+        Define a panel with its size and get the axes for plotting.
+
+        Parameters
+        ----------
+        label : str or None, optional
+            Label for the panel (e.g., "A", "B", "C").
+            If None, uses automatic sequential labeling.
+        height : int, optional
+            Height of this panel in pixels (default: 150).
+        width : int, optional
+            Width of this panel in pixels (default: 150).
+
+        Returns
+        -------
+        ax : matplotlib.axes.Axes
+            The matplotlib axes object for the panel.
+        """
+        if label is None:
+            label = self._labels[self._panel_index]
+
+        self._label_offsets_x[label] = offset_x
+        self._label_offsets_y[label] = offset_y
+
+        # Get panel position
+        rows_span, cols_span = self._get_panel_position(self._panel_index)
+
+        if not rows_span:
+            raise ValueError(f"Panel {self._panel_index + 1} not found in layout")
+
+        # Update row heights and column widths (take max for each row/col)
+        for r in rows_span:
+            self._row_heights[r] = max(self._row_heights[r], height)
+        for c in cols_span:
+            self._col_widths[c] = max(self._col_widths[c], width)
+
+        # Store panel info
+        self._panel_info.append((label, height, width))
+        self._panel_index += 1
+
+        # Check if all panels have been defined
+        if self._panel_index == self._n_panels:
+            self._create_figure()
+
+        # Return the axes if figure is created
+        if self.fig is not None:
+            ax = self._created_axes.get(label)
+            if ax is not None:
+                plt.sca(ax)
+            return ax
+        return None
+
+    def get_axes(self, label):
+        """
+        Get a previously created axes by its label.
+
+        Parameters
+        ----------
+        label : str
+            The label of the panel to retrieve.
+
+        Returns
+        -------
+        ax : matplotlib.axes.Axes
+            The matplotlib axes object.
+        """
+        return self._created_axes.get(label)
 
 
 def get_hexcolors_from_apalette(
@@ -103,7 +346,8 @@ def _get_hex_colors_from_colorbar(cmap_name, n_colors):
 def _remove_edge_from_legend_items(ax):
     handles, labels = ax.get_legend_handles_labels()
     for handle in handles:
-        handle.set_edgecolor("none")
+        if hasattr(handle, "set_edgecolor"):
+            handle.set_edgecolor("none")
     ax.legend(handles, labels)
 
 
