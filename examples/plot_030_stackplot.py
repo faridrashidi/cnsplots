@@ -120,7 +120,7 @@ plt.title("Custom Bar Order")
 # Stacked bar plot with custom width
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust bar width with the ``width`` parameter.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel((1, 2), max_width=260, hgap=100)
 
 mp.panel("A", 80, 120)
 cns.stackplot(data=tips, x="day", y="sex", normalize=True, width=0.3)
@@ -144,7 +144,7 @@ plt.title("Set2 Palette")
 # Stacked bar plot with different palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Showcase multiple palette options.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel((1, 2), max_width=260, hgap=100)
 
 mp.panel("A", 80, 120, color_cycle="Bold")
 cns.stackplot(data=tips, x="day", y="sex", normalize=True)
@@ -218,7 +218,7 @@ plt.title("Horizontal with Labels")
 # Stacked bar plot with counts vs proportions comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare the same data shown as counts vs proportions.
-mp = cns.multipanel((1, 2), max_width=380, hgap=50)
+mp = cns.multipanel((1, 2), max_width=260, hgap=100)
 
 mp.panel("A", 80, 130)
 cns.stackplot(data=tips, x="day", y="sex", normalize=False)

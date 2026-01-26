@@ -88,7 +88,7 @@ plt.title("Set2 Palette")
 # Comparing donut charts
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Compare composition across conditions.
-mp = cns.multipanel((1, 2), max_width=250, hgap=30)
+mp = cns.multipanel((1, 2), max_width=300, hgap=100)
 
 mp.panel("A", 100, 100)
 cns.donutplot(tips[tips["sex"] == "Male"], "day")
@@ -155,7 +155,7 @@ plt.title("TP53 Mutation Status")
 # Pie vs Donut comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Compare the two visualization styles.
-mp = cns.multipanel((1, 2), max_width=250, hgap=30)
+mp = cns.multipanel((1, 2), max_width=300, hgap=100)
 
 mp.panel("A", 100, 100)
 cns.pieplot(iris, "species")

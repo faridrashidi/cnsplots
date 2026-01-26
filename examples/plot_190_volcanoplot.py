@@ -223,7 +223,7 @@ de_b = pd.DataFrame(
 )
 de_b["-log10p"] = -np.log10(de_b["pvalue"])
 
-mp = cns.multipanel((1, 2), max_width=400, hgap=40)
+mp = cns.multipanel((1, 2), max_width=420, hgap=120)
 
 mp.panel("A", 150, 150)
 cns.volcanoplot(
@@ -265,7 +265,7 @@ for i, tp in enumerate(timepoints):
     de_tp["-log10p"] = -np.log10(de_tp["pvalue"])
     de_list.append(de_tp)
 
-mp = cns.multipanel((1, 3), max_width=500, hgap=30)
+mp = cns.multipanel((1, 3), max_width=630, hgap=120)
 
 mp.panel("A", 130, 130)
 cns.volcanoplot(de_list[0], x="log2FC", y="-log10p", symbol="gene", show_list=[])
