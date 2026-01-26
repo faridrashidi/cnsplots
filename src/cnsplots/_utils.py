@@ -16,11 +16,6 @@ from statannotations.utils import DEFAULT
 
 import cnsplots as cns
 
-PALETTE_QUAL = "Ecotyper1"
-PALETTE_SEQ = "gnuplot"
-FONTSIZE_TITLE = 8
-FONTSIZE_LEGEND = 7
-LINEWIDTH_AXES = 0.5
 RED = "#D6372E"
 BLUE = "#5189BB"
 GREEN = "#70B460"
@@ -266,7 +261,7 @@ def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
         offset_y,
         name,
         transform=plt.gca().transAxes,
-        fontsize=FONTSIZE_TITLE,
+        fontsize=cns.settings.fontsize_title,
         fontname="Arial",
         fontweight="bold",
     )
@@ -447,7 +442,7 @@ class multipanel:
                 adjusted_offset_y,
                 label,
                 transform=ax.transAxes,
-                fontsize=FONTSIZE_TITLE,
+                fontsize=cns.settings.fontsize_title,
                 fontweight="bold",
                 fontname="Arial",
                 va="bottom",
@@ -542,7 +537,7 @@ class multipanel:
                     adjusted_offset_y,
                     label,
                     transform=ax.transAxes,
-                    fontsize=FONTSIZE_TITLE,
+                    fontsize=cns.settings.fontsize_title,
                     fontweight="bold",
                     fontname="Arial",
                     va="bottom",
@@ -557,8 +552,8 @@ class multipanel:
         width=150,
         offset_x=-0.25,
         offset_y=1.1,
-        color_cycle=PALETTE_QUAL,
-        color_map=PALETTE_SEQ,
+        color_cycle=cns.settings.palette_qual,
+        color_map=cns.settings.palette_seq,
     ):
         """
         Define a panel with its size and get the axes for plotting.
@@ -579,9 +574,9 @@ class multipanel:
             Vertical offset for the panel label in axes coordinates (default: 1.1).
             Values > 1.0 position the label above the axes.
         color_cycle : str, optional
-            Color palette name (default: PALETTE_QUAL).
+            Color palette name (default: cns.settings.palette_qual).
         color_map : str, optional
-            Colormap name (default: PALETTE_SEQ).
+            Colormap name (default: cns.settings.palette_seq).
 
         Returns
         -------

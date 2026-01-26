@@ -23,7 +23,6 @@ import cnsplots._helper_cmprsk as helper_cmprsk
 import cnsplots._helper_heatmap as helper_heatmap
 import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
-from cnsplots._utils import PALETTE_SEQ
 
 
 def heatmapplot(
@@ -35,7 +34,7 @@ def heatmapplot(
     col_cluster=False,
     row_split=None,
     col_split=None,
-    cmap=PALETTE_SEQ,
+    cmap=None,
     label="value",
     xlabel="xlabel",
     ylabel="ylabel",
@@ -75,7 +74,7 @@ def heatmapplot(
         Column name from `adata.obs` or number of splits for row grouping.
     col_split : str or int, optional
         Column name from `adata.var` or number of splits for column grouping.
-    cmap : str, default: PALETTE_SEQ
+    cmap : str, optional
         Colormap for the heatmap. Can be categorical (Set1, Set2, Ecotyper1, Dark2,
         Ecotyper2, Set3) or continuous (parula, gnuplot, bwr, hot).
     label : str, default: 'value'
@@ -128,6 +127,8 @@ def heatmapplot(
     ...     adata, row_annotation=["cell_type", "batch"], col_cluster=True, cmap="bwr"
     ... )
     """
+    if cmap is None:
+        cmap = cns.settings.palette_seq
     cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
     cbar_titles = [label]
@@ -2199,11 +2200,11 @@ def upsetplot(sets, **kwargs):
     cns.setup_ax(axes["intersections"])
     axes["matrix"].tick_params(axis="both", which="both", length=0)
     for txt in axes["intersections"].texts:
-        txt.set_size(cns.FONTSIZE_LEGEND)
+        txt.set_size(cns.settings.fontsize_legend)
     if ax_tot is not None:
         cns.setup_ax(ax_tot)
         for txt in ax_tot.texts:
-            txt.set_size(cns.FONTSIZE_LEGEND)
+            txt.set_size(cns.settings.fontsize_legend)
         pos_mat = ax_tot.get_position()
         dx = 0.03
         new_pos = [pos_mat.x0 + dx, pos_mat.y0, pos_mat.width, pos_mat.height]

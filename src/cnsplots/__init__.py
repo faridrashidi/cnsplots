@@ -5,7 +5,6 @@ import warnings
 
 import cnsplots._methods as methods
 from cnsplots._methods import CoxModel, LogisticModel, prerank
-from cnsplots._settings import settings
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -37,19 +36,15 @@ from cnsplots._plots import (
     violinplot,
     volcanoplot,
 )
+from cnsplots._settings import settings
 from cnsplots._setup import setup_ax, setup_ggplot, setup_matplotlib, setup_scanpy
 from cnsplots._utils import (
     BLUE,
     BROWN,
     CHOCOLATE,
-    FONTSIZE_LEGEND,
-    FONTSIZE_TITLE,
     GRAY,
     GREEN,
-    LINEWIDTH_AXES,
     ORANGE,
-    PALETTE_QUAL,
-    PALETTE_SEQ,
     PINK,
     PURPLE,
     RED,
@@ -70,14 +65,9 @@ __all__ = (
     BLUE,
     BROWN,
     CHOCOLATE,
-    FONTSIZE_LEGEND,
-    FONTSIZE_TITLE,
     GRAY,
     GREEN,
-    LINEWIDTH_AXES,
     ORANGE,
-    PALETTE_QUAL,
-    PALETTE_SEQ,
     PINK,
     PURPLE,
     RED,
