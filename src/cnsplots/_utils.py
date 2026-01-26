@@ -185,14 +185,20 @@ def take_legend_out(title=None):
     >>> cns.barplot(data=df, x="treatment", y="response", hue="batch")
     >>> cns.take_legend_out(title="Batch")
     """
-    if title is None:
-        ax = plt.gca()
-        legend = ax.get_legend()
-        if legend is not None:
+    ax = plt.gca()
+    legend = ax.get_legend()
+    handles = None
+    labels = None
+    if legend is not None:
+        handles = legend.legend_handles
+        labels = [t.get_text() for t in legend.texts]
+        if title is None:
             title = legend.get_title().get_text()
-        else:
-            title = ""
+    if title is None:
+        title = ""
     plt.legend(
+        handles=handles,
+        labels=labels,
         bbox_to_anchor=(1, 1.02),
         loc="upper left",
         title=title,
