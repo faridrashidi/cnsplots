@@ -28,8 +28,8 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~
 # Compare distributions across days.
 cns.figure(150, 150)
-cns.ridgeplot(data=tips, x="total_bill", y="day")
-plt.title("Total Bill by Day")
+axes = cns.ridgeplot(data=tips, x="total_bill", y="day")
+axes[0].set_title("Total Bill by Day")
 
 
 # %%

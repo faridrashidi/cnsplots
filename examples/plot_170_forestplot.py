@@ -107,7 +107,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(200, 210, ["black"])
+cns.figure(120, 210, ["black"])
 cns.forestplot(model)
 model.results.head()
 
@@ -156,7 +156,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(150, 120, ["black"])
+cns.figure(90, 150, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Univariate Cox Regression")
 
@@ -174,7 +174,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(150, 100, ["black"])
+cns.figure(80, 150, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Multivariate Cox Regression")
 
@@ -194,7 +194,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(150, 80, ["black"])
+cns.figure(80, 150, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Categorical Covariates")
 
@@ -215,7 +215,7 @@ model = cns.methods.CoxModel(
     hue="horTh",
 )
 model.fit()
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.forestplot(model)
 ax.set_title("Stratified by Hormone Therapy")
 
@@ -236,7 +236,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(150, 100, ["black"])
+cns.figure(80, 150, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("With Interaction Term")
 
@@ -255,7 +255,7 @@ model = cns.methods.LogisticModel(
     ],
 )
 model.fit()
-cns.figure(150, 80, ["black"])
+cns.figure(80, 150, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Univariate Logistic Regression")
 
@@ -275,7 +275,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(150, 80, [cns.BLUE])
+cns.figure(80, 150, [cns.BLUE])
 ax = cns.forestplot(model)
 ax.set_title("Custom Color")
 
