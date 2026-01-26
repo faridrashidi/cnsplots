@@ -1,6 +1,6 @@
 [project]
 name = "cnsplots"
-version = "0.0.1"
+version = "0.0.2"
 description = "A comprehensive plotting library for bioinformatics and data visualization"
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
