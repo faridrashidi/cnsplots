@@ -129,7 +129,9 @@ def heatmapplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.heatmapplot(adata, row_annotation=["cell_type", "batch"], col_cluster=True, cmap="bwr")
+    >>> cns.heatmapplot(
+    ...     adata, row_annotation=["cell_type", "batch"], col_cluster=True, cmap="bwr"
+    ... )
     """
     cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
@@ -255,7 +257,9 @@ def heatmapplot(
             #     ax.set_aspect(0.3)
             # else:
             #     ax.set_aspect(6)
-    plt.setp(cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right")
+    plt.setp(
+        cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
+    )
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
@@ -398,7 +402,9 @@ def dotplot(
             # else:
             #     ax.set_aspect(6)
     cmp.ax_heatmap.set_axis_on()
-    plt.setp(cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right")
+    plt.setp(
+        cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
+    )
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
         cmp.ax_heatmap.spines[s].set_linewidth(1.2)
@@ -503,7 +509,9 @@ def boxplot(
     plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
 
-    box_patches = [patch for patch in ax.patches if isinstance(patch, mpl.patches.PathPatch)]
+    box_patches = [
+        patch for patch in ax.patches if isinstance(patch, mpl.patches.PathPatch)
+    ]
     if len(box_patches) == 0:
         box_patches = ax.artists
     num_patches = len(box_patches)
@@ -512,7 +520,9 @@ def boxplot(
         col = patch.get_facecolor()
         patch.set_edgecolor("None")
         patch.set_facecolor(col)
-        for j, line in enumerate(ax.lines[i * lines_per_boxplot : (i + 1) * lines_per_boxplot]):
+        for j, line in enumerate(
+            ax.lines[i * lines_per_boxplot : (i + 1) * lines_per_boxplot]
+        ):
             if j != 2:
                 line.set_color(col)
                 line.set_mfc(col)
@@ -527,7 +537,9 @@ def boxplot(
         "minimum and maximum values"
         if whis == (0, 100)
         else (
-            f"{whis} times the interquartile range" if isinstance(whis, (int, float)) else str(whis)
+            f"{whis} times the interquartile range"
+            if isinstance(whis, (int, float))
+            else str(whis)
         )
     )
     print(
@@ -741,7 +753,8 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
         color_list = sns.color_palette(n_colors=len(unique_groups))
         group_to_color = dict(zip(unique_groups, color_list))
         legend_handles = [
-            Patch(facecolor=color, label=label) for label, color in group_to_color.items()
+            Patch(facecolor=color, label=label)
+            for label, color in group_to_color.items()
         ]
     plotting = {"data": data, "x": x, "y": y, "palette": palette}
     plotting.update(args)
@@ -850,7 +863,9 @@ def stackplot(
     ... )
 
     >>> # Horizontal stacked bar plot
-    >>> cns.stackplot(data=df, x="patient", y="mutation", horizontal=True, normalize=False)
+    >>> cns.stackplot(
+    ...     data=df, x="patient", y="mutation", horizontal=True, normalize=False
+    ... )
     """
     data2 = data.value_counts([x, y]).reset_index()
     if horizontal:
@@ -881,7 +896,9 @@ def stackplot(
         ax.set_xlabel("")
     cns.take_legend_out()
     if addtip and normalize:
-        tips = contingency.sum(axis=1).astype(int).reindex(index=bar_order).reset_index()
+        tips = (
+            contingency.sum(axis=1).astype(int).reindex(index=bar_order).reset_index()
+        )
         tips = tips.rename(columns={0: "value"})
         for _, row in tips.iterrows():
             if horizontal:
@@ -911,9 +928,13 @@ def stackplot(
         else:
             plotting = {"data": data2, "x": x, "y": "count", "order": bar_order}
         if contingency.shape[1] == 2:
-            cns._utils._p_value_helper("fisher-exact", data2, ax, plotting, pairs, contingency)
+            cns._utils._p_value_helper(
+                "fisher-exact", data2, ax, plotting, pairs, contingency
+            )
         else:
-            cns._utils._p_value_helper("chi-squared", data2, ax, plotting, pairs, contingency)
+            cns._utils._p_value_helper(
+                "chi-squared", data2, ax, plotting, pairs, contingency
+            )
 
 
 def distplot(data, x, **kwargs):
@@ -1317,7 +1338,9 @@ def donutplot(data, x, hue_order=None):
         wedgeprops={"edgecolor": "black", "linewidth": 0.3},
     )
     ax.add_patch(
-        plt.Circle((0, 0), radius=0.6, facecolor="white", edgecolor="black", linewidth=0.3)
+        plt.Circle(
+            (0, 0), radius=0.6, facecolor="white", edgecolor="black", linewidth=0.3
+        )
     )
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
     cns._utils._remove_edge_from_legend_items(ax)
@@ -1426,7 +1449,9 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     df[hue] = df[hue].cat.codes
 
     if len(hue_order) == 2:
-        logrank_test = ll.statistics.multivariate_logrank_test(df[duration], df[hue], df[event])
+        logrank_test = ll.statistics.multivariate_logrank_test(
+            df[duration], df[hue], df[event]
+        )
         p = num2tex.num2tex(logrank_test.p_value, precision=2)
         print("   ---> P-value was determined by two-sided multivariate log-rank test.")
     else:
@@ -1434,18 +1459,24 @@ def survivalplot(data, duration, event, hue, hue_order=None):
         cph.fit(df, duration_col=duration, event_col=event)
         trend_test = cph.log_likelihood_ratio_test()
         p = num2tex.num2tex(trend_test.p_value, precision=2)
-        print("   ---> P-value was determined by two-sided multivariate log-rank test for trend.")
+        print(
+            "   ---> P-value was determined by two-sided multivariate log-rank test for trend."
+        )
 
     df = data[[duration, hue, event]].copy()
     df = df[df[hue].isin([hue_order[0], hue_order[-1]])]
-    df[hue] = pd.Categorical(df[hue], categories=[hue_order[0], hue_order[-1]], ordered=True)
+    df[hue] = pd.Categorical(
+        df[hue], categories=[hue_order[0], hue_order[-1]], ordered=True
+    )
     df[hue] = df[hue].cat.codes
     cph = ll.CoxPHFitter()
     cph.fit(df, duration_col=duration, event_col=event)
     hazard_ratio = cph.hazard_ratios_.iloc[0]
     ci1 = cph.summary["exp(coef) lower 95%"].iloc[0]
     ci2 = cph.summary["exp(coef) upper 95%"].iloc[0]
-    ax.text(0, 0, f"HR = {hazard_ratio:.2f} ({ci1:.2f}-{ci2:.2f})\nP = " + rf"${p:.2g}$")
+    ax.text(
+        0, 0, f"HR = {hazard_ratio:.2f} ({ci1:.2f}-{ci2:.2f})\nP = " + rf"${p:.2g}$"
+    )
 
     if ax.get_legend() is not None:
         for handle in ax.get_legend().legend_handles:
@@ -1592,7 +1623,9 @@ def cumulativeincidenceplot(
         from cmprsk import cmprsk
 
         if data[hue].nunique() > 1:
-            pvalue = cmprsk.cuminc(data[duration], data[event], group=data[hue].cat.codes)
+            pvalue = cmprsk.cuminc(
+                data[duration], data[event], group=data[hue].cat.codes
+            )
             p = num2tex.num2tex(pvalue.stats["pv"].values[0], precision=2)
             print("   ---> P-value was determined by two-sided Gray's test.")
             ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
@@ -1602,7 +1635,9 @@ def cumulativeincidenceplot(
     if show_risk_table:
         rows = None if risk_table_rows is None else list(risk_table_rows)
         xticks = np.asarray(ax.get_xticks())
-        xticks = xticks[(xticks >= ax.get_xlim()[0] - 1e-8) & (xticks <= ax.get_xlim()[1] + 1e-8)]
+        xticks = xticks[
+            (xticks >= ax.get_xlim()[0] - 1e-8) & (xticks <= ax.get_xlim()[1] + 1e-8)
+        ]
         ll.plotting.add_at_risk_counts(
             *fitters,
             ax=ax,
@@ -1674,7 +1709,9 @@ def volcanoplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.volcanoplot(data=de_results, x="log2FoldChange", y="-log10(padj)", symbol="gene_name")
+    >>> cns.volcanoplot(
+    ...     data=de_results, x="log2FoldChange", y="-log10(padj)", symbol="gene_name"
+    ... )
 
     >>> # Highlight specific genes
     >>> cns.volcanoplot(
@@ -1728,7 +1765,9 @@ def volcanoplot(
                     path_effects=[pe.withStroke(linewidth=1, foreground="white")],
                 )
             )
-    at.adjust_text(annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5})
+    at.adjust_text(
+        annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5}
+    )
 
     ax.spines["right"].set_visible(True)
     ax.spines["top"].set_visible(True)
@@ -1752,7 +1791,9 @@ def volcanoplot(
                 handle.set_markersize(2 * np.sqrt(legend_dot_size / np.pi))
 
 
-def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs):
+def stripplot(
+    data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs
+):
     """
     Create a strip plot showing individual data points with optional summary statistics.
 
@@ -1810,10 +1851,14 @@ def stripplot(data, x, y, size=2, showmedian=True, showmeans=False, addcount=Fal
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.stripplot(data=df, x="treatment", y="response", showmedian=True, addcount=True)
+    >>> cns.stripplot(
+    ...     data=df, x="treatment", y="response", showmedian=True, addcount=True
+    ... )
 
     >>> # With grouping and means
-    >>> cns.stripplot(data=df, x="tissue", y="expression", hue="genotype", showmeans=True, size=3)
+    >>> cns.stripplot(
+    ...     data=df, x="tissue", y="expression", hue="genotype", showmeans=True, size=3
+    ... )
     """
     ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
@@ -1952,7 +1997,9 @@ def lineplot(**kwargs):
     >>> cns.lineplot(data=df, x="time", y="value")
 
     >>> # Multiple groups with error bands
-    >>> cns.lineplot(data=df, x="timepoint", y="expression", hue="treatment", errorbar="se")
+    >>> cns.lineplot(
+    ...     data=df, x="timepoint", y="expression", hue="treatment", errorbar="se"
+    ... )
     """
     sns.lineplot(**kwargs)
 
@@ -2159,7 +2206,9 @@ def vennplot(lists, labels):
     >>> cns.vennplot([set1, set2], labels=["Group A", "Group B"])
 
     >>> # Three-way Venn diagram
-    >>> cns.vennplot([set1, set2, set3], labels=["Treatment A", "Treatment B", "Treatment C"])
+    >>> cns.vennplot(
+    ...     [set1, set2, set3], labels=["Treatment A", "Treatment B", "Treatment C"]
+    ... )
     """
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
     if len(lists) == 2:
@@ -2368,7 +2417,9 @@ def confusionplot(
 
         # Overlay the stats block
         ax2 = fig.add_axes(ax.get_position(), frameon=False)
-        ax2.tick_params(labelcolor="none", top=False, bottom=False, left=False, right=False)
+        ax2.tick_params(
+            labelcolor="none", top=False, bottom=False, left=False, right=False
+        )
 
         msg = rf"""
         Specificity: {specificity:.2f}
@@ -2568,7 +2619,9 @@ def forestplot(model):
 
     max_offset = 0.15
     n_hue_groups = len(unique_hue_groups)
-    offsets = np.linspace(-max_offset, max_offset, n_hue_groups) if n_hue_groups > 1 else [0]
+    offsets = (
+        np.linspace(-max_offset, max_offset, n_hue_groups) if n_hue_groups > 1 else [0]
+    )
     hue_offset_map = dict(zip(unique_hue_groups, offsets))
 
     factor = 0.5
@@ -2637,7 +2690,9 @@ def forestplot(model):
         ax2.set_yticks(list(range(len(unique_labels))))
         ax2.set_yticklabels([])
         ax2.set_xlabel(x2label)
-        ax2.axvline(x=-np.log10(0.05), color="red", linestyle="--", linewidth=0.8, alpha=0.7)
+        ax2.axvline(
+            x=-np.log10(0.05), color="red", linestyle="--", linewidth=0.8, alpha=0.7
+        )
         ax2.set_ylim(-0.5, len(unique_labels) - 0.5)
         ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
 
@@ -2945,7 +3000,9 @@ def rocplot(data, true_label_col, pred_prob_cols):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.rocplot(data=df, true_label_col="disease", pred_prob_cols="model_probability")
+    >>> cns.rocplot(
+    ...     data=df, true_label_col="disease", pred_prob_cols="model_probability"
+    ... )
 
     >>> # Compare multiple models
     >>> cns.rocplot(
@@ -2962,7 +3019,9 @@ def rocplot(data, true_label_col, pred_prob_cols):
         roc_auc = auc(fpr, tpr)
         plt.plot(fpr, tpr, label=f"{col} (AUC={roc_auc:.2f})", linewidth=1)
 
-    plt.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5))
+    plt.plot(
+        [0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5)
+    )
     plt.xlim([-0.02, 1.02])
     plt.ylim([-0.02, 1.02])
     plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1])
@@ -2978,7 +3037,9 @@ def rocplot(data, true_label_col, pred_prob_cols):
                 handle.set_linewidth(1.7)
 
 
-def gseaplot(data, y, color="NES", cutoff=0.05, cmap="BuRd_custom", top_term=20, size=1.8):
+def gseaplot(
+    data, y, color="NES", cutoff=0.05, cmap="BuRd_custom", top_term=20, size=1.8
+):
     """
     Create a Gene Set Enrichment Analysis (GSEA) dot plot.
 

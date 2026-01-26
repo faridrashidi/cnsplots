@@ -187,7 +187,7 @@ def linkcode_resolve(domain, info):
 hoverx_default_type = "tooltip"
 hoverxref_domains = ["py"]
 hoverxref_role_types = dict.fromkeys(
-    ["ref", "class", "func", "meth", "attr", "exc", "data", "mod"],
+    ["ref", "class", "func", "meth", "attr", "exc", "data", "mod", "obj"],
     "tooltip",
 )
 hoverxref_intersphinx = [

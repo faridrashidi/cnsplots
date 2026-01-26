@@ -469,7 +469,7 @@ def prerank(data, gene_sets, name_gene=None, name_rank=None, permutation_num=100
         - FDR q-val: False Discovery Rate q-value
         - Other columns from gseapy results
 
-        Results are filtered for FDR q-val < 0.25 and |NES| > 1.5, and sorted
+        Results are filtered for FDR q-val < 0.25 and \|NES\| > 1.5, and sorted
         by absolute NES value (descending).
 
     See Also
@@ -485,7 +485,7 @@ def prerank(data, gene_sets, name_gene=None, name_rank=None, permutation_num=100
     2. Converts gene names to uppercase and strips whitespace
     3. Runs gseapy.prerank with min_size=15, max_size=1000
     4. Cleans term names by:
-       - Removing common prefixes (HALLMARK_, KEGG_, REACTOME_, GO_, BIOCARTA_)
+       - Removing common prefixes (``HALLMARK_``, ``KEGG_``, ``REACTOME_``, ``GO_``, ``BIOCARTA_``)
        - Replacing underscores with spaces
        - Converting to title case
        - Fixing common abbreviations (NF-κB, IL-n, TGF, mTOR, DNA, mRNA)
@@ -494,8 +494,8 @@ def prerank(data, gene_sets, name_gene=None, name_rank=None, permutation_num=100
     NES interpretation:
     - NES > 0: Enriched in genes with positive ranking metric
     - NES < 0: Enriched in genes with negative ranking metric
-    - |NES| > 1.5: Moderate enrichment
-    - |NES| > 2.0: Strong enrichment
+    - \|NES\| > 1.5: Moderate enrichment
+    - \|NES\| > 2.0: Strong enrichment
 
     Examples
     --------
