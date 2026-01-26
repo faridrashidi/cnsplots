@@ -63,7 +63,7 @@ from cnsplots._utils import (
     take_legend_out,
 )
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __all__ = (
     BLUE,
     BROWN,
