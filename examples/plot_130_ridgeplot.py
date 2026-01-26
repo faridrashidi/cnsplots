@@ -12,7 +12,6 @@ experimental conditions.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -37,8 +36,8 @@ axes[0].set_title("Total Bill by Day")
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare species distributions.
 cns.figure(150, 120)
-cns.ridgeplot(data=iris, x="sepal_length", y="species")
-plt.title("Sepal Length by Species")
+axes = cns.ridgeplot(data=iris, x="sepal_length", y="species")
+axes[0].set_title("Sepal Length by Species")
 
 
 # %%
@@ -46,8 +45,8 @@ plt.title("Sepal Length by Species")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare petal measurements.
 cns.figure(150, 120)
-cns.ridgeplot(data=iris, x="petal_length", y="species")
-plt.title("Petal Length by Species")
+axes = cns.ridgeplot(data=iris, x="petal_length", y="species")
+axes[0].set_title("Petal Length by Species")
 
 
 # %%
@@ -70,8 +69,8 @@ mp.get_axes("B").set_title("Sepal Width")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare lunch and dinner distributions.
 cns.figure(150, 100)
-cns.ridgeplot(data=tips, x="tip", y="time")
-plt.title("Tip by Time")
+axes = cns.ridgeplot(data=tips, x="tip", y="time")
+axes[0].set_title("Tip by Time")
 
 
 # %%
@@ -89,8 +88,8 @@ for month in ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]:
 temporal_df = pd.DataFrame(temporal_data)
 
 cns.figure(150, 180)
-cns.ridgeplot(data=temporal_df, x="value", y="month")
-plt.title("Value Distribution Over Months")
+axes = cns.ridgeplot(data=temporal_df, x="value", y="month")
+axes[0].set_title("Value Distribution Over Months")
 
 
 # %%
@@ -114,5 +113,5 @@ for treatment in ["Control", "Low Dose", "Medium Dose", "High Dose"]:
 treatment_df = pd.DataFrame(treatment_data)
 
 cns.figure(150, 150)
-cns.ridgeplot(data=treatment_df, x="response", y="treatment")
-plt.title("Treatment Response Distribution")
+axes = cns.ridgeplot(data=treatment_df, x="response", y="treatment")
+axes[0].set_title("Treatment Response Distribution")

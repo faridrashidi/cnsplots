@@ -174,7 +174,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(80, 150, ["black"])
+cns.figure(40, 150, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Multivariate Cox Regression")
 
