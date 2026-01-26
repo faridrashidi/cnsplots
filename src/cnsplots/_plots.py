@@ -19,6 +19,7 @@ from scipy.stats import fisher_exact
 from sklearn.metrics import auc, roc_curve
 
 import cnsplots as cns
+import cnsplots._helper_cmprsk as helper_cmprsk
 import cnsplots._helper_heatmap as helper_heatmap
 import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
@@ -1617,18 +1618,13 @@ def cumulativeincidenceplot(
                 max(current_xlim[1], specified_xticks.max()),
             )
             ax.set_xlim(new_xlim)
-    try:
-        from cmprsk import cmprsk
-
-        if data[hue].nunique() > 1:
-            pvalue = cmprsk.cuminc(
-                data[duration], data[event], group=data[hue].cat.codes
-            )
-            p = num2tex.num2tex(pvalue.stats["pv"].values[0], precision=2)
-            print("   ---> P-value was determined by two-sided Gray's test.")
-            ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
-    except ImportError:
-        print("pip install cmprsk")
+    if data[hue].nunique() > 1:
+        pvalue = helper_cmprsk.cuminc(
+            data[duration], data[event], group=data[hue].cat.codes
+        )
+        p = num2tex.num2tex(pvalue, precision=2)
+        print("   ---> P-value was determined by two-sided Gray's test.")
+        ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
 
     if show_risk_table:
         rows = None if risk_table_rows is None else list(risk_table_rows)
