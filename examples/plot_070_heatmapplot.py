@@ -78,6 +78,7 @@ cmp = cns.heatmapplot(
     show_rownames=True,
     show_colnames=True,
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -95,6 +96,7 @@ cmp = cns.heatmapplot(
     show_rownames=True,
     show_colnames=True,
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -113,6 +115,7 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     col_dendrogram=True,
     legend_hpad=-2,
+    legend_vpad=6,
     show_rownames=False,
     show_colnames=True,
 )
@@ -153,6 +156,7 @@ cmp = cns.heatmapplot(
     show_rownames=False,
     show_colnames=True,
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -174,6 +178,7 @@ cmp = cns.heatmapplot(
     show_rownames=False,
     show_colnames=True,
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -222,6 +227,7 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     colors=custom_colors,
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -240,6 +246,7 @@ cmp = cns.heatmapplot(
     vmin=-2,
     vmax=2,
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -261,6 +268,7 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     linewidth=0.5,
     legend_hpad=-2,
+    legend_vpad=4,
 )
 
 
@@ -279,6 +287,7 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     rasterized=True,  # Reduces SVG file size
     legend_hpad=-2,
+    legend_vpad=6,
 )
 
 
@@ -301,4 +310,5 @@ cmp = cns.heatmapplot(
     show_rownames=False,
     show_colnames=True,
     legend_hpad=-2,
+    legend_vpad=4,
 )
