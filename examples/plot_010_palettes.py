@@ -32,8 +32,8 @@ gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))
 
 
-def plot_palettes(cmap_list, title=""):
-    cns.figure(1500, 600)
+def plot_palettes(cmap_list, height, width, title=""):
+    cns.figure(height, width)
     fig = plt.gcf()
     nrows = len(cmap_list)
     for i, name in enumerate(cmap_list):
@@ -81,7 +81,9 @@ plot_palettes(
         "BuRd_custom",
         "OrBu_custom",
         "YlGnBu_custom",
-    ]
+    ],
+    1500,
+    600,
 )
 
 
@@ -98,7 +100,9 @@ plot_palettes(
         "Bold",
         "Paired",
         "Dark2",
-    ]
+    ],
+    360,
+    600,
 )
 
 
@@ -114,7 +118,9 @@ plot_palettes(
         "hot",
         "WhYlOrRd_custom",
         "YlGnBu_custom",
-    ]
+    ],
+    300,
+    600,
 )
 
 
@@ -128,7 +134,9 @@ plot_palettes(
         "BuRd_custom",
         "OrBu_custom",
         "BlueRed",
-    ]
+    ],
+    180,
+    600,
 )
 
 
