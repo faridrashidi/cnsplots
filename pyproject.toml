@@ -1,16 +1,41 @@
 [project]
 name = "cnsplots"
 version = "0.0.1"
-description = ""
+description = "A comprehensive plotting library for bioinformatics and data visualization"
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
 requires-python = ">=3.8,<4.0"
+keywords = [
+    "plotting",
+    "visualization",
+    "bioinformatics",
+    "heatmap",
+    "survival-analysis",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 dependencies = [
     "adjustText",
+    "gseapy",
     "lifelines",
     "lxml",
     "matplotlib",
     "matplotlib-venn",
     "natsort",
     "num2tex",
+    "numba>=0.58.1",
     "numpy",
     "palettable",
     "pandas",
@@ -19,25 +44,29 @@ dependencies = [
     "scikit-learn",
     "scipy",
     "seaborn",
-    "upsetplot",
-    "gseapy",
-    "numba>=0.58.1",
-    "statsmodels ; python_version >= '3.9' and python_version < '4.0'",
     "statannotations @ git+https://github.com/trevismd/statannotations@master",
+    "statsmodels ; python_version >= '3.9'",
+    "upsetplot",
 ]
 
 [project.optional-dependencies]
+dev = ["cmprsk", "fastcluster", "pre-commit", "pytest", "pytest-cov"]
 doc = [
-    "sphinx",
     "furo",
     "myst-parser",
+    "sphinx",
     "sphinx-autodoc-typehints",
     "sphinx-copybutton",
+    "sphinx-design",
     "sphinx-gallery",
     "sphinx-hoverxref",
-    "sphinx_design",
 ]
-dev = ["pre-commit", "fastcluster", "cmprsk"]
+
+[project.urls]
+Homepage = "https://github.com/your-username/cnsplots"
+Documentation = "https://cnsplots.readthedocs.io"
+Repository = "https://github.com/your-username/cnsplots"
+Issues = "https://github.com/your-username/cnsplots/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -48,6 +77,40 @@ where = ["src"]
 
 [tool.ruff]
 target-version = "py38"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "NPY", # numpy-specific rules
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cnsplots"]
 
 [tool.ruff.format]
 docstring-code-format = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src/cnsplots"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
