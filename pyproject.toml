@@ -50,7 +50,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["cmprsk", "fastcluster", "pre-commit", "pytest", "pytest-cov"]
+dev = [
+    "bumpversion",
+    "cmprsk",
+    "fastcluster",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+]
 doc = [
     "furo",
     "myst-parser",
