@@ -287,10 +287,6 @@ class multipanel:
         Horizontal gap between panels in pixels (default: 40).
     vgap : int, optional
         Vertical gap between panels in pixels (default: 40).
-    color_cycle : str, optional
-        Color palette name (default: PALETTE_QUAL).
-    color_map : str, optional
-        Colormap name (default: PALETTE_SEQ).
 
     Attributes
     ----------
@@ -315,11 +311,7 @@ class multipanel:
         max_width=540,
         hgap=40,
         vgap=40,
-        color_cycle=PALETTE_QUAL,
-        color_map=PALETTE_SEQ,
     ):
-        cns.setup_matplotlib(color_cycle, color_map)
-
         # Store layout info
         if isinstance(layout, tuple):
             self._rows, self._cols = layout
@@ -546,7 +538,16 @@ class multipanel:
                 )
                 self._label_texts[label] = label_text
 
-    def panel(self, label=None, height=150, width=150, offset_x=-0.25, offset_y=1.1):
+    def panel(
+        self,
+        label=None,
+        height=150,
+        width=150,
+        offset_x=-0.25,
+        offset_y=1.1,
+        color_cycle=PALETTE_QUAL,
+        color_map=PALETTE_SEQ,
+    ):
         """
         Define a panel with its size and get the axes for plotting.
 
@@ -559,12 +560,24 @@ class multipanel:
             Height of this panel in pixels (default: 150).
         width : int, optional
             Width of this panel in pixels (default: 150).
+        offset_x : float, optional
+            Horizontal offset for the panel label in axes coordinates (default: -0.25).
+            Negative values position the label to the left of the axes.
+        offset_y : float, optional
+            Vertical offset for the panel label in axes coordinates (default: 1.1).
+            Values > 1.0 position the label above the axes.
+        color_cycle : str, optional
+            Color palette name (default: PALETTE_QUAL).
+        color_map : str, optional
+            Colormap name (default: PALETTE_SEQ).
 
         Returns
         -------
         ax : matplotlib.axes.Axes
             The matplotlib axes object for the panel.
         """
+        cns.setup_matplotlib(color_cycle, color_map)
+
         if label is None:
             label = self._labels[self._panel_index]
 

@@ -277,7 +277,7 @@ def dotplot(
     y,
     color,
     size,
-    value,
+    value=None,
     legend_width=20,
     legend_hpad=10,
     legend_vpad=0,
@@ -353,44 +353,47 @@ def dotplot(
         axis=0,
         verbose=0,
         label=pch.anno_label(
-            data.pivot(index="day", columns="sex", values=y)[data[x].unique()[0]],
+            data.pivot(index=y, columns=x, values=color)[data[x].unique()[0]],
             colors="black",
             va="center",
             ha="right",
             relpos=(1, 0.5),
         ),
     )
-    cmp = DotClustermapPlotter(
-        data=data,
-        x=x,
-        y=y,
-        c=color,
-        s=size,
-        value=value,
-        row_cluster=False,
-        col_cluster=False,
-        show_rownames=False,
-        show_colnames=True,
-        left_annotation=row_annotation,
-        verbose=0,
-        cmap="gnuplot",
-        rasterized=True,
-        row_names_side="left",
-        xlabel=x,
-        ylabel=y,
-        ylabel_kws={"labelpad": 10},
-        xlabel_kws={"labelpad": 15},
-        legend_width=legend_width,
-        legend_hpad=legend_hpad,
-        legend_vpad=legend_vpad,
-        xticklabels_kws={
+    cmap = kwargs.pop("cmap", "gnuplot")
+    plotter_kwargs = {
+        "data": data,
+        "x": x,
+        "y": y,
+        "c": color,
+        "s": size,
+        "row_cluster": False,
+        "col_cluster": False,
+        "show_rownames": False,
+        "show_colnames": True,
+        "left_annotation": row_annotation,
+        "verbose": 0,
+        "cmap": cmap,
+        "rasterized": True,
+        "row_names_side": "left",
+        "xlabel": x,
+        "ylabel": y,
+        "ylabel_kws": {"labelpad": 10},
+        "xlabel_kws": {"labelpad": 15},
+        "legend_width": legend_width,
+        "legend_hpad": legend_hpad,
+        "legend_vpad": legend_vpad,
+        "xticklabels_kws": {
             "labelrotation": xticklabels_rotation,
             "labelsize": xticklabels_fontsize,
         },
-        yticklabels_kws={"labelsize": yticklabels_fontsize},
-        dot_legend_kws={"frameon": False},
-        **kwargs,
-    )
+        "yticklabels_kws": {"labelsize": yticklabels_fontsize},
+        "dot_legend_kws": {"frameon": False},
+    }
+    if value is not None:
+        plotter_kwargs["value"] = value
+    plotter_kwargs.update(kwargs)
+    cmp = DotClustermapPlotter(**plotter_kwargs)
     for cbar in cmp.cbars:
         if isinstance(cbar, mpl.colorbar.Colorbar):
             cbar.outline.set_linewidth(0.3)
