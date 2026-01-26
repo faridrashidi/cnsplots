@@ -84,22 +84,8 @@ where = ["src"]
 
 [tool.ruff]
 target-version = "py38"
-line-length = 100
+line-length = 88
 src = ["src"]
-
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
-    "UP",  # pyupgrade
-    "B",   # flake8-bugbear
-    "SIM", # flake8-simplify
-    "NPY", # numpy-specific rules
-]
-ignore = [
-    "E501", # line too long (handled by formatter)
-]
 
 [tool.ruff.lint.isort]
 known-first-party = ["cnsplots"]
