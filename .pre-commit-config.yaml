@@ -7,7 +7,7 @@ default_stages:
 minimum_pre_commit_version: 2.9.3
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    rev: v0.9.3
     hooks:
       - id: ruff
         args: [--fix]
@@ -26,13 +26,19 @@ repos:
         exclude: ^.bumpversion.cfg$
       - id: check-case-conflict
       - id: check-toml
+      - id: check-yaml
+      - id: check-json
+      - id: check-ast
+      - id: check-added-large-files
+      - id: debug-statements
+      # - id: no-commit-to-branch
+      #   args: [--branch, main, --branch, master]
       - id: requirements-txt-fixer
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
     hooks:
-      - id: script-must-have-extension
-        name: Check executable files use .sh extension
-        types: [shell, executable]
+      - id: codespell
+        additional_dependencies: [tomli]
   - repo: https://github.com/myint/rstcheck
     rev: v6.2.4
     hooks:
@@ -40,16 +46,10 @@ repos:
         additional_dependencies: [sphinx]
         args: ["--ignore-directives=autoclass,autofunction,minigallery"]
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.18.0
+    rev: 1.19.1
     hooks:
       - id: blacken-docs
-        additional_dependencies: [black==24.4.2]
-  # - repo: https://github.com/codespell-project/codespell
-  #   rev: v2.3.0
-  #   hooks:
-  #     - id: codespell
-  #       additional_dependencies:
-  #         - tomli
+        additional_dependencies: [black==24.10.0]
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
