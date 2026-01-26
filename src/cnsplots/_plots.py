@@ -39,7 +39,7 @@ def heatmapplot(
     xlabel="xlabel",
     ylabel="ylabel",
     legend_width=20,
-    legend_hpad=10,
+    legend_hpad=2,
     legend_vpad=0,
     linewidth=0,
     colors=None,
@@ -247,10 +247,10 @@ def heatmapplot(
     for ax in cmp.legend_axes[0].figure.axes:
         if ax.get_ylabel() in cbar_titles:
             ax.yaxis.set_label_position("left")
-            # if ax.get_ylabel() == label:
-            #     ax.set_aspect(0.3)
-            # else:
-            #     ax.set_aspect(6)
+            if ax.get_ylabel() == label:
+                ax.set_aspect(0.3)
+            else:
+                ax.set_aspect(6)
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
