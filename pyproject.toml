@@ -44,14 +44,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "bump-my-version",
-    "cmprsk",
-    "fastcluster",
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-]
+dev = ["bump-my-version", "fastcluster", "pre-commit", "pytest", "pytest-cov"]
 doc = [
     "furo",
     "myst-parser",
