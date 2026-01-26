@@ -27,7 +27,8 @@ tips = sns.load_dataset("tips")
 # ~~~~~~~~~~~~~
 # Simple bar plot with standard error bars.
 cns.figure(150, 100)
-cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
+ax = cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
+ax.set_title("Basic Barplot")
 
 
 # %%

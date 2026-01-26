@@ -28,7 +28,8 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare sample quantiles against t-distribution.
 cns.figure(150, 150)
-cns.qqplot(tips, x="total_bill", dist=stats.t, fit=True, line="45")
+ax = cns.qqplot(tips, x="total_bill", dist=stats.t, fit=True, line="45")
+ax.set_title("Basic Q-Q Plot")
 
 
 # %%
