@@ -4,6 +4,7 @@ import logging
 import warnings
 
 import cnsplots._methods as methods
+from cnsplots._methods import CoxModel, LogisticModel, prerank
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -35,7 +36,7 @@ from cnsplots._plots import (
     violinplot,
     volcanoplot,
 )
-from cnsplots._setup import setup_ax, setup_matplotlib, setup_scanpy
+from cnsplots._setup import setup_ax, setup_ggplot, setup_matplotlib, setup_scanpy
 from cnsplots._utils import (
     BLUE,
     BROWN,
@@ -81,7 +82,11 @@ __all__ = (
     VIOLET,
     YELLOW,
     methods,
+    CoxModel,
+    LogisticModel,
+    prerank,
     setup_ax,
+    setup_ggplot,
     setup_matplotlib,
     setup_scanpy,
     add_panel_label,

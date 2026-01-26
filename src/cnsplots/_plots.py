@@ -140,12 +140,11 @@ def heatmapplot(
         cat_palettes.remove(cmap)
     if cmap in cont_palettes:
         cont_palettes.remove(cmap)
-    global cat_counter, cont_counter
     cat_counter, cont_counter = 0, 0
 
     def _annot_helper(df, rc_annotation):
         rc_dict = {}
-        global cat_counter, cont_counter
+        nonlocal cat_counter, cont_counter
         for annot in rc_annotation:
             if isinstance(df.dtypes[annot], object):
                 if df[annot].isna().any():
