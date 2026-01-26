@@ -37,7 +37,7 @@ doc = [
     "sphinx-hoverxref",
     "sphinx_design",
 ]
-dev = ["pre-commit", "cmprsk"]
+dev = ["pre-commit", "fastcluster", "cmprsk"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
