@@ -1,14 +1,10 @@
 from collections.abc import Set as AbstractSet
 from typing import List, Optional, Tuple
 
-import adjustText as at
-import gseapy as gp
-import lifelines as ll
 import matplotlib as mpl
 import matplotlib.gridspec as grid_spec
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
-import matplotlib_venn as venn
 import num2tex
 import numpy as np
 import palettable
@@ -16,8 +12,6 @@ import pandas as pd
 import PyComplexHeatmap as pch
 import scipy as sp
 import seaborn as sns
-import statsmodels.api as sm
-import upsetplot as usp
 from matplotlib.patches import Patch
 from natsort import natsort_keygen
 from PyComplexHeatmap import DotClustermapPlotter
@@ -1411,6 +1405,8 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     ...     hue_order=["control", "drug_a", "drug_b"],
     ... )
     """
+    import lifelines as ll
+
     ax = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
@@ -1577,6 +1573,8 @@ def cumulativeincidenceplot(
     ...     xticks=[0, 12, 24, 36, 48, 60],
     ... )
     """
+    import lifelines as ll
+
     ax = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
@@ -1722,6 +1720,8 @@ def volcanoplot(
     ...     show_list=["TP53", "EGFR", "KRAS"],
     ... )
     """
+    import adjustText as at
+
     hue = "DEG"
     n_show = 10
     de = data.copy()
@@ -2132,6 +2132,8 @@ def upsetplot(sets, **kwargs):
     >>> # Limit to larger intersections
     >>> cns.upsetplot(sets, min_subset_size=10)
     """
+    import upsetplot as usp
+
     sets = {k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()}
     memberships = []
     for item in set.union(*sets.values()):
@@ -2210,6 +2212,8 @@ def vennplot(lists, labels):
     ...     [set1, set2, set3], labels=["Treatment A", "Treatment B", "Treatment C"]
     ... )
     """
+    import matplotlib_venn as venn
+
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
     if len(lists) == 2:
         areas = ["10", "01", "11"]
@@ -2942,6 +2946,8 @@ def qqplot(data, x, **kwargs):
     >>> from scipy import stats
     >>> cns.qqplot(data=df, x="values", dist=stats.t, distargs=(10,))
     """
+    import statsmodels.api as sm
+
     ax = plt.gca()
     sm.qqplot(
         data[x],
@@ -3107,6 +3113,8 @@ def gseaplot(
     ...     top_term=30,
     ... )
     """
+    import gseapy as gp
+
     ax = plt.gca()
     gp.dotplot(
         data,
