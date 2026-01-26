@@ -5,6 +5,7 @@ import warnings
 
 import cnsplots._methods as methods
 from cnsplots._methods import CoxModel, LogisticModel, prerank
+from cnsplots._settings import settings
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -65,6 +66,7 @@ from cnsplots._utils import (
 
 __version__ = "0.0.4"
 __all__ = (
+    settings,
     BLUE,
     BROWN,
     CHOCOLATE,

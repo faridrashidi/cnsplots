@@ -34,7 +34,7 @@ VIOLET = "#442288"
 CHOCOLATE = "#662506"
 
 
-def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SEQ):
+def figure(height=150, width=150, color_cycle=None, color_map=None):
     """
     Initialize a new figure with custom size and styling.
 
@@ -47,11 +47,13 @@ def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SE
         Height of the figure in pixels.
     width : int, default: 150
         Width of the figure in pixels.
-    color_cycle : str, default: PALETTE_QUAL
+    color_cycle : str, default: None
         Name of the qualitative color palette to use for the color cycle.
+        If None, uses cns.settings.palette_qual.
         Options include: 'Ecotyper1', 'Set1', 'Set2', 'Dark2', 'Tableau', etc.
-    color_map : str, default: PALETTE_SEQ
+    color_map : str, default: None
         Name of the sequential colormap to use for continuous data.
+        If None, uses cns.settings.palette_seq.
         Options include: 'gnuplot', 'parula', 'bwr', 'hot', etc.
 
     Returns
@@ -83,6 +85,10 @@ def figure(height=150, width=150, color_cycle=PALETTE_QUAL, color_map=PALETTE_SE
     >>> cns.figure(height=150, width=150, color_cycle="Set2", color_map="parula")
     >>> cns.heatmapplot(adata)
     """
+    if color_cycle is None:
+        color_cycle = cns.settings.palette_qual
+    if color_map is None:
+        color_map = cns.settings.palette_seq
     cns.setup_matplotlib(color_cycle, color_map)
     plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
 

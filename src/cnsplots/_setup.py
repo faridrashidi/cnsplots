@@ -1,21 +1,14 @@
 import matplotlib as mpl
 
 import cnsplots as cns
-from cnsplots._utils import (
-    FONTSIZE_LEGEND,
-    FONTSIZE_TITLE,
-    LINEWIDTH_AXES,
-    PALETTE_QUAL,
-    PALETTE_SEQ,
-)
 
 
 def setup_matplotlib(
-    color_cycle=PALETTE_QUAL,
-    color_map=PALETTE_SEQ,
-    fontsize_title=FONTSIZE_TITLE,
-    fontsize_legend=FONTSIZE_LEGEND,
-    linewidth_axes=LINEWIDTH_AXES,
+    color_cycle=None,
+    color_map=None,
+    fontsize_title=None,
+    fontsize_legend=None,
+    linewidth_axes=None,
 ):
     """
     Configure matplotlib with publication-quality default styling.
@@ -26,20 +19,25 @@ def setup_matplotlib(
 
     Parameters
     ----------
-    color_cycle : str, default: PALETTE_QUAL ('Ecotyper1')
+    color_cycle : str, default: None
         Name of the qualitative color palette for the default color cycle.
+        If None, uses cns.settings.palette_qual.
         Options include: 'Set1', 'Set2', 'Dark2', 'Ecotyper1'-'Ecotyper6',
         'Tableau', 'Bold', 'ECharts', etc.
-    color_map : str, default: PALETTE_SEQ ('gnuplot')
+    color_map : str, default: None
         Name of the sequential colormap for continuous data.
+        If None, uses cns.settings.palette_seq.
         Options include: 'gnuplot', 'parula', 'bwr', 'hot', 'BuRd_custom',
         'WhYlOrRd_custom', etc.
-    fontsize_title : int, default: 8
+    fontsize_title : int, default: None
         Font size for titles, axis labels, and legend titles.
-    fontsize_legend : int, default: 7
+        If None, uses cns.settings.fontsize_title.
+    fontsize_legend : int, default: None
         Font size for tick labels and legend text.
-    linewidth_axes : float, default: 0.5
+        If None, uses cns.settings.fontsize_legend.
+    linewidth_axes : float, default: None
         Line width for axis spines.
+        If None, uses cns.settings.linewidth_axes.
 
     Returns
     -------
@@ -100,6 +98,17 @@ def setup_matplotlib(
     ...     color_cycle="Set2", color_map="parula", fontsize_title=10, fontsize_legend=8
     ... )
     """
+    # Use settings values if parameters are not provided
+    if color_cycle is None:
+        color_cycle = cns.settings.palette_qual
+    if color_map is None:
+        color_map = cns.settings.palette_seq
+    if fontsize_title is None:
+        fontsize_title = cns.settings.fontsize_title
+    if fontsize_legend is None:
+        fontsize_legend = cns.settings.fontsize_legend
+    if linewidth_axes is None:
+        linewidth_axes = cns.settings.linewidth_axes
 
     def config():
         """
@@ -245,9 +254,9 @@ def setup_scanpy():
 
 def setup_ax(
     ax,
-    fontsize_title=FONTSIZE_TITLE,
-    fontsize_legend=FONTSIZE_LEGEND,
-    linewidth_axes=LINEWIDTH_AXES,
+    fontsize_title=None,
+    fontsize_legend=None,
+    linewidth_axes=None,
     colorbar_label="FDR q-val",
 ):
     """
@@ -260,12 +269,15 @@ def setup_ax(
     ----------
     ax : matplotlib.axes.Axes
         The axes object to format.
-    fontsize_title : int, default: 8
+    fontsize_title : int, default: None
         Font size for axis labels and title.
-    fontsize_legend : int, default: 7
+        If None, uses cns.settings.fontsize_title.
+    fontsize_legend : int, default: None
         Font size for tick labels and colorbar labels.
-    linewidth_axes : float, default: 0.5
+        If None, uses cns.settings.fontsize_legend.
+    linewidth_axes : float, default: None
         Line width for axis spines.
+        If None, uses cns.settings.linewidth_axes.
     colorbar_label : str, default: 'FDR q-val'
         Label for the colorbar (if present). Set to empty string '' to
         remove colorbar label.
@@ -325,6 +337,14 @@ def setup_ax(
     >>> ax = sns.heatmap(data)
     >>> cns.setup_ax(ax, colorbar_label="Expression")
     """
+    # Use settings values if parameters are not provided
+    if fontsize_title is None:
+        fontsize_title = cns.settings.fontsize_title
+    if fontsize_legend is None:
+        fontsize_legend = cns.settings.fontsize_legend
+    if linewidth_axes is None:
+        linewidth_axes = cns.settings.linewidth_axes
+
     mpl.rcParams.update(
         {
             "mathtext.fontset": "custom",
