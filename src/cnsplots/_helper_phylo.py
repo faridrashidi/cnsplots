@@ -141,7 +141,7 @@ def _heatmap(
         # Generate colours in order -> for legend
         colors = [cmap[cat] for cat in unique_values]
     else:
-        raise TypeError(f'Unable to intepret colormap of type "{type(cmap)}"')
+        raise TypeError(f'Unable to interpret colormap of type "{type(cmap)}"')
 
     # Turn data into numeric values
     vmap = {c: i for i, c in enumerate(unique_values)}
