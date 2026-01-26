@@ -278,3 +278,83 @@ sc.pl.umap(blobs, color="axl", size=8, ax=ax_c, show=False, cmap="gnuplot")
 ax_c.set_xlabel("UMAP-1")
 ax_c.set_ylabel("UMAP-2")
 ax_c.set_title("AXL")
+
+
+# %%
+# Heatmap
+# ~~~~~~~
+# Expression heatmap across clusters. Note: heatmap creates its own
+# figure with dendrograms/colorbars, so we don't pass ax.
+# Use figsize=(width, height) in inches. For pixels, divide by DPI (e.g., 100).
+cns.setup_scanpy()
+sc.pl.heatmap(
+    blobs,
+    var_names=blobs.var_names[:8],
+    groupby="blobs",
+    cmap="gnuplot",
+    figsize=(3, 2),  # 300x200 pixels at 100 DPI
+    show=False,
+)
+
+
+# %%
+# Heatmap with dendrogram
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Add hierarchical clustering to the heatmap.
+cns.setup_scanpy()
+sc.pl.heatmap(
+    blobs,
+    var_names=blobs.var_names[:10],
+    groupby="blobs",
+    cmap="gnuplot",
+    dendrogram=True,
+    figsize=(3.5, 2.5),  # 350x250 pixels at 100 DPI
+    show=False,
+)
+
+
+# %%
+# Tracksplot
+# ~~~~~~~~~~
+# Track-style visualization showing expression patterns.
+# Like heatmap, this creates its own multi-axes figure.
+cns.setup_scanpy()
+sc.pl.tracksplot(
+    blobs,
+    var_names=blobs.var_names[:6],
+    groupby="blobs",
+    cmap="gnuplot",
+    figsize=(3, 1.5),  # 300x150 pixels at 100 DPI
+    show=False,
+)
+
+
+# %%
+# Tracksplot with dendrogram
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add clustering dendrogram to tracksplot.
+cns.setup_scanpy()
+sc.pl.tracksplot(
+    blobs,
+    var_names=blobs.var_names[:8],
+    groupby="blobs",
+    cmap="gnuplot",
+    dendrogram=True,
+    figsize=(3.5, 2),  # 350x200 pixels at 100 DPI
+    show=False,
+)
+
+
+# %%
+# Clustermap
+# ~~~~~~~~~~
+# Hierarchically clustered heatmap. This function creates a complete
+# figure with row/column dendrograms and cannot use external axes.
+# Note: clustermap only supports a single categorical obs_key.
+cns.setup_scanpy()
+sc.pl.clustermap(
+    blobs,
+    obs_keys="blobs",  # Must be categorical, not continuous
+    figsize=(3, 3),  # 300x300 pixels at 100 DPI
+    show=False,
+)

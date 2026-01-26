@@ -26,7 +26,7 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Create a figure with specified dimensions in pixels.
 # Default is 150x150 pixels at 72 DPI base (144 DPI actual).
-cns.figure(150, 150)
+cns.figure(150, 150, [cns.GRAY])
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("150x150 Figure")
 

@@ -42,7 +42,7 @@ print(f"verbosity: {cns.settings.verbosity}")
 # Plot with default settings
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # First, let's see how plots look with default settings.
-cns.figure(150, 150)
+cns.figure(150, 150, [cns.GRAY])
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("Default Settings")
 
