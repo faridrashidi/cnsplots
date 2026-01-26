@@ -11,7 +11,6 @@ a direct view of the underlying distribution shape.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -27,8 +26,8 @@ tips = sns.load_dataset("tips")
 # ~~~~~~~~~~~~~~~
 # Simple histogram of a single variable.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill")
-plt.title("Basic Histogram")
+ax = cns.histplot(data=tips, x="total_bill")
+ax.set_title("Basic Histogram")
 
 
 # %%
@@ -55,8 +54,8 @@ mp.get_axes("C").set_title("30 bins")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add kernel density estimate with ``kde=True``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", kde=True)
-plt.title("Histogram with KDE")
+ax = cns.histplot(data=tips, x="total_bill", kde=True)
+ax.set_title("Histogram with KDE")
 
 
 # %%
@@ -64,9 +63,9 @@ plt.title("Histogram with KDE")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across groups.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", hue="sex")
+ax = cns.histplot(data=tips, x="total_bill", hue="sex")
+ax.set_title("Histogram by Sex")
 cns.take_legend_out()
-plt.title("Histogram by Sex")
 
 
 # %%
@@ -74,9 +73,9 @@ plt.title("Histogram by Sex")
 # ~~~~~~~~~~~~~~~~~
 # Stack bars for grouped data with ``multiple="stack"``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", hue="sex", multiple="stack")
+ax = cns.histplot(data=tips, x="total_bill", hue="sex", multiple="stack")
+ax.set_title("Stacked Histogram")
 cns.take_legend_out()
-plt.title("Stacked Histogram")
 
 
 # %%
@@ -84,9 +83,9 @@ plt.title("Stacked Histogram")
 # ~~~~~~~~~~~~~~~~
 # Side-by-side bars with ``multiple="dodge"``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", hue="sex", multiple="dodge")
+ax = cns.histplot(data=tips, x="total_bill", hue="sex", multiple="dodge")
+ax.set_title("Dodged Histogram")
 cns.take_legend_out()
-plt.title("Dodged Histogram")
 
 
 # %%
@@ -94,9 +93,9 @@ plt.title("Dodged Histogram")
 # ~~~~~~~~~~~~~~~~~
 # Overlapping transparent bars with ``multiple="layer"``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", hue="sex", multiple="layer", alpha=0.5)
+ax = cns.histplot(data=tips, x="total_bill", hue="sex", multiple="layer", alpha=0.5)
+ax.set_title("Layered Histogram")
 cns.take_legend_out()
-plt.title("Layered Histogram")
 
 
 # %%
@@ -104,8 +103,8 @@ plt.title("Layered Histogram")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show outline only with ``element="step"``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", element="step")
-plt.title("Step Histogram")
+ax = cns.histplot(data=tips, x="total_bill", element="step")
+ax.set_title("Step Histogram")
 
 
 # %%
@@ -113,19 +112,20 @@ plt.title("Step Histogram")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Filled step histogram for cleaner look.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", hue="sex", element="step", fill=True, alpha=0.5)
+ax = cns.histplot(
+    data=tips, x="total_bill", hue="sex", element="step", fill=True, alpha=0.5
+)
+ax.set_title("Filled Step Histogram")
 cns.take_legend_out()
-plt.title("Filled Step Histogram")
-
 
 # %%
 # Histogram with density normalization
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Normalize to show probability density with ``stat="density"``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", stat="density")
-plt.title("Density Histogram")
-plt.ylabel("Density")
+ax = cns.histplot(data=tips, x="total_bill", stat="density")
+ax.set_title("Density Histogram")
+ax.set_ylabel("Density")
 
 
 # %%
@@ -133,9 +133,9 @@ plt.ylabel("Density")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show proportion with ``stat="probability"``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="total_bill", stat="probability")
-plt.title("Probability Histogram")
-plt.ylabel("Probability")
+ax = cns.histplot(data=tips, x="total_bill", stat="probability")
+ax.set_title("Probability Histogram")
+ax.set_ylabel("Probability")
 
 
 # %%
@@ -143,8 +143,10 @@ plt.ylabel("Probability")
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Visualize joint distribution of two variables.
 cns.figure(150, 150)
-cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot")
-plt.title("2D Histogram (gnuplot)")
+ax = cns.histplot(
+    data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot"
+)
+ax.set_title("2D Histogram (gnuplot)")
 
 
 # %%
@@ -152,8 +154,10 @@ plt.title("2D Histogram (gnuplot)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use cnsplots parula colormap.
 cns.figure(150, 150)
-cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="parula")
-plt.title("2D Histogram (parula)")
+ax = cns.histplot(
+    data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="parula"
+)
+ax.set_title("2D Histogram (parula)")
 
 
 # %%
@@ -178,9 +182,9 @@ mp.get_axes("B").set_title("BuRd_custom colormap")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use built-in color palettes.
 cns.figure(150, 100, "Tableau")
-cns.histplot(data=tips, x="total_bill", hue="day")
+ax = cns.histplot(data=tips, x="total_bill", hue="day")
+ax.set_title("Tableau Palette")
 cns.take_legend_out()
-plt.title("Tableau Palette")
 
 
 # %%
@@ -188,9 +192,11 @@ plt.title("Tableau Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across multiple groups.
 cns.figure(200, 100)
-cns.histplot(data=iris, x="sepal_length", hue="species", multiple="layer", alpha=0.5)
+ax = cns.histplot(
+    data=iris, x="sepal_length", hue="species", multiple="layer", alpha=0.5
+)
+ax.set_title("Sepal Length Distribution by Species")
 cns.take_legend_out()
-plt.title("Sepal Length Distribution by Species")
 
 
 # %%
@@ -198,8 +204,8 @@ plt.title("Sepal Length Distribution by Species")
 # ~~~~~~~~~~~~~~~~~~~~
 # Swap x and y for horizontal orientation.
 cns.figure(100, 150)
-cns.histplot(data=tips, y="total_bill", bins=15)
-plt.title("Horizontal Histogram")
+ax = cns.histplot(data=tips, y="total_bill", bins=15)
+ax.set_title("Horizontal Histogram")
 
 
 # %%
@@ -207,9 +213,9 @@ plt.title("Horizontal Histogram")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For discrete/categorical counts, use ``discrete=True``.
 cns.figure(150, 100)
-cns.histplot(data=tips, x="size", discrete=True)
-plt.title("Discrete Histogram")
-plt.xlabel("Party Size")
+ax = cns.histplot(data=tips, x="size", discrete=True)
+ax.set_title("Discrete Histogram")
+ax.set_xlabel("Party Size")
 
 
 # %%

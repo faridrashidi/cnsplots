@@ -12,7 +12,6 @@ and any sequential data.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -27,8 +26,8 @@ fmri = sns.load_dataset("fmri")
 # ~~~~~~~~~~~~~~~
 # Plot signal over time with confidence intervals.
 cns.figure(150, 100)
-cns.lineplot(data=fmri, x="timepoint", y="signal")
-plt.title("Basic Line Plot")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal")
+ax.set_title("Basic Line Plot")
 
 
 # %%
@@ -36,8 +35,8 @@ plt.title("Basic Line Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``err_style="bars"`` for discrete error bars.
 cns.figure(150, 100)
-cns.lineplot(data=fmri, x="timepoint", y="signal", err_style="bars")
-plt.title("With Error Bars")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", err_style="bars")
+ax.set_title("With Error Bars")
 
 
 # %%
@@ -45,9 +44,9 @@ plt.title("With Error Bars")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare trends across groups.
 cns.figure(150, 100)
-cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event")
+ax.set_title("Grouped by Event")
 cns.take_legend_out()
-plt.title("Grouped by Event")
 
 
 # %%
@@ -55,9 +54,9 @@ plt.title("Grouped by Event")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Combine grouping with error visualization.
 cns.figure(180, 100)
-cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", err_style="bars")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", err_style="bars")
+ax.set_title("Grouped with Error Bars")
 cns.take_legend_out()
-plt.title("Grouped with Error Bars")
 
 
 # %%
@@ -65,9 +64,9 @@ plt.title("Grouped with Error Bars")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different line styles for groups.
 cns.figure(180, 100)
-cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", style="event")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", style="event")
+ax.set_title("Different Line Styles")
 cns.take_legend_out()
-plt.title("Different Line Styles")
 
 
 # %%
@@ -75,9 +74,9 @@ plt.title("Different Line Styles")
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Use both hue and style for complex comparisons.
 cns.figure(180, 120)
-cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", style="region")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", style="region")
+ax.set_title("Multiple Grouping Levels")
 cns.take_legend_out()
-plt.title("Multiple Grouping Levels")
 
 
 # %%
@@ -85,9 +84,9 @@ plt.title("Multiple Grouping Levels")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``errorbar=None`` for clean lines.
 cns.figure(150, 100)
-cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", errorbar=None)
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", errorbar=None)
+ax.set_title("Without Confidence Interval")
 cns.take_legend_out()
-plt.title("Without Confidence Interval")
 
 
 # %%
@@ -110,10 +109,10 @@ ts_data = pd.DataFrame(
 )
 
 cns.figure(180, 100)
-cns.lineplot(data=ts_data, x="date", y="value", hue="group")
+ax = cns.lineplot(data=ts_data, x="date", y="value", hue="group")
+ax.set_title("Time Series Data")
+ax.tick_params(axis="x", rotation=40)
 cns.take_legend_out()
-plt.title("Time Series Data")
-_ = plt.xticks(rotation=30, ha="right")
 
 
 # %%
@@ -121,11 +120,11 @@ _ = plt.xticks(rotation=30, ha="right")
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Add markers at data points.
 cns.figure(150, 100)
-cns.lineplot(
+ax = cns.lineplot(
     data=fmri, x="timepoint", y="signal", hue="event", marker="o", markersize=3
 )
+ax.set_title("With Markers")
 cns.take_legend_out()
-plt.title("With Markers")
 
 
 # %%
@@ -133,9 +132,9 @@ plt.title("With Markers")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes.
 cns.figure(150, 100, "Tableau")
-cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event")
+ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event")
+ax.set_title("Tableau Palette")
 cns.take_legend_out()
-plt.title("Tableau Palette")
 
 
 # %%
@@ -155,11 +154,11 @@ for dose in doses:
 dose_df = pd.DataFrame(dose_response)
 
 cns.figure(150, 100)
-cns.lineplot(data=dose_df, x="dose", y="response", marker="o")
-plt.xscale("log")
-plt.xlabel("Dose (log scale)")
-plt.ylabel("Response (%)")
-plt.title("Dose-Response Curve")
+ax = cns.lineplot(data=dose_df, x="dose", y="response", marker="o")
+ax.set_xscale("log")
+ax.set_xlabel("Dose (log scale)")
+ax.set_ylabel("Response (%)")
+ax.set_title("Dose-Response Curve")
 
 
 # %%

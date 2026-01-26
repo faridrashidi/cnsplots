@@ -12,7 +12,6 @@ across categories.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 import cnsplots as cns
@@ -26,8 +25,8 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~~
 # Simple violin plot with embedded box plot (default).
 cns.figure(150, 100)
-cns.violinplot(data=tips, x="day", y="total_bill")
-plt.title("Basic Violin Plot")
+ax = cns.violinplot(data=tips, x="day", y="total_bill")
+ax.set_title("Basic Violin Plot")
 
 
 # %%
@@ -35,8 +34,8 @@ plt.title("Basic Violin Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``pairs="all"`` for Mann-Whitney U tests between all groups.
 cns.figure(150, 100, "Tableau")
-cns.violinplot(data=tips, x="day", y="total_bill", pairs="all")
-plt.title("Violin Plot with All Pairwise Comparisons")
+ax = cns.violinplot(data=tips, x="day", y="total_bill", pairs="all")
+ax.set_title("Violin Plot with All Pairwise Comparisons")
 
 
 # %%
@@ -44,13 +43,13 @@ plt.title("Violin Plot with All Pairwise Comparisons")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test only selected pairs.
 cns.figure(150, 100)
-cns.violinplot(
+ax = cns.violinplot(
     data=iris,
     x="species",
     y="sepal_length",
     pairs=[("setosa", "versicolor"), ("setosa", "virginica")],
 )
-plt.title("Selected Pair Comparisons")
+ax.set_title("Selected Pair Comparisons")
 
 
 # %%
@@ -58,8 +57,8 @@ plt.title("Selected Pair Comparisons")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``add_box=False`` for cleaner violin shapes.
 cns.figure(150, 100)
-cns.violinplot(data=tips, x="day", y="total_bill", add_box=False)
-plt.title("Violin Plot without Box")
+ax = cns.violinplot(data=tips, x="day", y="total_bill", add_box=False)
+ax.set_title("Violin Plot without Box")
 
 
 # %%
@@ -82,14 +81,14 @@ mp.get_axes("B").set_title("width=0.9 (wide)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``hue`` for side-by-side violins within each category.
 cns.figure(180, 120)
-cns.violinplot(
+ax = cns.violinplot(
     data=tips,
     x="day",
     y="total_bill",
     hue="sex",
 )
 cns.take_legend_out()
-plt.title("Grouped Violin Plot")
+ax.set_title("Grouped Violin Plot")
 
 
 # %%
@@ -98,7 +97,7 @@ plt.title("Grouped Violin Plot")
 # Use ``split=True`` to show two hue levels as halves of the same violin.
 # This is useful for direct comparison of two groups.
 cns.figure(150, 100)
-cns.violinplot(
+ax = cns.violinplot(
     data=tips,
     x="day",
     y="total_bill",
@@ -106,7 +105,7 @@ cns.violinplot(
     split=True,
 )
 cns.take_legend_out()
-plt.title("Split Violin Plot")
+ax.set_title("Split Violin Plot")
 
 
 # %%
@@ -134,13 +133,13 @@ mp.get_axes("C").set_title("inner='stick'")
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Swap x and y for horizontal orientation.
 cns.figure(100, 150)
-cns.violinplot(
+ax = cns.violinplot(
     data=iris,
     x="sepal_width",
     y="species",
     order=["virginica", "versicolor", "setosa"],
 )
-plt.title("Horizontal Violin Plot")
+ax.set_title("Horizontal Violin Plot")
 
 
 # %%
@@ -148,8 +147,8 @@ plt.title("Horizontal Violin Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use built-in palettes or custom colors.
 cns.figure(150, 100, "Bold")
-cns.violinplot(data=tips, x="day", y="total_bill")
-plt.title("Bold Palette")
+ax = cns.violinplot(data=tips, x="day", y="total_bill")
+ax.set_title("Bold Palette")
 
 
 # %%
@@ -164,13 +163,13 @@ iris_melted = iris.melt(
 )
 
 cns.figure(200, 120, "Set2")
-cns.violinplot(
+ax = cns.violinplot(
     data=iris_melted[iris_melted["species"] == "setosa"],
     x="measurement",
     y="value",
 )
-_ = plt.xticks(rotation=20, ha="right", rotation_mode="anchor")
-plt.title("Setosa Measurements Distribution")
+ax.tick_params(axis="x", rotation=40)
+ax.set_title("Setosa Measurements Distribution")
 
 
 # %%
@@ -178,7 +177,7 @@ plt.title("Setosa Measurements Distribution")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Statistical testing across hue groups.
 cns.figure(180, 120)
-cns.violinplot(
+ax = cns.violinplot(
     data=tips,
     x="day",
     y="total_bill",
@@ -186,4 +185,4 @@ cns.violinplot(
     pairs=[(("Sat", "Yes"), ("Sat", "No"))],
 )
 cns.take_legend_out()
-plt.title("Grouped Violin with Statistical Testing")
+ax.set_title("Grouped Violin with Statistical Testing")

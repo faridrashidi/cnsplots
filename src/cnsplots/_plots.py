@@ -415,7 +415,7 @@ def boxplot(
     addcount: bool = False,
     whis=1.5,
     **kwargs,
-) -> None:
+) -> plt.Axes:
     """
     Create a box plot showing the distribution of a continuous variable across categories.
 
@@ -452,8 +452,8 @@ def boxplot(
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -472,13 +472,14 @@ def boxplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.boxplot(
+    >>> ax = cns.boxplot(
     ...     data=df,
     ...     x="treatment",
     ...     y="response",
     ...     pairs=[("control", "treated")],
     ...     showoutliers=True,
     ... )
+    >>> ax.set_title("Treatment Response")
     """
     args = {
         "showfliers": showoutliers,
@@ -547,6 +548,8 @@ def boxplot(
     if addcount:
         cns._utils._addcount_helper(data, x, ax)
 
+    return ax
+
 
 def violinplot(
     data: pd.DataFrame,
@@ -556,7 +559,7 @@ def violinplot(
     width=0.6,
     add_box=True,
     **kwargs,
-) -> None:
+) -> plt.Axes:
     """
     Create a violin plot showing the distribution of a continuous variable.
 
@@ -591,8 +594,8 @@ def violinplot(
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -611,13 +614,14 @@ def violinplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.violinplot(
+    >>> ax = cns.violinplot(
     ...     data=df,
     ...     x="condition",
     ...     y="expression",
     ...     pairs=[("control", "treated")],
     ...     add_box=True,
     ... )
+    >>> ax.set_title("Expression by Condition")
     """
     args = {
         "showfliers": False,
@@ -649,6 +653,8 @@ def violinplot(
         sns.boxplot(**boxplot_kwargs)
     if pairs is not None:
         cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+
+    return ax
 
 
 def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
@@ -709,16 +715,18 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.barplot(
+    >>> ax = cns.barplot(
     ...     data=df,
     ...     x="treatment",
     ...     y="response",
     ...     pairs=[("control", "drug_a"), ("control", "drug_b")],
     ...     addtip=True,
     ... )
+    >>> ax.set_title("Treatment Response")
 
     >>> # Color by group with automatic legend
-    >>> cns.barplot(data=df, x="treatment", y="response", palette="cell_type")
+    >>> ax = cns.barplot(data=df, x="treatment", y="response", palette="cell_type")
+    >>> ax.set_ylabel("Mean Response")
     """
     args = {
         "edgecolor": None,
@@ -777,6 +785,8 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
             loc="upper left",
         )
 
+    return ax
+
 
 def stackplot(
     data,
@@ -826,8 +836,8 @@ def stackplot(
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -849,18 +859,20 @@ def stackplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.stackplot(
+    >>> ax = cns.stackplot(
     ...     data=df,
     ...     x="tissue",
     ...     y="cell_type",
     ...     normalize=True,
     ...     pairs=[("lung", "liver")],
     ... )
+    >>> ax.set_title("Cell Type Distribution by Tissue")
 
     >>> # Horizontal stacked bar plot
-    >>> cns.stackplot(
+    >>> ax = cns.stackplot(
     ...     data=df, x="patient", y="mutation", horizontal=True, normalize=False
     ... )
+    >>> ax.set_xlabel("Mutation Count")
     """
     data2 = data.value_counts([x, y]).reset_index()
     if horizontal:
@@ -931,6 +943,8 @@ def stackplot(
                 "chi-squared", data2, ax, plotting, pairs, contingency
             )
 
+    return ax
+
 
 def distplot(data, x, **kwargs):
     """
@@ -962,8 +976,8 @@ def distplot(data, x, **kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -979,14 +993,17 @@ def distplot(data, x, **kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.distplot(data=df, x="age")
+    >>> ax = cns.distplot(data=df, x="age")
+    >>> ax.set_title("Age Distribution")
 
     >>> # With grouping by category
-    >>> cns.distplot(data=df, x="expression", hue="treatment")
+    >>> ax = cns.distplot(data=df, x="expression", hue="treatment")
+    >>> ax.set_xlabel("Gene Expression")
     """
     args = {"kde": True, "edgecolor": None}
     args.update(kwargs)
-    sns.histplot(data=data, x=x, **args)
+    ax = sns.histplot(data=data, x=x, **args)
+    return ax
 
 
 def kdeplot(data, x, add_mode=True, **kwargs):
@@ -1022,8 +1039,8 @@ def kdeplot(data, x, add_mode=True, **kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1045,10 +1062,12 @@ def kdeplot(data, x, add_mode=True, **kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.kdeplot(data=df, x="expression", add_mode=True)
+    >>> ax = cns.kdeplot(data=df, x="expression", add_mode=True)
+    >>> ax.set_title("Expression Distribution")
 
     >>> # Compare two groups with automatic statistics
-    >>> cns.kdeplot(data=df, x="score", hue="treatment", fill=True)
+    >>> ax = cns.kdeplot(data=df, x="score", hue="treatment", fill=True)
+    >>> ax.set_xlabel("Score")
     """
     linewidth = kwargs.pop("linewidth", 1)
     ax = sns.kdeplot(data=data, x=x, linewidth=linewidth, **kwargs)
@@ -1106,6 +1125,8 @@ def kdeplot(data, x, add_mode=True, **kwargs):
             if hasattr(handle, "set_linewidth"):
                 handle.set_linewidth(1.7)
 
+    return ax
+
 
 def regplot(data, x, y, hue=None, s=3, **kwargs):
     """
@@ -1143,8 +1164,8 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1163,10 +1184,12 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.regplot(data=df, x="age", y="expression")
+    >>> ax = cns.regplot(data=df, x="age", y="expression")
+    >>> ax.set_title("Age vs Expression")
 
     >>> # Grouped regression with separate fits
-    >>> cns.regplot(data=df, x="dose", y="response", hue="cell_line")
+    >>> ax = cns.regplot(data=df, x="dose", y="response", hue="cell_line")
+    >>> ax.set_xlabel("Drug Dose")
     """
     args = {
         "line_kws": {"lw": 1.2},
@@ -1217,6 +1240,8 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
     if hue:
         plt.legend(title=hue)
 
+    return ax
+
 
 def pieplot(data, x, hue_order=None):
     """
@@ -1237,8 +1262,8 @@ def pieplot(data, x, hue_order=None):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1255,10 +1280,11 @@ def pieplot(data, x, hue_order=None):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.pieplot(data=df, x="cell_type")
+    >>> ax = cns.pieplot(data=df, x="cell_type")
+    >>> ax.set_title("Cell Type Distribution")
 
     >>> # Specify category order
-    >>> cns.pieplot(data=df, x="response", hue_order=["CR", "PR", "SD", "PD"])
+    >>> ax = cns.pieplot(data=df, x="response", hue_order=["CR", "PR", "SD", "PD"])
     """
     df = data[x].value_counts()
     if hue_order is None:
@@ -1276,6 +1302,7 @@ def pieplot(data, x, hue_order=None):
         legend=True,
     )
     cns.take_legend_out(title=x)
+    return ax
 
 
 def donutplot(data, x, hue_order=None):
@@ -1298,8 +1325,8 @@ def donutplot(data, x, hue_order=None):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1316,10 +1343,11 @@ def donutplot(data, x, hue_order=None):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.donutplot(data=df, x="tissue_type")
+    >>> ax = cns.donutplot(data=df, x="tissue_type")
+    >>> ax.set_title("Tissue Type Distribution")
 
     >>> # Specify category order
-    >>> cns.donutplot(data=df, x="grade", hue_order=["I", "II", "III", "IV"])
+    >>> ax = cns.donutplot(data=df, x="grade", hue_order=["I", "II", "III", "IV"])
     """
     df = data[x].value_counts()
     if hue_order is None:
@@ -1340,6 +1368,7 @@ def donutplot(data, x, hue_order=None):
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
     cns._utils._remove_edge_from_legend_items(ax)
     cns.take_legend_out()
+    return ax
 
 
 def survivalplot(data, duration, event, hue, hue_order=None):
@@ -1366,8 +1395,8 @@ def survivalplot(data, duration, event, hue, hue_order=None):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1398,13 +1427,14 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.survivalplot(
+    >>> ax = cns.survivalplot(
     ...     data=df,
     ...     duration="time_months",
     ...     event="death",
     ...     hue="treatment",
     ...     hue_order=["control", "drug_a", "drug_b"],
     ... )
+    >>> ax.set_title("Overall Survival by Treatment")
     """
     import lifelines as ll
 
@@ -1479,6 +1509,8 @@ def survivalplot(data, duration, event, hue, hue_order=None):
         for handle in ax.get_legend().legend_handles:
             if hasattr(handle, "set_linewidth"):
                 handle.set_linewidth(1.7)
+
+    return ax
 
 
 def cumulativeincidenceplot(
@@ -1673,8 +1705,8 @@ def volcanoplot(
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1703,12 +1735,13 @@ def volcanoplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.volcanoplot(
+    >>> ax = cns.volcanoplot(
     ...     data=de_results, x="log2FoldChange", y="-log10(padj)", symbol="gene_name"
     ... )
+    >>> ax.set_title("Differential Expression")
 
     >>> # Highlight specific genes
-    >>> cns.volcanoplot(
+    >>> ax = cns.volcanoplot(
     ...     data=de_results,
     ...     x="log2FoldChange",
     ...     y="-log10(padj)",
@@ -1786,6 +1819,8 @@ def volcanoplot(
             elif hasattr(handle, "set_markersize"):
                 handle.set_markersize(2 * np.sqrt(legend_dot_size / np.pi))
 
+    return ax
+
 
 def stripplot(
     data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs
@@ -1827,8 +1862,8 @@ def stripplot(
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1847,14 +1882,16 @@ def stripplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.stripplot(
+    >>> ax = cns.stripplot(
     ...     data=df, x="treatment", y="response", showmedian=True, addcount=True
     ... )
+    >>> ax.set_title("Treatment Response")
 
     >>> # With grouping and means
-    >>> cns.stripplot(
+    >>> ax = cns.stripplot(
     ...     data=df, x="tissue", y="expression", hue="genotype", showmeans=True, size=3
     ... )
+    >>> ax.set_ylabel("Gene Expression")
     """
     ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
@@ -1887,6 +1924,8 @@ def stripplot(
             elif hasattr(handle, "set_markersize"):
                 handle.set_markersize(size * 2)
 
+    return ax
+
 
 def histplot(**kwargs):
     """
@@ -1918,8 +1957,8 @@ def histplot(**kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1935,13 +1974,16 @@ def histplot(**kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.histplot(data=df, x="age", bins=20)
+    >>> ax = cns.histplot(data=df, x="age", bins=20)
+    >>> ax.set_title("Age Distribution")
 
     >>> # With KDE overlay
-    >>> cns.histplot(data=df, x="expression", kde=True, hue="treatment")
+    >>> ax = cns.histplot(data=df, x="expression", kde=True, hue="treatment")
+    >>> ax.set_xlabel("Gene Expression")
     """
     kwargs.setdefault("edgecolor", None)
-    sns.histplot(**kwargs)
+    ax = sns.histplot(**kwargs)
+    return ax
 
 
 def lineplot(**kwargs):
@@ -1978,8 +2020,8 @@ def lineplot(**kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -1990,14 +2032,17 @@ def lineplot(**kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.lineplot(data=df, x="time", y="value")
+    >>> ax = cns.lineplot(data=df, x="time", y="value")
+    >>> ax.set_title("Time Series")
 
     >>> # Multiple groups with error bands
-    >>> cns.lineplot(
+    >>> ax = cns.lineplot(
     ...     data=df, x="timepoint", y="expression", hue="treatment", errorbar="se"
     ... )
+    >>> ax.set_ylabel("Gene Expression")
     """
-    sns.lineplot(**kwargs)
+    ax = sns.lineplot(**kwargs)
+    return ax
 
 
 def scatterplot(data, x, y, s=7, **kwargs):
@@ -2034,8 +2079,8 @@ def scatterplot(data, x, y, s=7, **kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -2052,10 +2097,14 @@ def scatterplot(data, x, y, s=7, **kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.scatterplot(data=df, x="PC1", y="PC2", s=10)
+    >>> ax = cns.scatterplot(data=df, x="PC1", y="PC2", s=10)
+    >>> ax.set_title("PCA Plot")
 
     >>> # With grouping by category
-    >>> cns.scatterplot(data=df, x="UMAP1", y="UMAP2", hue="cell_type", s=5, alpha=0.7)
+    >>> ax = cns.scatterplot(
+    ...     data=df, x="UMAP1", y="UMAP2", hue="cell_type", s=5, alpha=0.7
+    ... )
+    >>> ax.set_xlabel("UMAP Dimension 1")
     """
     ax = sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
 
@@ -2065,6 +2114,8 @@ def scatterplot(data, x, y, s=7, **kwargs):
                 handle.set_sizes([s])
             elif hasattr(handle, "set_markersize"):
                 handle.set_markersize(2 * np.sqrt(s / np.pi))
+
+    return ax
 
 
 def upsetplot(sets, **kwargs):
@@ -2095,8 +2146,8 @@ def upsetplot(sets, **kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current figure and returns nothing.
+    dict
+        Dictionary of matplotlib Axes objects from the UpSet plot.
 
     See Also
     --------
@@ -2123,10 +2174,11 @@ def upsetplot(sets, **kwargs):
     ...     "Set B": [3, 4, 5, 6, 7],
     ...     "Set C": [5, 6, 7, 8, 9],
     ... }
-    >>> cns.upsetplot(sets)
+    >>> axes = cns.upsetplot(sets)
+    >>> axes["intersections"].set_ylabel("Intersection Size")
 
     >>> # Limit to larger intersections
-    >>> cns.upsetplot(sets, min_subset_size=10)
+    >>> axes = cns.upsetplot(sets, min_subset_size=10)
     """
     import upsetplot as usp
 
@@ -2157,6 +2209,8 @@ def upsetplot(sets, **kwargs):
         new_pos = [pos_mat.x0 + dx, pos_mat.y0, pos_mat.width, pos_mat.height]
         ax_tot.set_position(new_pos)
 
+    return axes
+
 
 def vennplot(lists, labels):
     """
@@ -2175,8 +2229,8 @@ def vennplot(lists, labels):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib_venn.VennDiagram
+        The Venn diagram object containing the plot elements.
 
     See Also
     --------
@@ -2201,10 +2255,10 @@ def vennplot(lists, labels):
     >>> set1 = {1, 2, 3, 4, 5}
     >>> set2 = {3, 4, 5, 6, 7}
     >>> set3 = {5, 6, 7, 8, 9}
-    >>> cns.vennplot([set1, set2], labels=["Group A", "Group B"])
+    >>> venn = cns.vennplot([set1, set2], labels=["Group A", "Group B"])
 
     >>> # Three-way Venn diagram
-    >>> cns.vennplot(
+    >>> venn = cns.vennplot(
     ...     [set1, set2, set3], labels=["Treatment A", "Treatment B", "Treatment C"]
     ... )
     """
@@ -2231,6 +2285,8 @@ def vennplot(lists, labels):
             pass
     for area in names:
         ax.get_label_by_id(area).set_fontsize(7)
+
+    return ax
 
 
 def confusionplot(
@@ -2286,8 +2342,8 @@ def confusionplot(
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -2315,10 +2371,11 @@ def confusionplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.confusionplot(data=df, x="predicted", y="true_label")
+    >>> ax = cns.confusionplot(data=df, x="predicted", y="true_label")
+    >>> ax.set_title("Confusion Matrix")
 
     >>> # Binary classification with metrics
-    >>> cns.confusionplot(
+    >>> ax = cns.confusionplot(
     ...     data=df,
     ...     x="prediction",
     ...     y="actual",
@@ -2433,6 +2490,8 @@ def confusionplot(
         # place just below the plot area; tweak as needed
         ax2.text(-0.25, -pvalue_pad, msg, ha="left", va="bottom")
 
+    return ax
+
 
 def sankeyplot(data, x, y):
     """
@@ -2453,8 +2512,8 @@ def sankeyplot(data, x, y):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -2472,16 +2531,18 @@ def sankeyplot(data, x, y):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.sankeyplot(data=df, x="initial_diagnosis", y="final_diagnosis")
+    >>> ax = cns.sankeyplot(data=df, x="initial_diagnosis", y="final_diagnosis")
+    >>> ax.set_title("Diagnosis Flow")
 
     >>> # Patient flow across treatment stages
-    >>> cns.sankeyplot(data=df, x="stage_1_response", y="stage_2_response")
+    >>> ax = cns.sankeyplot(data=df, x="stage_1_response", y="stage_2_response")
     """
     ax = plt.gca()
     current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
     color_dict = dict(zip(keys, current_colors))
     helper_sankey.sankeyplot(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
+    return ax
 
 
 def phyloplot(adata):
@@ -2499,8 +2560,8 @@ def phyloplot(adata):
 
     Returns
     -------
-    None
-        This function modifies the current figure and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -2516,10 +2577,11 @@ def phyloplot(adata):
     --------
     >>> import cnsplots as cns
     >>> # adata should contain phylogenetic tree information
-    >>> cns.phyloplot(adata)
+    >>> ax = cns.phyloplot(adata)
     """
     # TODO: write examples
-    helper_phylo.phyloplot(adata)
+    ax = helper_phylo.phyloplot(adata)
+    return ax
 
 
 def forestplot(model):
@@ -2540,8 +2602,8 @@ def forestplot(model):
 
     Returns
     -------
-    None
-        This function modifies the current figure and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot (primary panel).
 
     See Also
     --------
@@ -2580,12 +2642,13 @@ def forestplot(model):
     >>> model.fit(predictors=["age", "stage", "treatment"])
     >>>
     >>> # Create forest plot
-    >>> cns.forestplot(model)
+    >>> ax = cns.forestplot(model)
+    >>> ax.set_title("Hazard Ratios")
 
     >>> # With grouping variable
     >>> model = CoxModel(data=df, duration="time", event="death", hue="cohort")
     >>> model.fit(predictors=["biomarker_a", "biomarker_b"])
-    >>> cns.forestplot(model)
+    >>> ax = cns.forestplot(model)
     """
     data = model.results.copy()
 
@@ -2696,6 +2759,8 @@ def forestplot(model):
         ax2.set_ylim(-0.5, len(unique_labels) - 0.5)
         ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
 
+    return ax1
+
 
 def ridgeplot(data, x, y):
     """
@@ -2717,8 +2782,8 @@ def ridgeplot(data, x, y):
 
     Returns
     -------
-    None
-        This function modifies the current figure and returns nothing.
+    list of matplotlib.axes.Axes
+        List of Axes objects, one for each ridge in the plot.
 
     See Also
     --------
@@ -2740,10 +2805,11 @@ def ridgeplot(data, x, y):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.ridgeplot(data=df, x="expression", y="tissue_type")
+    >>> axes = cns.ridgeplot(data=df, x="expression", y="tissue_type")
+    >>> axes[-1].set_xlabel("Gene Expression")
 
     >>> # Time series data
-    >>> cns.ridgeplot(data=df, x="temperature", y="month")
+    >>> axes = cns.ridgeplot(data=df, x="temperature", y="month")
     """
     countries = data[y].unique()
     colors = cns._utils._get_hex_colors_from_colorbar("viridis", len(countries))
@@ -2782,6 +2848,7 @@ def ridgeplot(data, x, y):
             ax_objs[-1].spines[s].set_visible(False)
         ax_objs[-1].text(-0.02, 0, country, ha="right")
     gs.update(hspace=-0.5)
+    return ax_objs
 
 
 def slopeplot(data, x, y, hue):
@@ -2807,8 +2874,8 @@ def slopeplot(data, x, y, hue):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -2834,15 +2901,16 @@ def slopeplot(data, x, y, hue):
     --------
     >>> import cnsplots as cns
     >>> # Compare before/after measurements for multiple patients
-    >>> cns.slopeplot(
+    >>> ax = cns.slopeplot(
     ...     data=df,
     ...     x="patient_id",
     ...     y="tumor_size",
     ...     hue="timepoint",  # e.g., 'baseline' and 'week_12'
     ... )
+    >>> ax.set_ylabel("Tumor Size (mm)")
 
     >>> # Compare two treatments across sites
-    >>> cns.slopeplot(data=df, x="site", y="response_rate", hue="treatment")
+    >>> ax = cns.slopeplot(data=df, x="site", y="response_rate", hue="treatment")
     """
     # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
     red = palettable.colorbrewer.qualitative.Set1_9.hex_colors[0]
@@ -2888,6 +2956,8 @@ def slopeplot(data, x, y, hue):
     for handle in lgd.legend_handles:
         handle.set_sizes([12])
 
+    return ax
+
 
 def qqplot(data, x, **kwargs):
     """
@@ -2916,8 +2986,8 @@ def qqplot(data, x, **kwargs):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -2936,11 +3006,12 @@ def qqplot(data, x, **kwargs):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.qqplot(data=df, x="residuals")
+    >>> ax = cns.qqplot(data=df, x="residuals")
+    >>> ax.set_title("Q-Q Plot of Residuals")
 
     >>> # With custom distribution
     >>> from scipy import stats
-    >>> cns.qqplot(data=df, x="values", dist=stats.t, distargs=(10,))
+    >>> ax = cns.qqplot(data=df, x="values", dist=stats.t, distargs=(10,))
     """
     import statsmodels.api as sm
 
@@ -2953,6 +3024,7 @@ def qqplot(data, x, **kwargs):
         markersize=3,
         **kwargs,
     )
+    return ax
 
 
 def rocplot(data, true_label_col, pred_prob_cols):
@@ -2975,8 +3047,8 @@ def rocplot(data, true_label_col, pred_prob_cols):
 
     Returns
     -------
-    None
-        This function modifies the current axes and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -3002,12 +3074,13 @@ def rocplot(data, true_label_col, pred_prob_cols):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.rocplot(
+    >>> ax = cns.rocplot(
     ...     data=df, true_label_col="disease", pred_prob_cols="model_probability"
     ... )
+    >>> ax.set_title("ROC Curve")
 
     >>> # Compare multiple models
-    >>> cns.rocplot(
+    >>> ax = cns.rocplot(
     ...     data=df,
     ...     true_label_col="outcome",
     ...     pred_prob_cols=["model_a_prob", "model_b_prob", "model_c_prob"],
@@ -3037,6 +3110,8 @@ def rocplot(data, true_label_col, pred_prob_cols):
         for handle in ax.get_legend().legend_handles:
             if hasattr(handle, "set_linewidth"):
                 handle.set_linewidth(1.7)
+
+    return ax
 
 
 def gseaplot(
@@ -3071,8 +3146,8 @@ def gseaplot(
 
     Returns
     -------
-    None
-        This function modifies the current figure and returns nothing.
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
 
     See Also
     --------
@@ -3098,10 +3173,13 @@ def gseaplot(
     --------
     >>> import cnsplots as cns
     >>> # GSEA results from gseapy
-    >>> cns.gseaplot(data=gsea_results, y="Term", color="NES", top_term=15, cutoff=0.05)
+    >>> ax = cns.gseaplot(
+    ...     data=gsea_results, y="Term", color="NES", top_term=15, cutoff=0.05
+    ... )
+    >>> ax.set_title("Gene Set Enrichment Analysis")
 
     >>> # Color by adjusted p-value instead
-    >>> cns.gseaplot(
+    >>> ax = cns.gseaplot(
     ...     data=gsea_results,
     ...     y="Term",
     ...     color="Adjusted P-value",
@@ -3144,3 +3222,4 @@ def gseaplot(
     )
     cns.setup_ax(ax, colorbar_label="")
     plt.xlabel("Normalized Enrichment Score (NES)")
+    return ax

@@ -27,8 +27,8 @@ iris = sns.load_dataset("iris")
 # Create a figure with specified dimensions in pixels.
 # Default is 150x150 pixels at 72 DPI base (144 DPI actual).
 cns.figure(150, 150)
-cns.boxplot(data=tips, x="day", y="total_bill")
-plt.title("150x150 Figure")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("150x150 Figure")
 
 
 # %%
@@ -36,26 +36,26 @@ plt.title("150x150 Figure")
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Adjust figure dimensions for different purposes.
 cns.figure(100, 80)  # Small/compact
-cns.boxplot(data=tips, x="day", y="total_bill")
-plt.title("Small Figure")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("Small Figure")
 
 
 # %%
 # Wider figure for more categories
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(200, 100)  # Wide
-cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
+ax = cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
-plt.title("Wide Figure")
+ax.set_title("Wide Figure")
 
 
 # %%
 # Square figure for scatter plots
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 150)  # Square
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
 cns.take_legend_out()
-plt.title("Square Figure")
+ax.set_title("Square Figure")
 
 
 # %%
@@ -63,40 +63,40 @@ plt.title("Square Figure")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Pass palette name as third argument to ``figure()``.
 cns.figure(150, 100, "Tableau")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Tableau Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Tableau Palette")
 
 
 # %%
 # Set1 palette
 # ~~~~~~~~~~~~
 cns.figure(150, 100, "Set1")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Set1 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Set1 Palette")
 
 
 # %%
 # Set2 palette
 # ~~~~~~~~~~~~
 cns.figure(150, 100, "Set2")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Set2 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Set2 Palette")
 
 
 # %%
 # Bold palette
 # ~~~~~~~~~~~~
 cns.figure(150, 100, "Bold")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Bold Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Bold Palette")
 
 
 # %%
 # BlueRed diverging palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 100, "BlueRed")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("BlueRed Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("BlueRed Palette")
 
 
 # %%
@@ -104,8 +104,8 @@ plt.title("BlueRed Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get palette colors programmatically.
 cns.figure(150, 100, color_cycle="Ecotyper1")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Ecotyper1 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Ecotyper1 Palette")
 
 
 # %%
@@ -114,8 +114,8 @@ plt.title("Ecotyper1 Palette")
 # Pass a list of specific colors.
 custom_colors = [cns.RED, cns.BLUE, cns.GREEN, cns.ORANGE]
 cns.figure(150, 100, color_cycle=custom_colors)
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Custom Color List")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Custom Color List")
 
 
 # %%
@@ -139,8 +139,8 @@ print(f"  GRAY: {cns.GRAY}")
 # Use ``get_hexcolors_from_apalette()`` to pick specific colors.
 selected_colors = cns.get_hexcolors_from_apalette([0, 2, 4, 6])
 cns.figure(150, 100, color_cycle=selected_colors)
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Selected Colors from Set1")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Selected Colors from Set1")
 
 
 # %%
@@ -148,18 +148,18 @@ plt.title("Selected Colors from Set1")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``take_legend_out()`` to move legend to the right margin.
 cns.figure(180, 100)
-cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
+ax = cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
-plt.title("Legend Outside")
+ax.set_title("Legend Outside")
 
 
 # %%
 # Legend with custom title
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(180, 100)
-cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
+ax = cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out(title="Gender")
-plt.title("Legend with Title")
+ax.set_title("Legend with Title")
 
 
 # %%
@@ -167,18 +167,18 @@ plt.title("Legend with Title")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``add_panel_label()`` for manual figure composition.
 cns.figure(150, 100)
-cns.boxplot(data=tips, x="day", y="total_bill")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
 cns.add_panel_label("A")
-plt.title("With Panel Label")
+ax.set_title("With Panel Label")
 
 
 # %%
 # Panel label with custom position
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 100)
-cns.boxplot(data=tips, x="day", y="total_bill")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
 cns.add_panel_label("B", offset_x=-0.15, offset_y=1.05)
-plt.title("Custom Label Position")
+ax.set_title("Custom Label Position")
 
 
 # %%
@@ -212,8 +212,8 @@ ax.set_title("Custom Font Sizes")
 # Use ``savefig()`` to save figures in various formats.
 # Supported formats: PDF, PNG, SVG, EPS, JPG
 cns.figure(150, 100)
-cns.boxplot(data=tips, x="day", y="total_bill")
-plt.title("Save Example")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("Save Example")
 
 # Example save commands (commented to avoid creating files):
 # cns.savefig("figure.pdf")   # PDF for publications
@@ -236,5 +236,5 @@ plt.title("Save Example")
 # The default max_width=540 in multipanel matches double column.
 
 cns.figure(252, 150)  # Single column width
-cns.boxplot(data=tips, x="day", y="total_bill")
-plt.title("Single Column Width (89mm)")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("Single Column Width (89mm)")

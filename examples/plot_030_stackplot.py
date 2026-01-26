@@ -12,7 +12,6 @@ proportions between groups.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -28,8 +27,8 @@ tips = sns.load_dataset("tips")
 # Shows proportions that sum to 100% within each bar.
 # Use ``addtip=True`` to display percentage labels.
 cns.figure(120, 100)
-cns.stackplot(data=tips, x="sex", y="day", width=0.4, normalize=True, addtip=True)
-plt.title("Normalized Stacked Bar (with labels)")
+ax = cns.stackplot(data=tips, x="sex", y="day", width=0.4, normalize=True, addtip=True)
+ax.set_title("Normalized Stacked Bar (with labels)")
 
 
 # %%
@@ -37,10 +36,10 @@ plt.title("Normalized Stacked Bar (with labels)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``normalize=False`` to show actual counts instead of proportions.
 cns.figure(120, 100)
-cns.stackplot(
+ax = cns.stackplot(
     data=tips, x="day", y="sex", stack_order=["Female", "Male"], normalize=False
 )
-plt.title("Stacked Bar with Counts")
+ax.set_title("Stacked Bar with Counts")
 
 
 # %%
@@ -49,14 +48,14 @@ plt.title("Stacked Bar with Counts")
 # Use ``pairs`` to test if proportions differ significantly between groups.
 # Fisher's exact test is used for 2x2 contingency tables.
 cns.figure(120, 100)
-cns.stackplot(
+ax = cns.stackplot(
     data=tips,
     x="day",
     y="sex",
     normalize=True,
     pairs=[("Thur", "Fri"), ("Fri", "Sat")],
 )
-plt.title("With Selected Statistical Comparisons")
+ax.set_title("With Selected Statistical Comparisons")
 
 
 # %%
@@ -64,7 +63,7 @@ plt.title("With Selected Statistical Comparisons")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the order of stacked segments with ``stack_order``.
 cns.figure(120, 100)
-cns.stackplot(
+ax = cns.stackplot(
     data=tips,
     x="sex",
     y="day",
@@ -72,7 +71,7 @@ cns.stackplot(
     stack_order=["Sun", "Sat", "Fri", "Thur"],
     pairs=[("Male", "Female")],
 )
-plt.title("Custom Stack Order")
+ax.set_title("Custom Stack Order")
 
 
 # %%
@@ -80,8 +79,8 @@ plt.title("Custom Stack Order")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``pairs="all"`` to test all possible pairs.
 cns.figure(150, 100, "Tableau")
-cns.stackplot(data=tips, x="day", y="sex", normalize=True, pairs="all")
-plt.title("All Pairwise Comparisons")
+ax = cns.stackplot(data=tips, x="day", y="sex", normalize=True, pairs="all")
+ax.set_title("All Pairwise Comparisons")
 
 
 # %%
@@ -89,7 +88,7 @@ plt.title("All Pairwise Comparisons")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``horizontal=True`` for horizontal orientation.
 cns.figure(100, 120)
-cns.stackplot(
+ax = cns.stackplot(
     data=tips,
     x="sex",
     y="day",
@@ -98,7 +97,7 @@ cns.stackplot(
     pairs=[("Thur", "Fri"), ("Fri", "Sat")],
     bar_order=["Fri", "Sat", "Sun", "Thur"],
 )
-plt.title("Horizontal Stacked Bar")
+ax.set_title("Horizontal Stacked Bar")
 
 
 # %%
@@ -106,14 +105,14 @@ plt.title("Horizontal Stacked Bar")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``bar_order`` to specify the order of bars on the axis.
 cns.figure(120, 100)
-cns.stackplot(
+ax = cns.stackplot(
     data=tips,
     x="day",
     y="sex",
     normalize=True,
     bar_order=["Sun", "Sat", "Fri", "Thur"],
 )
-plt.title("Custom Bar Order")
+ax.set_title("Custom Bar Order")
 
 
 # %%
@@ -136,8 +135,8 @@ mp.get_axes("B").set_title("width=0.8 (wide)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes for visual variety.
 cns.figure(120, 100, "Set2")
-cns.stackplot(data=tips, x="day", y="sex", normalize=True)
-plt.title("Set2 Palette")
+ax = cns.stackplot(data=tips, x="day", y="sex", normalize=True)
+ax.set_title("Set2 Palette")
 
 
 # %%
@@ -160,8 +159,8 @@ mp.get_axes("B").set_title("BlueRed")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Stack plots work with multiple categories in the y variable.
 cns.figure(150, 100, "Ecotyper1")
-cns.stackplot(data=tips, x="sex", y="time", normalize=True, addtip=True)
-plt.title("Multiple Stack Categories")
+ax = cns.stackplot(data=tips, x="sex", y="time", normalize=True, addtip=True)
+ax.set_title("Multiple Stack Categories")
 
 
 # %%
@@ -184,7 +183,7 @@ cell_data = pd.DataFrame(
 )
 
 cns.figure(180, 120, "Ecotyper2")
-cns.stackplot(
+ax = cns.stackplot(
     data=cell_data,
     x="sample",
     y="cell_type",
@@ -192,9 +191,9 @@ cns.stackplot(
     pairs=[("Control", "Treatment A"), ("Control", "Treatment B")],
     stack_order=["CD4+ T", "CD8+ T", "B cell", "NK cell", "Monocyte"],
 )
-_ = plt.xticks(rotation=20, ha="right", rotation_mode="anchor")
-plt.title("Cell Type Composition")
-plt.ylabel("Proportion")
+ax.tick_params(axis="x", rotation=40)
+ax.set_title("Cell Type Composition")
+ax.set_ylabel("Proportion")
 
 
 # %%
@@ -202,7 +201,7 @@ plt.ylabel("Proportion")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Combine horizontal orientation with percentage labels.
 cns.figure(120, 100, "Pastel1")
-cns.stackplot(
+ax = cns.stackplot(
     data=tips,
     x="day",
     y="sex",
@@ -211,7 +210,7 @@ cns.stackplot(
     addtip=True,
     width=0.6,
 )
-plt.title("Horizontal with Labels")
+ax.set_title("Horizontal with Labels")
 
 
 # %%

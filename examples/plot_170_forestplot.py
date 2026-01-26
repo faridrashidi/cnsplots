@@ -14,7 +14,6 @@ Cox proportional hazards and logistic regression models.
 # Load packages
 # ~~~~~~~~~~~~~
 import lifelines as ll
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -158,8 +157,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 120, ["black"])
-cns.forestplot(model)
-plt.title("Univariate Cox Regression")
+ax = cns.forestplot(model)
+ax.set_title("Univariate Cox Regression")
 
 
 # %%
@@ -176,8 +175,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 100, ["black"])
-cns.forestplot(model)
-plt.title("Multivariate Cox Regression")
+ax = cns.forestplot(model)
+ax.set_title("Multivariate Cox Regression")
 
 
 # %%
@@ -196,8 +195,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 80, ["black"])
-cns.forestplot(model)
-plt.title("Categorical Covariates")
+ax = cns.forestplot(model)
+ax.set_title("Categorical Covariates")
 
 
 # %%
@@ -217,8 +216,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 100)
-cns.forestplot(model)
-plt.title("Stratified by Hormone Therapy")
+ax = cns.forestplot(model)
+ax.set_title("Stratified by Hormone Therapy")
 
 
 # %%
@@ -238,8 +237,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 100, ["black"])
-cns.forestplot(model)
-plt.title("With Interaction Term")
+ax = cns.forestplot(model)
+ax.set_title("With Interaction Term")
 
 
 # %%
@@ -257,8 +256,8 @@ model = cns.methods.LogisticModel(
 )
 model.fit()
 cns.figure(150, 80, ["black"])
-cns.forestplot(model)
-plt.title("Univariate Logistic Regression")
+ax = cns.forestplot(model)
+ax.set_title("Univariate Logistic Regression")
 
 
 # %%
@@ -277,8 +276,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 80, [cns.BLUE])
-cns.forestplot(model)
-plt.title("Custom Color")
+ax = cns.forestplot(model)
+ax.set_title("Custom Color")
 
 
 # %%

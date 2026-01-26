@@ -26,8 +26,9 @@ tips = sns.load_dataset("tips")
 # ~~~~~~~~~~~~~
 # Simple boxplot showing distribution of total bills across days.
 cns.figure(150, 100)
-cns.boxplot(data=tips, x="day", y="total_bill")
-plt.title("Basic Boxplot")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.tick_params(axis="x", rotation=40)
+ax.set_title("Basic Boxplot")
 
 
 # %%
@@ -35,11 +36,12 @@ plt.title("Basic Boxplot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Customize x-axis tick labels with rotation and conditional coloring.
 cns.figure(150, 100)
-cns.boxplot(data=tips, x="day", y="total_bill")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
 
-_ = plt.xticks(rotation=40, ha="right", rotation_mode="anchor")
+ax.tick_params(axis="x", rotation=40)
+plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
 
-xtick_labels = plt.gca().get_xticklabels()
+xtick_labels = ax.get_xticklabels()
 for index in range(tips["day"].nunique()):
     if xtick_labels[index].get_text() in ["Thur", "Fri"]:
         xtick_labels[index].set_color("red")
@@ -53,14 +55,14 @@ for index in range(tips["day"].nunique()):
 # Use ``pairs="all"`` to perform Mann-Whitney U tests between all groups.
 # The ``addcount=True`` parameter adds sample sizes below each box.
 cns.figure(150, 100)
-cns.boxplot(
+ax = cns.boxplot(
     data=iris,
     x="species",
     y="sepal_width",
     pairs="all",
     addcount=True,
 )
-plt.title("All Pairwise Comparisons with Sample Counts")
+ax.set_title("All Pairwise Comparisons with Sample Counts")
 
 
 # %%
@@ -68,13 +70,13 @@ plt.title("All Pairwise Comparisons with Sample Counts")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test only specific pairs by providing a list of tuples.
 cns.figure(150, 100)
-cns.boxplot(
+ax = cns.boxplot(
     data=iris,
     x="species",
     y="sepal_width",
     pairs=[("setosa", "virginica"), ("versicolor", "virginica")],
 )
-plt.title("Selected Pair Comparisons")
+ax.set_title("Selected Pair Comparisons")
 
 
 # %%
@@ -83,7 +85,7 @@ plt.title("Selected Pair Comparisons")
 # Use ``hue`` parameter to create side-by-side boxes for subgroups.
 # Statistical testing works across hue groups as well.
 cns.figure(180, 100)
-cns.boxplot(
+ax = cns.boxplot(
     data=tips,
     x="day",
     y="total_bill",
@@ -91,7 +93,7 @@ cns.boxplot(
     pairs=[(("Thur", "Male"), ("Fri", "Male"))],
 )
 cns.take_legend_out()
-plt.title("Grouped Boxplot with Cross-Group Comparison")
+ax.set_title("Grouped Boxplot with Cross-Group Comparison")
 
 
 # %%
@@ -100,14 +102,14 @@ plt.title("Grouped Boxplot with Cross-Group Comparison")
 # Create horizontal boxplots by swapping x and y.
 # Use ``order`` to specify the display order of categories.
 cns.figure(100, 150)
-cns.boxplot(
+ax = cns.boxplot(
     data=iris,
     x="sepal_width",
     y="species",
     pairs="all",
     order=["versicolor", "setosa", "virginica"],
 )
-plt.title("Horizontal Boxplot")
+ax.set_title("Horizontal Boxplot")
 
 
 # %%
@@ -115,13 +117,13 @@ plt.title("Horizontal Boxplot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``showoutliers=True`` to display outlier points.
 cns.figure(150, 100)
-cns.boxplot(
+ax = cns.boxplot(
     data=tips,
     x="day",
     y="total_bill",
     showoutliers=True,
 )
-plt.title("Boxplot with Outliers")
+ax.set_title("Boxplot with Outliers")
 
 
 # %%
@@ -145,8 +147,8 @@ mp.get_axes("B").set_title("whis=3.0 (fewer outliers)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``palette`` parameter for custom colors.
 cns.figure(150, 100, "Tableau")
-cns.boxplot(data=tips, x="day", y="total_bill")
-plt.title("Tableau Palette")
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("Tableau Palette")
 
 
 # %%
@@ -155,8 +157,8 @@ plt.title("Tableau Palette")
 # Pass a list of colors to ``palette``.
 custom_colors = [cns.RED, cns.BLUE, cns.GREEN, cns.ORANGE]
 cns.figure(150, 100)
-cns.boxplot(data=tips, x="day", y="total_bill", palette=custom_colors)
-plt.title("Custom Color List")
+ax = cns.boxplot(data=tips, x="day", y="total_bill", palette=custom_colors)
+ax.set_title("Custom Color List")
 
 
 # %%
@@ -171,15 +173,16 @@ iris_melted = iris.melt(
 )
 
 cns.figure(200, 120)
-cns.boxplot(
+ax = cns.boxplot(
     data=iris_melted,
     x="measurement",
     y="value",
     hue="species",
 )
 cns.take_legend_out()
-plt.title("Multi-Variable Comparison")
-_ = plt.xticks(rotation=20, ha="right", rotation_mode="anchor")
+ax.set_title("Multi-Variable Comparison")
+ax.tick_params(axis="x", rotation=20)
+plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
 
 
 # %%
@@ -187,7 +190,7 @@ _ = plt.xticks(rotation=20, ha="right", rotation_mode="anchor")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # When using hue, you can compare all subgroups within a category.
 cns.figure(180, 120)
-cns.boxplot(
+ax = cns.boxplot(
     data=tips,
     x="day",
     y="total_bill",
@@ -198,4 +201,4 @@ cns.boxplot(
     ],
 )
 cns.take_legend_out()
-plt.title("Within-Group Comparisons")
+ax.set_title("Within-Group Comparisons")

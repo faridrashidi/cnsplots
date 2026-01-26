@@ -145,24 +145,24 @@ plot_palettes(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Pass palette name as third argument to ``figure()``.
 cns.figure(150, 100, "Set1")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Set1 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Set1 Palette")
 
 
 # %%
 # Tableau palette
 # ~~~~~~~~~~~~~~~
 cns.figure(150, 100, "Tableau")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Tableau Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Tableau Palette")
 
 
 # %%
 # Bold palette
 # ~~~~~~~~~~~~
 cns.figure(150, 100, "Bold")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Bold Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Bold Palette")
 
 
 # %%
@@ -170,24 +170,24 @@ plt.title("Bold Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get palette colors programmatically.
 cns.figure(150, 100, color_cycle="Ecotyper1")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Ecotyper1 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Ecotyper1 Palette")
 
 
 # %%
 # Ecotyper2 palette
 # ~~~~~~~~~~~~~~~~~
 cns.figure(150, 100, color_cycle="Ecotyper2")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Ecotyper2 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Ecotyper2 Palette")
 
 
 # %%
 # Ecotyper3 palette
 # ~~~~~~~~~~~~~~~~~
 cns.figure(150, 100, color_cycle="Ecotyper3")
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Ecotyper3 Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Ecotyper3 Palette")
 
 
 # %%
@@ -195,8 +195,8 @@ plt.title("Ecotyper3 Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``get_hexcolors_from_apalette()`` to pick specific indices.
 cns.figure(color_cycle=cns.get_hexcolors_from_apalette([0, 2, 4, 6]))
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Selected Colors from Default Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Selected Colors from Default Palette")
 
 
 # %%
@@ -208,8 +208,8 @@ cns.figure(
         [5, 1, 3, 7], palette=palettable.colorbrewer.qualitative.Paired_12.hex_colors
     )
 )
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Selected from Paired Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Selected from Paired Palette")
 
 
 # %%
@@ -217,8 +217,8 @@ plt.title("Selected from Paired Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Access palettable's extensive color library.
 cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors)
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Palettable Set1")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Palettable Set1")
 
 
 # %%
@@ -226,8 +226,8 @@ plt.title("Palettable Set1")
 # ~~~~~~~~~~~~~~~~
 # Reverse color order with slicing.
 cns.figure(color_cycle=palettable.colorbrewer.qualitative.Accent_8.hex_colors[::-1])
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Reversed Accent Palette")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Reversed Accent Palette")
 
 
 # %%
@@ -236,8 +236,8 @@ plt.title("Reversed Accent Palette")
 # Define your own color sequence.
 custom_colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"]
 cns.figure(150, 100, color_cycle=custom_colors)
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Custom Color List")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Custom Color List")
 
 
 # %%
@@ -261,8 +261,8 @@ print(f"  GRAY: {cns.GRAY}")
 # Apply color constants to plots.
 custom_colors = [cns.RED, cns.BLUE, cns.GREEN, cns.ORANGE]
 cns.figure(150, 100, color_cycle=custom_colors)
-cns.barplot(data=tips, x="day", y="total_bill")
-plt.title("Using Color Constants")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Using Color Constants")
 
 
 # %%

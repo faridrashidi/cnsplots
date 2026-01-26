@@ -12,7 +12,6 @@ differentially expressed genes.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -76,14 +75,14 @@ cns.volcanoplot(
 # ~~~~~~~~~~~~~~
 # Show the distribution without annotations.
 cns.figure(200, 200)
-cns.volcanoplot(
+ax = cns.volcanoplot(
     de,
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
     show_list=[],
 )
-plt.title("Volcano Plot")
+ax.set_title("Volcano Plot")
 
 
 # %%
@@ -91,14 +90,14 @@ plt.title("Volcano Plot")
 # ~~~~~~~~~~~~~~~~~~
 # Increase dimensions for presentations.
 cns.figure(250, 250)
-cns.volcanoplot(
+ax = cns.volcanoplot(
     de,
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
     show_list=["NRAS", "USP53", "GMNN", "EPDR1"],
 )
-plt.title("Differential Expression")
+ax.set_title("Differential Expression")
 
 
 # %%
@@ -171,14 +170,14 @@ synthetic_de = pd.DataFrame(
 synthetic_de["-log10p"] = -np.log10(synthetic_de["pvalue"])
 
 cns.figure(200, 200)
-cns.volcanoplot(
+ax = cns.volcanoplot(
     synthetic_de,
     x="log2FC",
     y="-log10p",
     symbol="gene",
     show_list=["Gene_0", "Gene_4800", "Gene_4900"],
 )
-plt.title("Synthetic DE Data")
+ax.set_title("Synthetic DE Data")
 
 
 # %%
@@ -187,14 +186,14 @@ plt.title("Synthetic DE Data")
 # Label genes from a pathway of interest.
 pathway_genes = ["Gene_4800", "Gene_4850", "Gene_4900", "Gene_4950", "Gene_4999"]
 cns.figure(200, 200)
-cns.volcanoplot(
+ax = cns.volcanoplot(
     synthetic_de,
     x="log2FC",
     y="-log10p",
     symbol="gene",
     show_list=pathway_genes,
 )
-plt.title("Pathway Genes Highlighted")
+ax.set_title("Pathway Genes Highlighted")
 
 
 # %%

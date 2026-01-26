@@ -12,7 +12,6 @@ outliers or distribution deviations.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
@@ -37,48 +36,48 @@ cns.qqplot(tips, x="total_bill", dist=stats.t, fit=True, line="45")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test normality assumption.
 cns.figure(150, 150)
-cns.qqplot(tips, x="total_bill", dist=stats.norm, fit=True, line="45")
-plt.title("Normal Q-Q Plot")
+ax = cns.qqplot(tips, x="total_bill", dist=stats.norm, fit=True, line="45")
+ax.set_title("Normal Q-Q Plot")
 
 
 # %%
 # Q-Q plot for tip amounts
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 150)
-cns.qqplot(tips, x="tip", dist=stats.norm, fit=True, line="45")
-plt.title("Tip Amount Q-Q Plot")
+ax = cns.qqplot(tips, x="tip", dist=stats.norm, fit=True, line="45")
+ax.set_title("Tip Amount Q-Q Plot")
 
 
 # %%
 # Q-Q plot for iris sepal length
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 150)
-cns.qqplot(iris, x="sepal_length", dist=stats.norm, fit=True, line="45")
-plt.title("Sepal Length Q-Q Plot")
+ax = cns.qqplot(iris, x="sepal_length", dist=stats.norm, fit=True, line="45")
+ax.set_title("Sepal Length Q-Q Plot")
 
 
 # %%
 # Q-Q plot for iris sepal width
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 150)
-cns.qqplot(iris, x="sepal_width", dist=stats.norm, fit=True, line="45")
-plt.title("Sepal Width Q-Q Plot")
+ax = cns.qqplot(iris, x="sepal_width", dist=stats.norm, fit=True, line="45")
+ax.set_title("Sepal Width Q-Q Plot")
 
 
 # %%
 # Q-Q plot for petal length
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 150)
-cns.qqplot(iris, x="petal_length", dist=stats.norm, fit=True, line="45")
-plt.title("Petal Length Q-Q Plot")
+ax = cns.qqplot(iris, x="petal_length", dist=stats.norm, fit=True, line="45")
+ax.set_title("Petal Length Q-Q Plot")
 
 
 # %%
 # Q-Q plot for petal width
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 150)
-cns.qqplot(iris, x="petal_width", dist=stats.norm, fit=True, line="45")
-plt.title("Petal Width Q-Q Plot")
+ax = cns.qqplot(iris, x="petal_width", dist=stats.norm, fit=True, line="45")
+ax.set_title("Petal Width Q-Q Plot")
 
 
 # %%
@@ -88,8 +87,8 @@ plt.title("Petal Width Q-Q Plot")
 np.random.seed(42)
 uniform_data = pd.DataFrame({"values": np.random.uniform(0, 10, 200)})
 cns.figure(150, 150)
-cns.qqplot(uniform_data, x="values", dist=stats.uniform, fit=True, line="45")
-plt.title("Uniform Q-Q Plot")
+ax = cns.qqplot(uniform_data, x="values", dist=stats.uniform, fit=True, line="45")
+ax.set_title("Uniform Q-Q Plot")
 
 
 # %%
@@ -99,8 +98,8 @@ plt.title("Uniform Q-Q Plot")
 np.random.seed(42)
 exp_data = pd.DataFrame({"values": np.random.exponential(2, 200)})
 cns.figure(150, 150)
-cns.qqplot(exp_data, x="values", dist=stats.expon, fit=True, line="45")
-plt.title("Exponential Q-Q Plot")
+ax = cns.qqplot(exp_data, x="values", dist=stats.expon, fit=True, line="45")
+ax.set_title("Exponential Q-Q Plot")
 
 
 # %%
@@ -110,8 +109,8 @@ plt.title("Exponential Q-Q Plot")
 np.random.seed(42)
 normal_data = pd.DataFrame({"values": np.random.normal(50, 10, 200)})
 cns.figure(150, 150)
-cns.qqplot(normal_data, x="values", dist=stats.norm, fit=True, line="45")
-plt.title("Normal Data Q-Q Plot")
+ax = cns.qqplot(normal_data, x="values", dist=stats.norm, fit=True, line="45")
+ax.set_title("Normal Data Q-Q Plot")
 
 
 # %%
@@ -121,8 +120,8 @@ plt.title("Normal Data Q-Q Plot")
 np.random.seed(42)
 skewed_data = pd.DataFrame({"values": np.random.lognormal(0, 0.5, 200)})
 cns.figure(150, 150)
-cns.qqplot(skewed_data, x="values", dist=stats.norm, fit=True, line="45")
-plt.title("Skewed Data Q-Q Plot")
+ax = cns.qqplot(skewed_data, x="values", dist=stats.norm, fit=True, line="45")
+ax.set_title("Skewed Data Q-Q Plot")
 
 
 # %%
@@ -132,8 +131,8 @@ plt.title("Skewed Data Q-Q Plot")
 np.random.seed(42)
 heavy_tailed = pd.DataFrame({"values": np.random.standard_t(3, 200)})
 cns.figure(150, 150)
-cns.qqplot(heavy_tailed, x="values", dist=stats.norm, fit=True, line="45")
-plt.title("Heavy-Tailed Q-Q Plot")
+ax = cns.qqplot(heavy_tailed, x="values", dist=stats.norm, fit=True, line="45")
+ax.set_title("Heavy-Tailed Q-Q Plot")
 
 
 # %%
@@ -149,8 +148,8 @@ bimodal_data = pd.DataFrame(
     }
 )
 cns.figure(150, 150)
-cns.qqplot(bimodal_data, x="values", dist=stats.norm, fit=True, line="45")
-plt.title("Bimodal Q-Q Plot")
+ax = cns.qqplot(bimodal_data, x="values", dist=stats.norm, fit=True, line="45")
+ax.set_title("Bimodal Q-Q Plot")
 
 
 # %%

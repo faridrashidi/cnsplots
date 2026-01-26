@@ -12,7 +12,6 @@ calculates AUC values and displays them in the legend.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -54,8 +53,8 @@ cns.take_legend_out()
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Display ROC for the best performing model.
 cns.figure(150, 150)
-cns.rocplot(iris, "true_labels", ["model1_prob"])
-plt.title("Best Model ROC")
+ax = cns.rocplot(iris, "true_labels", ["model1_prob"])
+ax.set_title("Best Model ROC")
 
 
 # %%
@@ -63,9 +62,9 @@ plt.title("Best Model ROC")
 # ~~~~~~~~~~~~~~~~~~~~
 # Compare the two best models.
 cns.figure(150, 150)
-cns.rocplot(iris, "true_labels", ["model1_prob", "model2_prob"])
+ax = cns.rocplot(iris, "true_labels", ["model1_prob", "model2_prob"])
+ax.set_title("Top 2 Models")
 cns.take_legend_out()
-plt.title("Top 2 Models")
 
 
 # %%
@@ -73,8 +72,8 @@ plt.title("Top 2 Models")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show that random predictions give AUC = 0.5.
 cns.figure(150, 150)
-cns.rocplot(iris, "true_labels", ["model3_prob"])
-plt.title("Random Classifier")
+ax = cns.rocplot(iris, "true_labels", ["model3_prob"])
+ax.set_title("Random Classifier")
 
 
 # %%
@@ -102,13 +101,13 @@ biomarker_data["marker_C"] = np.clip(
 )
 
 cns.figure(150, 150)
-cns.rocplot(
+ax = cns.rocplot(
     biomarker_data,
     "disease",
     ["marker_A", "marker_B", "marker_C"],
 )
+ax.set_title("Biomarker Comparison")
 cns.take_legend_out()
-plt.title("Biomarker Comparison")
 
 
 # %%
@@ -133,13 +132,13 @@ gene_sig["signature_3"] = np.clip(
 )
 
 cns.figure(150, 150)
-cns.rocplot(
+ax = cns.rocplot(
     gene_sig,
     "responder",
     ["signature_1", "signature_2", "signature_3"],
 )
+ax.set_title("Gene Signatures")
 cns.take_legend_out()
-plt.title("Gene Signatures")
 
 
 # %%
@@ -161,9 +160,9 @@ contrast_data["perfect"] = np.concatenate(
 contrast_data["random"] = np.random.uniform(0, 1, n)
 
 cns.figure(150, 150)
-cns.rocplot(contrast_data, "true", ["perfect", "random"])
+ax = cns.rocplot(contrast_data, "true", ["perfect", "random"])
+ax.set_title("Perfect vs Random")
 cns.take_legend_out()
-plt.title("Perfect vs Random")
 
 
 # %%
@@ -195,13 +194,13 @@ ml_data["nn_pred"] = np.clip(
 )
 
 cns.figure(160, 160)
-cns.rocplot(
+ax = cns.rocplot(
     ml_data,
     "outcome",
     ["rf_pred", "lr_pred", "svm_pred", "nn_pred"],
 )
+ax.set_title("ML Model Comparison")
 cns.take_legend_out()
-plt.title("ML Model Comparison")
 
 
 # %%

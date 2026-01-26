@@ -12,7 +12,6 @@ and before/after analyses.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -102,8 +101,8 @@ treatment_data = pd.DataFrame(
 )
 
 cns.figure(120, 150)
-cns.slopeplot(data=treatment_data, x="patient", y="value", hue="timepoint")
-plt.title("Treatment Response")
+ax = cns.slopeplot(data=treatment_data, x="patient", y="value", hue="timepoint")
+ax.set_title("Treatment Response")
 
 
 # %%
@@ -128,8 +127,8 @@ gene_df = pd.DataFrame(gene_data)
 gene_df_tp53 = gene_df[gene_df["gene"] == "TP53"]
 
 cns.figure(120, 150)
-cns.slopeplot(data=gene_df_tp53, x="sample", y="expression", hue="condition")
-plt.title("TP53 Expression")
+ax = cns.slopeplot(data=gene_df_tp53, x="sample", y="expression", hue="condition")
+ax.set_title("TP53 Expression")
 
 
 # %%
@@ -137,9 +136,9 @@ plt.title("TP53 Expression")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare expression changes for multiple genes.
 cns.figure(150, 150)
-cns.slopeplot(data=gene_df, x="condition", y="expression", hue="gene")
+ax = cns.slopeplot(data=gene_df, x="condition", y="expression", hue="gene")
+ax.set_title("Gene Expression Changes")
 cns.take_legend_out()
-plt.title("Gene Expression Changes")
 
 
 # %%
@@ -165,16 +164,16 @@ for subj in subjects:
 time_df = pd.DataFrame(time_data)
 
 cns.figure(180, 150)
-cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
-plt.title("Time Course")
+ax = cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
+ax.set_title("Time Course")
 
 
 # %%
 # Wider figure for more timepoints
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(220, 150)
-cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
-plt.title("Time Course (Wide)")
+ax = cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
+ax.set_title("Time Course (Wide)")
 
 
 # %%
@@ -198,8 +197,8 @@ paired_data = pd.DataFrame(
 )
 
 cns.figure(120, 150)
-cns.slopeplot(data=paired_data, x="patient", y="expression", hue="tissue")
-plt.title("Tumor vs Normal")
+ax = cns.slopeplot(data=paired_data, x="patient", y="expression", hue="tissue")
+ax.set_title("Tumor vs Normal")
 
 
 # %%
@@ -254,9 +253,9 @@ for site in sites:
 drug_df = pd.DataFrame(drug_data)
 
 cns.figure(150, 150)
-cns.slopeplot(data=drug_df, x="condition", y="value", hue="site")
+ax = cns.slopeplot(data=drug_df, x="condition", y="value", hue="site")
+ax.set_title("Drug Response by Site")
 cns.take_legend_out()
-plt.title("Drug Response by Site")
 
 
 # %%

@@ -12,7 +12,6 @@ trends across groups.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -29,10 +28,10 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Simple scatter plot with fitted regression line.
 cns.figure(150, 150)
-cns.regplot(data=tips, x="tip", y="total_bill")
-plt.title("Basic Regression Plot")
-plt.xlabel("Tip ($)")
-plt.ylabel("Total Bill ($)")
+ax = cns.regplot(data=tips, x="tip", y="total_bill")
+ax.set_title("Basic Regression Plot")
+ax.set_xlabel("Tip ($)")
+ax.set_ylabel("Total Bill ($)")
 
 
 # %%
@@ -40,9 +39,9 @@ plt.ylabel("Total Bill ($)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Fit separate regression lines for each group.
 cns.figure(150, 150)
-cns.regplot(data=tips, x="tip", y="total_bill", hue="sex")
+ax = cns.regplot(data=tips, x="tip", y="total_bill", hue="sex")
 cns.take_legend_out()
-plt.title("Grouped Regression")
+ax.set_title("Grouped Regression")
 
 
 # %%
@@ -50,9 +49,9 @@ plt.title("Grouped Regression")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare trends across multiple categories.
 cns.figure(150, 150, "Tableau")
-cns.regplot(data=tips, x="tip", y="total_bill", hue="day")
+ax = cns.regplot(data=tips, x="tip", y="total_bill", hue="day")
 cns.take_legend_out()
-plt.title("Regression by Day")
+ax.set_title("Regression by Day")
 
 
 # %%
@@ -75,9 +74,9 @@ mp.get_axes("B").set_title("s=10 (large)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use built-in color palettes.
 cns.figure(150, 150, "Set2")
-cns.regplot(data=tips, x="tip", y="total_bill", hue="smoker")
+ax = cns.regplot(data=tips, x="tip", y="total_bill", hue="smoker")
 cns.take_legend_out()
-plt.title("Set2 Palette")
+ax.set_title("Set2 Palette")
 
 
 # %%
@@ -102,10 +101,9 @@ for i, day in enumerate(["Thur", "Fri", "Sat", "Sun"]):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add correlation coefficient and p-value annotation.
 cns.figure(150, 150)
-cns.regplot(data=tips, x="tip", y="total_bill", s=5)
+ax = cns.regplot(data=tips, x="tip", y="total_bill", s=5)
 
 r, p = stats.pearsonr(tips["tip"], tips["total_bill"])
-ax = plt.gca()
 ax.text(
     0.05,
     0.95,
@@ -116,7 +114,7 @@ ax.text(
     bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
 )
 
-plt.title("With Correlation Stats")
+ax.set_title("With Correlation Stats")
 
 
 # %%
@@ -124,9 +122,9 @@ plt.title("With Correlation Stats")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Apply to a different dataset.
 cns.figure(150, 150)
-cns.regplot(data=iris, x="petal_length", y="petal_width", hue="species")
+ax = cns.regplot(data=iris, x="petal_length", y="petal_width", hue="species")
 cns.take_legend_out()
-plt.title("Petal Dimensions by Species")
+ax.set_title("Petal Dimensions by Species")
 
 
 # %%
@@ -134,11 +132,10 @@ plt.title("Petal Dimensions by Species")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show the regression equation on the plot.
 cns.figure(150, 150)
-cns.regplot(data=tips, x="tip", y="total_bill", s=5)
+ax = cns.regplot(data=tips, x="tip", y="total_bill", s=5)
 
 # Calculate regression parameters
 slope, intercept, r, p, se = stats.linregress(tips["tip"], tips["total_bill"])
-ax = plt.gca()
 ax.text(
     0.05,
     0.95,
@@ -149,9 +146,9 @@ ax.text(
     bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
 )
 
-plt.title("With Regression Equation")
-plt.xlabel("Tip ($)")
-plt.ylabel("Total Bill ($)")
+ax.set_title("With Regression Equation")
+ax.set_xlabel("Tip ($)")
+ax.set_ylabel("Total Bill ($)")
 
 
 # %%
@@ -159,9 +156,9 @@ plt.ylabel("Total Bill ($)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare linear trends between groups.
 cns.figure(150, 150, "BlueRed")
-cns.regplot(data=tips, x="total_bill", y="tip", hue="smoker", s=5)
+ax = cns.regplot(data=tips, x="total_bill", y="tip", hue="smoker", s=5)
 cns.take_legend_out()
-plt.title("Tipping by Smoking Status")
+ax.set_title("Tipping by Smoking Status")
 
 
 # %%
@@ -238,7 +235,7 @@ mp.get_axes("C").set_title(f"None (r={r:.2f})")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The shaded region shows the 95% confidence interval.
 cns.figure(150, 150)
-cns.regplot(data=tips, x="total_bill", y="tip", s=5)
-plt.title("Regression with 95% CI")
-plt.xlabel("Total Bill ($)")
-plt.ylabel("Tip ($)")
+ax = cns.regplot(data=tips, x="total_bill", y="tip", s=5)
+ax.set_title("Regression with 95% CI")
+ax.set_xlabel("Total Bill ($)")
+ax.set_ylabel("Tip ($)")

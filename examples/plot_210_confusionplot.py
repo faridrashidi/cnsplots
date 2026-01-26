@@ -12,7 +12,6 @@ test can be used to assess statistical significance.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -40,8 +39,8 @@ data2 = pd.DataFrame(
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Simple 2x2 confusion matrix.
 cns.figure(80, 80)
-cns.confusionplot(data=data1, x="x", y="y")
-plt.title("Basic Confusion Matrix")
+ax = cns.confusionplot(data=data1, x="x", y="y")
+ax.set_title("Basic Confusion Matrix")
 
 
 # %%
@@ -49,7 +48,7 @@ plt.title("Basic Confusion Matrix")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add p-value from Fisher's exact test.
 cns.figure(100, 80)
-cns.confusionplot(
+ax = cns.confusionplot(
     data=data2,
     x="truth",
     y="pred",
@@ -60,7 +59,7 @@ cns.confusionplot(
     x_order=[0, 1],
     y_order=["cat", "dog"],
 )
-plt.title("With P-value")
+ax.set_title("With P-value")
 
 
 # %%
@@ -68,7 +67,7 @@ plt.title("With P-value")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show counts only.
 cns.figure(80, 80)
-cns.confusionplot(
+ax = cns.confusionplot(
     data=data2,
     x="truth",
     y="pred",
@@ -76,7 +75,7 @@ cns.confusionplot(
     x_order=[0, 1],
     y_order=["cat", "dog"],
 )
-plt.title("Without P-value")
+ax.set_title("Without P-value")
 
 
 # %%
@@ -107,7 +106,7 @@ multi_class_data = pd.DataFrame({"truth": true_labels, "prediction": pred_labels
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize 3x3 classification results.
 cns.figure(100, 100)
-cns.confusionplot(
+ax = cns.confusionplot(
     data=multi_class_data,
     x="truth",
     y="prediction",
@@ -115,9 +114,9 @@ cns.confusionplot(
     x_order=["Class A", "Class B", "Class C"],
     y_order=["Class A", "Class B", "Class C"],
 )
-plt.xlabel("True Label")
-plt.ylabel("Predicted Label")
-plt.title("Multi-Class Confusion")
+ax.set_xlabel("True Label")
+ax.set_ylabel("Predicted Label")
+ax.set_title("Multi-Class Confusion")
 
 
 # %%
@@ -138,7 +137,7 @@ diagnosis_data.loc[flip_mask, "predicted"] = diagnosis_data.loc[
 ].apply(lambda x: "Negative" if x == "Positive" else "Positive")
 
 cns.figure(90, 90)
-cns.confusionplot(
+ax = cns.confusionplot(
     data=diagnosis_data,
     x="actual",
     y="predicted",
@@ -149,9 +148,9 @@ cns.confusionplot(
     x_order=["Negative", "Positive"],
     y_order=["Negative", "Positive"],
 )
-plt.xlabel("Actual Diagnosis")
-plt.ylabel("Model Prediction")
-plt.title("Diagnostic Model")
+ax.set_xlabel("Actual Diagnosis")
+ax.set_ylabel("Model Prediction")
+ax.set_title("Diagnostic Model")
 
 
 # %%
@@ -167,7 +166,7 @@ treatment_data = pd.DataFrame(
 )
 
 cns.figure(90, 90)
-cns.confusionplot(
+ax = cns.confusionplot(
     data=treatment_data,
     x="treatment",
     y="response",
@@ -178,9 +177,9 @@ cns.confusionplot(
     x_order=["Drug A", "Drug B"],
     y_order=["Non-responder", "Responder"],
 )
-plt.xlabel("Treatment Group")
-plt.ylabel("Outcome")
-plt.title("Treatment vs Response")
+ax.set_xlabel("Treatment Group")
+ax.set_ylabel("Outcome")
+ax.set_title("Treatment vs Response")
 
 
 # %%

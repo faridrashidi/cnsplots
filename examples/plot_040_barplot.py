@@ -12,7 +12,6 @@ testing, error bars, and publication-ready styling.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -147,8 +146,7 @@ tips_centered["bill_deviation"] = (
     tips_centered["total_bill"] - tips_centered["total_bill"].mean()
 )
 cns.figure(100, 150, "Tableau")
-cns.barplot(data=tips_centered, x="day", y="bill_deviation")
-ax = plt.gca()
+ax = cns.barplot(data=tips_centered, x="day", y="bill_deviation")
 ax.axhline(0, color="k", clip_on=False, lw=0.8)
 ax.spines["bottom"].set_visible(False)
 
@@ -158,8 +156,7 @@ ax.spines["bottom"].set_visible(False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Horizontal layout for diverging bars.
 cns.figure(150, 100, "Tableau")
-cns.barplot(data=tips_centered, y="day", x="bill_deviation")
-ax = plt.gca()
+ax = cns.barplot(data=tips_centered, y="day", x="bill_deviation")
 ax.axvline(0, color="k", clip_on=False, lw=0.8)
 ax.spines["left"].set_visible(False)
 
@@ -259,7 +256,6 @@ colors = [
 ]
 cns.figure(150, 100, color_cycle=colors)
 cns.barplot(data=baseline, x="treatment", y="pct_change", errorbar=None)
-ax = plt.gca()
 ax.axhline(0, color="k", lw=0.8)
 ax.set_ylabel("% Change from Baseline")
 
@@ -284,15 +280,15 @@ gene_data = pd.DataFrame(
 )
 
 cns.figure(180, 100)
-cns.barplot(
+ax = cns.barplot(
     data=gene_data,
     x="gene",
     y="expression",
     hue="condition",
     pairs=[(("TP53", "Control"), ("TP53", "Treatment"))],
 )
+ax.set_ylabel("Expression (log2 TPM)")
 cns.take_legend_out()
-plt.ylabel("Expression (log2 TPM)")
 
 
 # %%

@@ -11,7 +11,6 @@ small-to-medium datasets where you want to show the actual data distribution.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 import cnsplots as cns
@@ -25,8 +24,8 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~
 # Shows individual points with median line (default).
 cns.figure(120, 100)
-cns.stripplot(data=tips, x="day", y="total_bill", size=2, rasterized=True)
-plt.title("Basic Strip Plot with Median")
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, rasterized=True)
+ax.set_title("Basic Strip Plot with Median")
 
 
 # %%
@@ -34,8 +33,8 @@ plt.title("Basic Strip Plot with Median")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Swap x and y for horizontal orientation.
 cns.figure(100, 120)
-cns.stripplot(data=tips, x="total_bill", y="day", size=2)
-plt.title("Horizontal Strip Plot")
+ax = cns.stripplot(data=tips, x="total_bill", y="day", size=2)
+ax.set_title("Horizontal Strip Plot")
 
 
 # %%
@@ -43,8 +42,8 @@ plt.title("Horizontal Strip Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``showmedian=False`` for points only.
 cns.figure(120, 100)
-cns.stripplot(data=tips, x="day", y="total_bill", size=2, showmedian=False)
-plt.title("Strip Plot without Median")
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, showmedian=False)
+ax.set_title("Strip Plot without Median")
 
 
 # %%
@@ -52,10 +51,10 @@ plt.title("Strip Plot without Median")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``showmeans=True`` to show mean instead of median.
 cns.figure(120, 100)
-cns.stripplot(
+ax = cns.stripplot(
     data=tips, x="day", y="total_bill", size=2, showmedian=False, showmeans=True
 )
-plt.title("Strip Plot with Mean Marker")
+ax.set_title("Strip Plot with Mean Marker")
 
 
 # %%
@@ -63,10 +62,10 @@ plt.title("Strip Plot with Mean Marker")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show both summary statistics.
 cns.figure(120, 100)
-cns.stripplot(
+ax = cns.stripplot(
     data=tips, x="day", y="total_bill", size=2, showmedian=True, showmeans=True
 )
-plt.title("Strip Plot with Median and Mean")
+ax.set_title("Strip Plot with Median and Mean")
 
 
 # %%
@@ -74,8 +73,8 @@ plt.title("Strip Plot with Median and Mean")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``addcount=True`` to display sample sizes.
 cns.figure(120, 100)
-cns.stripplot(data=tips, x="day", y="total_bill", size=2, addcount=True)
-plt.title("Strip Plot with Sample Counts")
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, addcount=True)
+ax.set_title("Strip Plot with Sample Counts")
 
 
 # %%
@@ -83,9 +82,9 @@ plt.title("Strip Plot with Sample Counts")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``hue`` for color-coded subgroups.
 cns.figure(180, 100)
-cns.stripplot(data=tips, x="day", y="total_bill", size=2, hue="sex")
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, hue="sex")
 cns.take_legend_out()
-plt.title("Grouped Strip Plot")
+ax.set_title("Grouped Strip Plot")
 
 
 # %%
@@ -93,9 +92,9 @@ plt.title("Grouped Strip Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Points are automatically dodged when using hue.
 cns.figure(180, 100)
-cns.stripplot(data=tips, x="day", y="total_bill", size=3, hue="smoker", dodge=True)
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=3, hue="smoker", dodge=True)
 cns.take_legend_out()
-plt.title("Strip Plot with Dodging")
+ax.set_title("Strip Plot with Dodging")
 
 
 # %%
@@ -118,8 +117,8 @@ mp.get_axes("B").set_title("size=5 (large)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use built-in color palettes.
 cns.figure(120, 100, "Tableau")
-cns.stripplot(data=tips, x="day", y="total_bill", size=2)
-plt.title("Tableau Palette")
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2)
+ax.set_title("Tableau Palette")
 
 
 # %%
@@ -157,14 +156,14 @@ mp.get_axes("B").set_title("alpha=0.3 (transparent)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Specify category order with the ``order`` parameter.
 cns.figure(120, 100)
-cns.stripplot(
+ax = cns.stripplot(
     data=tips,
     x="day",
     y="total_bill",
     size=2,
     order=["Sun", "Sat", "Fri", "Thur"],
 )
-plt.title("Custom Category Order")
+ax.set_title("Custom Category Order")
 
 
 # %%
@@ -179,7 +178,7 @@ iris_melted = iris.melt(
 )
 
 cns.figure(200, 120)
-cns.stripplot(
+ax = cns.stripplot(
     data=iris_melted,
     x="measurement",
     y="value",
@@ -189,8 +188,8 @@ cns.stripplot(
     alpha=0.7,
 )
 cns.take_legend_out()
-_ = plt.xticks(rotation=20, ha="right", rotation_mode="anchor")
-plt.title("Multi-Variable Comparison")
+ax.tick_params(axis="x", rotation=40)
+ax.set_title("Multi-Variable Comparison")
 
 
 # %%
@@ -198,7 +197,7 @@ plt.title("Multi-Variable Comparison")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Comprehensive example showing multiple features.
 cns.figure(150, 120, "Set2")
-cns.stripplot(
+ax = cns.stripplot(
     data=tips,
     x="day",
     y="total_bill",
@@ -209,5 +208,5 @@ cns.stripplot(
     order=["Thur", "Fri", "Sat", "Sun"],
     alpha=0.6,
 )
-plt.title("Strip Plot with All Options")
-plt.ylabel("Total Bill ($)")
+ax.set_title("Strip Plot with All Options")
+ax.set_ylabel("Total Bill ($)")

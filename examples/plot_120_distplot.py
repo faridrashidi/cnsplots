@@ -11,7 +11,6 @@ by overlaying kernel density estimates on histograms.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -27,8 +26,8 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Histogram with KDE overlay.
 cns.figure(150, 100)
-cns.distplot(data=tips, x="total_bill")
-plt.title("Basic Distribution Plot")
+ax = cns.distplot(data=tips, x="total_bill")
+ax.set_title("Basic Distribution Plot")
 
 
 # %%
@@ -36,9 +35,9 @@ plt.title("Basic Distribution Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across groups using ``hue``.
 cns.figure(150, 100)
-cns.distplot(data=tips, x="total_bill", hue="sex")
+ax = cns.distplot(data=tips, x="total_bill", hue="sex")
+ax.set_title("Distribution by Sex")
 cns.take_legend_out()
-plt.title("Distribution by Sex")
 
 
 # %%
@@ -46,9 +45,9 @@ plt.title("Distribution by Sex")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare more than two groups.
 cns.figure(150, 100, "Tableau")
-cns.distplot(data=tips, x="total_bill", hue="day")
+ax = cns.distplot(data=tips, x="total_bill", hue="day")
+ax.set_title("Distribution by Day")
 cns.take_legend_out()
-plt.title("Distribution by Day")
 
 
 # %%
@@ -56,9 +55,9 @@ plt.title("Distribution by Day")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare species distributions.
 cns.figure(150, 100)
-cns.distplot(data=iris, x="sepal_length", hue="species")
+ax = cns.distplot(data=iris, x="sepal_length", hue="species")
+ax.set_title("Sepal Length Distribution")
 cns.take_legend_out()
-plt.title("Sepal Length Distribution")
 
 
 # %%
@@ -100,9 +99,9 @@ mp.get_axes("B").set_title("Bold Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare lunch vs dinner distributions.
 cns.figure(150, 100)
-cns.distplot(data=tips, x="tip", hue="time")
+ax = cns.distplot(data=tips, x="tip", hue="time")
+ax.set_title("Tip Distribution by Time")
 cns.take_legend_out()
-plt.title("Tip Distribution by Time")
 
 
 # %%
@@ -123,6 +122,6 @@ synthetic = pd.DataFrame(
 )
 
 cns.figure(180, 100)
-cns.distplot(data=synthetic, x="value", hue="group")
+ax = cns.distplot(data=synthetic, x="value", hue="group")
+ax.set_title("Comparing Two Distributions")
 cns.take_legend_out()
-plt.title("Comparing Two Distributions")

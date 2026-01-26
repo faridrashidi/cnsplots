@@ -12,7 +12,6 @@ visualization. The center can be used for additional information.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -28,8 +27,8 @@ tips = sns.load_dataset("tips")
 # ~~~~~~~~~~~~~~~~~
 # Show species distribution with center hole.
 cns.figure(100, 100)
-cns.donutplot(iris, "species")
-plt.title("Species Distribution")
+ax = cns.donutplot(iris, "species")
+ax.set_title("Species Distribution")
 
 
 # %%
@@ -37,8 +36,8 @@ plt.title("Species Distribution")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize distribution by day.
 cns.figure(100, 100)
-cns.donutplot(tips, "day")
-plt.title("Meals by Day")
+ax = cns.donutplot(tips, "day")
+ax.set_title("Meals by Day")
 
 
 # %%
@@ -46,8 +45,8 @@ plt.title("Meals by Day")
 # ~~~~~~~~~~~~~~~~~~
 # Two-category donut chart.
 cns.figure(100, 100)
-cns.donutplot(tips, "sex")
-plt.title("Customers by Sex")
+ax = cns.donutplot(tips, "sex")
+ax.set_title("Customers by Sex")
 
 
 # %%
@@ -55,16 +54,16 @@ plt.title("Customers by Sex")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the order of categories.
 cns.figure(100, 100)
-cns.donutplot(tips, "day", hue_order=["Thur", "Fri", "Sat", "Sun"])
-plt.title("Custom Order")
+ax = cns.donutplot(tips, "day", hue_order=["Thur", "Fri", "Sat", "Sun"])
+ax.set_title("Custom Order")
 
 
 # %%
 # Donut chart for smoker status
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(100, 100)
-cns.donutplot(tips, "smoker")
-plt.title("Smoker vs Non-Smoker")
+ax = cns.donutplot(tips, "smoker")
+ax.set_title("Smoker vs Non-Smoker")
 
 
 # %%
@@ -72,16 +71,16 @@ plt.title("Smoker vs Non-Smoker")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes.
 cns.figure(100, 100, "Tableau")
-cns.donutplot(tips, "day")
-plt.title("Tableau Palette")
+ax = cns.donutplot(tips, "day")
+ax.set_title("Tableau Palette")
 
 
 # %%
 # Donut chart with Set2 palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(100, 100, "Set2")
-cns.donutplot(iris, "species")
-plt.title("Set2 Palette")
+ax = cns.donutplot(iris, "species")
+ax.set_title("Set2 Palette")
 
 
 # %%
@@ -115,8 +114,8 @@ cell_data = pd.DataFrame(
 )
 
 cns.figure(100, 100, "Ecotyper2")
-cns.donutplot(cell_data, "cell_type")
-plt.title("Cell Type Composition")
+ax = cns.donutplot(cell_data, "cell_type")
+ax.set_title("Cell Type Composition")
 
 
 # %%
@@ -134,8 +133,8 @@ response_data = pd.DataFrame(
 )
 
 cns.figure(100, 100, "Bold")
-cns.donutplot(response_data, "response")
-plt.title("Treatment Response")
+ax = cns.donutplot(response_data, "response")
+ax.set_title("Treatment Response")
 
 
 # %%
@@ -147,8 +146,8 @@ mutation_data = pd.DataFrame(
 )
 
 cns.figure(100, 100, "BlueRed")
-cns.donutplot(mutation_data, "status")
-plt.title("TP53 Mutation Status")
+ax = cns.donutplot(mutation_data, "status")
+ax.set_title("TP53 Mutation Status")
 
 
 # %%

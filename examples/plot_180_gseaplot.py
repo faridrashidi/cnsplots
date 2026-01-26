@@ -12,7 +12,6 @@ integrates with the gseapy library for running prerank analysis.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -63,8 +62,8 @@ cns.gseaplot(gsea_res, y="Clean_Term", top_term=30, size=1.5)
 # Use KEGG database for pathway analysis.
 gsea_kegg = cns.methods.prerank(de, "KEGG_2021_Human", "symbol", "rank")
 cns.figure(250, 100)
-cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=15, size=1.8)
-plt.title("KEGG Pathways")
+ax = cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=15, size=1.8)
+ax.set_title("KEGG Pathways")
 
 
 # %%
@@ -73,8 +72,8 @@ plt.title("KEGG Pathways")
 # Use Reactome database for biological pathways.
 gsea_reactome = cns.methods.prerank(de, "Reactome_2022", "symbol", "rank")
 cns.figure(280, 120)
-cns.gseaplot(gsea_reactome, y="Clean_Term", top_term=15, size=1.6)
-plt.title("Reactome Pathways")
+ax = cns.gseaplot(gsea_reactome, y="Clean_Term", top_term=15, size=1.6)
+ax.set_title("Reactome Pathways")
 
 
 # %%
@@ -83,8 +82,8 @@ plt.title("Reactome Pathways")
 # Enrichment analysis for molecular functions.
 gsea_mf = cns.methods.prerank(de, "GO_Molecular_Function_2021", "symbol", "rank")
 cns.figure(250, 100)
-cns.gseaplot(gsea_mf, y="Clean_Term", top_term=12, size=1.8)
-plt.title("GO Molecular Function")
+ax = cns.gseaplot(gsea_mf, y="Clean_Term", top_term=12, size=1.8)
+ax.set_title("GO Molecular Function")
 
 
 # %%
@@ -93,8 +92,8 @@ plt.title("GO Molecular Function")
 # Enrichment analysis for cellular locations.
 gsea_cc = cns.methods.prerank(de, "GO_Cellular_Component_2021", "symbol", "rank")
 cns.figure(250, 100)
-cns.gseaplot(gsea_cc, y="Clean_Term", top_term=12, size=1.8)
-plt.title("GO Cellular Component")
+ax = cns.gseaplot(gsea_cc, y="Clean_Term", top_term=12, size=1.8)
+ax.set_title("GO Cellular Component")
 
 
 # %%
@@ -103,8 +102,8 @@ plt.title("GO Cellular Component")
 # Use WikiPathways database.
 gsea_wiki = cns.methods.prerank(de, "WikiPathway_2023_Human", "symbol", "rank")
 cns.figure(280, 100)
-cns.gseaplot(gsea_wiki, y="Clean_Term", top_term=12, size=1.8)
-plt.title("WikiPathways")
+ax = cns.gseaplot(gsea_wiki, y="Clean_Term", top_term=12, size=1.8)
+ax.set_title("WikiPathways")
 
 
 # %%
@@ -112,8 +111,8 @@ plt.title("WikiPathways")
 # ~~~~~~~~~~~~~~~
 # Increase dot size for emphasis.
 cns.figure(250, 100)
-cns.gseaplot(gsea_res, y="Clean_Term", top_term=10, size=2.5)
-plt.title("Larger Dots")
+ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=10, size=2.5)
+ax.set_title("Larger Dots")
 
 
 # %%
@@ -121,8 +120,8 @@ plt.title("Larger Dots")
 # ~~~~~~~~~~~~~~~~
 # Decrease dot size for denser plots.
 cns.figure(280, 150)
-cns.gseaplot(gsea_res, y="Clean_Term", top_term=25, size=1.2)
-plt.title("Smaller Dots")
+ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=25, size=1.2)
+ax.set_title("Smaller Dots")
 
 
 # %%

@@ -12,7 +12,6 @@ a small number of categories (2-6).
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -28,8 +27,8 @@ tips = sns.load_dataset("tips")
 # ~~~~~~~~~~~~~~~
 # Show species distribution in the iris dataset.
 cns.figure(100, 100)
-cns.pieplot(iris, "species")
-plt.title("Species Distribution")
+ax = cns.pieplot(iris, "species")
+ax.set_title("Species Distribution")
 
 
 # %%
@@ -37,8 +36,8 @@ plt.title("Species Distribution")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize distribution by day.
 cns.figure(100, 100)
-cns.pieplot(tips, "day")
-plt.title("Meals by Day")
+ax = cns.pieplot(tips, "day")
+ax.set_title("Meals by Day")
 
 
 # %%
@@ -46,8 +45,8 @@ plt.title("Meals by Day")
 # ~~~~~~~~~~~~~~~~
 # Two-category pie chart.
 cns.figure(100, 100)
-cns.pieplot(tips, "sex")
-plt.title("Customers by Sex")
+ax = cns.pieplot(tips, "sex")
+ax.set_title("Customers by Sex")
 
 
 # %%
@@ -55,16 +54,16 @@ plt.title("Customers by Sex")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the order of categories.
 cns.figure(100, 100)
-cns.pieplot(tips, "day", hue_order=["Thur", "Fri", "Sat", "Sun"])
-plt.title("Custom Order")
+ax = cns.pieplot(tips, "day", hue_order=["Thur", "Fri", "Sat", "Sun"])
+ax.set_title("Custom Order")
 
 
 # %%
 # Pie chart for smoker status
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(100, 100)
-cns.pieplot(tips, "smoker")
-plt.title("Smoker vs Non-Smoker")
+ax = cns.pieplot(tips, "smoker")
+ax.set_title("Smoker vs Non-Smoker")
 
 
 # %%
@@ -72,16 +71,16 @@ plt.title("Smoker vs Non-Smoker")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes.
 cns.figure(100, 100, "Tableau")
-cns.pieplot(tips, "day")
-plt.title("Tableau Palette")
+ax = cns.pieplot(tips, "day")
+ax.set_title("Tableau Palette")
 
 
 # %%
 # Pie chart with Set2 palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(100, 100, "Set2")
-cns.pieplot(iris, "species")
-plt.title("Set2 Palette")
+ax = cns.pieplot(iris, "species")
+ax.set_title("Set2 Palette")
 
 
 # %%
@@ -115,8 +114,8 @@ cell_data = pd.DataFrame(
 )
 
 cns.figure(100, 100, "Ecotyper1")
-cns.pieplot(cell_data, "cell_type")
-plt.title("Cell Type Composition")
+ax = cns.pieplot(cell_data, "cell_type")
+ax.set_title("Cell Type Composition")
 
 
 # %%
@@ -139,5 +138,5 @@ response_data = pd.DataFrame(
 )
 
 cns.figure(100, 100, "Bold")
-cns.pieplot(response_data, "response")
-plt.title("Treatment Response")
+ax = cns.pieplot(response_data, "response")
+ax.set_title("Treatment Response")

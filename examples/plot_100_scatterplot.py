@@ -12,7 +12,6 @@ flexible customization options.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -29,10 +28,10 @@ tips = sns.load_dataset("tips")
 # ~~~~~~~~~~~~~~~~~~
 # Simple scatter plot showing relationship between two variables.
 cns.figure(120, 120)
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7)
-plt.title("Basic Scatter Plot")
-plt.xlabel("Sepal Length (cm)")
-plt.ylabel("Sepal Width (cm)")
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7)
+ax.set_title("Basic Scatter Plot")
+ax.set_xlabel("Sepal Length (cm)")
+ax.set_ylabel("Sepal Width (cm)")
 
 
 # %%
@@ -40,10 +39,10 @@ plt.ylabel("Sepal Width (cm)")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Color points by a categorical variable using ``hue``.
 cns.figure(120, 120)
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
-plt.title("Scatter Plot with Groups")
-plt.xlabel("Sepal Length (cm)")
-plt.ylabel("Sepal Width (cm)")
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
+ax.set_title("Scatter Plot with Groups")
+ax.set_xlabel("Sepal Length (cm)")
+ax.set_ylabel("Sepal Width (cm)")
 cns.take_legend_out()
 
 
@@ -52,9 +51,9 @@ cns.take_legend_out()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Keep the legend inside the plot area.
 cns.figure(150, 120)
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
-plt.legend(loc="upper left")
-plt.title("Legend Inside Plot")
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
+ax.legend(loc="upper left")
+ax.set_title("Legend Inside Plot")
 
 
 # %%
@@ -96,9 +95,9 @@ mp.get_axes("B").set_title("alpha=0.4 (transparent)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes.
 cns.figure(120, 120, "Tableau")
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=10, hue="species")
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=10, hue="species")
+ax.set_title("Tableau Palette")
 cns.take_legend_out()
-plt.title("Tableau Palette")
 
 
 # %%
@@ -111,7 +110,7 @@ custom_palette = {
     "virginica": cns.BLUE,
 }
 cns.figure(120, 120)
-cns.scatterplot(
+ax = cns.scatterplot(
     data=iris,
     x="sepal_length",
     y="sepal_width",
@@ -119,8 +118,8 @@ cns.scatterplot(
     hue="species",
     palette=custom_palette,
 )
+ax.set_title("Custom Color Palette")
 cns.take_legend_out()
-plt.title("Custom Color Palette")
 
 
 # %%
@@ -128,7 +127,7 @@ plt.title("Custom Color Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different marker styles with ``style``.
 cns.figure(150, 120)
-cns.scatterplot(
+ax = cns.scatterplot(
     data=iris,
     x="sepal_length",
     y="sepal_width",
@@ -136,8 +135,8 @@ cns.scatterplot(
     hue="species",
     style="species",
 )
+ax.set_title("Different Markers by Group")
 cns.take_legend_out()
-plt.title("Different Markers by Group")
 
 
 # %%
@@ -145,7 +144,7 @@ plt.title("Different Markers by Group")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Map a variable to point size using ``size``.
 cns.figure(150, 120)
-cns.scatterplot(
+ax = cns.scatterplot(
     data=tips,
     x="total_bill",
     y="tip",
@@ -153,8 +152,8 @@ cns.scatterplot(
     size="size",
     sizes=(20, 200),
 )
+ax.set_title("Size Encoding")
 cns.take_legend_out()
-plt.title("Size Encoding")
 
 
 # %%
@@ -162,14 +161,11 @@ plt.title("Size Encoding")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add horizontal and vertical reference lines.
 cns.figure(120, 120)
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
-
-ax = plt.gca()
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
 ax.axhline(y=iris["sepal_width"].mean(), color="gray", linestyle="--", linewidth=0.8)
 ax.axvline(x=iris["sepal_length"].mean(), color="gray", linestyle="--", linewidth=0.8)
-
+ax.set_title("With Reference Lines")
 cns.take_legend_out()
-plt.title("With Reference Lines")
 
 
 # %%
@@ -177,9 +173,8 @@ plt.title("With Reference Lines")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add annotations to different regions.
 cns.figure(140, 120)
-cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
+ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
 
-ax = plt.gca()
 mean_x = iris["sepal_length"].mean()
 mean_y = iris["sepal_width"].mean()
 ax.axhline(y=mean_y, color="gray", linestyle="--", linewidth=0.5)
@@ -191,8 +186,8 @@ ax.text(5.0, 4.2, "Q2", fontsize=8, ha="center", color="gray")
 ax.text(5.0, 2.2, "Q3", fontsize=8, ha="center", color="gray")
 ax.text(7.5, 2.2, "Q4", fontsize=8, ha="center", color="gray")
 
+ax.set_title("Quadrant Analysis")
 cns.take_legend_out()
-plt.title("Quadrant Analysis")
 
 
 # %%
@@ -227,7 +222,7 @@ large_data = pd.DataFrame(
 )
 
 cns.figure(120, 120)
-cns.scatterplot(
+ax = cns.scatterplot(
     data=large_data,
     x="x",
     y="y",
@@ -236,8 +231,8 @@ cns.scatterplot(
     alpha=0.5,
     rasterized=True,
 )
+ax.set_title("Large Dataset (Rasterized)")
 cns.take_legend_out()
-plt.title("Large Dataset (Rasterized)")
 
 
 # %%
@@ -245,10 +240,9 @@ plt.title("Large Dataset (Rasterized)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add correlation coefficient as annotation.
 cns.figure(120, 120)
-cns.scatterplot(data=tips, x="total_bill", y="tip", s=10, alpha=0.6)
+ax = cns.scatterplot(data=tips, x="total_bill", y="tip", s=10, alpha=0.6)
 
 r, p = stats.pearsonr(tips["total_bill"], tips["tip"])
-ax = plt.gca()
 ax.text(
     0.05,
     0.95,
@@ -258,6 +252,6 @@ ax.text(
     verticalalignment="top",
 )
 
-plt.title("With Correlation Stats")
-plt.xlabel("Total Bill ($)")
-plt.ylabel("Tip ($)")
+ax.set_title("With Correlation Stats")
+ax.set_xlabel("Total Bill ($)")
+ax.set_ylabel("Tip ($)")

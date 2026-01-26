@@ -12,7 +12,6 @@ relationships between categorical variables.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -34,8 +33,8 @@ data = pd.DataFrame(
 # ~~~~~~~~~~~~~~~~~~~~
 # Show flows from categories A, B, C to X, Y, Z.
 cns.figure(100, 80)
-cns.sankeyplot(data=data, x="x", y="y")
-plt.title("Basic Sankey")
+ax = cns.sankeyplot(data=data, x="x", y="y")
+ax.set_title("Basic Sankey")
 
 
 # %%
@@ -56,8 +55,8 @@ treatment_data = pd.DataFrame(
 )
 
 cns.figure(120, 100)
-cns.sankeyplot(data=treatment_data, x="treatment", y="outcome")
-plt.title("Treatment to Outcome")
+ax = cns.sankeyplot(data=treatment_data, x="treatment", y="outcome")
+ax.set_title("Treatment to Outcome")
 
 
 # %%
@@ -78,8 +77,8 @@ stage_data = pd.DataFrame(
 )
 
 cns.figure(140, 100)
-cns.sankeyplot(data=stage_data, x="baseline", y="followup")
-plt.title("Disease Stage Progression")
+ax = cns.sankeyplot(data=stage_data, x="baseline", y="followup")
+ax.set_title("Disease Stage Progression")
 
 
 # %%
@@ -98,8 +97,8 @@ cell_transition = pd.DataFrame(
 )
 
 cns.figure(120, 100)
-cns.sankeyplot(data=cell_transition, x="initial", y="final")
-plt.title("Cell Differentiation")
+ax = cns.sankeyplot(data=cell_transition, x="initial", y="final")
+ax.set_title("Cell Differentiation")
 
 
 # %%
@@ -118,8 +117,8 @@ cluster_comparison = pd.DataFrame(
 )
 
 cns.figure(140, 100)
-cns.sankeyplot(data=cluster_comparison, x="method_A", y="method_B")
-plt.title("Clustering Comparison")
+ax = cns.sankeyplot(data=cluster_comparison, x="method_A", y="method_B")
+ax.set_title("Clustering Comparison")
 
 
 # %%
@@ -136,8 +135,8 @@ response_flow = pd.DataFrame(
 )
 
 cns.figure(120, 100)
-cns.sankeyplot(data=response_flow, x="week_0", y="week_12")
-plt.title("Response at Week 0 to Week 12")
+ax = cns.sankeyplot(data=response_flow, x="week_0", y="week_12")
+ax.set_title("Response at Week 0 to Week 12")
 
 
 # %%
@@ -152,8 +151,8 @@ binary_data = pd.DataFrame(
 )
 
 cns.figure(100, 80)
-cns.sankeyplot(data=binary_data, x="before", y="after")
-plt.title("Treatment Success")
+ax = cns.sankeyplot(data=binary_data, x="before", y="after")
+ax.set_title("Treatment Success")
 
 
 # %%
@@ -168,5 +167,5 @@ biomarker_data = pd.DataFrame(
 )
 
 cns.figure(120, 90)
-cns.sankeyplot(data=biomarker_data, x="biomarker", y="phenotype")
-plt.title("Biomarker to Phenotype")
+ax = cns.sankeyplot(data=biomarker_data, x="biomarker", y="phenotype")
+ax.set_title("Biomarker to Phenotype")
