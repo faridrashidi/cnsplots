@@ -2,11 +2,18 @@
 histplot
 --------
 
-create histplot
+Create histograms for visualizing data distributions.
+
+Histograms bin continuous data and display frequencies, providing
+a direct view of the underlying distribution shape.
 """
 
 # %%
-# load data
+# Load data
+# ~~~~~~~~~
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
 
 import cnsplots as cns
@@ -16,12 +23,208 @@ tips = sns.load_dataset("tips")
 
 
 # %%
-# plot histplot using :func:`cnsplots.histplot`
-cns.figure(150, 150)
-cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot")
+# Basic histogram
+# ~~~~~~~~~~~~~~~
+# Simple histogram of a single variable.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill")
+plt.title("Basic Histogram")
 
 
 # %%
-# plot histplot using :func:`cnsplots.histplot`
+# Histogram with custom bins
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Control the number of bins.
+mp = cns.multipanel((1, 3), max_width=420, hgap=30)
+
+mp.panel("A", 80, 100)
+cns.histplot(data=tips, x="total_bill", bins=10)
+mp.get_axes("A").set_title("10 bins")
+
+mp.panel("B", 80, 100)
+cns.histplot(data=tips, x="total_bill", bins=20)
+mp.get_axes("B").set_title("20 bins")
+
+mp.panel("C", 80, 100)
+cns.histplot(data=tips, x="total_bill", bins=30)
+mp.get_axes("C").set_title("30 bins")
+
+
+# %%
+# Histogram with KDE overlay
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Add kernel density estimate with ``kde=True``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", kde=True)
+plt.title("Histogram with KDE")
+
+
+# %%
+# Grouped histogram with hue
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Compare distributions across groups.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", hue="sex")
+cns.take_legend_out()
+plt.title("Histogram by Sex")
+
+
+# %%
+# Stacked histogram
+# ~~~~~~~~~~~~~~~~~
+# Stack bars for grouped data with ``multiple="stack"``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", hue="sex", multiple="stack")
+cns.take_legend_out()
+plt.title("Stacked Histogram")
+
+
+# %%
+# Dodged histogram
+# ~~~~~~~~~~~~~~~~
+# Side-by-side bars with ``multiple="dodge"``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", hue="sex", multiple="dodge")
+cns.take_legend_out()
+plt.title("Dodged Histogram")
+
+
+# %%
+# Layered histogram
+# ~~~~~~~~~~~~~~~~~
+# Overlapping transparent bars with ``multiple="layer"``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", hue="sex", multiple="layer", alpha=0.5)
+cns.take_legend_out()
+plt.title("Layered Histogram")
+
+
+# %%
+# Histogram with step style
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Show outline only with ``element="step"``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", element="step")
+plt.title("Step Histogram")
+
+
+# %%
+# Histogram with step and fill
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Filled step histogram for cleaner look.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", hue="sex", element="step", fill=True, alpha=0.5)
+cns.take_legend_out()
+plt.title("Filled Step Histogram")
+
+
+# %%
+# Histogram with density normalization
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Normalize to show probability density with ``stat="density"``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", stat="density")
+plt.title("Density Histogram")
+plt.ylabel("Density")
+
+
+# %%
+# Histogram with probability normalization
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Show proportion with ``stat="probability"``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="total_bill", stat="probability")
+plt.title("Probability Histogram")
+plt.ylabel("Probability")
+
+
+# %%
+# 2D histogram (heatmap)
+# ~~~~~~~~~~~~~~~~~~~~~~
+# Visualize joint distribution of two variables.
+cns.figure(150, 150)
+cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot")
+plt.title("2D Histogram (gnuplot)")
+
+
+# %%
+# 2D histogram with parula colormap
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use cnsplots parula colormap.
 cns.figure(150, 150)
 cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="parula")
+plt.title("2D Histogram (parula)")
+
+
+# %%
+# 2D histogram with different colormaps
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Compare colormap options.
+mp = cns.multipanel((1, 2), max_width=400, hgap=50)
+
+mp.panel("A", 120, 140)
+cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="hot")
+mp.get_axes("A").set_title("hot colormap")
+
+mp.panel("B", 120, 140)
+cns.histplot(
+    data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="BuRd_custom"
+)
+mp.get_axes("B").set_title("BuRd_custom colormap")
+
+
+# %%
+# Histogram with custom palette
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use built-in color palettes.
+cns.figure(150, 100, "Tableau")
+cns.histplot(data=tips, x="total_bill", hue="day")
+cns.take_legend_out()
+plt.title("Tableau Palette")
+
+
+# %%
+# Histogram comparison across species
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Compare distributions across multiple groups.
+cns.figure(200, 100)
+cns.histplot(data=iris, x="sepal_length", hue="species", multiple="layer", alpha=0.5)
+cns.take_legend_out()
+plt.title("Sepal Length Distribution by Species")
+
+
+# %%
+# Horizontal histogram
+# ~~~~~~~~~~~~~~~~~~~~
+# Swap x and y for horizontal orientation.
+cns.figure(100, 150)
+cns.histplot(data=tips, y="total_bill", bins=15)
+plt.title("Horizontal Histogram")
+
+
+# %%
+# Histogram with discrete data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# For discrete/categorical counts, use ``discrete=True``.
+cns.figure(150, 100)
+cns.histplot(data=tips, x="size", discrete=True)
+plt.title("Discrete Histogram")
+plt.xlabel("Party Size")
+
+
+# %%
+# Log-scale histogram
+# ~~~~~~~~~~~~~~~~~~~
+# Use log scale for skewed distributions.
+np.random.seed(42)
+log_data = pd.DataFrame({"value": np.random.lognormal(3, 1, 1000)})
+
+mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+
+mp.panel("A", 80, 120)
+cns.histplot(data=log_data, x="value", bins=30)
+mp.get_axes("A").set_title("Linear Scale")
+
+mp.panel("B", 80, 120)
+cns.histplot(data=log_data, x="value", bins=30, log_scale=True)
+mp.get_axes("B").set_title("Log Scale")

@@ -2,11 +2,17 @@
 palettes
 --------
 
-plot palettes
+Explore and customize color palettes in cnsplots.
+
+cnsplots provides a comprehensive collection of color palettes optimized
+for scientific visualization, including qualitative, sequential, and
+diverging palettes. This example demonstrates how to visualize palettes,
+select specific colors, and apply custom color schemes.
 """
 
 # %%
-# load packages
+# Load packages
+# ~~~~~~~~~~~~~
 import matplotlib.pyplot as plt
 import numpy as np
 import palettable
@@ -14,13 +20,19 @@ import seaborn as sns
 
 import cnsplots as cns
 
+tips = sns.load_dataset("tips")
+iris = sns.load_dataset("iris")
+
+
 # %%
-# plot palettes
+# Visualize all available palettes
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Display all built-in palettes as color gradients.
 gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))
 
 
-def plot_palettes(cmap_list):
+def plot_palettes(cmap_list, title=""):
     cns.figure(1500, 600)
     fig = plt.gcf()
     nrows = len(cmap_list)
@@ -37,6 +49,8 @@ def plot_palettes(cmap_list):
             transform=ax.transAxes,
         )
         ax.set_axis_off()
+    if title:
+        fig.suptitle(title, fontsize=36, y=1.02)
 
 
 cns.setup_matplotlib()
@@ -72,22 +86,270 @@ plot_palettes(
 
 
 # %%
-# change color palette
+# Qualitative palettes for categorical data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Best for distinguishing discrete categories.
+cns.setup_matplotlib()
+plot_palettes(
+    [
+        "Set1",
+        "Set2",
+        "Tableau",
+        "Bold",
+        "Paired",
+        "Dark2",
+    ]
+)
 
-tips = sns.load_dataset("tips")
 
-cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors)
+# %%
+# Sequential palettes for continuous data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Best for representing ordered values or magnitudes.
+cns.setup_matplotlib()
+plot_palettes(
+    [
+        "parula",
+        "gnuplot",
+        "hot",
+        "WhYlOrRd_custom",
+        "YlGnBu_custom",
+    ]
+)
+
+
+# %%
+# Diverging palettes for centered data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Best for data with a meaningful midpoint (e.g., z-scores).
+cns.setup_matplotlib()
+plot_palettes(
+    [
+        "BuRd_custom",
+        "OrBu_custom",
+        "BlueRed",
+    ]
+)
+
+
+# %%
+# Using palettes with figure()
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Pass palette name as third argument to ``figure()``.
+cns.figure(150, 100, "Set1")
 cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Set1 Palette")
 
-cns.figure(color_cycle=palettable.colorbrewer.qualitative.Accent_8.hex_colors[::-1])
+
+# %%
+# Tableau palette
+# ~~~~~~~~~~~~~~~
+cns.figure(150, 100, "Tableau")
 cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Tableau Palette")
 
+
+# %%
+# Bold palette
+# ~~~~~~~~~~~~
+cns.figure(150, 100, "Bold")
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Bold Palette")
+
+
+# %%
+# Using palettes() function
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get palette colors programmatically.
+cns.figure(150, 100, color_cycle="Ecotyper1")
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Ecotyper1 Palette")
+
+
+# %%
+# Ecotyper2 palette
+# ~~~~~~~~~~~~~~~~~
+cns.figure(150, 100, color_cycle="Ecotyper2")
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Ecotyper2 Palette")
+
+
+# %%
+# Ecotyper3 palette
+# ~~~~~~~~~~~~~~~~~
+cns.figure(150, 100, color_cycle="Ecotyper3")
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Ecotyper3 Palette")
+
+
+# %%
+# Selecting specific colors from palette
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use ``get_hexcolors_from_apalette()`` to pick specific indices.
 cns.figure(color_cycle=cns.get_hexcolors_from_apalette([0, 2, 4, 6]))
 cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Selected Colors from Default Palette")
 
+
+# %%
+# Select from a specific palette
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Choose colors from any palettable palette.
 cns.figure(
     color_cycle=cns.get_hexcolors_from_apalette(
         [5, 1, 3, 7], palette=palettable.colorbrewer.qualitative.Paired_12.hex_colors
     )
 )
 cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Selected from Paired Palette")
+
+
+# %%
+# Using palettable directly
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Access palettable's extensive color library.
+cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors)
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Palettable Set1")
+
+
+# %%
+# Reversed palette
+# ~~~~~~~~~~~~~~~~
+# Reverse color order with slicing.
+cns.figure(color_cycle=palettable.colorbrewer.qualitative.Accent_8.hex_colors[::-1])
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Reversed Accent Palette")
+
+
+# %%
+# Custom color list
+# ~~~~~~~~~~~~~~~~~
+# Define your own color sequence.
+custom_colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"]
+cns.figure(150, 100, color_cycle=custom_colors)
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Custom Color List")
+
+
+# %%
+# Color constants
+# ~~~~~~~~~~~~~~~
+# cnsplots provides named color constants.
+print("Available color constants:")
+print(f"  RED: {cns.RED}")
+print(f"  BLUE: {cns.BLUE}")
+print(f"  GREEN: {cns.GREEN}")
+print(f"  ORANGE: {cns.ORANGE}")
+print(f"  PURPLE: {cns.PURPLE}")
+print(f"  YELLOW: {cns.YELLOW}")
+print(f"  PINK: {cns.PINK}")
+print(f"  GRAY: {cns.GRAY}")
+
+
+# %%
+# Using color constants
+# ~~~~~~~~~~~~~~~~~~~~~
+# Apply color constants to plots.
+custom_colors = [cns.RED, cns.BLUE, cns.GREEN, cns.ORANGE]
+cns.figure(150, 100, color_cycle=custom_colors)
+cns.barplot(data=tips, x="day", y="total_bill")
+plt.title("Using Color Constants")
+
+
+# %%
+# Comparing palettes side by side
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use multipanel to compare different palettes.
+mp = cns.multipanel((2, 2), max_width=400, hgap=40, vgap=40)
+
+mp.panel("A", 80, 120, color_cycle="Set1")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("A").set_title("Set1")
+
+mp.panel("B", 80, 120, color_cycle="Tableau")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("B").set_title("Tableau")
+
+mp.panel("C", 80, 120, color_cycle="Bold")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("C").set_title("Bold")
+
+mp.panel("D", 80, 120, color_cycle="Set2")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("D").set_title("Set2")
+
+
+# %%
+# Palettes for hue grouping
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Different palettes affect grouped plots.
+mp = cns.multipanel((1, 3), max_width=540, hgap=35)
+
+mp.panel("A", 100, 150, color_cycle="Set1")
+cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
+mp.get_axes("A").legend().remove()
+mp.get_axes("A").set_title("Set1")
+
+mp.panel("B", 100, 150, color_cycle="Tableau")
+cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
+mp.get_axes("B").legend().remove()
+mp.get_axes("B").set_title("Tableau")
+
+mp.panel("C", 100, 150, color_cycle="Bold")
+cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
+cns.take_legend_out()
+mp.get_axes("C").set_title("Bold")
+
+
+# %%
+# Palette for scatter plots
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Colors distinguish groups in scatter plots.
+mp = cns.multipanel((1, 3), max_width=540, hgap=35)
+
+mp.panel("A", 120, 140, color_cycle="Set1")
+cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
+mp.get_axes("A").legend().remove()
+mp.get_axes("A").set_title("Set1")
+
+mp.panel("B", 120, 140, color_cycle="Tableau")
+cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
+mp.get_axes("B").legend().remove()
+mp.get_axes("B").set_title("Tableau")
+
+mp.panel("C", 120, 140, color_cycle="Dark2")
+cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
+cns.take_legend_out()
+mp.get_axes("C").set_title("Dark2")
+
+
+# %%
+# Ecotyper palettes for biological data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Specialized palettes for cell type visualization.
+mp = cns.multipanel((2, 3), max_width=500, hgap=35, vgap=35)
+
+mp.panel("A", 80, 100, color_cycle="Ecotyper1")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("A").set_title("Ecotyper1")
+
+mp.panel("B", 80, 100, color_cycle="Ecotyper2")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("B").set_title("Ecotyper2")
+
+mp.panel("C", 80, 100, color_cycle="Ecotyper3")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("C").set_title("Ecotyper3")
+
+mp.panel("D", 80, 100, color_cycle="Ecotyper4")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("D").set_title("Ecotyper4")
+
+mp.panel("E", 80, 100, color_cycle="Ecotyper5")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("E").set_title("Ecotyper5")
+
+mp.panel("F", 80, 100, color_cycle="Ecotyper6")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("F").set_title("Ecotyper6")
