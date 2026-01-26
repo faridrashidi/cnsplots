@@ -5,13 +5,7 @@ description = "A comprehensive plotting library for bioinformatics and data visu
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
 requires-python = ">=3.8,<4.0"
-keywords = [
-    "plotting",
-    "visualization",
-    "bioinformatics",
-    "heatmap",
-    "survival-analysis",
-]
+keywords = ["plotting", "visualization", "bioinformatics"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -51,7 +45,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "bumpversion",
+    "bump-my-version",
     "cmprsk",
     "fastcluster",
     "pre-commit",
@@ -70,10 +64,10 @@ doc = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/cnsplots"
+Homepage = "https://github.com/faridrashidi/cnsplots"
 Documentation = "https://cnsplots.readthedocs.io"
-Repository = "https://github.com/your-username/cnsplots"
-Issues = "https://github.com/your-username/cnsplots/issues"
+Repository = "https://github.com/faridrashidi/cnsplots"
+Issues = "https://github.com/faridrashidi/cnsplots/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -93,17 +87,24 @@ known-first-party = ["cnsplots"]
 [tool.ruff.format]
 docstring-code-format = true
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-v --tb=short"
+[tool.rstcheck]
+report_level = "info"
+ignore_messages = '( No directive entry for.*|Hyperlink target.*|Unknown target name:.*|No (directive|role) entry for "(auto)?(class|method|property|function|func|mod|module)" in module "docutils\.parsers\.rst\.languages\.en"\.)'
 
-[tool.coverage.run]
-source = ["src/cnsplots"]
-branch = true
+[tool.bumpversion]
+current_version = "0.0.2"
+commit = true
+message = "chore(release): 🔖 Bump version {current_version} -> {new_version}"
+tag = true
+parse = '(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)'
+serialize = ["{major}.{minor}.{patch}"]
 
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if TYPE_CHECKING:",
-    "raise NotImplementedError",
-]
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "src/cnsplots/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
