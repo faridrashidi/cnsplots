@@ -65,7 +65,7 @@ ax.set_title("Violin Plot without Box")
 # Violin plot with custom width
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust violin body width with the ``width`` parameter.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.violinplot(data=tips, x="day", y="total_bill", width=0.4)
@@ -113,7 +113,7 @@ ax.set_title("Split Violin Plot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The ``inner`` parameter controls what's shown inside the violin.
 # Options: "box" (default), "quart", "point", "stick", None
-mp = cns.multipanel((1, 3), max_width=450, hgap=35)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 80, 110)
 cns.violinplot(data=tips, x="day", y="total_bill", inner="quart", add_box=False)

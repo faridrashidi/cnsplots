@@ -53,7 +53,7 @@ axes[0].set_title("Petal Length by Species")
 # Ridge plot comparing multiple variables
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side comparison.
-mp = cns.multipanel((1, 2), max_width=400, hgap=50)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 100, 150)
 cns.ridgeplot(data=iris, x="sepal_length", y="species")

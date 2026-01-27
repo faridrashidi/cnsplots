@@ -64,7 +64,7 @@ cns.take_legend_out()
 # Side-by-side distribution comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different variables.
-mp = cns.multipanel((1, 2), max_width=400, hgap=40)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 140)
 cns.distplot(data=iris, x="sepal_length", hue="species")
@@ -81,7 +81,7 @@ mp.get_axes("B").set_title("Petal Length")
 # Distribution plot with different palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Showcase color palette options.
-mp = cns.multipanel((1, 2), max_width=400, hgap=40)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 140, color_cycle="Set2")
 cns.distplot(data=tips, x="total_bill", hue="sex")

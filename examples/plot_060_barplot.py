@@ -182,7 +182,7 @@ cns.barplot(data=iris, x="species", y="sepal_length", addtip=True)
 # Multiple metrics comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different measurements using multipanel.
-mp = cns.multipanel((2, 2), max_width=400, hgap=40, vgap=40)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 120)
 cns.barplot(data=iris, x="species", y="sepal_length")
@@ -205,7 +205,7 @@ mp.get_axes("D").set_title("Petal Width")
 # Error bar comparison
 # ~~~~~~~~~~~~~~~~~~~~
 # Compare different error bar types side by side.
-mp = cns.multipanel((1, 3), max_width=480, hgap=35)
+mp = cns.multipanel(max_width=480)
 
 mp.panel("A", 100, 130)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
@@ -224,7 +224,7 @@ mp.get_axes("C").set_title("95% CI")
 # Grouped analysis by time
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare groups across different time periods.
-mp = cns.multipanel((1, 2), max_width=400, hgap=40)
+mp = cns.multipanel(max_width=400)
 
 lunch = tips[tips["time"] == "Lunch"]
 dinner = tips[tips["time"] == "Dinner"]
@@ -296,7 +296,7 @@ cns.take_legend_out()
 # Palette comparison with bars
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Different palettes for the same data.
-mp = cns.multipanel((2, 2), max_width=400, hgap=40, vgap=40)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 120, color_cycle="Set1")
 cns.barplot(data=tips, x="day", y="total_bill")

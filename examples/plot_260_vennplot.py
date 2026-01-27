@@ -132,7 +132,7 @@ plt.title("Pathway Gene Overlap")
 # Side-by-side Venn comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different analyses.
-mp = cns.multipanel((1, 2), max_width=280, hgap=30)
+mp = cns.multipanel(max_width=280)
 
 mp.panel("A", 100, 100)
 setA = set(range(1, 51))

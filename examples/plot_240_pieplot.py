@@ -87,7 +87,7 @@ ax.set_title("Set2 Palette")
 # Comparing pie charts side-by-side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare composition across conditions.
-mp = cns.multipanel((1, 2), max_width=270, hgap=70)
+mp = cns.multipanel(max_width=270)
 
 mp.panel("A", 100, 100)
 cns.pieplot(tips[tips["sex"] == "Male"], "day")

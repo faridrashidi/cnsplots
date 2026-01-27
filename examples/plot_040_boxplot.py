@@ -131,7 +131,7 @@ ax.set_title("Boxplot with Outliers")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The ``whis`` parameter controls whisker extent.
 # Default is 1.5 (1.5×IQR). Use larger values for fewer outliers.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.boxplot(data=tips, x="day", y="total_bill", whis=1.0, showoutliers=True)

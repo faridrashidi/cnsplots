@@ -128,7 +128,7 @@ ax.set_title("Smaller Dots")
 # Comparing pathway databases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side comparison of different databases.
-mp = cns.multipanel((1, 2), max_width=640, hgap=200)
+mp = cns.multipanel(max_width=640)
 
 mp.panel("A", 100, 220, offset_x=-1.1)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=10, size=1.5)
@@ -143,7 +143,7 @@ mp.get_axes("B").set_title("KEGG")
 # GO categories comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different Gene Ontology categories.
-mp = cns.multipanel((1, 3), max_width=940, hgap=230)
+mp = cns.multipanel(max_width=940)
 
 mp.panel("A", 100, 180, offset_x=-1.1)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1.4)

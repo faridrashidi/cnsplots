@@ -205,7 +205,7 @@ ax.set_title("Tumor vs Normal")
 # Comparing conditions with multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side slope plots for different analyses.
-mp = cns.multipanel((1, 2), max_width=350, hgap=50)
+mp = cns.multipanel(max_width=350)
 
 # Early stage
 early = paired_data[paired_data["stage"] == "Early"]
@@ -261,7 +261,7 @@ cns.take_legend_out()
 # %%
 # Slopeplot with different palettes comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mp = cns.multipanel((1, 3), max_width=450, hgap=40)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 120, 100, color_cycle="Set1")
 cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")

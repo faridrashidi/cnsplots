@@ -236,7 +236,7 @@ resp_data["model_B"] = np.clip(
     resp_data["event"] * 0.55 + np.random.normal(0.28, 0.22, n), 0, 1
 )
 
-mp = cns.multipanel((1, 2), max_width=350, hgap=50)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 130, 130)
 cns.rocplot(os_data, "event", ["model_A", "model_B"])
@@ -276,7 +276,7 @@ val_data["pred"] = np.clip(
     val_data["outcome"] * 0.6 + np.random.normal(0.25, 0.2, n), 0, 1
 )
 
-mp = cns.multipanel((1, 2), max_width=350, hgap=50)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 130, 130)
 cns.rocplot(train_data, "outcome", ["pred"])
@@ -316,7 +316,7 @@ multiclass["class2_prob"] = np.clip(
     multiclass["class2_label"] * 0.5 + np.random.normal(0.3, 0.25, n), 0, 1
 )
 
-mp = cns.multipanel((1, 3), max_width=480, hgap=35)
+mp = cns.multipanel(max_width=480)
 
 mp.panel("A", 110, 110)
 cns.rocplot(multiclass, "class0_label", ["class0_prob"])

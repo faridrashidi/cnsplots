@@ -76,7 +76,7 @@ Create complex layouts with automatic panel labeling (A, B, C...):
 ```python
 import cnsplots as cns
 
-mp = cns.multipanel((2, 2), max_width=540)
+mp = cns.multipanel(max_width=540)
 
 # Panel A
 mp.panel("A", height=150, width=150)
@@ -187,7 +187,7 @@ plt.savefig("volcano.svg")
 
 ```python
 # Create a 2x2 grid with custom panel sizes
-mp = cns.multipanel((2, 2), max_width=540, hgap=40, vgap=40)
+mp = cns.multipanel(max_width=540)
 
 # Panel A: Boxplot (150x150 pixels)
 mp.panel("A", height=150, width=150)

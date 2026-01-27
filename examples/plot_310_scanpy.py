@@ -214,7 +214,7 @@ sc.pl.scatter(blobs, x="sox10", y="ngfr", color="blobs", size=10, ax=ax, show=Fa
 # Comparing expression with multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side UMAP plots for different genes.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 cns.setup_scanpy()
 
 mp.panel("A", 120, 120)
@@ -236,7 +236,7 @@ ax_b.set_title("AXL")
 # Four gene comparison
 # ~~~~~~~~~~~~~~~~~~~~
 # Grid of UMAP plots for multiple markers.
-mp = cns.multipanel((2, 2), max_width=350, hgap=35, vgap=35)
+mp = cns.multipanel(max_width=350)
 cns.setup_scanpy()
 
 genes = ["mitf", "axl", "sox10", "ngfr"]
@@ -255,7 +255,7 @@ for gene, label in zip(genes, labels):
 # Cluster vs expression multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show cluster assignments alongside gene expression.
-mp = cns.multipanel((1, 3), max_width=480, hgap=30)
+mp = cns.multipanel(max_width=480)
 cns.setup_scanpy()
 
 mp.panel("A", 110, 110)

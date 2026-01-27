@@ -165,7 +165,7 @@ ax.set_title("Dose-Response Curve")
 # Comparing multiple conditions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side line plot comparison.
-mp = cns.multipanel((1, 2), max_width=400, hgap=40)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 140)
 cns.lineplot(

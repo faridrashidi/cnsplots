@@ -102,7 +102,7 @@ cns.take_legend_out()
 # KDE with different bandwidth
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust smoothness with ``bw_adjust``.
-mp = cns.multipanel((1, 3), max_width=450, hgap=30)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 80, 110)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=0.3)
@@ -121,7 +121,7 @@ mp.get_axes("C").set_title("bw_adjust=2.0 (smooth)")
 # KDE with line styles
 # ~~~~~~~~~~~~~~~~~~~~
 # Customize line width and style.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.kdeplot(data=tips, x="total_bill", linewidth=0.5)
@@ -146,7 +146,7 @@ cns.take_legend_out()
 # Multiple KDE comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across different variables.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.kdeplot(data=iris, x="sepal_length", hue="species")

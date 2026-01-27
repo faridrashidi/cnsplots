@@ -165,7 +165,7 @@ plt.title("Cumulative Incidence - Three Arms")
 # Side-by-side survival comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare survival vs cumulative incidence.
-mp = cns.multipanel((1, 2), max_width=450, hgap=50)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 120, 160)
 cns.survivalplot(

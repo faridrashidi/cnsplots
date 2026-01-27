@@ -284,7 +284,7 @@ ax.set_title("Custom Color")
 # Comparing Cox models side by side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use multipanel to compare different model specifications.
-mp = cns.multipanel((1, 2), max_width=400, hgap=60)
+mp = cns.multipanel(max_width=400)
 
 model1 = cns.methods.CoxModel(
     data=gbsg2,
@@ -315,7 +315,7 @@ mp.get_axes("B").set_title("Multivariate")
 # Subgroup analysis visualization
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare effects across patient subgroups.
-mp = cns.multipanel((1, 2), max_width=400, hgap=60)
+mp = cns.multipanel(max_width=400)
 
 pre_meno = gbsg2[gbsg2["menostat"] == "Pre"]
 post_meno = gbsg2[gbsg2["menostat"] == "Post"]

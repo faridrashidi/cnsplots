@@ -157,7 +157,7 @@ ax.set_title("Bimodal Q-Q Plot")
 # Comparing distributions with multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side Q-Q plots for different variables.
-mp = cns.multipanel((2, 2), max_width=350, hgap=40, vgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 100, 100)
 cns.qqplot(iris, x="sepal_length", dist=stats.norm, fit=True, line="45")
@@ -180,7 +180,7 @@ mp.get_axes("D").set_title("Petal Width")
 # Comparing by species
 # ~~~~~~~~~~~~~~~~~~~~
 # Q-Q plots for each species subset.
-mp = cns.multipanel((1, 3), max_width=450, hgap=35)
+mp = cns.multipanel(max_width=450)
 
 setosa = iris[iris["species"] == "setosa"]
 versicolor = iris[iris["species"] == "versicolor"]
@@ -211,7 +211,7 @@ gene_expr = pd.DataFrame(
     }
 )
 
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 120, 120)
 cns.qqplot(gene_expr, x="raw_counts", dist=stats.norm, fit=True, line="45")

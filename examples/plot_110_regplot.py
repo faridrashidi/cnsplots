@@ -58,7 +58,7 @@ ax.set_title("Regression by Day")
 # Regression plot with varying point sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust point size with the ``s`` parameter.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 100, 120)
 cns.regplot(data=tips, x="tip", y="total_bill", s=2)
@@ -83,7 +83,7 @@ ax.set_title("Set2 Palette")
 # Multiple regression comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare regression trends across different subsets.
-mp = cns.multipanel((1, 4), max_width=500, hgap=30)
+mp = cns.multipanel(max_width=500)
 
 for i, day in enumerate(["Thur", "Fri", "Sat", "Sun"]):
     label = chr(65 + i)  # A, B, C, D
@@ -165,7 +165,7 @@ ax.set_title("Tipping by Smoking Status")
 # Side-by-side regression comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare regressions in separate panels.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 male_tips = tips[tips["sex"] == "Male"]
 female_tips = tips[tips["sex"] == "Female"]
@@ -212,7 +212,7 @@ no_corr = pd.DataFrame(
     }
 )
 
-mp = cns.multipanel((1, 3), max_width=450, hgap=35)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 90, 110)
 cns.regplot(data=strong_pos, x="x", y="y", s=5)

@@ -291,7 +291,7 @@ for gene in genes:
 control_df = pd.DataFrame(control_data)
 treatment_df = pd.DataFrame(treatment_data)
 
-mp = cns.multipanel((1, 2), max_width=400, hgap=50)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 120)
 cns.dotplot(
@@ -322,7 +322,7 @@ mp.get_axes("B").set_title("Treatment")
 # Dotplot with different max sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different dot size scales.
-mp = cns.multipanel((1, 3), max_width=480, hgap=40)
+mp = cns.multipanel(max_width=480)
 
 mp.panel("A", 80, 100)
 cns.dotplot(

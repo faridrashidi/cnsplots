@@ -101,7 +101,7 @@ ax.set_title("Strip Plot with Dodging")
 # Strip plot with varying point sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust point size for visibility.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.stripplot(data=iris, x="species", y="sepal_width", size=1)
@@ -125,7 +125,7 @@ ax.set_title("Tableau Palette")
 # Strip plot with custom jitter
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the amount of horizontal jitter with the ``jitter`` parameter.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.stripplot(data=tips, x="day", y="total_bill", size=2, jitter=0.1)
@@ -140,7 +140,7 @@ mp.get_axes("B").set_title("jitter=0.4 (spread)")
 # Strip plot with custom alpha
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust transparency for overlapping points.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.stripplot(data=tips, x="day", y="total_bill", size=4, alpha=1.0)

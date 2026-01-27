@@ -34,7 +34,7 @@ ax.set_title("Basic Histogram")
 # Histogram with custom bins
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the number of bins.
-mp = cns.multipanel((1, 3), max_width=420, hgap=30)
+mp = cns.multipanel(max_width=420)
 
 mp.panel("A", 80, 100)
 cns.histplot(data=tips, x="total_bill", bins=10)
@@ -164,7 +164,7 @@ ax.set_title("2D Histogram (parula)")
 # 2D histogram with different colormaps
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare colormap options.
-mp = cns.multipanel((1, 2), max_width=400, hgap=50)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 120, 140)
 cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="hot")
@@ -225,7 +225,7 @@ ax.set_xlabel("Party Size")
 np.random.seed(42)
 log_data = pd.DataFrame({"value": np.random.lognormal(3, 1, 1000)})
 
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 80, 120)
 cns.histplot(data=log_data, x="value", bins=30)

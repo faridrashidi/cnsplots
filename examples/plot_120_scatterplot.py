@@ -60,7 +60,7 @@ ax.set_title("Legend Inside Plot")
 # Scatter plot with varying point sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust point size with the ``s`` parameter.
-mp = cns.multipanel((1, 3), max_width=400, hgap=30)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 90, 100)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=3)
@@ -79,7 +79,7 @@ mp.get_axes("C").set_title("s=25 (large)")
 # Scatter plot with transparency
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``alpha`` for overlapping points.
-mp = cns.multipanel((1, 2), max_width=350, hgap=40)
+mp = cns.multipanel(max_width=350)
 
 mp.panel("A", 100, 120)
 cns.scatterplot(data=tips, x="total_bill", y="tip", s=15, alpha=1.0)
@@ -194,7 +194,7 @@ cns.take_legend_out()
 # Scatter plot matrix concept (single comparison)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different variable pairs.
-mp = cns.multipanel((2, 2), max_width=350, hgap=35, vgap=35)
+mp = cns.multipanel(max_width=350)
 
 labels = ["A", "B", "C", "D"]
 label_idx = 0

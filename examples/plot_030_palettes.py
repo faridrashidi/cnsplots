@@ -269,7 +269,7 @@ ax.set_title("Using Color Constants")
 # Comparing palettes side by side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use multipanel to compare different palettes.
-mp = cns.multipanel((2, 2), max_width=400, hgap=40, vgap=40)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 80, 120, color_cycle="Set1")
 cns.barplot(data=tips, x="day", y="total_bill")
@@ -292,7 +292,7 @@ mp.get_axes("D").set_title("Set2")
 # Palettes for hue grouping
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Different palettes affect grouped plots.
-mp = cns.multipanel((1, 3), max_width=540, hgap=35)
+mp = cns.multipanel(max_width=540)
 
 mp.panel("A", 100, 150, color_cycle="Set1")
 cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
@@ -314,7 +314,7 @@ mp.get_axes("C").set_title("Bold")
 # Palette for scatter plots
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Colors distinguish groups in scatter plots.
-mp = cns.multipanel((1, 3), max_width=540, hgap=35)
+mp = cns.multipanel(max_width=540)
 
 mp.panel("A", 120, 140, color_cycle="Set1")
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
@@ -336,7 +336,7 @@ mp.get_axes("C").set_title("Dark2")
 # Ecotyper palettes for biological data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Specialized palettes for cell type visualization.
-mp = cns.multipanel((2, 3), max_width=500, hgap=35, vgap=35)
+mp = cns.multipanel(max_width=500)
 
 mp.panel("A", 80, 100, color_cycle="Ecotyper1")
 cns.barplot(data=tips, x="day", y="total_bill")
