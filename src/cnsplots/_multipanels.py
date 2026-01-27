@@ -93,6 +93,35 @@ class multipanel:
         self._rows = []
         self._row_heights = []  # Max total height in each row
 
+    def _get_panel_total_size(self, panel):
+        """Get the total width and height of a panel including margins."""
+        total_width = (
+            panel["margin_left"]
+            + panel["label_left"]
+            + panel.get("pad_left", 0)
+            + panel["width"]
+            + panel["margin_right"]
+        )
+        total_height = (
+            panel["margin_top"]
+            + panel["label_top"]
+            + panel.get("pad_top", 0)
+            + panel["height"]
+            + panel["margin_bottom"]
+        )
+        return total_width, total_height
+
+    def _get_stacked_height(self, panel_idx):
+        """Get total height of a panel plus any panels stacked below it."""
+        panel = self._panels[panel_idx]
+        _, total_height = self._get_panel_total_size(panel)
+        # Add heights of children stacked below
+        for p in self._panels:
+            if p.get("_below") == panel["label"]:
+                _, child_height = self._get_panel_total_size(p)
+                total_height += child_height
+        return total_height
+
     def _calculate_layout(self):
         """Calculate row assignments and positions for all panels."""
         self._rows = []
@@ -103,22 +132,13 @@ class multipanel:
         current_row_max_height = 0
 
         for idx, panel in enumerate(self._panels):
-            # Total width = margin_left + label_left + pad_left + axes_width + margin_right
-            total_width = (
-                panel["margin_left"]
-                + panel["label_left"]
-                + panel.get("pad_left", 0)
-                + panel["width"]
-                + panel["margin_right"]
-            )
-            # Total height = margin_top + label_top + pad_top + axes_height + margin_bottom
-            total_height = (
-                panel["margin_top"]
-                + panel["label_top"]
-                + panel.get("pad_top", 0)
-                + panel["height"]
-                + panel["margin_bottom"]
-            )
+            # Skip panels that are stacked below another panel
+            if panel.get("_below"):
+                continue
+
+            total_width, _ = self._get_panel_total_size(panel)
+            # Use stacked height (parent + children) for row height
+            stacked_height = self._get_stacked_height(idx)
 
             # Check if panel fits in current row
             if current_row and current_row_x + total_width > self._max_width:
@@ -127,12 +147,12 @@ class multipanel:
                 self._row_heights.append(current_row_max_height)
                 current_row = [idx]
                 current_row_x = total_width
-                current_row_max_height = total_height
+                current_row_max_height = stacked_height
             else:
                 # Add to current row
                 current_row.append(idx)
                 current_row_x += total_width
-                current_row_max_height = max(current_row_max_height, total_height)
+                current_row_max_height = max(current_row_max_height, stacked_height)
 
         # Don't forget the last row
         if current_row:
@@ -141,6 +161,44 @@ class multipanel:
 
     def _get_panel_position(self, panel_idx):
         """Get the x, y position (top-left of axes content area) for a panel."""
+        panel = self._panels[panel_idx]
+
+        # Handle panels stacked below another panel
+        if panel.get("_below"):
+            # Find the parent panel index
+            parent_idx = None
+            for i, p in enumerate(self._panels):
+                if p["label"] == panel["_below"]:
+                    parent_idx = i
+                    break
+            if parent_idx is None:
+                return 0, 0
+
+            parent = self._panels[parent_idx]
+            parent_x, parent_y = self._get_panel_position(parent_idx)
+
+            # x: align to parent's column (adjust for difference in label_left/pad_left)
+            x = (
+                parent_x
+                - parent.get("pad_left", 0)
+                - parent["label_left"]
+                + panel["margin_left"]
+                + panel["label_left"]
+                + panel.get("pad_left", 0)
+            )
+
+            # y: below parent's total height
+            y = (
+                parent_y
+                + parent["height"]
+                + parent["margin_bottom"]
+                + panel["margin_top"]
+                + panel["label_top"]
+                + panel.get("pad_top", 0)
+            )
+
+            return x, y
+
         # Find which row this panel is in
         row_idx = None
         col_in_row = None
@@ -170,7 +228,6 @@ class multipanel:
             )
 
         # Add this panel's left margin, label space, and padding
-        panel = self._panels[panel_idx]
         x += panel["margin_left"] + panel["label_left"] + panel.get("pad_left", 0)
         y += panel["margin_top"] + panel["label_top"] + panel.get("pad_top", 0)
 
@@ -265,6 +322,7 @@ class multipanel:
         margin=(10, 0, 0, 20),
         color_cycle=None,
         color_map=None,
+        below=None,
     ):
         """
         Add a panel with specified dimensions, label space, padding, and margins.
@@ -298,6 +356,10 @@ class multipanel:
             Color palette name for this panel. If None, uses cns.settings.palette_qual.
         color_map : str, optional
             Colormap name for this panel. If None, uses cns.settings.palette_seq.
+        below : str, optional
+            Label of another panel to stack this panel below (e.g., "D").
+            The panel is positioned directly below the specified panel
+            instead of flowing in the normal left-to-right layout.
 
         Returns
         -------
@@ -367,6 +429,7 @@ class multipanel:
             "margin_top": margin_top,
             "margin_right": margin_right,
             "margin_bottom": margin_bottom,
+            "_below": below,
         }
         self._panels.append(panel_info)
 
