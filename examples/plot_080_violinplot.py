@@ -86,6 +86,7 @@ ax = cns.violinplot(
     x="day",
     y="total_bill",
     hue="sex",
+    add_box=False,
 )
 cns.take_legend_out()
 ax.set_title("Grouped Violin Plot")
@@ -103,6 +104,7 @@ ax = cns.violinplot(
     y="total_bill",
     hue="sex",
     split=True,
+    add_box=False,
 )
 cns.take_legend_out()
 ax.set_title("Split Violin Plot")
@@ -183,6 +185,7 @@ ax = cns.violinplot(
     y="total_bill",
     hue="smoker",
     pairs=[(("Sat", "Yes"), ("Sat", "No"))],
+    add_box=False,
 )
 cns.take_legend_out()
 ax.set_title("Grouped Violin with Statistical Testing")
