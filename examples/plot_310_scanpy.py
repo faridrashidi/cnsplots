@@ -202,15 +202,6 @@ sc.pl.scatter(blobs, x="mitf", y="axl", color="blobs", size=10, ax=ax, show=Fals
 
 
 # %%
-# Scatter with different genes
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cns.figure(150, 150)
-cns.setup_scanpy()
-ax = plt.gca()
-sc.pl.scatter(blobs, x="sox10", y="ngfr", color="blobs", size=10, ax=ax, show=False)
-
-
-# %%
 # Comparing expression with multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side UMAP plots for different genes.

@@ -111,7 +111,9 @@ ts_data = pd.DataFrame(
 cns.figure(180, 100)
 ax = cns.lineplot(data=ts_data, x="date", y="value", hue="group")
 ax.set_title("Time Series Data")
-ax.tick_params(axis="x", rotation=40)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 cns.take_legend_out()
 
 

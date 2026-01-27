@@ -170,7 +170,9 @@ ax = cns.violinplot(
     x="measurement",
     y="value",
 )
-ax.tick_params(axis="x", rotation=40)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 ax.set_title("Setosa Measurements Distribution")
 
 

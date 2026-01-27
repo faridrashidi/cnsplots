@@ -167,7 +167,10 @@ ax.spines["left"].set_visible(False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare measurements across species.
 cns.figure(150, 100, "Bold")
-cns.barplot(data=iris, x="species", y="sepal_width", pairs="all", addtip=True)
+ax = cns.barplot(data=iris, x="species", y="sepal_width", pairs="all", addtip=True)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 
 
 # %%
@@ -259,6 +262,9 @@ cns.figure(150, 100, color_cycle=colors)
 cns.barplot(data=baseline, x="treatment", y="pct_change", errorbar=None)
 ax.axhline(0, color="k", lw=0.8)
 ax.set_ylabel("% Change from Baseline")
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 
 
 # %%

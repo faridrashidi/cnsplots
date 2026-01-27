@@ -27,7 +27,9 @@ tips = sns.load_dataset("tips")
 # Simple boxplot showing distribution of total bills across days.
 cns.figure(150, 100)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.tick_params(axis="x", rotation=40)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 ax.set_title("Basic Boxplot")
 
 
@@ -37,9 +39,9 @@ ax.set_title("Basic Boxplot")
 # Customize x-axis tick labels with rotation and conditional coloring.
 cns.figure(150, 100)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
-
-ax.tick_params(axis="x", rotation=40)
-plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 
 xtick_labels = ax.get_xticklabels()
 for index in range(tips["day"].nunique()):
@@ -181,7 +183,9 @@ ax = cns.boxplot(
 )
 cns.take_legend_out()
 ax.set_title("Multi-Variable Comparison")
-ax.tick_params(axis="x", rotation=20)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
 
 

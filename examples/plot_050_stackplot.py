@@ -191,7 +191,9 @@ ax = cns.stackplot(
     pairs=[("Control", "Treatment A"), ("Control", "Treatment B")],
     stack_order=["CD4+ T", "CD8+ T", "B cell", "NK cell", "Monocyte"],
 )
-ax.tick_params(axis="x", rotation=40)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 ax.set_title("Cell Type Composition")
 ax.set_ylabel("Proportion")
 

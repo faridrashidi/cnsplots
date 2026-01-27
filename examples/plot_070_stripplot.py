@@ -188,7 +188,9 @@ ax = cns.stripplot(
     alpha=0.7,
 )
 cns.take_legend_out()
-ax.tick_params(axis="x", rotation=40)
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 ax.set_title("Multi-Variable Comparison")
 
 
