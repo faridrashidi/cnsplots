@@ -20,7 +20,15 @@ Examples
 
 >>> # Reset to defaults
 >>> cns.settings.reset()
+
+>>> # Temporarily override settings using a context manager
+>>> with cns.settings.context(fontsize_title=12, palette_qual="Set2"):
+...     cns.boxplot(...)  # Uses temporary settings
+>>> cns.settings.fontsize_title  # Restored to previous value
+8
 """
+
+from contextlib import contextmanager
 
 
 class CNSSettings:
@@ -178,6 +186,55 @@ class CNSSettings:
         if value < 0:
             raise ValueError("verbosity must be non-negative")
         self._verbosity = value
+
+    @contextmanager
+    def context(self, **kwargs):
+        """Temporarily override settings within a context manager.
+
+        Settings are restored to their previous values when the context
+        exits, even if an exception occurs.
+
+        Parameters
+        ----------
+        **kwargs
+            Setting names and their temporary values. Valid keys are:
+            palette_qual, palette_seq, fontsize_title, fontsize_legend,
+            linewidth_axes, verbosity.
+
+        Raises
+        ------
+        AttributeError
+            If an invalid setting name is provided.
+
+        Examples
+        --------
+        >>> import cnsplots as cns
+        >>> with cns.settings.context(fontsize_title=12, palette_qual="Set2"):
+        ...     print(cns.settings.fontsize_title)
+        12
+        >>> cns.settings.fontsize_title
+        8
+        """
+        # Validate keys before changing anything
+        for key in kwargs:
+            if key not in self._defaults:
+                raise AttributeError(
+                    f"'{key}' is not a valid setting. "
+                    f"Valid settings: {', '.join(sorted(self._defaults))}"
+                )
+
+        # Save current values
+        old_values = {key: getattr(self, key) for key in kwargs}
+
+        # Apply temporary values (uses property setters for validation)
+        try:
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+            yield self
+        finally:
+            # Restore previous values
+            for key, value in old_values.items():
+                setattr(self, key, value)
 
     def __repr__(self):
         """Return a string representation of current settings."""

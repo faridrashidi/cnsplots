@@ -133,6 +133,23 @@ ax.set_title("Same Custom Style")
 
 
 # %%
+# Temporarily override settings with context manager
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use ``settings.context()`` to apply temporary settings that
+# automatically revert when the block exits.
+cns.settings.reset()
+
+with cns.settings.context(fontsize_title=12, palette_qual="Set2"):
+    cns.figure(150, 150)
+    ax = cns.boxplot(data=tips, x="day", y="total_bill")
+    ax.set_title("Context Manager: Set2, fontsize=12")
+
+# Settings are restored after the context block
+print(f"After context: fontsize_title={cns.settings.fontsize_title}")
+print(f"After context: palette_qual={cns.settings.palette_qual}")
+
+
+# %%
 # Override settings per-call
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # You can still override settings for individual calls.
