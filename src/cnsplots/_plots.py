@@ -1244,7 +1244,7 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
     return ax
 
 
-def pieplot(data, x, hue_order=None):
+def pieplot(data, x, legend="bottom", hue_order=None):
     """
     Create a pie chart showing categorical proportions.
 
@@ -1257,6 +1257,8 @@ def pieplot(data, x, hue_order=None):
         The input DataFrame containing the data to be plotted.
     x : str
         Column name for the categorical variable to visualize.
+    legend : {'right', 'left', 'top', 'bottom'}, default: 'bottom'
+        Position of the legend relative to the pie chart.
     hue_order : list, optional
         Order of categories to display in the pie chart. Default is None
         (order by frequency from value_counts).
@@ -1302,11 +1304,18 @@ def pieplot(data, x, hue_order=None):
         ylabel="",
         legend=True,
     )
-    cns.take_legend_out(title=x)
+    legend_positions = {
+        "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},
+        "left": {"loc": "upper right", "bbox_to_anchor": (-0.02, 1.02)},
+        "top": {"loc": "lower center", "bbox_to_anchor": (0.5, 1.05)},
+        "bottom": {"loc": "upper center", "bbox_to_anchor": (0.5, -0.05)},
+    }
+    pos = legend_positions.get(legend, legend_positions["right"])
+    ax.legend(**pos, title=x)
     return ax
 
 
-def donutplot(data, x, hue_order=None):
+def donutplot(data, x, legend="bottom", hue_order=None):
     """
     Create a donut chart showing categorical proportions.
 
@@ -1320,6 +1329,8 @@ def donutplot(data, x, hue_order=None):
         The input DataFrame containing the data to be plotted.
     x : str
         Column name for the categorical variable to visualize.
+    legend : {'right', 'left', 'top', 'bottom'}, default: 'bottom'
+        Position of the legend relative to the pie chart.
     hue_order : list, optional
         Order of categories to display in the donut chart. Default is None
         (order by frequency from value_counts).
@@ -1368,7 +1379,14 @@ def donutplot(data, x, hue_order=None):
     )
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
     cns.utils._remove_edge_from_legend_items(ax)
-    cns.take_legend_out()
+    legend_positions = {
+        "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},
+        "left": {"loc": "upper right", "bbox_to_anchor": (-0.02, 1.02)},
+        "top": {"loc": "lower center", "bbox_to_anchor": (0.5, 1.05)},
+        "bottom": {"loc": "upper center", "bbox_to_anchor": (0.5, -0.05)},
+    }
+    pos = legend_positions.get(legend, legend_positions["right"])
+    ax.legend(**pos, title=x)
     return ax
 
 
