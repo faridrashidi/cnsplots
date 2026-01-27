@@ -4,7 +4,9 @@ import logging
 import warnings
 
 import cnsplots._methods as methods
+import cnsplots._utils as utils
 from cnsplots._methods import CoxModel, LogisticModel, prerank
+from cnsplots._multipanels import multipanel
 from cnsplots._plots import (
     barplot,
     boxplot,
@@ -53,7 +55,6 @@ from cnsplots._utils import (
     add_panel_label,
     figure,
     get_hexcolors_from_apalette,
-    multipanel,
     palettes,
     savefig,
     take_legend_out,
@@ -61,6 +62,7 @@ from cnsplots._utils import (
 
 __version__ = "0.0.5"
 __all__ = (
+    utils,
     settings,
     BLUE,
     BROWN,

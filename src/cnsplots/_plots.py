@@ -529,7 +529,7 @@ def boxplot(
                 line.set_mfc("white")
                 line.set_mec("white")
 
-    cns._utils._remove_edge_from_legend_items(ax)
+    cns.utils._remove_edge_from_legend_items(ax)
     whis_str = (
         "minimum and maximum values"
         if whis == (0, 100)
@@ -544,10 +544,10 @@ def boxplot(
         f" correspond to the {whis_str}."
     )
     if pairs is not None:
-        cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        cns.utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
     if addcount:
-        cns._utils._addcount_helper(data, x, ax)
+        cns.utils._addcount_helper(data, x, ax)
 
     return ax
 
@@ -653,7 +653,7 @@ def violinplot(
     if add_box:
         sns.boxplot(**boxplot_kwargs)
     if pairs is not None:
-        cns._utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        cns.utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
     return ax
 
@@ -777,7 +777,7 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
                 size=6,
             )
     if pairs is not None:
-        cns._utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+        cns.utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
     if show_legend:
         ax.legend(
             handles=legend_handles,
@@ -936,11 +936,11 @@ def stackplot(
         else:
             plotting = {"data": data2, "x": x, "y": "count", "order": bar_order}
         if contingency.shape[1] == 2:
-            cns._utils._p_value_helper(
+            cns.utils._p_value_helper(
                 "fisher-exact", data2, ax, plotting, pairs, contingency
             )
         else:
-            cns._utils._p_value_helper(
+            cns.utils._p_value_helper(
                 "chi-squared", data2, ax, plotting, pairs, contingency
             )
 
@@ -1367,7 +1367,7 @@ def donutplot(data, x, hue_order=None):
         )
     )
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
-    cns._utils._remove_edge_from_legend_items(ax)
+    cns.utils._remove_edge_from_legend_items(ax)
     cns.take_legend_out()
     return ax
 
@@ -1916,7 +1916,7 @@ def stripplot(
         showmeans=showmeans,
     )
     if addcount:
-        cns._utils._addcount_helper(data, x, ax)
+        cns.utils._addcount_helper(data, x, ax)
 
     if ax.get_legend() is not None:
         for handle in ax.get_legend().legend_handles:
@@ -2813,7 +2813,7 @@ def ridgeplot(data, x, y):
     >>> axes = cns.ridgeplot(data=df, x="temperature", y="month")
     """
     countries = data[y].unique()
-    colors = cns._utils._get_hex_colors_from_colorbar("viridis", len(countries))
+    colors = cns.utils._get_hex_colors_from_colorbar("viridis", len(countries))
     gs = grid_spec.GridSpec(len(countries), 1)
     fig = plt.gcf()
     ax_objs = []
