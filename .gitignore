@@ -135,7 +135,8 @@ dmypy.json
 # =============================================================================
 # Sphinx
 docs/_build/
-docs/auto_examples/
+docs/api/
+docs/examples/
 docs/gen_modules/
 sg_execution_times.rst
 

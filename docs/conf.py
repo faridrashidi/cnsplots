@@ -45,6 +45,7 @@ todo_include_todos = False
 
 # Generate the API documentation when building
 autosummary_generate = True
+add_module_names = False
 autodoc_member_order = "bysource"
 bibtex_reference_style = "author_year"
 napoleon_google_docstring = True  # for pytorch lightning
@@ -76,7 +77,7 @@ sphinx_gallery_conf = {
     "filename_pattern": "/plot_",
     "ignore_pattern": "/todo_",
     "examples_dirs": "../examples",  # path to your example scripts
-    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+    "gallery_dirs": "examples",  # path to where to save gallery generated output
     "within_subsection_order": "sphinx_gallery.sorting.FileNameSortKey",
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions

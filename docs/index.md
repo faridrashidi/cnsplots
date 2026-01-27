@@ -42,7 +42,7 @@ Installation guide and setup instructions.
 :::
 
 :::{grid-item-card} Examples {octicon}`star;1em;`
-:link: auto_examples/index
+:link: examples/index
 :link-type: doc
 
 Gallery of examples showing what you can do with cnsplots.
@@ -64,5 +64,5 @@ Detailed description of all cnsplots functions and parameters.
 getting_started
 installation
 api
-auto_examples/index
+examples/index
 ```

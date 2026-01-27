@@ -11,7 +11,7 @@
 
 Create visually stunning, journal-quality figures with minimal code. Built on matplotlib, fully compatible with seaborn, and optimized for Adobe Illustrator.
 
-[Documentation](https://farid.one/cnsplots/) · [Examples Gallery](https://farid.one/cnsplots/auto_examples/index.html) · [Report Bug](https://github.com/faridrashidi/cnsplots/issues) · [Request Feature](https://github.com/faridrashidi/cnsplots/issues)
+[Documentation](https://farid.one/cnsplots/) · [Examples Gallery](https://farid.one/cnsplots/examples/index.html) · [Report Bug](https://github.com/faridrashidi/cnsplots/issues) · [Request Feature](https://github.com/faridrashidi/cnsplots/issues)
 
 </div>
 
@@ -19,7 +19,7 @@ Create visually stunning, journal-quality figures with minimal code. Built on ma
 
 ## Overview
 
-[![Overview](docs/_static/images/overview.png?raw=true)](https://farid.one/cnsplots/auto_examples/index.html)
+[![Overview](docs/_static/images/overview.png?raw=true)](https://farid.one/cnsplots/examples/index.html)
 
 **cnsplots** is a Python visualization library designed specifically for creating publication-ready scientific figures. It takes care of the tedious styling details so you can focus on your science.
 
@@ -151,66 +151,9 @@ cns.figure(150, 200, color_cycle="Ecotyper1")
 cns.violinplot(data=df, x="day", y="total_bill", hue="sex")
 ```
 
-### Survival Analysis
-
-```python
-import pandas as pd
-import cnsplots as cns
-import matplotlib.pyplot as plt
-
-# Load survival data
-data = pd.read_csv("survival_data.csv")
-
-cns.figure(150, 200)
-cns.survivalplot(
-    data=data,
-    duration="time",
-    event="event",
-    hue="treatment",
-    hue_order=["Control", "Treatment"],
-)
-plt.savefig("survival.svg")
-# Prints: P-value was determined by two-sided multivariate log-rank test.
-```
-
-### Volcano Plot
-
-```python
-cns.figure(200, 200)
-cns.volcanoplot(
-    data=deg_results, x="log2FoldChange", y="-log10(adjp)", symbol="gene_name"
-)
-plt.savefig("volcano.svg")
-```
-
-### Multi-Panel Figures
-
-```python
-# Create a 2x2 grid with custom panel sizes
-mp = cns.multipanel(max_width=540)
-
-# Panel A: Boxplot (150x150 pixels)
-mp.panel("A", height=150, width=150)
-cns.boxplot(data=df, x="day", y="total_bill")
-
-# Panel B: Violin plot (150x200 pixels)
-mp.panel("B", height=150, width=200)
-cns.violinplot(data=df, x="day", y="total_bill", hue="sex")
-
-# Panel C: Scatter plot (150x150 pixels)
-mp.panel("C", height=150, width=150)
-cns.scatterplot(data=df, x="total_bill", y="tip")
-
-# Panel D: Heatmap (200x150 pixels)
-mp.panel("D", height=200, width=150)
-# ... your heatmap code
-
-plt.savefig("figure.svg")
-```
-
 ## Examples Gallery
 
-Explore our comprehensive [examples gallery](https://farid.one/cnsplots/auto_examples/index.html) featuring:
+Explore our comprehensive [examples gallery](https://farid.one/cnsplots/examples/index.html) featuring:
 
 - 📦 Basic statistical plots
 - 🧬 Genomics and bioinformatics visualizations
@@ -225,7 +168,7 @@ Full documentation is available at [farid.one/cnsplots](https://farid.one/cnsplo
 
 - [Installation Guide](https://farid.one/cnsplots/installation.html)
 - [API Reference](https://farid.one/cnsplots/api.html)
-- [Examples Gallery](https://farid.one/cnsplots/auto_examples/index.html)
+- [Examples Gallery](https://farid.one/cnsplots/examples/index.html)
 
 ## Key Concepts
 

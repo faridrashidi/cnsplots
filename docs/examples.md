@@ -2,5 +2,5 @@
 :maxdepth: 1
 :glob:
 
-auto_examples/*
+examples/*
 ```

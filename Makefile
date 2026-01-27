@@ -12,7 +12,8 @@ clean:
 	rm -rf .coverage*
 	rm -rf docs/build
 	rm -rf docs/cnsplots*
-	rm -rf docs/auto_examples
+	rm -rf docs/api
+	rm -rf docs/examples
 	rm -rf docs/gen_modules
 	rm -rf examples/renv
 	rm -rf docs/sg_execution_times.rst

@@ -105,6 +105,6 @@ plt.savefig("figure.png", dpi=300)
 
 ## Next Steps
 
-- Browse the {doc}`auto_examples/index` for more detailed examples
+- Browse the {doc}`examples/index` for more detailed examples
 - Check the {doc}`api` for all available functions
 - See {doc}`installation` for advanced setup options

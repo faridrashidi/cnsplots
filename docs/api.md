@@ -13,7 +13,7 @@ import cnsplots as cns
 ```{eval-rst}
 .. currentmodule:: cnsplots
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    boxplot
@@ -30,7 +30,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    scatterplot
@@ -43,7 +43,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    heatmapplot
@@ -55,7 +55,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    stackplot
@@ -70,7 +70,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    survivalplot
@@ -82,7 +82,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    volcanoplot
@@ -95,7 +95,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    phyloplot
@@ -105,7 +105,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    CoxModel
@@ -117,7 +117,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    figure
@@ -131,7 +131,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    setup_matplotlib
@@ -144,7 +144,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. autosummary::
-   :toctree: .
+   :toctree: api
    :nosignatures:
 
    palettes
