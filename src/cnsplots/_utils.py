@@ -488,9 +488,10 @@ def get_showcase_data():
     iris_df = sns.load_dataset("iris")
     tips_df = sns.load_dataset("tips")
     blobs = sc.datasets.blobs()
-    blobs.obs["MITF"] = np.random.random(blobs.shape[0])
+    blobs.obs["TP53"] = np.random.random(blobs.shape[0])
+    blobs.obs["KRAS"] = np.random.random(blobs.shape[0])
     blobs.var["Ensemble"] = [f"ens{x}" for x in np.random.randint(0, 3, blobs.shape[1])]
-    blobs.obs["Selected"] = np.where(blobs.obs["MITF"] > 0.95, "o", None)
+    blobs.obs["Selected"] = np.where(blobs.obs["TP53"] > 0.95, "o", None)
     blobs.obs["Cluster"] = pd.Categorical(
         [f"C{x}" for x in np.random.randint(0, 4, blobs.shape[0])]
     )

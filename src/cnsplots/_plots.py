@@ -1192,6 +1192,7 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
     >>> ax = cns.regplot(data=df, x="dose", y="response", hue="cell_line")
     >>> ax.set_xlabel("Drug Dose")
     """
+    ax = plt.gca()
     args = {
         "line_kws": {"lw": 1.2},
         "scatter_kws": {"s": s, "alpha": 1, "edgecolor": None},
@@ -1205,6 +1206,7 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
                 data=subset,
                 x=x,
                 y=y,
+                ax=ax,
                 color=palette[idx],
                 label=hue_val,
                 **args,
@@ -1225,6 +1227,7 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
             data=data,
             x=x,
             y=y,
+            ax=ax,
             color="black",
             **args,
         )
@@ -1239,7 +1242,7 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
             va="top",
         )
     if hue:
-        plt.legend(title=hue)
+        ax.legend(title=hue)
 
     return ax
 
@@ -2830,44 +2833,48 @@ def ridgeplot(data, x, y):
     >>> # Time series data
     >>> axes = cns.ridgeplot(data=df, x="temperature", y="month")
     """
-    countries = data[y].unique()
-    colors = cns.utils._get_hex_colors_from_colorbar("viridis", len(countries))
-    gs = grid_spec.GridSpec(len(countries), 1)
-    fig = plt.gcf()
-    ax_objs = []
-    for i, country in enumerate(countries):
-        x_v = np.array(data[data[y] == country][x])
+    categories = data[y].unique()
+    n = len(categories)
+    colors = cns.utils._get_hex_colors_from_colorbar("viridis", n)
+    ax = plt.gca()
 
-        # creating new axes object
-        ax_objs.append(fig.add_subplot(gs[i : i + 1, 0:]))
+    from scipy.stats import gaussian_kde
 
-        # plotting the distribution
-        ax = sns.kdeplot(x=x_v, ax=ax_objs[-1], color="#f0f0f0", fill=False)
-        l1 = ax.lines[0]
-        x1 = l1.get_xydata()[:, 0]
-        y1 = l1.get_xydata()[:, 1]
-        ax.fill_between(x1, y1, alpha=1, color=colors[i])
-        ax.set_ylabel("")
+    overlap = 0.5
+    x_min, x_max = data[x].min(), data[x].max()
+    x_grid = np.linspace(x_min, x_max, 200)
 
-        # setting uniform x and y lims
-        ax_objs[-1].set_xlim(data[x].min(), data[x].max())
+    for i, cat in enumerate(categories):
+        x_v = np.array(data[data[y] == cat][x])
+        kde = gaussian_kde(x_v)
+        y_vals = kde(x_grid)
+        y_vals = y_vals / y_vals.max()
+        offset = (n - 1 - i) * (1 - overlap)
+        ax.fill_between(
+            x_grid,
+            offset,
+            y_vals + offset,
+            alpha=1,
+            color=colors[i],
+            zorder=n - i,
+            linewidth=0.5,
+            edgecolor=colors[i],
+        )
+        ax.text(
+            x_min,
+            offset + 0.05,
+            cat,
+            ha="right",
+            va="bottom",
+            fontsize=plt.rcParams.get("xtick.labelsize", 7),
+        )
 
-        # make background transparent
-        rect = ax_objs[-1].patch
-        rect.set_alpha(0)
-
-        # remove borders, axis ticks, and labels
-        ax_objs[-1].set_yticks([])
-        if i == len(countries) - 1:
-            ax_objs[-1].set_xlabel(x)
-        else:
-            ax_objs[-1].set_xticks([])
-        spines = ["top", "right", "left", "bottom"]
-        for s in spines:
-            ax_objs[-1].spines[s].set_visible(False)
-        ax_objs[-1].text(-0.02, 0, country, ha="right")
-    gs.update(hspace=-0.5)
-    return ax_objs
+    ax.set_xlim(x_min, x_max)
+    ax.set_yticks([])
+    ax.set_ylabel("")
+    ax.set_xlabel(x)
+    ax.spines["left"].set_visible(False)
+    return ax
 
 
 def slopeplot(data, x, y, hue):
