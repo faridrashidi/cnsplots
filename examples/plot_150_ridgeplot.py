@@ -27,8 +27,8 @@ iris = sns.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~
 # Compare distributions across days.
 cns.figure(150, 150)
-axes = cns.ridgeplot(data=tips, x="total_bill", y="day")
-axes[0].set_title("Total Bill by Day")
+ax = cns.ridgeplot(data=tips, x="total_bill", y="day")
+ax.set_title("Total Bill by Day")
 
 
 # %%
@@ -36,8 +36,8 @@ axes[0].set_title("Total Bill by Day")
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare species distributions.
 cns.figure(150, 120)
-axes = cns.ridgeplot(data=iris, x="sepal_length", y="species")
-axes[0].set_title("Sepal Length by Species")
+ax = cns.ridgeplot(data=iris, x="sepal_length", y="species")
+ax.set_title("Sepal Length by Species")
 
 
 # %%
@@ -45,8 +45,8 @@ axes[0].set_title("Sepal Length by Species")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare petal measurements.
 cns.figure(150, 120)
-axes = cns.ridgeplot(data=iris, x="petal_length", y="species")
-axes[0].set_title("Petal Length by Species")
+ax = cns.ridgeplot(data=iris, x="petal_length", y="species")
+ax.set_title("Petal Length by Species")
 
 
 # %%
@@ -69,8 +69,8 @@ mp.get_axes("B").set_title("Sepal Width")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare lunch and dinner distributions.
 cns.figure(150, 100)
-axes = cns.ridgeplot(data=tips, x="tip", y="time")
-axes[0].set_title("Tip by Time")
+ax = cns.ridgeplot(data=tips, x="tip", y="time")
+ax.set_title("Tip by Time")
 
 
 # %%
@@ -88,8 +88,8 @@ for month in ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]:
 temporal_df = pd.DataFrame(temporal_data)
 
 cns.figure(150, 180)
-axes = cns.ridgeplot(data=temporal_df, x="value", y="month")
-axes[0].set_title("Value Distribution Over Months")
+ax = cns.ridgeplot(data=temporal_df, x="value", y="month")
+ax.set_title("Value Distribution Over Months")
 
 
 # %%
@@ -113,5 +113,5 @@ for treatment in ["Control", "Low Dose", "Medium Dose", "High Dose"]:
 treatment_df = pd.DataFrame(treatment_data)
 
 cns.figure(150, 150)
-axes = cns.ridgeplot(data=treatment_df, x="response", y="treatment")
-axes[0].set_title("Treatment Response Distribution")
+ax = cns.ridgeplot(data=treatment_df, x="response", y="treatment")
+ax.set_title("Treatment Response Distribution")
