@@ -2969,6 +2969,7 @@ def slopeplot(data, x, y, hue):
         i += 1
 
     ax.set_xticks(list(1 + np.arange(len(sites))))
+    ax.set_ylabel(y)
     _ = ax.set_xticklabels(sites)
 
     handles, labels = ax.get_legend_handles_labels()
@@ -2976,7 +2977,7 @@ def slopeplot(data, x, y, hue):
         handles[0:2],
         labels[0:2],
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.1),
+        bbox_to_anchor=(0.5, 1.15),
         ncol=2,
     )
     for handle in lgd.legend_handles:
