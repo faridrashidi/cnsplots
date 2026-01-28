@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from PyComplexHeatmap import ClusterMapPlotter
+from PyComplexHeatmap.clustermap import mm2inch
 
 import cnsplots as cns
 
@@ -145,6 +146,88 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                     self.plot_legends(ax=self.ax)
 
         self.post_processing()
+
+    def _define_axes(self, subplot_spec=None):
+        if subplot_spec is None:
+            # Constrain the GridSpec to the current axes' position so the
+            # heatmap doesn't span the entire figure.
+            pos = self.ax.get_position()
+            wspace = (
+                self.subplot_gap
+                * mm2inch
+                * self.ax.figure.dpi
+                / (self.ax.get_window_extent().width / 3)
+            )
+            hspace = (
+                self.subplot_gap
+                * mm2inch
+                * self.ax.figure.dpi
+                / (self.ax.get_window_extent().height / 3)
+            )
+
+            self.gs = self.ax.figure.add_gridspec(
+                3,
+                3,
+                width_ratios=self.widths,
+                height_ratios=self.heights,
+                wspace=0,
+                hspace=0,
+                left=pos.x0,
+                right=pos.x1,
+                top=pos.y1,
+                bottom=pos.y0,
+            )
+            self.wspace = wspace
+            self.hspace = hspace
+
+            self.ax_heatmap = self.ax.figure.add_subplot(self.gs[1, 1])
+            self.ax_top = self.ax.figure.add_subplot(
+                self.gs[0, 1], sharex=self.ax_heatmap
+            )
+            self.ax_bottom = self.ax.figure.add_subplot(
+                self.gs[2, 1], sharex=self.ax_heatmap
+            )
+            self.ax_left = self.ax.figure.add_subplot(
+                self.gs[1, 0], sharey=self.ax_heatmap
+            )
+            self.ax_right = self.ax.figure.add_subplot(
+                self.gs[1, 2], sharey=self.ax_heatmap
+            )
+            self.ax_heatmap.set_xlim([0, self.data2d.shape[1]])
+            self.ax_heatmap.set_ylim([0, self.data2d.shape[0]])
+            self.ax_heatmap.yaxis.set_visible(False)
+            self.ax_heatmap.xaxis.set_visible(False)
+            self.ax.tick_params(
+                axis="both",
+                which="both",
+                left=False,
+                right=False,
+                labelleft=False,
+                labelright=False,
+                top=False,
+                bottom=False,
+                labeltop=False,
+                labelbottom=False,
+            )
+            self.ax_heatmap.tick_params(
+                axis="both",
+                which="both",
+                left=False,
+                right=False,
+                top=False,
+                bottom=False,
+                labeltop=False,
+                labelbottom=False,
+                labelleft=False,
+                labelright=False,
+            )
+            for side in ["left", "right", "top", "bottom"]:
+                self.ax.spines[side].set_visible(False)
+            from matplotlib.figure import Figure
+
+            Figure.set_layout_engine(self.ax.figure, None)
+        else:
+            super()._define_axes(subplot_spec)
 
     def collect_legends(self):
         if self.verbose >= 1:
