@@ -259,7 +259,7 @@ def heatmapplot(
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(1.2)
+        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
     return cmp
 
 
@@ -403,7 +403,7 @@ def dotplot(
     )
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(1.2)
+        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
     return cmp
 
 
