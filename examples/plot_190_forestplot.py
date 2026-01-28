@@ -156,7 +156,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(90, 150, ["black"])
+cns.figure(90, 210, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Univariate Cox Regression")
 
@@ -174,7 +174,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(40, 150, ["black"])
+cns.figure(40, 210, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Multivariate Cox Regression")
 
@@ -194,7 +194,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(80, 150, ["black"])
+cns.figure(80, 210, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("Categorical Covariates")
 
@@ -215,7 +215,7 @@ model = cns.methods.CoxModel(
     hue="horTh",
 )
 model.fit()
-cns.figure(100, 150)
+cns.figure(100, 210)
 ax = cns.forestplot(model)
 ax.set_title("Stratified by Hormone Therapy")
 
@@ -236,7 +236,7 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(80, 150, ["black"])
+cns.figure(80, 210, ["black"])
 ax = cns.forestplot(model)
 ax.set_title("With Interaction Term")
 
@@ -275,71 +275,6 @@ model = cns.methods.CoxModel(
     ],
 )
 model.fit()
-cns.figure(80, 150, [cns.BLUE])
+cns.figure(80, 210, [cns.BLUE])
 ax = cns.forestplot(model)
 ax.set_title("Custom Color")
-
-
-# %%
-# Comparing Cox models side by side
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use multipanel to compare different model specifications.
-mp = cns.multipanel(max_width=400)
-
-model1 = cns.methods.CoxModel(
-    data=gbsg2,
-    duration="time",
-    event="cens",
-    variates=["age", "pnodes", "tsize"],
-)
-model1.fit()
-
-model2 = cns.methods.CoxModel(
-    data=gbsg2,
-    duration="time",
-    event="cens",
-    variates=["age + pnodes + tsize"],
-)
-model2.fit()
-
-mp.panel("A", 80, 140, color_cycle=["black"])
-cns.forestplot(model1)
-mp.get_axes("A").set_title("Univariate")
-
-mp.panel("B", 80, 140, color_cycle=["black"])
-cns.forestplot(model2)
-mp.get_axes("B").set_title("Multivariate")
-
-
-# %%
-# Subgroup analysis visualization
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Compare effects across patient subgroups.
-mp = cns.multipanel(max_width=400)
-
-pre_meno = gbsg2[gbsg2["menostat"] == "Pre"]
-post_meno = gbsg2[gbsg2["menostat"] == "Post"]
-
-model_pre = cns.methods.CoxModel(
-    data=pre_meno,
-    duration="time",
-    event="cens",
-    variates=["age", "pnodes", "C(tgrade)"],
-)
-model_pre.fit()
-
-model_post = cns.methods.CoxModel(
-    data=post_meno,
-    duration="time",
-    event="cens",
-    variates=["age", "pnodes", "C(tgrade)"],
-)
-model_post.fit()
-
-mp.panel("A", 80, 140, color_cycle=[cns.BLUE])
-cns.forestplot(model_pre)
-mp.get_axes("A").set_title("Premenopausal")
-
-mp.panel("B", 80, 140, color_cycle=[cns.RED])
-cns.forestplot(model_post)
-mp.get_axes("B").set_title("Postmenopausal")
