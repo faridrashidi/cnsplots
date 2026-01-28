@@ -14,7 +14,7 @@ precise control over figure dimensions in pixels.
 # ~~~~~~~~~
 import cnsplots as cns
 
-iris_df, tips_df, survival_df, blobs, volcano_df, gene_sets, roc_df = (
+iris_df, tips_df, survival_df, blobs, volcano_df, gene_sets, roc_df, slope_df = (
     cns.get_showcase_data()
 )
 
@@ -144,19 +144,27 @@ mp.get_axes("M").legend(loc="lower right")
 mp.get_axes("M").set_title("Rocplot")
 
 # Panel N: sankeyplot
-mp.panel("N", 100, 30, pad_top=5, pad_left=10, color_cycle="Ecotyper4")
+mp.panel(
+    "N", 100, 30, pad_top=5, pad_left=10, margin=(10, 0, 15, 0), color_cycle="Ecotyper4"
+)
 cns.sankeyplot(tips_df, x="day", y="sex")
 mp.get_axes("N").set_title("Sankeyplot")
 
 # Panel O: ridgeplot
-# mp.panel("O", 100, 80, pad_top=5, color_cycle="Tableau")
-# cns.ridgeplot(data=iris_df, x="petal_length", y="species")
+mp.panel("O", 35, 80, pad_top=3)
+cns.ridgeplot(data=iris_df, x="petal_length", y="species")
+mp.get_axes("O").set_title("Ridgeplot")
 
-# Panel P: scatterplot
+# Panel P: slopeplot
+mp.panel("P", 65, 80, pad_top=3, margin=(0, 0, 0, 0), below="O")
+cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
+mp.get_axes("P").set_title("Slopeplot")
+
+# Panel Q: scatterplot
 mp.newline()
-mp.panel("P", 90, 90, pad_top=5, margin=(10, 0, 40, 0), color_cycle="Set1")
+mp.panel("Q", 90, 90, pad_top=5, margin=(10, 0, 40, 0), color_cycle="Set1")
 cns.scatterplot(data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5)
-ax = mp.get_axes("P")
+ax = mp.get_axes("Q")
 ax.set_title("Scatterplot")
 ax.get_legend().set_title(None)
 ax.axhline(
@@ -175,8 +183,8 @@ ax.axvline(
 )
 cns.take_legend_out()
 
-# Panel Q: heatmapplot
-mp.panel("Q", 100, 190, pad_top=3, pad_left=10)
+# Panel R: heatmapplot
+mp.panel("R", 100, 190, pad_top=3, pad_left=10)
 cmp = cns.heatmapplot(
     blobs,
     label="Z-score",
