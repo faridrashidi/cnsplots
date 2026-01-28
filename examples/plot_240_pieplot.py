@@ -36,7 +36,7 @@ ax.set_title("Species Distribution")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize distribution by day.
 cns.figure(100, 100)
-ax = cns.pieplot(tips, "day")
+ax = cns.pieplot(tips, "day", legend="right")
 ax.set_title("Meals by Day")
 
 
@@ -87,7 +87,7 @@ ax.set_title("Set2 Palette")
 # Comparing pie charts side-by-side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare composition across conditions.
-mp = cns.multipanel(max_width=270)
+mp = cns.multipanel(max_width=300)
 
 mp.panel("A", 100, 100)
 cns.pieplot(tips[tips["sex"] == "Male"], "day")

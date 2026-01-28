@@ -36,7 +36,7 @@ ax.set_title("Species Distribution")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize distribution by day.
 cns.figure(100, 100)
-ax = cns.donutplot(tips, "day")
+ax = cns.donutplot(tips, "day", legend="right")
 ax.set_title("Meals by Day")
 
 
