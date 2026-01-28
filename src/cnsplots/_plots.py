@@ -2784,7 +2784,7 @@ def forestplot(model):
     return ax1
 
 
-def ridgeplot(data, x, y):
+def ridgeplot(data, x, y, cmap="viridis"):
     """
     Create a ridge plot (joyplot) showing distributions across categories.
 
@@ -2801,6 +2801,9 @@ def ridgeplot(data, x, y):
     y : str
         Column name for the categorical variable determining separate curves.
         Each unique value creates one ridge.
+    cmap : str, optional
+        Name of a matplotlib colormap to use for coloring the ridges.
+        Default is ``"viridis"``.
 
     Returns
     -------
@@ -2830,12 +2833,12 @@ def ridgeplot(data, x, y):
     >>> axes = cns.ridgeplot(data=df, x="expression", y="tissue_type")
     >>> axes[-1].set_xlabel("Gene Expression")
 
-    >>> # Time series data
-    >>> axes = cns.ridgeplot(data=df, x="temperature", y="month")
+    >>> # Time series data with a custom colormap
+    >>> axes = cns.ridgeplot(data=df, x="temperature", y="month", cmap="plasma")
     """
     categories = data[y].unique()
     n = len(categories)
-    colors = cns.utils._get_hex_colors_from_colorbar("viridis", n)
+    colors = cns.utils._get_hex_colors_from_colorbar(cmap, n)
     ax = plt.gca()
 
     from scipy.stats import gaussian_kde
@@ -2856,7 +2859,7 @@ def ridgeplot(data, x, y):
             y_vals + offset,
             alpha=1,
             color=colors[i],
-            zorder=n - i,
+            zorder=i,
             linewidth=0.5,
             edgecolor=colors[i],
         )

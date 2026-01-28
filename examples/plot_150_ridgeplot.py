@@ -30,6 +30,14 @@ cns.figure(150, 150)
 ax = cns.ridgeplot(data=tips, x="total_bill", y="day")
 ax.set_title("Total Bill by Day")
 
+# %%
+# Ridge plot with custom colormap
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use the ``cmap`` parameter to change the colormap.
+cns.figure(150, 150)
+ax = cns.ridgeplot(data=tips, x="total_bill", y="day", cmap="plasma")
+ax.set_title("Total Bill by Day (plasma cmap)")
+
 
 # %%
 # Ridge plot for iris data
