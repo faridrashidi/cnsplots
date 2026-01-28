@@ -2651,9 +2651,6 @@ def forestplot(model):
     When multiple hue groups are present, effect sizes are displayed with slight
     vertical offsets and different colors for each group.
 
-    The function automatically adjusts x-axis limits if confidence intervals
-    extend beyond 7 units.
-
     Examples
     --------
     >>> import cnsplots as cns
@@ -2709,7 +2706,6 @@ def forestplot(model):
     )
     hue_offset_map = dict(zip(unique_hue_groups, offsets))
 
-    factor = 0.5
     for hue_group in unique_hue_groups:
         hue_data = data[data["hue_group"] == hue_group]
         color = color_map[hue_group]
@@ -2736,9 +2732,6 @@ def forestplot(model):
             markersize=3,
             label=hue_group,
         )
-        if max(x_errs_upper) + max(x_coords) > 7:
-            factor = 1
-            ax1.set_xlim(0, 7)
     ax1.set_yticks(list(y_positions.values()))
     ax1.set_yticklabels(list(y_positions.keys()))
     ax1.set_ylim(-0.5, len(unique_labels) - 0.5)
@@ -2747,7 +2740,7 @@ def forestplot(model):
         ax1.legend(title=model.hue, loc="lower right")
     if model.name == "cox":
         ax1.axvline(x=1, color="red", linestyle="--", linewidth=0.8)
-        ax1.xaxis.set_major_locator(plt.MultipleLocator(factor))
+        ax1.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
     else:
         ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
@@ -2779,7 +2772,7 @@ def forestplot(model):
             x=-np.log10(0.05), color="red", linestyle="--", linewidth=0.8, alpha=0.7
         )
         ax2.set_ylim(-0.5, len(unique_labels) - 0.5)
-        ax2.xaxis.set_major_locator(plt.MultipleLocator(1))
+        ax2.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
 
     return ax1
 
