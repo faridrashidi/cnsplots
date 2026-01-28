@@ -18,28 +18,30 @@ import pandas as pd
 import cnsplots as cns
 
 # %%
-# Load differential expression data
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Download example DE results from RNA-seq analysis.
-de = pd.read_csv(
-    "https://www.dropbox.com/s/q695jhlaudkcle9/de_result.csv?dl=1", index_col=0
+# Generate synthetic differential expression data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create a realistic DE dataset with known significant genes.
+np.random.seed(0)
+n_genes = 500
+logfc = np.random.normal(0, 1.5, n_genes)
+pvals = 10 ** (-np.abs(logfc) * np.random.uniform(0.5, 3, n_genes))
+pvals = np.clip(pvals, 1e-50, 1)
+de = pd.DataFrame(
+    {
+        "log2FoldChange": logfc,
+        "-log10(adjp)": -np.log10(pvals),
+        "symbol": [f"Gene{i}" for i in range(n_genes)],
+    }
 )
-de["-log10(adjp)"] = -np.log10(de["padj"])
 de.head()
 
 
 # %%
 # Basic volcano plot
 # ~~~~~~~~~~~~~~~~~~
-# Display DE results with labeled genes of interest.
+# Display DE results.
 cns.figure(200, 200)
-cns.volcanoplot(
-    de,
-    x="log2FoldChange",
-    y="-log10(adjp)",
-    symbol="symbol",
-    show_list=["NRAS", "USP53", "GMNN", "EPDR1"],
-)
+cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol")
 
 
 # %%
@@ -52,7 +54,16 @@ cns.volcanoplot(
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
-    show_list=["NRAS", "USP53", "GMNN", "EPDR1", "TP53", "BRCA1", "MYC", "KRAS"],
+    show_list=[
+        "Gene156",
+        "Gene44",
+        "Gene55",
+        "Gene81",
+        "Gene219",
+        "Gene451",
+        "Gene104",
+        "Gene135",
+    ],
 )
 
 
@@ -66,7 +77,7 @@ cns.volcanoplot(
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
-    show_list=["NRAS", "GMNN"],
+    show_list=["Gene156", "Gene55"],
 )
 
 
@@ -95,7 +106,7 @@ ax = cns.volcanoplot(
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
-    show_list=["NRAS", "USP53", "GMNN", "EPDR1"],
+    show_list=["Gene156", "Gene44", "Gene55", "Gene81"],
 )
 ax.set_title("Differential Expression")
 
@@ -110,7 +121,7 @@ cns.volcanoplot(
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
-    show_list=["NRAS", "USP53"],
+    show_list=["Gene156", "Gene44"],
 )
 
 
@@ -124,7 +135,7 @@ cns.volcanoplot(
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
-    show_list=["NRAS", "USP53", "GMNN"],
+    show_list=["Gene156", "Gene44", "Gene55"],
 )
 
 
@@ -138,7 +149,7 @@ cns.volcanoplot(
     x="log2FoldChange",
     y="-log10(adjp)",
     symbol="symbol",
-    show_list=["NRAS", "USP53", "GMNN"],
+    show_list=["Gene156", "Gene44", "Gene55"],
 )
 
 
