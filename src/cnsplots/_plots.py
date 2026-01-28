@@ -242,24 +242,25 @@ def heatmapplot(
         yticklabels=True,
         **kwargs,
     )
-    for cbar in cmp.cbars:
-        if isinstance(cbar, mpl.colorbar.Colorbar):
-            cbar.outline.set_linewidth(0.3)
-            cbar.ax.tick_params(size=0)
-    for ax in cmp.legend_axes[0].figure.axes:
-        if ax.get_ylabel() in cbar_titles:
-            ax.yaxis.set_label_position("left")
-            if ax.get_ylabel() == label:
-                ax.set_aspect(0.3)
-            else:
-                ax.set_aspect(6)
+
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
     )
+
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
         cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
+
+    for cbar in cmp.cbars:
+        if isinstance(cbar, mpl.colorbar.Colorbar):
+            cbar.outline.set_linewidth(0.3)
+            cbar.ax.tick_params(size=0)
+    for cbar in cmp.cbars:
+        if isinstance(cbar, mpl.colorbar.Colorbar):
+            cbar.ax.yaxis.set_label_position("left")
+            pos = cbar.ax.get_position()
+            cbar.ax.set_position([pos.x0, pos.y0, pos.width * 0.4, pos.height])
     return cmp
 
 
@@ -341,17 +342,6 @@ def dotplot(
     ...     value="mean_expr",
     ... )
     """
-    row_annotation = pch.HeatmapAnnotation(
-        axis=0,
-        verbose=0,
-        label=pch.anno_label(
-            data.pivot(index=y, columns=x, values=color)[data[x].unique()[0]],
-            colors="black",
-            va="center",
-            ha="right",
-            relpos=(1, 0.5),
-        ),
-    )
     cmap = kwargs.pop("cmap", "gnuplot")
     plotter_kwargs = {
         "data": data,
@@ -361,11 +351,11 @@ def dotplot(
         "s": size,
         "row_cluster": False,
         "col_cluster": False,
-        "show_rownames": False,
+        "show_rownames": True,
         "show_colnames": True,
-        "left_annotation": row_annotation,
         "verbose": 0,
         "cmap": cmap,
+        "grid": False,
         "rasterized": True,
         "row_names_side": "left",
         "xlabel": x,
@@ -386,24 +376,40 @@ def dotplot(
         plotter_kwargs["value"] = value
     plotter_kwargs.update(kwargs)
     cmp = DotClustermapPlotter(**plotter_kwargs)
+
+    hm_ax = cmp.heatmap_axes[-1, 0]
+    for ax in [cmp.ax_heatmap, hm_ax]:
+        ax.minorticks_off()
+        ax.tick_params(
+            axis="both",
+            which="major",
+            direction="out",
+            length=1.5,
+            width=cns.settings.linewidth_axes,
+            bottom=True,
+            left=True,
+            top=False,
+            right=False,
+        )
+    plt.setp(hm_ax.get_xticklabels(), rotation_mode="anchor", ha="right")
+
+    cmp.ax_heatmap.set_axis_on()
+    for ax in cmp.heatmap_axes.flat:
+        ax.grid(False)
+    cmp.ax_heatmap.grid(False)
+    sns.despine(ax=cmp.ax_heatmap, top=True, right=True, bottom=False, left=False)
+    for s in ["bottom", "left"]:
+        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
+
     for cbar in cmp.cbars:
         if isinstance(cbar, mpl.colorbar.Colorbar):
             cbar.outline.set_linewidth(0.3)
             cbar.ax.tick_params(size=0)
-    for ax in cmp.legend_axes[0].figure.axes:
-        if ax.get_ylabel() in color:
-            ax.yaxis.set_label_position("left")
-            # if ax.get_ylabel() == label:
-            #     ax.set_aspect(0.3)
-            # else:
-            #     ax.set_aspect(6)
-    cmp.ax_heatmap.set_axis_on()
-    plt.setp(
-        cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
-    )
-    sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
-    for s in ["top", "bottom", "left", "right"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
+    for cbar in cmp.cbars:
+        if isinstance(cbar, mpl.colorbar.Colorbar):
+            cbar.ax.yaxis.set_label_position("left")
+            pos = cbar.ax.get_position()
+            cbar.ax.set_position([pos.x0, pos.y0, pos.width * 0.4, pos.height])
     return cmp
 
 

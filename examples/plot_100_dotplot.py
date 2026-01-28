@@ -85,10 +85,11 @@ cns.dotplot(
     gene_df,
     x="gene",
     y="cell_type",
-    color="mean_expr",
+    color="pct_expressed",
     size="pct_expressed",
     value="pct_expressed",
     max_s=80,
+    ylabel_kws={"labelpad": 50},
 )
 plt.title("Gene Expression by Cell Type")
 
@@ -122,10 +123,11 @@ cns.dotplot(
     gene_df,
     x="gene",
     y="cell_type",
-    color="mean_expr",
+    color="pct_expressed",
     size="pct_expressed",
     value="pct_expressed",
     max_s=100,
+    ylabel_kws={"labelpad": 50},
 )
 
 
@@ -138,11 +140,13 @@ cns.dotplot(
     gene_df,
     x="gene",
     y="cell_type",
-    color="mean_expr",
-    size="pct_expressed",
+    color="pct_expressed",
+    size="mean_expr",
     value="pct_expressed",
     max_s=80,
     cmap="gnuplot",
+    xlabel_kws={"labelpad": 20},
+    ylabel_kws={"labelpad": 50},
 )
 
 
@@ -155,10 +159,11 @@ cns.dotplot(
     gene_df,
     x="gene",
     y="cell_type",
-    color="mean_expr",
-    size="pct_expressed",
+    color="pct_expressed",
+    size="mean_expr",
     value="pct_expressed",
     max_s=80,
+    ylabel_kws={"labelpad": 50},
 )
 
 
@@ -185,6 +190,8 @@ cns.dotplot(
     size="neg_log_p",
     value="HR",
     max_s=100,
+    xlabel_kws={"labelpad": 20},
+    ylabel_kws={"labelpad": 20},
 )
 plt.title("Cox Regression Summary")
 
@@ -219,11 +226,13 @@ cns.dotplot(
     pathways,
     x="pathway",
     y="category",
-    color="enrichment",
-    size="gene_count",
+    color="gene_count",
+    size="enrichment",
     value="gene_count",
     max_s=120,
     cmap="hot",
+    xlabel_kws={"labelpad": 30},
+    ylabel_kws={"labelpad": 25},
 )
 plt.title("Pathway Enrichment")
 
@@ -254,6 +263,7 @@ cns.dotplot(
     size="cv",
     value="mean",
     max_s=80,
+    ylabel_kws={"labelpad": 20},
 )
 plt.title("Marker Expression Over Time")
 
@@ -293,25 +303,25 @@ treatment_df = pd.DataFrame(treatment_data)
 
 mp = cns.multipanel(max_width=400)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 70, 50, margin=(10, 0, 40, 20))
 cns.dotplot(
     control_df,
     x="gene",
     y="cell_type",
-    color="expr",
-    size="pct",
+    color="pct",
+    size="expr",
     value="pct",
     max_s=60,
 )
 mp.get_axes("A").set_title("Control")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 70, 50)
 cns.dotplot(
     treatment_df,
     x="gene",
     y="cell_type",
-    color="expr",
-    size="pct",
+    color="pct",
+    size="expr",
     value="pct",
     max_s=60,
 )
@@ -324,37 +334,37 @@ mp.get_axes("B").set_title("Treatment")
 # Compare different dot size scales.
 mp = cns.multipanel(max_width=480)
 
-mp.panel("A", 80, 100)
+mp.panel("A", 80, 30, margin=(10, 0, 40, 20))
 cns.dotplot(
     gene_df.head(16),
     x="gene",
     y="cell_type",
-    color="mean_expr",
-    size="pct_expressed",
+    color="pct_expressed",
+    size="mean_expr",
     value="pct_expressed",
     max_s=40,
 )
 mp.get_axes("A").set_title("max_s=40")
 
-mp.panel("B", 80, 100)
+mp.panel("B", 80, 30, margin=(10, 0, 40, 20))
 cns.dotplot(
     gene_df.head(16),
     x="gene",
     y="cell_type",
-    color="mean_expr",
-    size="pct_expressed",
+    color="pct_expressed",
+    size="mean_expr",
     value="pct_expressed",
     max_s=80,
 )
 mp.get_axes("B").set_title("max_s=80")
 
-mp.panel("C", 80, 100)
+mp.panel("C", 80, 30)
 cns.dotplot(
     gene_df.head(16),
     x="gene",
     y="cell_type",
-    color="mean_expr",
-    size="pct_expressed",
+    color="pct_expressed",
+    size="mean_expr",
     value="pct_expressed",
     max_s=120,
 )
