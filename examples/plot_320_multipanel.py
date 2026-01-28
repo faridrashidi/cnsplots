@@ -12,8 +12,6 @@ precise control over figure dimensions in pixels.
 # %%
 # Load data
 # ~~~~~~~~~
-import numpy as np
-import pandas as pd
 import seaborn as sns
 
 import cnsplots as cns
@@ -156,69 +154,3 @@ mp.get_axes("A").set_title("Ecotyper1")
 mp.panel("C", 100, 100, pad_top=5, color_cycle="Ecotyper2")
 cns.barplot(data=tips, x="day", y="size")
 mp.get_axes("A").set_title("Ecotyper2")
-
-
-# %%
-# README Showcase figure
-# ~~~~~~~~~~~~~~~~~~~~~~
-# A comprehensive showcase of cnsplots capabilities for the README.
-
-# Create synthetic survival data
-np.random.seed(42)
-survival_data = []
-for grp, scale in [("Treatment", 36), ("Control", 24)]:
-    times = np.random.exponential(scale=scale, size=50)
-    events = np.random.binomial(1, 0.7, 50)
-    for t, e in zip(times, events):
-        survival_data.append({"time": t, "event": e, "group": grp})
-survival_df = pd.DataFrame(survival_data)
-
-mp = cns.multipanel(max_width=500)
-
-# Panel A: boxplot
-mp.panel("A", 100, 100, pad_top=5)
-cns.boxplot(data=tips, x="day", y="total_bill")
-mp.get_axes("A").set_title("Boxplot")
-
-# Panel B: violinplot
-mp.panel("B", 100, 100, pad_top=5)
-cns.violinplot(data=iris, x="species", y="sepal_width")
-mp.get_axes("B").set_title("Violinplot")
-
-# Panel C: stripplot
-mp.panel("C", 100, 100, pad_top=5)
-cns.stripplot(data=tips, x="day", y="tip", hue="sex")
-mp.get_axes("C").legend().remove()
-mp.get_axes("C").set_title("Stripplot")
-
-# Panel D: barplot
-mp.panel("D", 100, 60, pad_top=5)
-cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
-mp.get_axes("D").set_title("Barplot")
-
-# Panel E: stackplot
-mp.panel("E", 100, 100, pad_top=5, margin=(10, 0, 40, 20))
-cns.stackplot(data=tips, x="day", y="sex")
-mp.get_axes("E").set_title("Stackplot")
-
-# Panel F: kdeplot
-mp.panel("F", 100, 100, pad_top=5)
-cns.kdeplot(data=iris, x="petal_length", hue="species")
-mp.get_axes("F").legend().remove()
-mp.get_axes("F").set_title("KDE Plot")
-
-# Panel G: regplot
-mp.panel("G", 100, 100, pad_top=5)
-cns.regplot(data=tips, x="total_bill", y="tip", s=5)
-mp.get_axes("G").set_title("Regplot")
-
-# Panel H: pieplot
-mp.panel("H", 80, 80, pad_top=5, margin=(10, 0, 40, 20))
-cns.pieplot(iris, "species")
-mp.get_axes("H").set_title("Pieplot")
-
-# Panel I: survivalplot
-mp.panel("I", 100, 100, pad_top=5)
-cns.survivalplot(data=survival_df, duration="time", event="event", hue="group")
-mp.get_axes("I").legend().remove()
-mp.get_axes("I").set_title("Survivalplot")
