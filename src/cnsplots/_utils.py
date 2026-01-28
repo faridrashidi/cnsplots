@@ -497,7 +497,7 @@ def get_showcase_data():
     )
     blobs.X = blobs.X - blobs.X.mean()
 
-    # Volcano plot data (synthetic DE results)
+    # Volcano plot data
     n_genes = 500
     logfc = np.random.normal(0, 1.5, n_genes)
     pvals = 10 ** (-np.abs(logfc) * np.random.uniform(0.5, 3, n_genes))
@@ -517,6 +517,21 @@ def get_showcase_data():
         set(f"Gene{i}" for i in np.random.choice(200, 70, replace=False)),
     ]
 
+    # Slop data
+    slope_df = np.concatenate(
+        [
+            [np.random.normal(loc=1, size=15), 15 * ["site1"], 15 * ["healthy"]],
+            [np.random.normal(loc=3, size=15), 15 * ["site2"], 15 * ["healthy"]],
+            [np.random.normal(loc=0, size=15), 15 * ["site3"], 15 * ["healthy"]],
+            [np.random.normal(loc=1, size=15), 15 * ["site1"], 15 * ["disease"]],
+            [np.random.normal(loc=1, size=15), 15 * ["site2"], 15 * ["disease"]],
+            [np.random.normal(loc=3, size=15), 15 * ["site3"], 15 * ["disease"]],
+        ],
+        axis=1,
+    )
+    slope_df = pd.DataFrame(columns=["value", "site", "label"], data=slope_df.T)
+    slope_df["value"] = slope_df["value"].astype(float)
+
     # ROC data
     y_true = np.random.binomial(1, 0.4, 200)
     roc_df = pd.DataFrame(
@@ -530,7 +545,16 @@ def get_showcase_data():
             + np.random.normal(0, 0.2, 200),
         }
     )
-    return iris_df, tips_df, survival_df, blobs.T, volcano_df, gene_sets, roc_df
+    return (
+        iris_df,
+        tips_df,
+        survival_df,
+        blobs.T,
+        volcano_df,
+        gene_sets,
+        roc_df,
+        slope_df,
+    )
 
 
 def palettes(color):
