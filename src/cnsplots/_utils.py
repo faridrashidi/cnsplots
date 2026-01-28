@@ -203,6 +203,7 @@ def take_legend_out(title=None):
         bbox_to_anchor=(1, 1.02),
         loc="upper left",
         title=title,
+        markerscale=1,
     )
 
 
@@ -465,6 +466,70 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
         print("   ---> P-values were determined by two-sided Fisher's exact test.")
     if test == "chi-squared":
         print("   ---> P-values were determined by two-sided Chi-squared test.")
+
+
+def get_showcase_data():
+    import numpy as np
+    import pandas as pd
+    import scanpy as sc
+    import seaborn as sns
+
+    np.random.seed(42)
+    survival_data = []
+    for grp, scale in [("Treatment", 36), ("Control", 24)]:
+        times = np.random.exponential(scale=scale, size=50)
+        events = np.random.binomial(1, 0.7, 50)
+        for t, e in zip(times, events):
+            survival_data.append({"time": t, "event": e, "group": grp})
+    survival_df = pd.DataFrame(survival_data)
+    survival_df["age"] = np.random.normal(60, 10, len(survival_df)).astype(int)
+    survival_df["stage"] = np.random.choice(["I", "II", "III"], len(survival_df))
+
+    iris_df = sns.load_dataset("iris")
+    tips_df = sns.load_dataset("tips")
+    blobs = sc.datasets.blobs()
+    blobs.obs["MITF"] = np.random.random(blobs.shape[0])
+    blobs.var["Ensemble"] = [f"ens{x}" for x in np.random.randint(0, 3, blobs.shape[1])]
+    blobs.obs["Selected"] = np.where(blobs.obs["MITF"] > 0.95, "o", None)
+    blobs.obs["Cluster"] = pd.Categorical(
+        [f"C{x}" for x in np.random.randint(0, 4, blobs.shape[0])]
+    )
+    blobs.X = blobs.X - blobs.X.mean()
+
+    # Volcano plot data (synthetic DE results)
+    n_genes = 500
+    logfc = np.random.normal(0, 1.5, n_genes)
+    pvals = 10 ** (-np.abs(logfc) * np.random.uniform(0.5, 3, n_genes))
+    pvals = np.clip(pvals, 1e-50, 1)
+    volcano_df = pd.DataFrame(
+        {
+            "log2FoldChange": logfc,
+            "-log10(adjp)": -np.log10(pvals),
+            "symbol": [f"Gene{i}" for i in range(n_genes)],
+        }
+    )
+
+    # Venn plot data
+    gene_sets = [
+        set(f"Gene{i}" for i in np.random.choice(200, 80, replace=False)),
+        set(f"Gene{i}" for i in np.random.choice(200, 90, replace=False)),
+        set(f"Gene{i}" for i in np.random.choice(200, 70, replace=False)),
+    ]
+
+    # ROC data
+    y_true = np.random.binomial(1, 0.4, 200)
+    roc_df = pd.DataFrame(
+        {
+            "label": y_true,
+            "Model A": y_true * 0.5
+            + (1 - y_true) * 0.3
+            + np.random.normal(0, 0.25, 200),
+            "Model B": y_true * 0.6
+            + (1 - y_true) * 0.2
+            + np.random.normal(0, 0.2, 200),
+        }
+    )
+    return iris_df, tips_df, survival_df, blobs.T, volcano_df, gene_sets, roc_df
 
 
 def palettes(color):
