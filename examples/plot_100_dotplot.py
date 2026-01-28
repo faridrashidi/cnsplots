@@ -31,7 +31,7 @@ tips_agg = tips.groupby(["day", "sex"]).agg({"total_bill": ["mean", "count"]})
 tips_agg.columns = ["mean_bill", "count"]
 tips_agg = tips_agg.reset_index()
 
-cns.figure(150, 80)
+cns.figure(80, 50)
 cns.dotplot(
     tips_agg,
     x="sex",
@@ -51,7 +51,7 @@ tips_minmax = tips.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
 
-cns.figure(150, 50)
+cns.figure(80, 50)
 cns.dotplot(
     tips_minmax,
     x="sex",
@@ -80,7 +80,7 @@ for gene in genes:
         )
 gene_df = pd.DataFrame(gene_expr)
 
-cns.figure(180, 100)
+cns.figure(120, 100)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -118,7 +118,7 @@ for gene in genes:
         )
 gene_df = pd.DataFrame(gene_expr)
 
-cns.figure(200, 120)
+cns.figure(150, 120)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -135,7 +135,7 @@ cns.dotplot(
 # Dotplot with custom colormap
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use a different colormap for color encoding.
-cns.figure(180, 100)
+cns.figure(150, 100)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -154,7 +154,7 @@ cns.dotplot(
 # Dotplot with size encoding only
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Display dots with size encoding.
-cns.figure(180, 100)
+cns.figure(150, 100)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -181,7 +181,7 @@ cox_summary = pd.DataFrame(
     }
 )
 
-cns.figure(150, 100)
+cns.figure(80, 100)
 cns.dotplot(
     cox_summary,
     x="covariate",
@@ -221,7 +221,7 @@ pathways = pd.DataFrame(
     }
 )
 
-cns.figure(200, 100)
+cns.figure(100, 100)
 cns.dotplot(
     pathways,
     x="pathway",
@@ -254,7 +254,7 @@ for tp in timepoints:
         )
 time_df = pd.DataFrame(time_data)
 
-cns.figure(150, 80)
+cns.figure(100, 80)
 cns.dotplot(
     time_df,
     x="timepoint",
@@ -266,106 +266,3 @@ cns.dotplot(
     ylabel_kws={"labelpad": 20},
 )
 plt.title("Marker Expression Over Time")
-
-
-# %%
-# Comparing conditions with dotplot
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Side-by-side condition comparison using multipanel.
-np.random.seed(42)
-genes = ["Gene1", "Gene2", "Gene3", "Gene4"]
-conditions = ["Control", "Treatment"]
-cell_types = ["Type A", "Type B", "Type C"]
-
-control_data = []
-treatment_data = []
-for gene in genes:
-    for cell in cell_types:
-        control_data.append(
-            {
-                "gene": gene,
-                "cell_type": cell,
-                "pct": np.random.uniform(20, 80),
-                "expr": np.random.uniform(0.5, 2),
-            }
-        )
-        treatment_data.append(
-            {
-                "gene": gene,
-                "cell_type": cell,
-                "pct": np.random.uniform(30, 100),
-                "expr": np.random.uniform(1, 3),
-            }
-        )
-
-control_df = pd.DataFrame(control_data)
-treatment_df = pd.DataFrame(treatment_data)
-
-mp = cns.multipanel(max_width=400)
-
-mp.panel("A", 70, 50, margin=(10, 0, 40, 20))
-cns.dotplot(
-    control_df,
-    x="gene",
-    y="cell_type",
-    color="pct",
-    size="expr",
-    value="pct",
-    max_s=60,
-)
-mp.get_axes("A").set_title("Control")
-
-mp.panel("B", 70, 50)
-cns.dotplot(
-    treatment_df,
-    x="gene",
-    y="cell_type",
-    color="pct",
-    size="expr",
-    value="pct",
-    max_s=60,
-)
-mp.get_axes("B").set_title("Treatment")
-
-
-# %%
-# Dotplot with different max sizes
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Compare different dot size scales.
-mp = cns.multipanel(max_width=480)
-
-mp.panel("A", 80, 30, margin=(10, 0, 40, 20))
-cns.dotplot(
-    gene_df.head(16),
-    x="gene",
-    y="cell_type",
-    color="pct_expressed",
-    size="mean_expr",
-    value="pct_expressed",
-    max_s=40,
-)
-mp.get_axes("A").set_title("max_s=40")
-
-mp.panel("B", 80, 30, margin=(10, 0, 40, 20))
-cns.dotplot(
-    gene_df.head(16),
-    x="gene",
-    y="cell_type",
-    color="pct_expressed",
-    size="mean_expr",
-    value="pct_expressed",
-    max_s=80,
-)
-mp.get_axes("B").set_title("max_s=80")
-
-mp.panel("C", 80, 30)
-cns.dotplot(
-    gene_df.head(16),
-    x="gene",
-    y="cell_type",
-    color="pct_expressed",
-    size="mean_expr",
-    value="pct_expressed",
-    max_s=120,
-)
-mp.get_axes("C").set_title("max_s=120")
