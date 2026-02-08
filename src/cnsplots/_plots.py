@@ -23,6 +23,20 @@ import cnsplots._helper_cmprsk as helper_cmprsk
 import cnsplots._helper_heatmap as helper_heatmap
 import cnsplots._helper_phylo as helper_phylo
 import cnsplots._helper_sankey as helper_sankey
+from cnsplots._validation import (
+    validate_adata_layer,
+    validate_adata_obs_columns,
+    validate_adata_var_columns,
+    validate_anndata,
+    validate_binary_column,
+    validate_column_exists,
+    validate_column_type,
+    validate_columns_exist,
+    validate_dataframe,
+    validate_dataframe_not_empty,
+    validate_no_nulls,
+    validate_sufficient_data,
+)
 
 
 def heatmapplot(
@@ -127,6 +141,29 @@ def heatmapplot(
     ...     adata, row_annotation=["cell_type", "batch"], col_cluster=True, cmap="bwr"
     ... )
     """
+    # Validate inputs
+    validate_anndata(adata, "adata", "heatmapplot")
+
+    # Validate layer if provided
+    if layer is not None:
+        validate_adata_layer(adata, layer, "heatmapplot")
+
+    # Validate row annotations
+    if row_annotation is not None:
+        validate_adata_obs_columns(adata, row_annotation, "heatmapplot")
+
+    # Validate column annotations
+    if col_annotation is not None:
+        validate_adata_var_columns(adata, col_annotation, "heatmapplot")
+
+    # Validate row split if it's a string
+    if isinstance(row_split, str):
+        validate_adata_obs_columns(adata, row_split, "heatmapplot")
+
+    # Validate column split if it's a string
+    if isinstance(col_split, str):
+        validate_adata_var_columns(adata, col_split, "heatmapplot")
+
     if cmap is None:
         cmap = cns.settings.palette_seq
     cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
@@ -342,6 +379,14 @@ def dotplot(
     ...     value="mean_expr",
     ... )
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "dotplot")
+    columns_to_check = [x, y, color, size]
+    if value is not None:
+        columns_to_check.append(value)
+    validate_columns_exist(data, columns_to_check, "dotplot")
+    validate_dataframe_not_empty(data, "dotplot")
+
     cmap = kwargs.pop("cmap", "gnuplot")
     plotter_kwargs = {
         "data": data,
@@ -488,6 +533,11 @@ def boxplot(
     ... )
     >>> ax.set_title("Treatment Response")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "boxplot")
+    validate_columns_exist(data, [x, y], "boxplot")
+    validate_dataframe_not_empty(data, "boxplot")
+
     args = {
         "showfliers": showoutliers,
         "showcaps": False,
@@ -630,6 +680,11 @@ def violinplot(
     ... )
     >>> ax.set_title("Expression by Condition")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "violinplot")
+    validate_columns_exist(data, [x, y], "violinplot")
+    validate_dataframe_not_empty(data, "violinplot")
+
     args = {
         "showfliers": False,
         "showcaps": False,
@@ -735,6 +790,11 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
     >>> ax = cns.barplot(data=df, x="treatment", y="response", palette="cell_type")
     >>> ax.set_ylabel("Mean Response")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "barplot")
+    validate_columns_exist(data, [x, y], "barplot")
+    validate_dataframe_not_empty(data, "barplot")
+
     args = {
         "edgecolor": None,
         "errorbar": None,
@@ -881,6 +941,11 @@ def stackplot(
     ... )
     >>> ax.set_xlabel("Mutation Count")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "stackplot")
+    validate_columns_exist(data, [x, y], "stackplot")
+    validate_dataframe_not_empty(data, "stackplot")
+
     data2 = data.value_counts([x, y]).reset_index()
     if horizontal:
         df = data2.pivot(index=y, columns=x, values="count")
@@ -1007,6 +1072,11 @@ def distplot(data, x, **kwargs):
     >>> ax = cns.distplot(data=df, x="expression", hue="treatment")
     >>> ax.set_xlabel("Gene Expression")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "distplot")
+    validate_column_exists(data, x, "x", "distplot")
+    validate_dataframe_not_empty(data, "distplot")
+
     args = {"kde": True, "edgecolor": None}
     args.update(kwargs)
     ax = sns.histplot(data=data, x=x, **args)
@@ -1076,6 +1146,14 @@ def kdeplot(data, x, add_mode=True, **kwargs):
     >>> ax = cns.kdeplot(data=df, x="score", hue="treatment", fill=True)
     >>> ax.set_xlabel("Score")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "kdeplot")
+    columns_to_check = [x]
+    if "hue" in kwargs:
+        columns_to_check.append(kwargs["hue"])
+    validate_columns_exist(data, columns_to_check, "kdeplot")
+    validate_dataframe_not_empty(data, "kdeplot")
+
     linewidth = kwargs.pop("linewidth", 1)
     ax = sns.kdeplot(data=data, x=x, linewidth=linewidth, **kwargs)
     ax = plt.gca()
@@ -1198,6 +1276,18 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
     >>> ax = cns.regplot(data=df, x="dose", y="response", hue="cell_line")
     >>> ax.set_xlabel("Drug Dose")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "regplot")
+    columns_to_check = [x, y]
+    if hue is not None:
+        columns_to_check.append(hue)
+    validate_columns_exist(data, columns_to_check, "regplot")
+    validate_dataframe_not_empty(data, "regplot")
+
+    # Validate numeric columns
+    validate_column_type(data, x, ["numeric"], "regplot")
+    validate_column_type(data, y, ["numeric"], "regplot")
+
     ax = plt.gca()
     args = {
         "line_kws": {"lw": 1.2},
@@ -1298,6 +1388,11 @@ def pieplot(data, x, legend="bottom", hue_order=None):
     >>> # Specify category order
     >>> ax = cns.pieplot(data=df, x="response", hue_order=["CR", "PR", "SD", "PD"])
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "pieplot")
+    validate_column_exists(data, x, "x", "pieplot")
+    validate_dataframe_not_empty(data, "pieplot")
+
     df = data[x].value_counts()
     if hue_order is None:
         hue_order = df.index
@@ -1370,6 +1465,11 @@ def donutplot(data, x, legend="bottom", hue_order=None):
     >>> # Specify category order
     >>> ax = cns.donutplot(data=df, x="grade", hue_order=["I", "II", "III", "IV"])
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "donutplot")
+    validate_column_exists(data, x, "x", "donutplot")
+    validate_dataframe_not_empty(data, "donutplot")
+
     df = data[x].value_counts()
     if hue_order is None:
         hue_order = df.index
@@ -1464,6 +1564,21 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     ... )
     >>> ax.set_title("Overall Survival by Treatment")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "survivalplot")
+    validate_columns_exist(data, [duration, event, hue], "survivalplot")
+    validate_dataframe_not_empty(data, "survivalplot")
+
+    # Validate data types
+    validate_column_type(data, duration, ["numeric"], "survivalplot")
+    validate_binary_column(data, event, "survivalplot")
+
+    # Validate no nulls in critical columns
+    validate_no_nulls(data, [duration, event, hue], "survivalplot")
+
+    # Validate sufficient data
+    validate_sufficient_data(data, duration, 2, "survivalplot")
+
     import lifelines as ll
 
     ax = None
@@ -1504,19 +1619,33 @@ def survivalplot(data, duration, event, hue, hue_order=None):
     df[hue] = df[hue].cat.codes
 
     if len(hue_order) == 2:
-        logrank_test = ll.statistics.multivariate_logrank_test(
-            df[duration], df[hue], df[event]
-        )
-        p = num2tex.num2tex(logrank_test.p_value, precision=2)
-        print("   ---> P-value was determined by two-sided multivariate log-rank test.")
+        try:
+            logrank_test = ll.statistics.multivariate_logrank_test(
+                df[duration], df[hue], df[event]
+            )
+            p = num2tex.num2tex(logrank_test.p_value, precision=2)
+            print(
+                "   ---> P-value was determined by two-sided multivariate log-rank test."
+            )
+        except Exception as e:
+            raise RuntimeError(
+                "[survivalplot] Log-rank test failed. This may indicate insufficient data "
+                f"or invalid event/duration values. Details: {e}"
+            ) from e
     else:
-        cph = ll.CoxPHFitter()
-        cph.fit(df, duration_col=duration, event_col=event)
-        trend_test = cph.log_likelihood_ratio_test()
-        p = num2tex.num2tex(trend_test.p_value, precision=2)
-        print(
-            "   ---> P-value was determined by two-sided multivariate log-rank test for trend."
-        )
+        try:
+            cph = ll.CoxPHFitter()
+            cph.fit(df, duration_col=duration, event_col=event)
+            trend_test = cph.log_likelihood_ratio_test()
+            p = num2tex.num2tex(trend_test.p_value, precision=2)
+            print(
+                "   ---> P-value was determined by two-sided multivariate log-rank test for trend."
+            )
+        except Exception as e:
+            raise RuntimeError(
+                "[survivalplot] Cox proportional hazards model failed. This may indicate "
+                f"insufficient data or model convergence issues. Details: {e}"
+            ) from e
 
     df = data[[duration, hue, event]].copy()
     df = df[df[hue].isin([hue_order[0], hue_order[-1]])]
@@ -1524,11 +1653,17 @@ def survivalplot(data, duration, event, hue, hue_order=None):
         df[hue], categories=[hue_order[0], hue_order[-1]], ordered=True
     )
     df[hue] = df[hue].cat.codes
-    cph = ll.CoxPHFitter()
-    cph.fit(df, duration_col=duration, event_col=event)
-    hazard_ratio = cph.hazard_ratios_.iloc[0]
-    ci1 = cph.summary["exp(coef) lower 95%"].iloc[0]
-    ci2 = cph.summary["exp(coef) upper 95%"].iloc[0]
+    try:
+        cph = ll.CoxPHFitter()
+        cph.fit(df, duration_col=duration, event_col=event)
+        hazard_ratio = cph.hazard_ratios_.iloc[0]
+        ci1 = cph.summary["exp(coef) lower 95%"].iloc[0]
+        ci2 = cph.summary["exp(coef) upper 95%"].iloc[0]
+    except Exception as e:
+        raise RuntimeError(
+            "[survivalplot] Could not compute hazard ratios. This may indicate "
+            f"insufficient data or model convergence issues. Details: {e}"
+        ) from e
     ax.text(
         0, 0, f"HR = {hazard_ratio:.2f} ({ci1:.2f}-{ci2:.2f})\nP = " + rf"${p:.2g}$"
     )
@@ -1634,6 +1769,20 @@ def cumulativeincidenceplot(
     ...     xticks=[0, 12, 24, 36, 48, 60],
     ... )
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "cumulativeincidenceplot")
+    validate_columns_exist(data, [duration, event, hue], "cumulativeincidenceplot")
+    validate_dataframe_not_empty(data, "cumulativeincidenceplot")
+
+    # Validate data types
+    validate_column_type(data, duration, ["numeric"], "cumulativeincidenceplot")
+
+    # Validate no nulls in critical columns
+    validate_no_nulls(data, [duration, event, hue], "cumulativeincidenceplot")
+
+    # Validate sufficient data
+    validate_sufficient_data(data, duration, 2, "cumulativeincidenceplot")
+
     import lifelines as ll
 
     ax = None
@@ -1777,6 +1926,11 @@ def volcanoplot(
     ...     show_list=["TP53", "EGFR", "KRAS"],
     ... )
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "volcanoplot")
+    validate_columns_exist(data, [x, y, symbol], "volcanoplot")
+    validate_dataframe_not_empty(data, "volcanoplot")
+
     import adjustText as at
 
     hue = "DEG"
@@ -1921,6 +2075,11 @@ def stripplot(
     ... )
     >>> ax.set_ylabel("Gene Expression")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "stripplot")
+    validate_columns_exist(data, [x, y], "stripplot")
+    validate_dataframe_not_empty(data, "stripplot")
+
     ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
     sns.boxplot(
         data=data,
@@ -2009,6 +2168,18 @@ def histplot(**kwargs):
     >>> ax = cns.histplot(data=df, x="expression", kde=True, hue="treatment")
     >>> ax.set_xlabel("Gene Expression")
     """
+    # Validate inputs if provided in kwargs
+    if "data" in kwargs:
+        validate_dataframe(kwargs["data"], "data", "histplot")
+        data = kwargs["data"]
+        columns_to_check = []
+        if "x" in kwargs:
+            columns_to_check.append(kwargs["x"])
+        if "y" in kwargs:
+            columns_to_check.append(kwargs["y"])
+        if columns_to_check:
+            validate_columns_exist(data, columns_to_check, "histplot")
+
     kwargs.setdefault("edgecolor", None)
     ax = sns.histplot(**kwargs)
     return ax
@@ -2069,6 +2240,18 @@ def lineplot(**kwargs):
     ... )
     >>> ax.set_ylabel("Gene Expression")
     """
+    # Validate inputs if provided in kwargs
+    if "data" in kwargs:
+        validate_dataframe(kwargs["data"], "data", "lineplot")
+        data = kwargs["data"]
+        columns_to_check = []
+        if "x" in kwargs:
+            columns_to_check.append(kwargs["x"])
+        if "y" in kwargs:
+            columns_to_check.append(kwargs["y"])
+        if columns_to_check:
+            validate_columns_exist(data, columns_to_check, "lineplot")
+
     ax = sns.lineplot(**kwargs)
     return ax
 
@@ -2134,6 +2317,11 @@ def scatterplot(data, x, y, s=7, **kwargs):
     ... )
     >>> ax.set_xlabel("UMAP Dimension 1")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "scatterplot")
+    validate_columns_exist(data, [x, y], "scatterplot")
+    validate_dataframe_not_empty(data, "scatterplot")
+
     ax = sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
 
     if ax.get_legend() is not None:
@@ -2208,6 +2396,14 @@ def upsetplot(sets, **kwargs):
     >>> # Limit to larger intersections
     >>> axes = cns.upsetplot(sets, min_subset_size=10)
     """
+    # Validate inputs
+    if not isinstance(sets, dict):
+        raise TypeError(
+            f"[upsetplot] Parameter 'sets' must be a dictionary, got {type(sets).__name__}"
+        )
+    if not sets:
+        raise ValueError("[upsetplot] Parameter 'sets' cannot be empty")
+
     import upsetplot as usp
 
     sets = {k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()}
@@ -2290,6 +2486,20 @@ def vennplot(lists, labels):
     ...     [set1, set2, set3], labels=["Treatment A", "Treatment B", "Treatment C"]
     ... )
     """
+    # Validate inputs
+    if not isinstance(lists, list):
+        raise TypeError(
+            f"[vennplot] Parameter 'lists' must be a list, got {type(lists).__name__}"
+        )
+    if len(lists) not in [2, 3]:
+        raise ValueError(
+            f"[vennplot] Parameter 'lists' must contain 2 or 3 sets, got {len(lists)}"
+        )
+    if len(labels) != len(lists):
+        raise ValueError(
+            f"[vennplot] Length of 'labels' ({len(labels)}) must match length of 'lists' ({len(lists)})"
+        )
+
     import matplotlib_venn as venn
 
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
@@ -2414,6 +2624,10 @@ def confusionplot(
     ...     positive_y="Positive",
     ... )
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "confusionplot")
+    validate_columns_exist(data, [x, y], "confusionplot")
+    validate_dataframe_not_empty(data, "confusionplot")
 
     if y_order is None:
         y_order = pd.unique(data[y])
@@ -2446,7 +2660,13 @@ def confusionplot(
     if annot:
         for i in range(cm_df.shape[0]):
             for j in range(cm_df.shape[1]):
-                ax.text(j, i, int(cm_df.iat[i, j]), ha="center", va="center")
+                cell_value = cm_df.iat[i, j]
+                if pd.isna(cell_value):
+                    raise ValueError(
+                        f"[confusionplot] Confusion matrix contains NaN at position [{i},{j}]. "
+                        "All values must be valid numbers."
+                    )
+                ax.text(j, i, int(cell_value), ha="center", va="center")
 
     # Remove colorbar to match your original style
     # (comment these two lines if you'd like to keep it)
@@ -2463,23 +2683,53 @@ def confusionplot(
 
         # Decide which labels are positive/negative on each axis
         pos_y = y_order[-1] if positive_y is None else positive_y
-        neg_y = [lbl for lbl in y_order if lbl != pos_y][0]
+        neg_y_list = [lbl for lbl in y_order if lbl != pos_y]
+        if not neg_y_list:
+            raise ValueError(
+                f"[confusionplot] Could not find negative label in y_order. "
+                f"positive_y='{pos_y}', y_order={list(y_order)}"
+            )
+        neg_y = neg_y_list[0]
 
         pos_x = x_order[-1] if positive_x is None else positive_x
-        neg_x = [lbl for lbl in x_order if lbl != pos_x][0]
+        neg_x_list = [lbl for lbl in x_order if lbl != pos_x]
+        if not neg_x_list:
+            raise ValueError(
+                f"[confusionplot] Could not find negative label in x_order. "
+                f"positive_x='{pos_x}', x_order={list(x_order)}"
+            )
+        neg_x = neg_x_list[0]
 
         # Extract counts in tn/fp/fn/tp layout:
         # rows = true (neg_y, pos_y), cols = pred (neg_x, pos_x)
         try:
-            tn = int(cm_df.loc[neg_y, neg_x])
-            fp = int(cm_df.loc[neg_y, pos_x])
-            fn = int(cm_df.loc[pos_y, neg_x])
-            tp = int(cm_df.loc[pos_y, pos_x])
+            tn_val = cm_df.loc[neg_y, neg_x]
+            fp_val = cm_df.loc[neg_y, pos_x]
+            fn_val = cm_df.loc[pos_y, neg_x]
+            tp_val = cm_df.loc[pos_y, pos_x]
         except KeyError as e:
             raise ValueError(
-                "Could not find a required cell for stats. "
+                "[confusionplot] Could not find a required cell for stats. "
                 f"Check x_order/y_order and positive_x/positive_y. Missing: {e}"
             ) from e
+
+        # Validate no NaN values
+        for name, val in [
+            ("TN", tn_val),
+            ("FP", fp_val),
+            ("FN", fn_val),
+            ("TP", tp_val),
+        ]:
+            if pd.isna(val):
+                raise ValueError(
+                    f"[confusionplot] {name} cell contains NaN. All confusion matrix cells "
+                    "must have valid numeric values for statistics computation."
+                )
+
+        tn = int(tn_val)
+        fp = int(fp_val)
+        fn = int(fn_val)
+        tp = int(tp_val)
 
         # Compute stats safely (avoid zero-division)
         def _safe_div(a, b):
@@ -2497,7 +2747,14 @@ def confusionplot(
         kappa = np.nan if (pe is np.nan or pe == 1) else _safe_div(po - pe, 1 - pe)
 
         # Fisher exact & odds ratio
-        _, p_value = fisher_exact([[tp, fp], [fn, tn]])
+        try:
+            _, p_value = fisher_exact([[tp, fp], [fn, tn]])
+        except (ValueError, RuntimeError) as e:
+            raise ValueError(
+                "[confusionplot] Fisher's exact test failed. Ensure confusion matrix "
+                f"has valid counts. Details: {e}"
+            ) from e
+
         odds_ratio = _safe_div(tp * tn, fp * fn)
 
         # Overlay the stats block
@@ -2565,6 +2822,11 @@ def sankeyplot(data, x, y):
     >>> # Patient flow across treatment stages
     >>> ax = cns.sankeyplot(data=df, x="stage_1_response", y="stage_2_response")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "sankeyplot")
+    validate_columns_exist(data, [x, y], "sankeyplot")
+    validate_dataframe_not_empty(data, "sankeyplot")
+
     ax = plt.gca()
     current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
@@ -2607,6 +2869,9 @@ def phyloplot(adata):
     >>> # adata should contain phylogenetic tree information
     >>> ax = cns.phyloplot(adata)
     """
+    # Validate inputs
+    validate_anndata(adata, "adata", "phyloplot")
+
     # TODO: write examples
     ax = helper_phylo.phyloplot(adata)
     return ax
@@ -2675,6 +2940,35 @@ def forestplot(model):
     >>> model.fit(predictors=["biomarker_a", "biomarker_b"])
     >>> ax = cns.forestplot(model)
     """
+    # Validate model has required attributes
+    if not hasattr(model, "results"):
+        raise ValueError(
+            "[forestplot] Model object must have a 'results' attribute containing fitted model results."
+        )
+    if not hasattr(model, "name"):
+        raise ValueError(
+            "[forestplot] Model object must have a 'name' attribute indicating model type."
+        )
+
+    # Validate results is a DataFrame
+    validate_dataframe(model.results, "model.results", "forestplot")
+    validate_dataframe_not_empty(model.results, "forestplot")
+
+    # Validate required columns exist based on model type
+    if model.name == "cox":
+        required_cols = [
+            "display_label",
+            "exp(coef)",
+            "log10_pvalue",
+            "exp(coef) lower_err",
+            "exp(coef) upper_err",
+            "hue_group",
+        ]
+        validate_columns_exist(model.results, required_cols, "forestplot")
+    else:
+        required_cols = ["predictor", "auc", "lower_ci", "upper_ci", "hue_group"]
+        validate_columns_exist(model.results, required_cols, "forestplot")
+
     data = model.results.copy()
 
     if model.name == "cox":
@@ -2835,6 +3129,11 @@ def ridgeplot(data, x, y, cmap="viridis"):
     >>> # Time series data with a custom colormap
     >>> axes = cns.ridgeplot(data=df, x="temperature", y="month", cmap="plasma")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "ridgeplot")
+    validate_columns_exist(data, [x, y], "ridgeplot")
+    validate_dataframe_not_empty(data, "ridgeplot")
+
     categories = data[y].unique()
     n = len(categories)
     colors = cns.utils._get_hex_colors_from_colorbar(cmap, n)
@@ -2940,6 +3239,11 @@ def slopeplot(data, x, y, hue):
     >>> # Compare two treatments across sites
     >>> ax = cns.slopeplot(data=df, x="site", y="response_rate", hue="treatment")
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "slopeplot")
+    validate_columns_exist(data, [x, y, hue], "slopeplot")
+    validate_dataframe_not_empty(data, "slopeplot")
+
     # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
     red = palettable.colorbrewer.qualitative.Set1_9.hex_colors[0]
     blue = palettable.colorbrewer.qualitative.Set1_9.hex_colors[1]
@@ -3042,6 +3346,11 @@ def qqplot(data, x, **kwargs):
     >>> from scipy import stats
     >>> ax = cns.qqplot(data=df, x="values", dist=stats.t, distargs=(10,))
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "qqplot")
+    validate_column_exists(data, x, "x", "qqplot")
+    validate_dataframe_not_empty(data, "qqplot")
+
     import statsmodels.api as sm
 
     ax = plt.gca()
@@ -3115,8 +3424,19 @@ def rocplot(data, true_label_col, pred_prob_cols):
     ...     pred_prob_cols=["model_a_prob", "model_b_prob", "model_c_prob"],
     ... )
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "rocplot")
+    validate_dataframe_not_empty(data, "rocplot")
+
     if isinstance(pred_prob_cols, str):
         pred_prob_cols = [pred_prob_cols]
+
+    # Validate columns
+    columns_to_check = [true_label_col] + pred_prob_cols
+    validate_columns_exist(data, columns_to_check, "rocplot")
+
+    # Validate binary labels
+    validate_binary_column(data, true_label_col, "rocplot")
 
     for col in pred_prob_cols:
         fpr, tpr, _ = roc_curve(data[true_label_col], data[col])
@@ -3216,6 +3536,11 @@ def gseaplot(
     ...     top_term=30,
     ... )
     """
+    # Validate inputs
+    validate_dataframe(data, "data", "gseaplot")
+    validate_columns_exist(data, [y, "NES", color], "gseaplot")
+    validate_dataframe_not_empty(data, "gseaplot")
+
     import gseapy as gp
 
     ax = plt.gca()

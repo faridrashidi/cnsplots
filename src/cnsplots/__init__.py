@@ -5,6 +5,7 @@ import warnings
 
 import cnsplots._methods as methods
 import cnsplots._utils as utils
+import cnsplots._validation as validation
 from cnsplots._methods import CoxModel, LogisticModel, prerank
 from cnsplots._multipanels import multipanel
 from cnsplots._plots import (
@@ -65,6 +66,7 @@ __version__ = "0.0.6"
 __all__ = (
     utils,
     settings,
+    validation,
     BLUE,
     BROWN,
     CHOCOLATE,
