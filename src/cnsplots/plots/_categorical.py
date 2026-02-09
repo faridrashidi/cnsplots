@@ -1,3 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    import pandas as pd
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -12,7 +20,14 @@ from cnsplots._validation import (
 )
 
 
-def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
+def barplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    pairs: list[tuple[str, str]] | None = None,
+    addtip: bool = False,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a bar plot showing mean values across categories with optional statistics.
 
@@ -129,18 +144,18 @@ def barplot(data, x, y, pairs=None, addtip=False, **kwargs):
 
 
 def stackplot(
-    data,
-    x,
-    y,
-    bar_order=None,
-    stack_order=None,
-    horizontal=False,
-    width=0.5,
-    normalize=True,
-    pairs=None,
-    addtip=False,
-    n_factor=1,
-):
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    bar_order: list[str] | None = None,
+    stack_order: list[str] | None = None,
+    horizontal: bool = False,
+    width: float = 0.5,
+    normalize: bool = True,
+    pairs: list[tuple[str, str]] | None = None,
+    addtip: bool = False,
+    n_factor: int | float = 1,
+) -> Axes:
     """
     Create a stacked bar plot showing categorical distributions.
 
@@ -280,8 +295,15 @@ def stackplot(
 
 
 def stripplot(
-    data, x, y, size=2, showmedian=True, showmeans=False, addcount=False, **kwargs
-):
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    size: float = 2,
+    showmedian: bool = True,
+    showmeans: bool = False,
+    addcount: bool = False,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a strip plot showing individual data points with optional summary statistics.
 
@@ -371,7 +393,12 @@ def stripplot(
     return ax
 
 
-def pieplot(data, x, legend="bottom", hue_order=None):
+def pieplot(
+    data: pd.DataFrame,
+    x: str,
+    legend: str = "bottom",
+    hue_order: list[str] | None = None,
+) -> Axes:
     """
     Create a pie chart showing categorical proportions.
 
@@ -437,7 +464,12 @@ def pieplot(data, x, legend="bottom", hue_order=None):
     return ax
 
 
-def donutplot(data, x, legend="bottom", hue_order=None):
+def donutplot(
+    data: pd.DataFrame,
+    x: str,
+    legend: str = "bottom",
+    hue_order: list[str] | None = None,
+) -> Axes:
     """
     Create a donut chart showing categorical proportions.
 

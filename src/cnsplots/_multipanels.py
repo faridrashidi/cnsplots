@@ -1,5 +1,12 @@
 """Multipanel figure creation for CNSPlots."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+
 import matplotlib.pyplot as plt
 
 import cnsplots as cns
@@ -78,7 +85,7 @@ class multipanel:
     ensuring it appears to the left of the ylabel and axes content.
     """
 
-    def __init__(self, max_width=540):
+    def __init__(self, max_width: int = 540) -> None:
         self._max_width = max_width
         self._panels = []  # List of panel info dicts
         self.fig = None
@@ -93,7 +100,7 @@ class multipanel:
         self._rows = []
         self._row_heights = []  # Max total height in each row
 
-    def _get_panel_total_size(self, panel):
+    def _get_panel_total_size(self, panel: dict) -> tuple[float, float]:
         """Get the total width and height of a panel including margins."""
         total_width = (
             panel["margin_left"]
@@ -111,7 +118,7 @@ class multipanel:
         )
         return total_width, total_height
 
-    def _get_stacked_height(self, panel_idx):
+    def _get_stacked_height(self, panel_idx: int) -> float:
         """Get total height of a panel plus any panels stacked below it."""
         panel = self._panels[panel_idx]
         _, total_height = self._get_panel_total_size(panel)
@@ -122,7 +129,7 @@ class multipanel:
                 total_height += child_height
         return total_height
 
-    def _calculate_layout(self):
+    def _calculate_layout(self) -> None:
         """Calculate row assignments and positions for all panels."""
         self._rows = []
         self._row_heights = []
@@ -159,7 +166,7 @@ class multipanel:
             self._rows.append(current_row)
             self._row_heights.append(current_row_max_height)
 
-    def _get_panel_position(self, panel_idx):
+    def _get_panel_position(self, panel_idx: int) -> tuple[float, float]:
         """Get the x, y position (top-left of axes content area) for a panel."""
         panel = self._panels[panel_idx]
 
@@ -233,7 +240,7 @@ class multipanel:
 
         return x, y
 
-    def _create_or_update_figure(self):
+    def _create_or_update_figure(self) -> None:
         """Create or update the figure and all axes based on current layout."""
         self._calculate_layout()
 
@@ -312,18 +319,18 @@ class multipanel:
 
     def panel(
         self,
-        label=None,
-        height=150,
-        width=150,
-        label_left=10,
-        label_top=12,
-        pad_left=20,
-        pad_top=0,
-        margin=(10, 0, 0, 20),
-        color_cycle=None,
-        color_map=None,
-        below=None,
-    ):
+        label: str | None = None,
+        height: int = 150,
+        width: int = 150,
+        label_left: int = 10,
+        label_top: int = 12,
+        pad_left: int = 20,
+        pad_top: int = 0,
+        margin: tuple[int, int, int, int] = (10, 0, 0, 20),
+        color_cycle: str | None = None,
+        color_map: str | None = None,
+        below: str | None = None,
+    ) -> Axes:
         """
         Add a panel with specified dimensions, label space, padding, and margins.
 
@@ -444,7 +451,7 @@ class multipanel:
             plt.sca(ax)
         return ax
 
-    def get_axes(self, label):
+    def get_axes(self, label: str) -> Axes | None:
         """
         Get a previously created axes by its label.
 
@@ -460,7 +467,7 @@ class multipanel:
         """
         return self._created_axes.get(label)
 
-    def newline(self):
+    def newline(self) -> None:
         """
         Force the next panel to start on a new row.
 

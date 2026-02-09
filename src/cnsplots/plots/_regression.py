@@ -1,3 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    import pandas as pd
+
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
@@ -13,7 +21,14 @@ from cnsplots._validation import (
 )
 
 
-def regplot(data, x, y, hue=None, s=3, **kwargs):
+def regplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    hue: str | None = None,
+    s: float = 3,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a regression plot with linear fit and correlation statistics.
 
@@ -122,7 +137,9 @@ def regplot(data, x, y, hue=None, s=3, **kwargs):
     return ax
 
 
-def scatterplot(data, x, y, s=7, **kwargs):
+def scatterplot(
+    data: pd.DataFrame, x: str, y: str, s: float = 7, **kwargs: Any
+) -> Axes:
     """
     Create a scatter plot with automatic legend size correction.
 
@@ -179,7 +196,7 @@ def scatterplot(data, x, y, s=7, **kwargs):
     return ax
 
 
-def lineplot(**kwargs):
+def lineplot(**kwargs: Any) -> Axes:
     """
     Create a line plot (wrapper around seaborn.lineplot).
 
@@ -227,7 +244,7 @@ def lineplot(**kwargs):
     return ax
 
 
-def slopeplot(data, x, y, hue):
+def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
     """
     Create a slope plot showing paired changes between two conditions.
 

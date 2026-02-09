@@ -1,3 +1,10 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import matplotlib_venn
+
 from collections.abc import Set as AbstractSet
 
 import matplotlib.pyplot as plt
@@ -6,7 +13,7 @@ import seaborn as sns
 import cnsplots as cns
 
 
-def upsetplot(sets, **kwargs):
+def upsetplot(sets: dict[str, set | list], **kwargs: Any) -> dict:
     """
     Create an UpSet plot for visualizing set intersections.
 
@@ -83,7 +90,9 @@ def upsetplot(sets, **kwargs):
     return axes
 
 
-def vennplot(lists, labels):
+def vennplot(
+    lists: list[set], labels: tuple[str, ...] | list[str]
+) -> matplotlib_venn.VennDiagram:
     """
     Create a Venn diagram for 2 or 3 sets.
 

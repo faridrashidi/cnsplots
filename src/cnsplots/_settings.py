@@ -28,7 +28,11 @@ Examples
 8
 """
 
+from __future__ import annotations
+
+from collections.abc import Generator
 from contextlib import contextmanager
+from typing import Any
 
 
 class CNSSettings:
@@ -85,11 +89,11 @@ class CNSSettings:
         "verbosity": 1,
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize settings with default values."""
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all settings to their default values.
 
         Examples
@@ -109,36 +113,36 @@ class CNSSettings:
 
     # --- palette_qual ---
     @property
-    def palette_qual(self):
+    def palette_qual(self) -> str:
         """str: Default qualitative color palette for categorical data."""
         return self._palette_qual
 
     @palette_qual.setter
-    def palette_qual(self, value):
+    def palette_qual(self, value: str) -> None:
         if not isinstance(value, str):
             raise TypeError("palette_qual must be a string")
         self._palette_qual = value
 
     # --- palette_seq ---
     @property
-    def palette_seq(self):
+    def palette_seq(self) -> str:
         """str: Default sequential colormap for continuous data."""
         return self._palette_seq
 
     @palette_seq.setter
-    def palette_seq(self, value):
+    def palette_seq(self, value: str) -> None:
         if not isinstance(value, str):
             raise TypeError("palette_seq must be a string")
         self._palette_seq = value
 
     # --- fontsize_title ---
     @property
-    def fontsize_title(self):
+    def fontsize_title(self) -> int | float:
         """int: Font size for titles and axis labels."""
         return self._fontsize_title
 
     @fontsize_title.setter
-    def fontsize_title(self, value):
+    def fontsize_title(self, value: int | float) -> None:
         if not isinstance(value, (int, float)):
             raise TypeError("fontsize_title must be a number")
         if value <= 0:
@@ -147,12 +151,12 @@ class CNSSettings:
 
     # --- fontsize_legend ---
     @property
-    def fontsize_legend(self):
+    def fontsize_legend(self) -> int | float:
         """int: Font size for tick labels and legend text."""
         return self._fontsize_legend
 
     @fontsize_legend.setter
-    def fontsize_legend(self, value):
+    def fontsize_legend(self, value: int | float) -> None:
         if not isinstance(value, (int, float)):
             raise TypeError("fontsize_legend must be a number")
         if value <= 0:
@@ -161,12 +165,12 @@ class CNSSettings:
 
     # --- linewidth_axes ---
     @property
-    def linewidth_axes(self):
+    def linewidth_axes(self) -> int | float:
         """float: Line width for axis spines."""
         return self._linewidth_axes
 
     @linewidth_axes.setter
-    def linewidth_axes(self, value):
+    def linewidth_axes(self, value: int | float) -> None:
         if not isinstance(value, (int, float)):
             raise TypeError("linewidth_axes must be a number")
         if value <= 0:
@@ -175,12 +179,12 @@ class CNSSettings:
 
     # --- verbosity ---
     @property
-    def verbosity(self):
+    def verbosity(self) -> int:
         """int: Verbosity level. 0 = silent, 1 = normal (default)."""
         return self._verbosity
 
     @verbosity.setter
-    def verbosity(self, value):
+    def verbosity(self, value: int) -> None:
         if not isinstance(value, int):
             raise TypeError("verbosity must be an integer")
         if value < 0:
@@ -188,7 +192,7 @@ class CNSSettings:
         self._verbosity = value
 
     @contextmanager
-    def context(self, **kwargs):
+    def context(self, **kwargs: Any) -> Generator[CNSSettings, None, None]:
         """Temporarily override settings within a context manager.
 
         Settings are restored to their previous values when the context
@@ -236,7 +240,7 @@ class CNSSettings:
             for key, value in old_values.items():
                 setattr(self, key, value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a string representation of current settings."""
         return (
             f"CNSSettings(\n"

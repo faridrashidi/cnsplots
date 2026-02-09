@@ -1,3 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy as np
+    import pandas as pd
+
 import re
 
 import lifelines as ll
@@ -87,7 +95,14 @@ class CoxModel:
     >>> print(model.results)
     """
 
-    def __init__(self, data, duration, event, variates, hue=None):
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        duration: str,
+        event: str,
+        variates: list[str],
+        hue: str | None = None,
+    ) -> None:
         self.data = data
         self.duration = duration
         self.event = event
@@ -96,7 +111,7 @@ class CoxModel:
         self.results = None
         self.name = "cox"
 
-    def fit(self):
+    def fit(self) -> None:
         """
         Fit Cox proportional hazards models for all specified variates.
 
@@ -271,7 +286,13 @@ class LogisticModel:
     >>> print(model.results)
     """
 
-    def __init__(self, data, event, variates, hue=None):
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        event: str,
+        variates: list[str],
+        hue: str | None = None,
+    ) -> None:
         self.data = data
         self.event = event
         self.variates = variates
@@ -279,7 +300,13 @@ class LogisticModel:
         self.results = None
         self.name = "logistic"
 
-    def _compute_auc_ci(self, y_true, y_pred_proba, n_bootstrap=1000, alpha=0.05):
+    def _compute_auc_ci(
+        self,
+        y_true: np.ndarray,
+        y_pred_proba: np.ndarray,
+        n_bootstrap: int = 1000,
+        alpha: float = 0.05,
+    ) -> tuple[float, float, float]:
         """
         Compute bootstrap confidence interval for ROC-AUC.
 
@@ -314,7 +341,7 @@ class LogisticModel:
         upper = np.percentile(aucs, 100 * (1 - alpha / 2))
         return auc_mean, lower, upper
 
-    def fit(self):
+    def fit(self) -> None:
         """
         Fit logistic regression models for all specified variates.
 
@@ -435,7 +462,13 @@ class LogisticModel:
         ]
 
 
-def prerank(data, gene_sets, name_gene=None, name_rank=None, permutation_num=1000):
+def prerank(
+    data: pd.DataFrame,
+    gene_sets: str | dict[str, list[str]],
+    name_gene: str | None = None,
+    name_rank: str | None = None,
+    permutation_num: int = 1000,
+) -> pd.DataFrame:
     """
     Perform pre-ranked Gene Set Enrichment Analysis (GSEA).
 

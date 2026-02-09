@@ -1,3 +1,10 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element
+
 import os
 import re
 import shutil
@@ -7,7 +14,7 @@ import matplotlib.pyplot as plt
 from lxml import etree
 
 
-def _save_svg(filepath, root):
+def _save_svg(filepath: str, root: str) -> None:
     tmp_pdf = f"/tmp/{os.path.basename(root)}.pdf"
     tmp_dir = "/tmp/mutool_output"
     os.makedirs(tmp_dir, exist_ok=True)
@@ -38,7 +45,7 @@ def _save_svg(filepath, root):
             shutil.rmtree(tmp_dir)
 
 
-def _correct_svg(input_file, output_file):
+def _correct_svg(input_file: str, output_file: str) -> None:
     """
     Process an SVG file to ungroup both text elements and clipped elements.
 
@@ -79,7 +86,7 @@ def _correct_svg(input_file, output_file):
     tree.write(output_file, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
 
-def _process_text_elements_lxml(root, ns):
+def _process_text_elements_lxml(root: _Element, ns: dict[str, str]) -> None:
     """Process text elements to ungroup them using lxml."""
     # Find all text elements with tspan children
     text_elements = root.xpath(".//svg:text[svg:tspan]", namespaces=ns)
@@ -113,7 +120,7 @@ def _process_text_elements_lxml(root, ns):
         parent.remove(text)
 
 
-def _flatten_groups(root, ns):
+def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
     """Flatten all group elements by moving their children to parent."""
     # Iteratively flatten groups until no more flattening occurs
     while True:

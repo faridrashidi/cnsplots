@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import pandas as pd
+    from anndata import AnnData
+    from matplotlib.axes import Axes
+
+    from cnsplots.helpers._heatmap import ClusterMapPlotterNew
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import num2tex
@@ -23,29 +34,29 @@ from cnsplots._validation import (
 
 
 def heatmapplot(
-    adata,
-    layer=None,
-    row_annotation=None,
-    col_annotation=None,
-    row_cluster=False,
-    col_cluster=False,
-    row_split=None,
-    col_split=None,
-    cmap=None,
-    label="value",
-    xlabel="xlabel",
-    ylabel="ylabel",
-    legend_width=20,
-    legend_hpad=2,
-    legend_vpad=0,
-    linewidth=0,
-    colors=None,
-    rasterized=True,
-    xticklabels_rotation=45,
-    xticklabels_fontsize=7,
-    yticklabels_fontsize=7,
-    **kwargs,
-):
+    adata: AnnData,
+    layer: str | None = None,
+    row_annotation: list[str] | None = None,
+    col_annotation: list[str] | None = None,
+    row_cluster: bool = False,
+    col_cluster: bool = False,
+    row_split: str | int | None = None,
+    col_split: str | int | None = None,
+    cmap: str | None = None,
+    label: str = "value",
+    xlabel: str = "xlabel",
+    ylabel: str = "ylabel",
+    legend_width: int = 20,
+    legend_hpad: int = 2,
+    legend_vpad: int = 0,
+    linewidth: float = 0,
+    colors: dict[str, dict[str, str]] | None = None,
+    rasterized: bool = True,
+    xticklabels_rotation: int = 45,
+    xticklabels_fontsize: int = 7,
+    yticklabels_fontsize: int = 7,
+    **kwargs: Any,
+) -> ClusterMapPlotterNew:
     """
     Create a clustered heatmap with optional annotations and dendrograms.
 
@@ -285,20 +296,20 @@ def heatmapplot(
 
 
 def dotplot(
-    data,
-    x,
-    y,
-    color,
-    size,
-    value=None,
-    legend_width=20,
-    legend_hpad=10,
-    legend_vpad=0,
-    xticklabels_rotation=45,
-    xticklabels_fontsize=7,
-    yticklabels_fontsize=7,
-    **kwargs,
-):
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    color: str,
+    size: str,
+    value: str | None = None,
+    legend_width: int = 20,
+    legend_hpad: int = 10,
+    legend_vpad: int = 0,
+    xticklabels_rotation: int = 45,
+    xticklabels_fontsize: int = 7,
+    yticklabels_fontsize: int = 7,
+    **kwargs: Any,
+) -> DotClustermapPlotter:
     """
     Create a dot plot matrix with color and size encodings.
 
@@ -442,18 +453,18 @@ def dotplot(
 
 
 def confusionplot(
-    data,
-    x,
-    y,
-    add_pvalue=False,
-    x_order=None,
-    y_order=None,
-    positive_x=None,
-    positive_y=None,
-    annot=True,
-    cmap=plt.cm.Blues,
-    pvalue_pad=1.5,
-):
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    add_pvalue: bool = False,
+    x_order: list[str] | None = None,
+    y_order: list[str] | None = None,
+    positive_x: str | None = None,
+    positive_y: str | None = None,
+    annot: bool = True,
+    cmap: Any = plt.cm.Blues,
+    pvalue_pad: float = 1.5,
+) -> Axes:
     """
     Create a confusion matrix heatmap with optional classification metrics.
 

@@ -1,3 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    import numpy as np
+    import pandas as pd
+
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
@@ -15,7 +24,13 @@ from cnsplots._validation import (
 )
 
 
-def survivalplot(data, duration, event, hue, hue_order=None):
+def survivalplot(
+    data: pd.DataFrame,
+    duration: str,
+    event: str,
+    hue: str,
+    hue_order: list[str] | None = None,
+) -> Axes:
     """
     Create a Kaplan-Meier survival plot with statistical comparisons.
 
@@ -171,17 +186,17 @@ def survivalplot(data, duration, event, hue, hue_order=None):
 
 
 def cumulativeincidenceplot(
-    data,
-    duration,
-    event,
-    hue,
-    hue_order=None,
-    pvalue_position=(0, 0.5),
-    show_risk_table=False,
-    risk_table_rows=("At risk",),
-    risk_table_ypos=-0.2,
-    xticks=None,
-):
+    data: pd.DataFrame,
+    duration: str,
+    event: str,
+    hue: str,
+    hue_order: list[str] | None = None,
+    pvalue_position: tuple[float, float] = (0, 0.5),
+    show_risk_table: bool = False,
+    risk_table_rows: tuple[str, ...] = ("At risk",),
+    risk_table_ypos: float = -0.2,
+    xticks: np.ndarray | list[float] | None = None,
+) -> Axes:
     """
     Create a cumulative incidence plot for competing risks analysis.
 

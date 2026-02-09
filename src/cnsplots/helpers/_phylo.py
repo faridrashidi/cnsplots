@@ -1,3 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from anndata import AnnData
+    from matplotlib.axes import Axes
+    import numpy as np
+    import pandas as pd
+
 import matplotlib.axes
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
@@ -7,7 +17,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def phyloplot(adata):
+def phyloplot(adata: AnnData) -> None:
     import io
 
     import Bio.Phylo
@@ -60,16 +70,16 @@ def phyloplot(adata):
 
 
 def _heatmap(
-    data,
-    cmap={},
-    palette="Set1",
-    ax=None,
-    legend=True,
-    leg_pos="right",
-    leg_ax=None,
-    leg_kws={},
-    **sns_kws,
-):
+    data: pd.DataFrame | pd.Series,
+    cmap: dict[str, Any] | None = None,
+    palette: str = "Set1",
+    ax: Axes | None = None,
+    legend: bool = True,
+    leg_pos: str = "right",
+    leg_ax: Axes | None = None,
+    leg_kws: dict[str, Any] | None = None,
+    **sns_kws: Any,
+) -> tuple[Axes, dict[str, Any]]:
     """Class to plot categorical heatmap using seaborn.
 
     https://github.com/schlegelp/catheat
@@ -105,6 +115,11 @@ def _heatmap(
     colormap :      dict
                     Colormap mapping categorical values to RGB colours.
     """
+
+    if cmap is None:
+        cmap = {}
+    if leg_kws is None:
+        leg_kws = {}
 
     if not isinstance(data, (pd.DataFrame, pd.Series, np.ndarray)):
         raise TypeError(f'Unable to work with data of type "{type(data)}"')
@@ -191,7 +206,7 @@ def _heatmap(
     return sns_ax, cmap
 
 
-def _is_categorical(x):
+def _is_categorical(x: pd.DataFrame | pd.Series | np.ndarray) -> bool | list[bool]:
     """Return True if data is categorical (i.e. not numerical)."""
     if isinstance(x, pd.DataFrame):
         num_cols = x.mean(axis=0).index.tolist()
@@ -221,7 +236,7 @@ def _is_categorical(x):
                 return True
 
 
-def _gen_colors(pal, n):
+def _gen_colors(pal: str | list | np.ndarray, n: int) -> list:
     """Generate colours from provided palette."""
 
     # If string

@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 # https://github.com/Pierre-Sassoulas/pySankey
 
 import warnings
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +16,7 @@ from pandas.core.series import Series
 
 
 def check_data_matches_labels(
-    labels: Union[List[str], Set[str]], data: Series, side: str
+    labels: list[str] | set[str], data: Series, side: str
 ) -> None:
     """Check whether data matches labels.
 
@@ -36,20 +38,20 @@ def check_data_matches_labels(
 
 
 def sankeyplot(
-    left: Union[List, ndarray, Series],
-    right: Union[ndarray, Series],
-    leftWeight: Optional[ndarray] = None,
-    rightWeight: Optional[ndarray] = None,
-    colorDict: Optional[Dict[str, str]] = None,
-    leftLabels: Optional[List[str]] = None,
-    rightLabels: Optional[List[str]] = None,
+    left: list | ndarray | Series,
+    right: ndarray | Series,
+    leftWeight: ndarray | None = None,
+    rightWeight: ndarray | None = None,
+    colorDict: dict[str, str] | None = None,
+    leftLabels: list[str] | None = None,
+    rightLabels: list[str] | None = None,
     aspect: int = 4,
     rightColor: bool = False,
     fontsize: int = 14,
-    figureName: Optional[str] = None,
+    figureName: str | None = None,
     closePlot: bool = False,
-    figSize: Optional[Tuple[int, int]] = None,
-    ax: Optional[Any] = None,
+    figSize: tuple[int, int] | None = None,
+    ax: Any = None,
 ) -> Any:
     """
     Make Sankey Diagram showing flow from left-->right
@@ -136,8 +138,8 @@ def sankeyplot(
 
 
 def identify_labels(
-    dataFrame: DataFrame, leftLabels: List[str], rightLabels: List[str]
-) -> Tuple[ndarray, ndarray]:
+    dataFrame: DataFrame, leftLabels: list[str], rightLabels: list[str]
+) -> tuple[ndarray, ndarray]:
     # Identify left labels
     if len(leftLabels) == 0:
         leftLabels = pd.Series(dataFrame.left.unique()).unique()
@@ -152,16 +154,16 @@ def identify_labels(
 
 
 def init_values(
-    ax: Optional[Any],
+    ax: Any,
     closePlot: bool,
-    figSize: Optional[Tuple[int, int]],
-    figureName: Optional[str],
-    left: Union[List, ndarray, Series],
-    leftLabels: Optional[List[str]],
-    leftWeight: Optional[ndarray],
-    rightLabels: Optional[List[str]],
-    rightWeight: Optional[ndarray],
-) -> Tuple[Any, List[str], ndarray, List[str], ndarray]:
+    figSize: tuple[int, int] | None,
+    figureName: str | None,
+    left: list | ndarray | Series,
+    leftLabels: list[str] | None,
+    leftWeight: ndarray | None,
+    rightLabels: list[str] | None,
+    rightWeight: ndarray | None,
+) -> tuple[Any, list[str], ndarray, list[str], ndarray]:
     deprecation_warnings(closePlot, figSize, figureName)
     if ax is None:
         ax = plt.gca()
@@ -182,7 +184,7 @@ def init_values(
 
 
 def deprecation_warnings(
-    closePlot: bool, figSize: Optional[Tuple[int, int]], figureName: Optional[str]
+    closePlot: bool, figSize: tuple[int, int] | None, figureName: str | None
 ) -> None:
     warn = []
     if figureName is not None:
@@ -206,10 +208,10 @@ def deprecation_warnings(
 
 def determine_widths(
     dataFrame: DataFrame, leftLabels: ndarray, rightLabels: ndarray
-) -> Tuple[Dict, Dict]:
+) -> tuple[dict, dict]:
     # Determine widths of individual strips
-    ns_l: Dict = defaultdict()
-    ns_r: Dict = defaultdict()
+    ns_l: dict = defaultdict()
+    ns_r: dict = defaultdict()
     for leftLabel in leftLabels:
         left_dict = {}
         right_dict = {}
@@ -227,12 +229,12 @@ def determine_widths(
 
 def draw_vertical_bars(
     ax: Any,
-    colorDict: Union[Dict[str, Tuple[float, float, float]], Dict[str, str]],
+    colorDict: dict[str, tuple[float, float, float]] | dict[str, str],
     fontsize: int,
     leftLabels: ndarray,
-    leftWidths: Dict,
+    leftWidths: dict,
     rightLabels: ndarray,
-    rightWidths: Dict,
+    rightWidths: dict,
     xMax: float64,
 ) -> None:
     # Draw vertical bars on left and right of each  label's section & print label
@@ -269,8 +271,8 @@ def draw_vertical_bars(
 
 
 def create_colors(
-    allLabels: ndarray, colorDict: Optional[Dict[str, str]]
-) -> Union[Dict[str, Tuple[float, float, float]], Dict[str, str]]:
+    allLabels: ndarray, colorDict: dict[str, str] | None
+) -> dict[str, tuple[float, float, float]] | dict[str, str]:
     # If no colorDict given, make one
     if colorDict is None:
         colorDict = {}
@@ -289,10 +291,10 @@ def create_colors(
 
 
 def _create_dataframe(
-    left: Union[List, ndarray, Series],
-    leftWeight: Union[ndarray, Series],
-    right: Union[ndarray, Series],
-    rightWeight: Union[ndarray, Series],
+    left: list | ndarray | Series,
+    leftWeight: ndarray | Series,
+    right: ndarray | Series,
+    rightWeight: ndarray | Series,
 ) -> DataFrame:
     # Create Dataframe
     if isinstance(left, pd.Series):
@@ -319,15 +321,15 @@ def _create_dataframe(
 
 def plot_strips(
     ax: Any,
-    colorDict: Union[Dict[str, Tuple[float, float, float]], Dict[str, str]],
+    colorDict: dict[str, tuple[float, float, float]] | dict[str, str],
     dataFrame: DataFrame,
     leftLabels: ndarray,
-    leftWidths: Dict,
-    ns_l: Dict,
-    ns_r: Dict,
+    leftWidths: dict,
+    ns_l: dict,
+    ns_r: dict,
     rightColor: bool,
     rightLabels: ndarray,
-    rightWidths: Dict,
+    rightWidths: dict,
     xMax: float64,
 ) -> None:
     # Plot strips
@@ -376,9 +378,9 @@ def plot_strips(
 
 def _get_positions_and_total_widths(
     df: DataFrame, labels: ndarray, side: str
-) -> Tuple[Dict, float64]:
+) -> tuple[dict, float64]:
     """Determine positions of label patches and total widths"""
-    widths: Dict = defaultdict()
+    widths: dict = defaultdict()
     for i, label in enumerate(labels):
         label_widths = {}
         label_widths[side] = df[df[side] == label][side + "Weight"].sum()

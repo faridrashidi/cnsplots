@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from anndata import AnnData
+    from matplotlib.axes import Axes
+    import pandas as pd
+
+    from cnsplots._methods import CoxModel, LogisticModel
+
 import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,7 +26,7 @@ from cnsplots._validation import (
 )
 
 
-def sankeyplot(data, x, y):
+def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
     """
     Create a Sankey diagram showing flows between two categorical variables.
 
@@ -63,7 +74,7 @@ def sankeyplot(data, x, y):
     return ax
 
 
-def phyloplot(adata):
+def phyloplot(adata: AnnData) -> Axes:
     """
     Create a phylogenetic tree plot with associated heatmaps.
 
@@ -93,7 +104,7 @@ def phyloplot(adata):
     return ax
 
 
-def forestplot(model):
+def forestplot(model: CoxModel | LogisticModel) -> Axes:
     """
     Create a forest plot displaying effect sizes from a regression model.
 
@@ -271,7 +282,9 @@ def forestplot(model):
     return ax1
 
 
-def rocplot(data, true_label_col, pred_prob_cols):
+def rocplot(
+    data: pd.DataFrame, true_label_col: str, pred_prob_cols: str | list[str]
+) -> Axes:
     """
     Create a receiver operating characteristic (ROC) curve plot.
 

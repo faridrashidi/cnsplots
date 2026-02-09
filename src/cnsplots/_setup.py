@@ -1,15 +1,22 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+
 import matplotlib as mpl
 
 import cnsplots as cns
 
 
 def setup_matplotlib(
-    color_cycle=None,
-    color_map=None,
-    fontsize_title=None,
-    fontsize_legend=None,
-    linewidth_axes=None,
-):
+    color_cycle: str | None = None,
+    color_map: str | None = None,
+    fontsize_title: int | float | None = None,
+    fontsize_legend: int | float | None = None,
+    linewidth_axes: float | None = None,
+) -> None:
     """
     Configure matplotlib with publication-quality default styling.
 
@@ -110,7 +117,7 @@ def setup_matplotlib(
     if linewidth_axes is None:
         linewidth_axes = cns.settings.linewidth_axes
 
-    def config():
+    def config() -> dict[str, object]:
         """
         Generate matplotlib rcParams configuration dictionary.
 
@@ -205,7 +212,7 @@ def setup_matplotlib(
     mpl.rcParams.update(config())
 
 
-def setup_scanpy():
+def setup_scanpy() -> None:
     """
     Configure matplotlib and scanpy with consistent publication-quality styling.
 
@@ -253,12 +260,12 @@ def setup_scanpy():
 
 
 def setup_ax(
-    ax,
-    fontsize_title=None,
-    fontsize_legend=None,
-    linewidth_axes=None,
-    colorbar_label="FDR q-val",
-):
+    ax: Axes,
+    fontsize_title: int | float | None = None,
+    fontsize_legend: int | float | None = None,
+    linewidth_axes: float | None = None,
+    colorbar_label: str = "FDR q-val",
+) -> None:
     """
     Apply publication-quality styling to a specific matplotlib axes.
 
@@ -388,7 +395,7 @@ def setup_ax(
             cbar.set_label(colorbar_label, fontsize=fontsize_title, color="black")
 
 
-def setup_ggplot():
+def setup_ggplot() -> str:
     """
     Generate R ggplot2 theme code matching cnsplots styling.
 

@@ -1,4 +1,10 @@
-from typing import List, Optional, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    import pandas as pd
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -21,12 +27,12 @@ def boxplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    pairs: Optional[List[Tuple[str, str]]] = None,
+    pairs: list[tuple[str, str]] | None = None,
     showoutliers: bool = False,
     addcount: bool = False,
-    whis=1.5,
-    **kwargs,
-) -> plt.Axes:
+    whis: float | tuple[float, float] = 1.5,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a box plot showing the distribution of a continuous variable across categories.
 
@@ -157,11 +163,11 @@ def violinplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    pairs: Optional[List[Tuple[str, str]]] = None,
-    width=0.6,
-    add_box=True,
-    **kwargs,
-) -> plt.Axes:
+    pairs: list[tuple[str, str]] | None = None,
+    width: float = 0.6,
+    add_box: bool = True,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a violin plot showing the distribution of a continuous variable.
 
@@ -248,7 +254,7 @@ def violinplot(
     return ax
 
 
-def distplot(data, x, **kwargs):
+def distplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
     """
     Create a distribution plot combining histogram and kernel density estimate.
 
@@ -296,7 +302,7 @@ def distplot(data, x, **kwargs):
     return ax
 
 
-def kdeplot(data, x, add_mode=True, **kwargs):
+def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) -> Axes:
     """
     Create a kernel density estimate plot with optional mode annotation.
 
@@ -403,7 +409,7 @@ def kdeplot(data, x, add_mode=True, **kwargs):
     return ax
 
 
-def histplot(**kwargs):
+def histplot(**kwargs: Any) -> Axes:
     """
     Create a histogram plot (wrapper around seaborn.histplot).
 
@@ -453,7 +459,7 @@ def histplot(**kwargs):
     return ax
 
 
-def ridgeplot(data, x, y, cmap="viridis"):
+def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes:
     """
     Create a ridge plot (joyplot) showing distributions across categories.
 
@@ -541,7 +547,7 @@ def ridgeplot(data, x, y, cmap="viridis"):
     return ax
 
 
-def qqplot(data, x, **kwargs):
+def qqplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
     """
     Create a quantile-quantile (Q-Q) plot to assess normality.
 

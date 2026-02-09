@@ -1,3 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    import pandas as pd
+
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,12 +20,12 @@ from cnsplots._validation import (
 
 
 def volcanoplot(
-    data,
-    x="log2FoldChange",
-    y="-log10(adjp)",
-    symbol="symbol",
-    show_list=None,
-):
+    data: pd.DataFrame,
+    x: str = "log2FoldChange",
+    y: str = "-log10(adjp)",
+    symbol: str = "symbol",
+    show_list: list[str] | None = None,
+) -> Axes:
     """
     Create a volcano plot for differential expression analysis.
 
@@ -144,8 +152,14 @@ def volcanoplot(
 
 
 def gseaplot(
-    data, y, color="NES", cutoff=0.05, cmap="BuRd_custom", top_term=20, size=1.8
-):
+    data: pd.DataFrame,
+    y: str,
+    color: str = "NES",
+    cutoff: float = 0.05,
+    cmap: str = "BuRd_custom",
+    top_term: int = 20,
+    size: float = 1.8,
+) -> Axes:
     """
     Create a Gene Set Enrichment Analysis (GSEA) dot plot.
 

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from PyComplexHeatmap import ClusterMapPlotter
@@ -9,67 +13,67 @@ import cnsplots as cns
 class ClusterMapPlotterNew(ClusterMapPlotter):
     def __init__(
         self,
-        data,
-        z_score=None,
-        standard_scale=None,
-        top_annotation=None,
-        bottom_annotation=None,
-        left_annotation=None,
-        right_annotation=None,
-        row_cluster=True,
-        col_cluster=True,
-        row_cluster_method="average",
-        row_cluster_metric="correlation",
-        col_cluster_method="average",
-        col_cluster_metric="correlation",
-        show_rownames=False,
-        show_colnames=False,
-        row_names_side="right",
-        col_names_side="bottom",
-        row_dendrogram=False,
-        col_dendrogram=False,
-        row_dendrogram_size=10,
-        col_dendrogram_size=10,
-        row_split=None,
-        col_split=None,
-        row_dendrogram_kws=None,
-        col_dendrogram_kws=None,
-        bezier=False,
-        dotsize=1,
-        tree_kws=None,
-        row_split_order=None,
-        col_split_order=None,
-        row_split_gap=0.5,
-        col_split_gap=0.2,
-        mask=None,
-        subplot_gap=1,
-        legend=True,
-        legend_kws=None,
-        plot=True,
-        plot_legend=True,
-        legend_anchor="auto",
-        legend_gap=7,
-        legend_width=4.5,
-        legend_hpad=2,
-        legend_vpad=5,
-        legend_side="right",
-        cmap="jet",
-        label=None,
-        xticklabels_kws=None,
-        yticklabels_kws=None,
-        rasterized=False,
-        xlabel=None,
-        ylabel=None,
-        xlabel_kws=None,
-        ylabel_kws=None,
-        xlabel_side="bottom",
-        ylabel_side="left",
-        xlabel_bbox_kws=None,
-        ylabel_bbox_kws=None,
-        legend_delta_x=None,
-        verbose=1,
-        **kwargs,
-    ):
+        data: pd.DataFrame,
+        z_score: int | None = None,
+        standard_scale: int | None = None,
+        top_annotation: Any = None,
+        bottom_annotation: Any = None,
+        left_annotation: Any = None,
+        right_annotation: Any = None,
+        row_cluster: bool = True,
+        col_cluster: bool = True,
+        row_cluster_method: str = "average",
+        row_cluster_metric: str = "correlation",
+        col_cluster_method: str = "average",
+        col_cluster_metric: str = "correlation",
+        show_rownames: bool = False,
+        show_colnames: bool = False,
+        row_names_side: str = "right",
+        col_names_side: str = "bottom",
+        row_dendrogram: bool = False,
+        col_dendrogram: bool = False,
+        row_dendrogram_size: int = 10,
+        col_dendrogram_size: int = 10,
+        row_split: Any = None,
+        col_split: Any = None,
+        row_dendrogram_kws: dict[str, Any] | None = None,
+        col_dendrogram_kws: dict[str, Any] | None = None,
+        bezier: bool = False,
+        dotsize: int = 1,
+        tree_kws: dict[str, Any] | None = None,
+        row_split_order: list[str] | None = None,
+        col_split_order: list[str] | None = None,
+        row_split_gap: float = 0.5,
+        col_split_gap: float = 0.2,
+        mask: Any = None,
+        subplot_gap: int = 1,
+        legend: bool = True,
+        legend_kws: dict[str, Any] | None = None,
+        plot: bool = True,
+        plot_legend: bool = True,
+        legend_anchor: str = "auto",
+        legend_gap: int = 7,
+        legend_width: float = 4.5,
+        legend_hpad: int = 2,
+        legend_vpad: int = 5,
+        legend_side: str = "right",
+        cmap: str = "jet",
+        label: str | None = None,
+        xticklabels_kws: dict[str, Any] | None = None,
+        yticklabels_kws: dict[str, Any] | None = None,
+        rasterized: bool = False,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        xlabel_kws: dict[str, Any] | None = None,
+        ylabel_kws: dict[str, Any] | None = None,
+        xlabel_side: str = "bottom",
+        ylabel_side: str = "left",
+        xlabel_bbox_kws: dict[str, Any] | None = None,
+        ylabel_bbox_kws: dict[str, Any] | None = None,
+        legend_delta_x: float | None = None,
+        verbose: int = 1,
+        **kwargs: Any,
+    ) -> None:
         self.data = data
         self.kwargs = kwargs if kwargs is not None else {}
         self.rasterized = rasterized
@@ -147,7 +151,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
 
         self.post_processing()
 
-    def _define_axes(self, subplot_spec=None):
+    def _define_axes(self, subplot_spec: Any = None) -> None:
         if subplot_spec is None:
             # Constrain the GridSpec to the current axes' position so the
             # heatmap doesn't span the entire figure.
@@ -229,7 +233,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         else:
             super()._define_axes(subplot_spec)
 
-    def collect_legends(self):
+    def collect_legends(self) -> None:
         if self.verbose >= 1:
             print("Collecting legends..")
         self.legend_list = []

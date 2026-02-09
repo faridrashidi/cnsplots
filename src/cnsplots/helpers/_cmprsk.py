@@ -1,8 +1,21 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pandas import Series
+
 import pandas as pd
 from lifelines.statistics import multivariate_logrank_test
 
 
-def cuminc(durations, events, group, event_of_interest=1, competing_event=2):
+def cuminc(
+    durations: Series,
+    events: Series,
+    group: Series,
+    event_of_interest: int = 1,
+    competing_event: int = 2,
+) -> float:
     """
     Approximates Gray's Test (cmprsk::cuminc) using a Subdistribution Hazard
     Log-Rank Test in pure Python.
