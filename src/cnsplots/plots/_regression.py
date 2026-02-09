@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
     import pandas as pd
+    from matplotlib.axes import Axes
 
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
-import palettable
+import palettable.colorbrewer.qualitative  # noqa: F401  # ensure submodule is importable
 import scipy as sp
 import seaborn as sns
 
@@ -333,6 +333,7 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
         ncol=2,
     )
     for handle in lgd.legend_handles:
-        handle.set_sizes([12])
+        if hasattr(handle, "set_sizes"):
+            handle.set_sizes([12])  # type: ignore[union-attr]
 
     return ax

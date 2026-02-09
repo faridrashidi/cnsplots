@@ -339,7 +339,7 @@ class LogisticModel:
         auc_mean = skl.metrics.roc_auc_score(y_true, y_pred_proba)
         lower = np.percentile(aucs, 100 * alpha / 2)
         upper = np.percentile(aucs, 100 * (1 - alpha / 2))
-        return auc_mean, lower, upper
+        return auc_mean, float(lower), float(upper)
 
     def fit(self) -> None:
         """
@@ -560,7 +560,7 @@ def prerank(
     rnk["Gene"] = rnk["Gene"].str.strip().str.upper()
     gsea_res = gp.prerank(
         rnk=rnk,
-        gene_sets=gene_sets,
+        gene_sets=gene_sets,  # type: ignore[arg-type]  # gseapy accepts dict[str, list[str]] at runtime
         min_size=15,
         max_size=1000,
         permutation_num=permutation_num,
@@ -583,6 +583,7 @@ def prerank(
         term = term.replace("And ", "and ")
         return term
 
+    assert gsea_res.res2d is not None
     gsea_df = gsea_res.res2d.copy()
     gsea_df["Clean_Term"] = gsea_df["Term"].apply(clean_term)
     gsea_df = gsea_df[(gsea_df["FDR q-val"] < 0.25) & (gsea_df["NES"].abs() > 1.5)]

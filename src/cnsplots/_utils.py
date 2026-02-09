@@ -451,9 +451,11 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
 
     pvalues = []
     if test == "fisher-exact":
+        assert contingency is not None
         for pair in pairs:
             pvalues.append(stats.fisher_exact(contingency.loc[list(pair)].values)[1])
     if test == "chi-squared":
+        assert contingency is not None
         for pair in pairs:
             pvalues.append(
                 stats.chi2_contingency(contingency.loc[list(pair)].values)[1]
@@ -536,7 +538,9 @@ def get_showcase_data():
         ],
         axis=1,
     )
-    slope_df = pd.DataFrame(columns=["value", "site", "label"], data=slope_df.T)
+    slope_df = pd.DataFrame(
+        columns=pd.Index(["value", "site", "label"]), data=slope_df.T
+    )
     slope_df["value"] = slope_df["value"].astype(float)
 
     # ROC data

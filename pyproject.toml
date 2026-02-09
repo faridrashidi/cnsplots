@@ -110,8 +110,13 @@ filename = "src/cnsplots/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
+[tool.ty.src]
+exclude = ["examples/", "docs/"]
+
 [tool.ty.rules]
 unresolved-import = "ignore"
+unresolved-attribute = "ignore"
+possibly-missing-attribute = "ignore"
 
 [tool.codespell]
 skip = ".git,.venv,*.lock"

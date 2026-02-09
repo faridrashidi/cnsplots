@@ -215,7 +215,7 @@ class multipanel:
                 col_in_row = row.index(panel_idx)
                 break
 
-        if row_idx is None:
+        if row_idx is None or col_in_row is None:
             return 0, 0
 
         # Calculate y position (from top of figure)
@@ -278,7 +278,7 @@ class multipanel:
             ax = self._created_axes.get(label)
             if ax is None:
                 # Create new axes
-                ax = self.fig.add_axes([left, bottom, ax_width, ax_height])
+                ax = self.fig.add_axes((left, bottom, ax_width, ax_height))
                 self.axes.append(ax)
                 self._created_axes[label] = ax
 
@@ -447,8 +447,10 @@ class multipanel:
 
         # Set this axes as current and return it
         ax = self._created_axes.get(label)
-        if ax is not None:
-            plt.sca(ax)
+        if ax is None:
+            msg = f"Panel '{label}' axes was not created"
+            raise RuntimeError(msg)
+        plt.sca(ax)
         return ax
 
     def get_axes(self, label: str) -> Axes | None:

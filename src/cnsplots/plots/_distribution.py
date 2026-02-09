@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
     import pandas as pd
+    from matplotlib.axes import Axes
 
 import matplotlib as mpl
+import matplotlib.patches  # noqa: F401  # ensure submodule is importable for isinstance checks
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
@@ -401,10 +402,11 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
                 bbox=dict(facecolor="white", edgecolor="none", pad=2),
             )
 
-    if ax.get_legend() is not None:
-        for handle in ax.get_legend().legend_handles:
+    legend = ax.get_legend()
+    if legend is not None:
+        for handle in legend.legend_handles:
             if hasattr(handle, "set_linewidth"):
-                handle.set_linewidth(1.7)
+                handle.set_linewidth(1.7)  # type: ignore[call-non-callable]
 
     return ax
 

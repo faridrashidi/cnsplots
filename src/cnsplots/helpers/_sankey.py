@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 # https://github.com/Pierre-Sassoulas/pySankey
-
 import warnings
 from collections import defaultdict
 from typing import Any
@@ -16,24 +15,26 @@ from pandas.core.series import Series
 
 
 def check_data_matches_labels(
-    labels: list[str] | set[str], data: Series, side: str
+    labels: list[str] | set[str], data: Series | list[str] | set[str], side: str
 ) -> None:
     """Check whether data matches labels.
 
     Raise a LabelMismatch Exception if not."""
     if len(labels) > 0:
+        data_set: set[str]
         if isinstance(data, list):
-            data = set(data)
-        if isinstance(data, pd.Series):
-            data = set(data.unique().tolist())
-        if isinstance(labels, list):
-            labels = set(labels)
-        if labels != data:
+            data_set = set(data)
+        elif isinstance(data, pd.Series):
+            data_set = set(data.unique().tolist())
+        else:
+            data_set = data
+        label_set: set[str] = set(labels) if isinstance(labels, list) else labels
+        if label_set != data_set:
             msg = "\n"
-            if len(labels) <= 20:
-                msg = "Labels: " + ",".join(labels) + "\n"
-            if len(data) < 20:
-                msg += "Data: " + ",".join(data)
+            if len(label_set) <= 20:
+                msg = "Labels: " + ",".join(label_set) + "\n"
+            if len(data_set) < 20:
+                msg += "Data: " + ",".join(data_set)
             raise ValueError(f"{side} labels and data do not match.{msg}")
 
 
@@ -115,7 +116,7 @@ def sankeyplot(
         leftWidths,
         rightLabels,
         rightWidths,
-        xMax,  # type: ignore
+        xMax,
     )
     plot_strips(
         ax,
@@ -138,16 +139,18 @@ def sankeyplot(
 
 
 def identify_labels(
-    dataFrame: DataFrame, leftLabels: list[str], rightLabels: list[str]
-) -> tuple[ndarray, ndarray]:
+    dataFrame: DataFrame,
+    leftLabels: list[str],
+    rightLabels: list[str],
+) -> tuple[list[str], list[str]]:
     # Identify left labels
     if len(leftLabels) == 0:
-        leftLabels = pd.Series(dataFrame.left.unique()).unique()
+        leftLabels = pd.Series(dataFrame.left.unique()).unique().tolist()
     else:
         check_data_matches_labels(leftLabels, dataFrame["left"], "left")
     # Identify right labels
     if len(rightLabels) == 0:
-        rightLabels = pd.Series(dataFrame.right.unique()).unique()
+        rightLabels = pd.Series(dataFrame.right.unique()).unique().tolist()
     else:
         check_data_matches_labels(rightLabels, dataFrame["right"], "right")
     return leftLabels, rightLabels
@@ -168,9 +171,9 @@ def init_values(
     if ax is None:
         ax = plt.gca()
     if leftWeight is None:
-        leftWeight = []
+        leftWeight = np.array([])
     if rightWeight is None:
-        rightWeight = []
+        rightWeight = np.array([])
     if leftLabels is None:
         leftLabels = []
     if rightLabels is None:
@@ -207,7 +210,9 @@ def deprecation_warnings(
 
 
 def determine_widths(
-    dataFrame: DataFrame, leftLabels: ndarray, rightLabels: ndarray
+    dataFrame: DataFrame,
+    leftLabels: list[str],
+    rightLabels: list[str],
 ) -> tuple[dict, dict]:
     # Determine widths of individual strips
     ns_l: dict = defaultdict()
@@ -231,9 +236,9 @@ def draw_vertical_bars(
     ax: Any,
     colorDict: dict[str, tuple[float, float, float]] | dict[str, str],
     fontsize: int,
-    leftLabels: ndarray,
+    leftLabels: list[str],
     leftWidths: dict,
-    rightLabels: ndarray,
+    rightLabels: list[str],
     rightWidths: dict,
     xMax: float64,
 ) -> None:
@@ -323,12 +328,12 @@ def plot_strips(
     ax: Any,
     colorDict: dict[str, tuple[float, float, float]] | dict[str, str],
     dataFrame: DataFrame,
-    leftLabels: ndarray,
+    leftLabels: list[str],
     leftWidths: dict,
     ns_l: dict,
     ns_r: dict,
     rightColor: bool,
-    rightLabels: ndarray,
+    rightLabels: list[str],
     rightWidths: dict,
     xMax: float64,
 ) -> None:
@@ -377,7 +382,7 @@ def plot_strips(
 
 
 def _get_positions_and_total_widths(
-    df: DataFrame, labels: ndarray, side: str
+    df: DataFrame, labels: list[str], side: str
 ) -> tuple[dict, float64]:
     """Determine positions of label patches and total widths"""
     widths: dict = defaultdict()

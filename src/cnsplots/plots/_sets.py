@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    import matplotlib_venn
+    pass
 
 from collections.abc import Set as AbstractSet
 
@@ -60,10 +60,13 @@ def upsetplot(sets: dict[str, set | list], **kwargs: Any) -> dict:
 
     import upsetplot as usp
 
-    sets = {k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()}
+    normalized_sets: dict[str, set] = {
+        k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()
+    }
     memberships = []
-    for item in set.union(*sets.values()):
-        membership = [name for name, s in sets.items() if item in s]
+    all_items: set = set().union(*normalized_sets.values())
+    for item in all_items:
+        membership = [name for name, s in normalized_sets.items() if item in s]
         memberships.append(membership)
     data = usp.from_memberships(memberships)
     # Set default subset_size to "count" to handle non-unique groups
@@ -90,9 +93,7 @@ def upsetplot(sets: dict[str, set | list], **kwargs: Any) -> dict:
     return axes
 
 
-def vennplot(
-    lists: list[set], labels: tuple[str, ...] | list[str]
-) -> matplotlib_venn.VennDiagram:
+def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
     """
     Create a Venn diagram for 2 or 3 sets.
 
@@ -145,6 +146,7 @@ def vennplot(
     import matplotlib_venn as venn
 
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
+    func: Any
     if len(lists) == 2:
         areas = ["10", "01", "11"]
         func = venn.venn2
@@ -155,7 +157,7 @@ def vennplot(
         func = venn.venn3
         names = ["A", "B", "C"]
         colors = sns.color_palette(n_colors=3)
-    ax = func(lists, labels, set_colors=colors, alpha=0.8)
+    ax = func(lists, tuple(labels), set_colors=colors, alpha=0.8)  # type: ignore[arg-type]
     for area in areas:
         try:
             ax.get_label_by_id(area).set_fontsize(6)

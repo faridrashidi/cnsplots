@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -90,7 +90,7 @@ def survivalplot(
 
     import lifelines as ll
 
-    ax = None
+    ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
@@ -112,6 +112,7 @@ def survivalplot(
                 show_censors=True,
                 censor_styles={"ms": 3},
             )
+    assert ax is not None
     plt.ylim(-0.05, 1.01)
     if ax.get_xlim()[1] > 120:
         ax.xaxis.set_major_locator(plt.MultipleLocator(24))
@@ -129,7 +130,7 @@ def survivalplot(
 
     if len(hue_order) == 2:
         try:
-            logrank_test = ll.statistics.multivariate_logrank_test(
+            logrank_test = ll.statistics.multivariate_logrank_test(  # type: ignore[possibly-missing-attribute]
                 df[duration], df[hue], df[event]
             )
             p = num2tex.num2tex(logrank_test.p_value, precision=2)
@@ -275,7 +276,7 @@ def cumulativeincidenceplot(
 
     import lifelines as ll
 
-    ax = None
+    ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
@@ -303,6 +304,7 @@ def cumulativeincidenceplot(
             ax = fitter.plot(ax=ax, linewidth=1, ci_show=False)
         line_color = ax.get_lines()[-1].get_color()
         ax.plot(df[duration], df["CIF_1"], "+", markersize=3, color=line_color)
+    assert ax is not None
     ax.set_ylim(-0.05, 1.01)
     ax.set_ylabel("Cumulative incidence probability")
     ax.set_xlabel("Time (Years)")
@@ -331,7 +333,7 @@ def cumulativeincidenceplot(
         xticks = xticks[
             (xticks >= ax.get_xlim()[0] - 1e-8) & (xticks <= ax.get_xlim()[1] + 1e-8)
         ]
-        ll.plotting.add_at_risk_counts(
+        ll.plotting.add_at_risk_counts(  # type: ignore[possibly-missing-attribute]
             *fitters,
             ax=ax,
             rows_to_show=rows,

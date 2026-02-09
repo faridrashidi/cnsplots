@@ -197,8 +197,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
             self.ax_right = self.ax.figure.add_subplot(
                 self.gs[1, 2], sharey=self.ax_heatmap
             )
-            self.ax_heatmap.set_xlim([0, self.data2d.shape[1]])
-            self.ax_heatmap.set_ylim([0, self.data2d.shape[0]])
+            self.ax_heatmap.set_xlim((0, self.data2d.shape[1]))
+            self.ax_heatmap.set_ylim((0, self.data2d.shape[0]))
             self.ax_heatmap.yaxis.set_visible(False)
             self.ax_heatmap.xaxis.set_visible(False)
             self.ax.tick_params(
@@ -229,7 +229,9 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 self.ax.spines[side].set_visible(False)
             from matplotlib.figure import Figure
 
-            Figure.set_layout_engine(self.ax.figure, None)
+            fig = self.ax.figure
+            if isinstance(fig, Figure):
+                fig.set_layout_engine("none")
         else:
             super()._define_axes(subplot_spec)
 

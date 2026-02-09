@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from cnsplots.helpers._heatmap import ClusterMapPlotterNew
 
 import matplotlib as mpl
+import matplotlib.colorbar  # noqa: F401  # ensure submodule is importable for isinstance checks
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
@@ -218,9 +219,11 @@ def heatmapplot(
                 cbar_titles.append(annot)
         return rc_dict
 
+    left_annotation: Any = None
+    top_annotation: Any = None
     if row_annotation is not None:
         rc_dict = _annot_helper(adata.obs, row_annotation)
-        row_annotation = pch.HeatmapAnnotation(
+        left_annotation = pch.HeatmapAnnotation(
             axis=0,
             verbose=0,
             label_side="bottom",
@@ -233,22 +236,24 @@ def heatmapplot(
         )
     if col_annotation is not None:
         ca_dict = _annot_helper(adata.var, col_annotation)
-        col_annotation = pch.HeatmapAnnotation(axis=1, verbose=0, **ca_dict)
+        top_annotation = pch.HeatmapAnnotation(axis=1, verbose=0, **ca_dict)
 
+    row_split_val: Any = row_split
+    col_split_val: Any = col_split
     if row_split is not None and not isinstance(row_split, int):
-        row_split = adata.obs[row_split]
+        row_split_val = adata.obs[row_split]
     if col_split is not None and not isinstance(row_split, int):
-        col_split = adata.var[col_split]
+        col_split_val = adata.var[col_split]
 
     df = adata.to_df() if layer is None else adata.to_df(layer=layer)
     cmp = helper_heatmap.ClusterMapPlotterNew(
         data=df,
-        left_annotation=row_annotation,
-        top_annotation=col_annotation,
+        left_annotation=left_annotation,
+        top_annotation=top_annotation,
         row_cluster=row_cluster,
         col_cluster=col_cluster,
-        row_split=row_split,
-        col_split=col_split,
+        row_split=row_split_val,
+        col_split=col_split_val,
         cmap=cmap,
         rasterized=rasterized,
         label=label,
@@ -268,7 +273,7 @@ def heatmapplot(
         ylabel_kws={"labelpad": 3},
         xlabel_kws={"labelpad": 5},
         verbose=0,
-        row_names_side="left" if row_annotation is None else "right",
+        row_names_side="left" if left_annotation is None else "right",
         xticklabels=True,
         yticklabels=True,
         **kwargs,
@@ -462,7 +467,7 @@ def confusionplot(
     positive_x: str | None = None,
     positive_y: str | None = None,
     annot: bool = True,
-    cmap: Any = plt.cm.Blues,
+    cmap: Any = "Blues",
     pvalue_pad: float = 1.5,
 ) -> Axes:
     """
@@ -568,7 +573,7 @@ def confusionplot(
                         f"[confusionplot] Confusion matrix contains NaN at position [{i},{j}]. "
                         "All values must be valid numbers."
                     )
-                ax.text(j, i, int(cell_value), ha="center", va="center")
+                ax.text(j, i, str(int(cell_value)), ha="center", va="center")
 
     # Remove colorbar to match your original style
     cb = fig.colorbar(im, ax=ax)
@@ -658,7 +663,8 @@ def confusionplot(
         odds_ratio = _safe_div(tp * tn, fp * fn)
 
         # Overlay the stats block
-        ax2 = fig.add_axes(ax.get_position(), frameon=False)
+        pos = ax.get_position()
+        ax2 = fig.add_axes((pos.x0, pos.y0, pos.width, pos.height), frameon=False)
         ax2.tick_params(
             labelcolor="none", top=False, bottom=False, left=False, right=False
         )

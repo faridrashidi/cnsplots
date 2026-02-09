@@ -89,6 +89,13 @@ class CNSSettings:
         "verbosity": 1,
     }
 
+    _palette_qual: str
+    _palette_seq: str
+    _fontsize_title: int | float
+    _fontsize_legend: int | float
+    _linewidth_axes: int | float
+    _verbosity: int
+
     def __init__(self) -> None:
         """Initialize settings with default values."""
         self.reset()
@@ -104,12 +111,12 @@ class CNSSettings:
         >>> cns.settings.fontsize_title
         8
         """
-        self._palette_qual = self._defaults["palette_qual"]
-        self._palette_seq = self._defaults["palette_seq"]
-        self._fontsize_title = self._defaults["fontsize_title"]
-        self._fontsize_legend = self._defaults["fontsize_legend"]
-        self._linewidth_axes = self._defaults["linewidth_axes"]
-        self._verbosity = self._defaults["verbosity"]
+        self._palette_qual = str(self._defaults["palette_qual"])
+        self._palette_seq = str(self._defaults["palette_seq"])
+        self._fontsize_title = int(self._defaults["fontsize_title"])
+        self._fontsize_legend = int(self._defaults["fontsize_legend"])
+        self._linewidth_axes = float(self._defaults["linewidth_axes"])
+        self._verbosity = int(self._defaults["verbosity"])
 
     # --- palette_qual ---
     @property

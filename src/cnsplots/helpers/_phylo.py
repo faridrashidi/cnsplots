@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from anndata import AnnData
-    from matplotlib.axes import Axes
     import numpy as np
     import pandas as pd
+    from anndata import AnnData
+    from matplotlib.axes import Axes
 
 import matplotlib.axes
 import matplotlib.colors as mcolors
@@ -53,17 +53,18 @@ def phyloplot(adata: AnnData) -> None:
     cbar.locator = plt.MaxNLocator(nbins=2)
     cbar.ax.set_rasterized(True)
     cbar.ax.set_aspect(0.5)
+    obs_group: pd.DataFrame = adata.obs[["group"]]  # type: ignore[assignment]
     _heatmap(
-        adata.obs[["group"]],
-        ax=axes[2],
-        leg_ax=axes[4],
+        obs_group,
+        ax=axes[2],  # type: ignore[arg-type]  # numpy indexing returns Axes at runtime
+        leg_ax=axes[4],  # type: ignore[arg-type]
         rasterized=True,
         palette="Set1",
     )
     _heatmap(
-        adata.obs[["group"]],
-        ax=axes[3],
-        leg_ax=axes[4],
+        obs_group,
+        ax=axes[3],  # type: ignore[arg-type]
+        leg_ax=axes[4],  # type: ignore[arg-type]
         rasterized=True,
         palette="Set2",
     )
@@ -221,23 +222,26 @@ def _is_categorical(x: pd.DataFrame | pd.Series | np.ndarray) -> bool | list[boo
         if x.ndim > 2:
             raise ValueError("Can only process 1d or 2d arrays.")
         elif x.ndim == 2:
-            cat_cols = []
+            cat_cols: list[bool] = []
             for i in range(x.shape[1]):
                 try:
                     x[:, i].astype(int)
                     cat_cols.append(False)
                 except BaseException:
                     cat_cols.append(True)
+            return cat_cols
         elif x.ndim == 1:
             try:
                 x.astype(int)
                 return False
             except BaseException:
                 return True
+    return False
 
 
 def _gen_colors(pal: str | list | np.ndarray, n: int) -> list:
     """Generate colours from provided palette."""
+    colors: list
 
     # If string
     if isinstance(pal, str):
@@ -246,8 +250,8 @@ def _gen_colors(pal: str | list | np.ndarray, n: int) -> list:
             colors = sns.color_palette(pal, n)
         # If not, try getting the matplotlib palette
         except BaseException:
-            pal = plt.get_cmap(pal)
-            colors = [pal(i) for i in np.linspace(0, 1, n)]
+            cmap = plt.get_cmap(pal)
+            colors = [cmap(i) for i in np.linspace(0, 1, n)]
     # If palette provided
     elif isinstance(pal, mcolors.LinearSegmentedColormap):
         colors = [pal(i) for i in np.linspace(0, 1, n)]
@@ -255,10 +259,10 @@ def _gen_colors(pal: str | list | np.ndarray, n: int) -> list:
     elif isinstance(pal, (list, np.ndarray)):
         if len(pal) < n:
             raise ValueError(
-                f"Must provide at least as many colors as there are unique entries: {len(n)}"
+                f"Must provide at least as many colors as there are unique entries: {n}"
             )
         else:
-            colors = pal
+            colors = list(pal)
     else:
         raise TypeError(f'Unable to generate colors from palette of type "{type(pal)}"')
 

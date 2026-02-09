@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import pandas as pd
     from anndata import AnnData
     from matplotlib.axes import Axes
-    import pandas as pd
 
     from cnsplots._methods import CoxModel, LogisticModel
 
@@ -74,7 +74,7 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
     return ax
 
 
-def phyloplot(adata: AnnData) -> Axes:
+def phyloplot(adata: AnnData) -> None:
     """
     Create a phylogenetic tree plot with associated heatmaps.
 
@@ -85,8 +85,8 @@ def phyloplot(adata: AnnData) -> Axes:
 
     Returns
     -------
-    matplotlib.axes.Axes
-        The matplotlib Axes object containing the plot.
+    None
+        The plot is displayed directly; no Axes object is returned.
 
     See Also
     --------
@@ -95,13 +95,12 @@ def phyloplot(adata: AnnData) -> Axes:
     Examples
     --------
     >>> import cnsplots as cns
-    >>> ax = cns.phyloplot(adata)
+    >>> cns.phyloplot(adata)
     """
     # Validate inputs
     validate_anndata(adata, "adata", "phyloplot")
 
-    ax = helper_phylo.phyloplot(adata)
-    return ax
+    helper_phylo.phyloplot(adata)
 
 
 def forestplot(model: CoxModel | LogisticModel) -> Axes:
@@ -156,8 +155,10 @@ def forestplot(model: CoxModel | LogisticModel) -> Axes:
         )
 
     # Validate results is a DataFrame
-    validate_dataframe(model.results, "model.results", "forestplot")
-    validate_dataframe_not_empty(model.results, "forestplot")
+    results = model.results
+    validate_dataframe(results, "model.results", "forestplot")
+    assert isinstance(results, pd.DataFrame)
+    validate_dataframe_not_empty(results, "forestplot")
 
     # Validate required columns exist based on model type
     if model.name == "cox":
@@ -169,12 +170,12 @@ def forestplot(model: CoxModel | LogisticModel) -> Axes:
             "exp(coef) upper_err",
             "hue_group",
         ]
-        validate_columns_exist(model.results, required_cols, "forestplot")
+        validate_columns_exist(results, required_cols, "forestplot")
     else:
         required_cols = ["predictor", "auc", "lower_ci", "upper_ci", "hue_group"]
-        validate_columns_exist(model.results, required_cols, "forestplot")
+        validate_columns_exist(results, required_cols, "forestplot")
 
-    data = model.results.copy()
+    data = results.copy()
 
     if model.name == "cox":
         y = "display_label"
@@ -353,9 +354,10 @@ def rocplot(
     ax = plt.gca()
     ax.legend(loc="lower right")
 
-    if ax.get_legend() is not None:
-        for handle in ax.get_legend().legend_handles:
+    legend = ax.get_legend()
+    if legend is not None:
+        for handle in legend.legend_handles:
             if hasattr(handle, "set_linewidth"):
-                handle.set_linewidth(1.7)
+                handle.set_linewidth(1.7)  # type: ignore[call-non-callable]
 
     return ax
