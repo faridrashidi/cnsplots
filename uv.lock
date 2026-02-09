@@ -1045,7 +1045,7 @@ requires-dist = [
     { name = "furo", marker = "extra == 'doc'" },
     { name = "gseapy" },
     { name = "ipykernel", marker = "extra == 'dev'" },
-    { name = "lifelines" },
+    { name = "lifelines", specifier = "<=0.30.0" },
     { name = "lxml" },
     { name = "matplotlib" },
     { name = "matplotlib-venn" },

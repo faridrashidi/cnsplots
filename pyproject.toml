@@ -24,7 +24,7 @@ dependencies = [
     "adjustText",
     "biopython",
     "gseapy",
-    "lifelines",
+    "lifelines<=0.30.0",
     "lxml",
     "matplotlib",
     "matplotlib-venn",
