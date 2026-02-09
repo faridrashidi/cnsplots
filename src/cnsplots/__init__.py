@@ -8,7 +8,29 @@ import cnsplots._utils as utils
 import cnsplots._validation as validation
 from cnsplots._methods import CoxModel, LogisticModel, prerank
 from cnsplots._multipanels import multipanel
-from cnsplots._plots import (
+from cnsplots._settings import settings
+from cnsplots._setup import setup_ax, setup_ggplot, setup_matplotlib, setup_scanpy
+from cnsplots._utils import (
+    BLUE,
+    BROWN,
+    CHOCOLATE,
+    GRAY,
+    GREEN,
+    ORANGE,
+    PINK,
+    PURPLE,
+    RED,
+    VIOLET,
+    YELLOW,
+    add_panel_label,
+    figure,
+    get_hexcolors_from_apalette,
+    get_showcase_data,
+    palettes,
+    savefig,
+    take_legend_out,
+)
+from cnsplots.plots import (
     barplot,
     boxplot,
     confusionplot,
@@ -38,28 +60,6 @@ from cnsplots._plots import (
     vennplot,
     violinplot,
     volcanoplot,
-)
-from cnsplots._settings import settings
-from cnsplots._setup import setup_ax, setup_ggplot, setup_matplotlib, setup_scanpy
-from cnsplots._utils import (
-    BLUE,
-    BROWN,
-    CHOCOLATE,
-    GRAY,
-    GREEN,
-    ORANGE,
-    PINK,
-    PURPLE,
-    RED,
-    VIOLET,
-    YELLOW,
-    add_panel_label,
-    figure,
-    get_hexcolors_from_apalette,
-    get_showcase_data,
-    palettes,
-    savefig,
-    take_legend_out,
 )
 
 __version__ = "0.0.6"
