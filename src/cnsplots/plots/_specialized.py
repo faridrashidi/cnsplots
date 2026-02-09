@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import pandas as pd
     from anndata import AnnData
     from matplotlib.axes import Axes
 
@@ -12,6 +11,7 @@ if TYPE_CHECKING:
 import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.metrics import auc, roc_curve
 
@@ -157,7 +157,10 @@ def forestplot(model: CoxModel | LogisticModel) -> Axes:
     # Validate results is a DataFrame
     results = model.results
     validate_dataframe(results, "model.results", "forestplot")
-    assert isinstance(results, pd.DataFrame)
+    if not isinstance(results, pd.DataFrame):
+        raise TypeError(
+            "[forestplot] Internal type validation failed for 'model.results'."
+        )
     validate_dataframe_not_empty(results, "forestplot")
 
     # Validate required columns exist based on model type
