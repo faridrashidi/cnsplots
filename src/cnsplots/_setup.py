@@ -5,9 +5,66 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
+import sys
+from pathlib import Path
+
 import matplotlib as mpl
+from matplotlib import font_manager as fm
 
 import cnsplots as cns
+
+_HELVETICA_BOLD_REGISTERED = False
+
+
+def _ensure_helvetica_bold() -> None:
+    """
+    Ensure matplotlib can resolve a true Helvetica bold face on macOS.
+    """
+    global _HELVETICA_BOLD_REGISTERED
+    if _HELVETICA_BOLD_REGISTERED:
+        return
+
+    for font in fm.fontManager.ttflist:
+        if font.name == "Helvetica" and int(font.weight) >= 700:
+            _HELVETICA_BOLD_REGISTERED = True
+            return
+
+    if sys.platform != "darwin":
+        return
+
+    ttc_path = Path("/System/Library/Fonts/Helvetica.ttc")
+    if not ttc_path.exists():
+        return
+
+    try:
+        from fontTools.ttLib import TTCollection
+    except Exception:
+        return
+
+    bold_ttf_path = Path.home() / ".cache" / "cnsplots" / "fonts" / "Helvetica-Bold.ttf"
+    try:
+        bold_ttf_path.parent.mkdir(parents=True, exist_ok=True)
+        if not bold_ttf_path.exists():
+            ttc = TTCollection(str(ttc_path))
+            bold_face = None
+            for face in ttc.fonts:
+                family = (face["name"].getDebugName(1) or "").strip()
+                subfamily = (face["name"].getDebugName(2) or "").strip().lower()
+                if family == "Helvetica" and "bold" in subfamily:
+                    bold_face = face
+                    break
+            if bold_face is None:
+                return
+            bold_face.save(str(bold_ttf_path))
+
+        fm.fontManager.addfont(str(bold_ttf_path))
+    except Exception:
+        return
+
+    for font in fm.fontManager.ttflist:
+        if font.name == "Helvetica" and int(font.weight) >= 700:
+            _HELVETICA_BOLD_REGISTERED = True
+            return
 
 
 def setup_matplotlib(
@@ -117,6 +174,8 @@ def setup_matplotlib(
     if linewidth_axes is None:
         linewidth_axes = cns.settings.linewidth_axes
 
+    _ensure_helvetica_bold()
+
     def config() -> dict[str, object]:
         """
         Generate matplotlib rcParams configuration dictionary.
@@ -129,7 +188,7 @@ def setup_matplotlib(
         return {
             "mathtext.fontset": "custom",
             "font.family": "sans-serif",
-            "font.sans-serif": "Helvetica",
+            "font.sans-serif": ["Helvetica"],
             "font.size": fontsize_title,
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0.01,
@@ -352,14 +411,18 @@ def setup_ax(
     if linewidth_axes is None:
         linewidth_axes = cns.settings.linewidth_axes
 
+    _ensure_helvetica_bold()
+
     mpl.rcParams.update(
         {
             "mathtext.fontset": "custom",
             "font.family": "sans-serif",
-            "font.sans-serif": "Helvetica",
+            "font.sans-serif": ["Helvetica"],
         }
     )
-    ax.set_title(ax.get_title(), fontsize=fontsize_title, pad=4)
+    title_props = ax.title.get_fontproperties().copy()
+    title_props.set_size(fontsize_title)
+    ax.set_title(ax.get_title(), fontproperties=title_props, pad=4)
     ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
     ax.set_ylabel(ax.get_ylabel(), fontsize=fontsize_title, color="black")
     ax.spines["top"].set_visible(False)
