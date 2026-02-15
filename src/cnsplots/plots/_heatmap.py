@@ -56,6 +56,8 @@ def heatmapplot(
     xticklabels_rotation: int = 45,
     xticklabels_fontsize: int = 7,
     yticklabels_fontsize: int = 7,
+    xlabel_labelpad: float = 5,
+    ylabel_labelpad: float = 3,
     **kwargs: Any,
 ) -> ClusterMapPlotterNew:
     """
@@ -110,6 +112,10 @@ def heatmapplot(
         Font size for x-axis tick labels.
     yticklabels_fontsize : int, default: 7
         Font size for y-axis tick labels.
+    xlabel_labelpad : float, default: 5
+        Padding between the x-axis label and the tick labels.
+    ylabel_labelpad : float, default: 3
+        Padding between the y-axis label and the tick labels.
     **kwargs
         Additional keyword arguments passed to `ClusterMapPlotterNew`.
 
@@ -270,8 +276,8 @@ def heatmapplot(
             "labelsize": xticklabels_fontsize,
         },
         yticklabels_kws={"labelsize": yticklabels_fontsize},
-        ylabel_kws={"labelpad": 3},
-        xlabel_kws={"labelpad": 5},
+        ylabel_kws={"labelpad": ylabel_labelpad},
+        xlabel_kws={"labelpad": xlabel_labelpad},
         verbose=0,
         row_names_side="left" if left_annotation is None else "right",
         xticklabels=True,
