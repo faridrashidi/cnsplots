@@ -27,6 +27,7 @@ def regplot(
     y: str,
     hue: str | None = None,
     s: float = 3,
+    color="black",
     **kwargs: Any,
 ) -> Axes:
     """
@@ -44,9 +45,17 @@ def regplot(
     y : str
         Column name for the dependent variable (y-axis).
     hue : str, optional
-        Column name for grouping.
+        Column name for grouping. When set, separate regression lines and
+        correlation statistics are drawn for each group.
     s : float, default: 3
         Size of scatter plot markers.
+    color : str, default: "black"
+        Either a matplotlib color string (e.g. ``"black"``, ``"#ff0000"``) or the
+        name of a column in *data*.  When a column name is given, the scatter
+        points are colored by the unique values of that column and a legend is
+        added, while a single overall regression line and correlation statistic
+        are shown.  If *hue* is also specified, *hue* takes precedence and
+        *color* is ignored.
     **kwargs
         Additional keyword arguments passed to `seaborn.regplot`.
 
@@ -69,6 +78,9 @@ def regplot(
     >>> # Grouped regression with separate fits
     >>> ax = cns.regplot(data=df, x="dose", y="response", hue="cell_line")
     >>> ax.set_xlabel("Drug Dose")
+
+    >>> # Color points by a column (single regression line)
+    >>> ax = cns.regplot(data=df, x="age", y="expression", color="cell_type")
     """
     # Validate inputs
     validate_dataframe(data, "data", "regplot")
@@ -89,6 +101,7 @@ def regplot(
     }
     args.update(kwargs)
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    color_is_column = isinstance(color, str) and color in data.columns
     if hue:
         for idx, hue_val in enumerate(data[hue].unique()):
             subset = data[data[hue] == hue_val]
@@ -112,15 +125,30 @@ def regplot(
                 ha="left",
                 va="top",
             )
-    else:
+        ax.legend(title=hue)
+    elif color_is_column:
+        line_args = {k: v for k, v in args.items() if k != "scatter_kws"}
         ax = sns.regplot(
             data=data,
             x=x,
             y=y,
             ax=ax,
             color="black",
-            **args,
+            scatter=False,
+            **line_args,
         )
+        unique_vals = data[color].unique()
+        for idx, val in enumerate(unique_vals):
+            subset = data[data[color] == val]
+            ax.scatter(
+                subset[x],
+                subset[y],
+                s=s,
+                color=palette[idx % len(palette)],
+                label=val,
+                alpha=1,
+                edgecolors="none",
+            )
         rho, p_value = sp.stats.pearsonr(data[x], data[y])
         ax.text(
             0.05,
@@ -131,8 +159,31 @@ def regplot(
             ha="left",
             va="top",
         )
-    if hue:
-        ax.legend(title=hue)
+        ax.legend(title=color)
+        for handle in ax.get_legend().legend_handles:
+            if hasattr(handle, "set_sizes"):
+                handle.set_sizes([2 * s])
+            elif hasattr(handle, "set_markersize"):
+                handle.set_markersize(2 * np.sqrt(s / np.pi))
+    else:
+        ax = sns.regplot(
+            data=data,
+            x=x,
+            y=y,
+            ax=ax,
+            color=color,
+            **args,
+        )
+        rho, p_value = sp.stats.pearsonr(data[x], data[y])
+        ax.text(
+            0.05,
+            0.95,
+            rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+            color=color,
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+        )
 
     return ax
 
