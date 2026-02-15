@@ -103,7 +103,11 @@ def phyloplot(adata: AnnData) -> None:
     helper_phylo.phyloplot(adata)
 
 
-def forestplot(model: CoxModel | LogisticModel) -> Axes:
+def forestplot(
+    model: CoxModel | LogisticModel,
+    bar_width: float | None = None,
+    add_pvalue: bool = True,
+) -> Axes:
     """
     Create a forest plot displaying effect sizes from a regression model.
 
@@ -114,6 +118,13 @@ def forestplot(model: CoxModel | LogisticModel) -> Axes:
     ----------
     model : CoxModel or LogisticModel
         Fitted regression model object containing results to plot.
+    bar_width : float or None, optional
+        Width of the bars in the p-value panel (Cox models only). If None,
+        defaults to ``0.8 / n_hue_groups`` when there are multiple hue groups,
+        or ``0.6`` otherwise.
+    add_pvalue : bool, optional
+        Whether to add the p-value bar panel alongside the forest plot
+        (Cox models only). Default is True.
 
     Returns
     -------
@@ -196,7 +207,7 @@ def forestplot(model: CoxModel | LogisticModel) -> Axes:
         x2label = ""
     fig = plt.gcf()
 
-    if model.name == "cox":
+    if model.name == "cox" and add_pvalue:
         gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
     else:
         gs = grid_spec.GridSpec(1, 1)
@@ -253,9 +264,12 @@ def forestplot(model: CoxModel | LogisticModel) -> Axes:
     else:
         ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
-    if model.name == "cox":
+    if model.name == "cox" and add_pvalue:
         ax2 = fig.add_subplot(gs[1])
-        bar_width = 0.8 / len(unique_hue_groups) if len(unique_hue_groups) > 1 else 0.6
+        if bar_width is None:
+            bar_width = (
+                0.8 / len(unique_hue_groups) if len(unique_hue_groups) > 1 else 0.6
+            )
         for i, label in enumerate(reversed(unique_labels)):
             label_data = data[data[y] == label]
             for j, hue_group in enumerate(unique_hue_groups):
