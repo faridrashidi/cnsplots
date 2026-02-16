@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 import itertools
 import operator
 import os
+import re
 
 import matplotlib as mpl
 import matplotlib.colors as mcolors
@@ -22,6 +23,7 @@ from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
 
 import cnsplots as cns
+from cnsplots._svg import _save_svg
 
 RED = "#D6372E"
 BLUE = "#5189BB"
@@ -143,11 +145,14 @@ def savefig(filepath):
     directory = os.path.dirname(filepath)
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
-    # root, ext = os.path.splitext(filepath)
-    # if ext.lower() == ".svg":
-    # _save_svg(filepath, root)
-    # else:
-    plt.savefig(filepath)
+    fig = plt.gcf()
+    for ax in fig.get_axes():
+        apply_unicode_font(ax)
+    root, ext = os.path.splitext(filepath)
+    if ext.lower() == ".svg":
+        _save_svg(filepath, root)
+    else:
+        plt.savefig(filepath)
 
 
 def take_legend_out(title=None):
@@ -355,6 +360,42 @@ def _remove_edge_from_legend_items(ax):
         if hasattr(handle, "set_edgecolor"):
             handle.set_edgecolor("none")
     ax.legend(handles, labels)
+
+
+def _has_non_ascii(text):
+    return bool(re.search(r"[^\x00-\x7F]", text))
+
+
+def apply_unicode_font(ax=None, font="DejaVu Sans"):
+    """
+    Set font to a Unicode-compatible font for text elements containing non-ASCII characters.
+
+    Scans all text elements (title, axis labels, tick labels, legend, and annotations)
+    on the given axes and switches their font to the specified fallback font if they
+    contain non-ASCII characters (e.g., arrows like \u2192, Greek letters, etc.).
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        The axes to process. If None, uses the current axes.
+    font : str, default: 'DejaVu Sans'
+        The fallback font to use for text containing non-ASCII characters.
+    """
+    if ax is None:
+        ax = plt.gca()
+    text_objects = (
+        [ax.title, ax.xaxis.label, ax.yaxis.label]
+        + ax.get_xticklabels()
+        + ax.get_yticklabels()
+        + list(ax.texts)
+    )
+    legend = ax.get_legend()
+    if legend is not None:
+        text_objects.append(legend.get_title())
+        text_objects.extend(legend.get_texts())
+    for text_obj in text_objects:
+        if _has_non_ascii(text_obj.get_text()):
+            text_obj.set_fontfamily(font)
 
 
 def _addcount_helper(data, attr, ax):
