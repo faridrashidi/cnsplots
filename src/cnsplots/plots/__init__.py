@@ -3,6 +3,7 @@
 from cnsplots.plots._categorical import (
     barplot,
     donutplot,
+    lollipopplot,
     pieplot,
     stackplot,
     stripplot,
@@ -37,6 +38,7 @@ __all__ = [
     "histplot",
     "kdeplot",
     "lineplot",
+    "lollipopplot",
     "phyloplot",
     "pieplot",
     "qqplot",

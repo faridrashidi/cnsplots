@@ -20,6 +20,7 @@ import cnsplots as cns
    violinplot
    stripplot
    barplot
+   lollipopplot
    histplot
    distplot
    kdeplot

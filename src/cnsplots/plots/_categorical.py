@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
@@ -132,6 +133,393 @@ def barplot(
             )
     if pairs is not None:
         cns.utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+    if show_legend:
+        ax.legend(
+            handles=legend_handles,
+            title=group_col,
+            bbox_to_anchor=(1.05, 1),
+            loc="upper left",
+        )
+
+    return ax
+
+
+def lollipopplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    hue: str | None = None,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
+    pairs: list[tuple[str, str]] | None = None,
+    addtip: bool = False,
+    estimator: str = "mean",
+    errorbar: str | None = None,
+    markersize: float = 30,
+    linewidth: float = 1.5,
+    marker: str = "o",
+    dodge: float = 0.8,
+    palette: Any = None,
+    baseline: float = 0,
+) -> Axes:
+    """
+    Create a lollipop plot showing values across categories.
+
+    A lollipop plot is a cleaner alternative to bar plots, using a stem (line)
+    topped with a dot to represent aggregated values for each category.
+    Orientation is automatically detected based on which axis is categorical.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the x-axis variable.
+    y : str
+        Column name for the y-axis variable.
+    hue : str, optional
+        Column name for grouping data into separate lollipop sets.
+    order : list of str, optional
+        Order of categories along the categorical axis.
+    hue_order : list of str, optional
+        Order of hue levels.
+    pairs : list of tuple of str, optional
+        List of pairs of category names for pairwise statistical comparisons
+        using Welch's t-test.
+    addtip : bool, default: False
+        Whether to add text labels showing the aggregated value at each dot.
+    estimator : {'mean', 'median'}, default: 'mean'
+        The aggregation function to compute for each category.
+    errorbar : {'se', 'sd', 'ci'}, optional
+        Type of error bar to draw. ``'se'`` for standard error, ``'sd'`` for
+        standard deviation, ``'ci'`` for 95% confidence interval.
+    markersize : float, default: 30
+        Size of the dot markers (in points squared, passed to scatter ``s``).
+    linewidth : float, default: 1.5
+        Width of the stem lines.
+    marker : str, default: 'o'
+        Marker style for the dots.
+    dodge : float, default: 0.8
+        Total width for grouped lollipops within each category position.
+    palette : str, list, or dict, optional
+        Colors to use. Can be a seaborn palette name, a list of colors,
+        or a column name in data for palette-as-column mapping.
+    baseline : float, default: 0
+        Value at which the stems originate.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
+
+    See Also
+    --------
+    barplot : Create a bar plot showing mean values.
+    stripplot : Create a strip plot showing individual data points.
+    boxplot : Create a box plot showing full distribution.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> ax = cns.lollipopplot(data=df, x="treatment", y="response")
+    >>> ax.set_title("Treatment Response")
+
+    >>> # Horizontal lollipop plot
+    >>> ax = cns.lollipopplot(data=df, x="response", y="treatment")
+
+    >>> # With hue grouping
+    >>> ax = cns.lollipopplot(data=df, x="day", y="total_bill", hue="sex")
+    """
+    # Validate inputs
+    validate_dataframe(data, "data", "lollipopplot")
+    validate_columns_exist(data, [x, y], "lollipopplot")
+    validate_dataframe_not_empty(data, "lollipopplot")
+
+    # Detect orientation
+    x_is_numeric = pd.api.types.is_numeric_dtype(data[x])
+    y_is_numeric = pd.api.types.is_numeric_dtype(data[y])
+    if x_is_numeric and not y_is_numeric:
+        orient = "h"
+        cat_col, val_col = y, x
+    else:
+        orient = "v"
+        cat_col, val_col = x, y
+
+    # Category order
+    categories = order if order is not None else list(data[cat_col].unique())
+    cat_positions = np.arange(len(categories))
+
+    ax = plt.gca()
+
+    # Resolve palette and legend
+    show_legend = False
+    legend_handles = []
+    group_col = None
+
+    if isinstance(palette, str) and palette in data.columns:
+        group_col = palette
+        unique_labels = data[palette].unique()
+        palette_colors = sns.color_palette(n_colors=len(unique_labels))
+        label_to_color = dict(zip(unique_labels, palette_colors))
+        cat_col_vals = (
+            data[[cat_col, palette]]
+            .drop_duplicates()
+            .set_index(cat_col)[palette]
+            .to_dict()
+        )
+        resolved_colors = [label_to_color[cat_col_vals[c]] for c in categories]
+        show_legend = True
+        legend_handles = [
+            Patch(facecolor=color, label=label)
+            for label, color in label_to_color.items()
+        ]
+    elif palette is not None:
+        resolved_colors = sns.color_palette(palette, n_colors=len(categories))
+    else:
+        resolved_colors = sns.color_palette(n_colors=len(categories))
+
+    agg_func = np.median if estimator == "median" else np.mean
+
+    def _compute_error(group_values, err_type):
+        sem = group_values.std() / np.sqrt(len(group_values))
+        if err_type == "se":
+            return sem
+        if err_type == "sd":
+            return group_values.std()
+        if err_type == "ci":
+            return 1.96 * sem
+        return 0
+
+    if hue is None:
+        # Simple: one stem per category
+        grouped = data.groupby(cat_col, sort=False)[val_col]
+        means = grouped.agg(agg_func).reindex(categories)
+
+        if orient == "v":
+            ax.vlines(
+                cat_positions,
+                baseline,
+                means,
+                linewidth=linewidth,
+                colors=resolved_colors,
+                zorder=2,
+            )
+            ax.scatter(
+                cat_positions,
+                means,
+                s=markersize,
+                marker=marker,
+                c=resolved_colors,
+                zorder=3,
+            )
+            if errorbar is not None:
+                for i, cat in enumerate(categories):
+                    vals = data.loc[data[cat_col] == cat, val_col]
+                    err = _compute_error(vals, errorbar)
+                    ax.errorbar(
+                        cat_positions[i],
+                        means.iloc[i],
+                        yerr=err,
+                        fmt="none",
+                        ecolor="black",
+                        elinewidth=0.7,
+                        capsize=2,
+                    )
+            ax.set_xticks(cat_positions)
+            ax.set_xticklabels(categories)
+            if addtip:
+                for i, val in enumerate(means):
+                    ax.text(
+                        float(cat_positions[i]),
+                        val + (means.max() - baseline) * 0.02,
+                        f"{val:.2f}",
+                        color="black",
+                        ha="center",
+                        va="bottom",
+                        fontsize=6,
+                    )
+        else:
+            ax.hlines(
+                cat_positions,
+                baseline,
+                means,
+                linewidth=linewidth,
+                colors=resolved_colors,
+                zorder=2,
+            )
+            ax.scatter(
+                means,
+                cat_positions,
+                s=markersize,
+                marker=marker,
+                c=resolved_colors,
+                zorder=3,
+            )
+            if errorbar is not None:
+                for i, cat in enumerate(categories):
+                    vals = data.loc[data[cat_col] == cat, val_col]
+                    err = _compute_error(vals, errorbar)
+                    ax.errorbar(
+                        means.iloc[i],
+                        cat_positions[i],
+                        xerr=err,
+                        fmt="none",
+                        ecolor="black",
+                        elinewidth=0.7,
+                        capsize=2,
+                    )
+            ax.set_yticks(cat_positions)
+            ax.set_yticklabels(categories)
+            if addtip:
+                for i, val in enumerate(means):
+                    ax.text(
+                        val + (means.max() - baseline) * 0.02,
+                        float(cat_positions[i]),
+                        f"{val:.2f}",
+                        color="black",
+                        ha="left",
+                        va="center",
+                        fontsize=6,
+                    )
+    else:
+        # Grouped: multiple stems per category
+        hue_levels = hue_order if hue_order is not None else list(data[hue].unique())
+        n_hue = len(hue_levels)
+        width = dodge / n_hue
+        offsets = np.linspace(-(dodge - width) / 2, (dodge - width) / 2, n_hue)
+
+        if palette is not None and not (
+            isinstance(palette, str) and palette in data.columns
+        ):
+            hue_colors = sns.color_palette(palette, n_colors=n_hue)
+        else:
+            hue_colors = sns.color_palette(n_colors=n_hue)
+
+        for i, hue_val in enumerate(hue_levels):
+            subset = data[data[hue] == hue_val]
+            grouped = subset.groupby(cat_col, sort=False)[val_col]
+            means = grouped.agg(agg_func).reindex(categories)
+            positions = cat_positions + offsets[i]
+            color = hue_colors[i]
+
+            if orient == "v":
+                ax.vlines(
+                    positions,
+                    baseline,
+                    means,
+                    linewidth=linewidth,
+                    colors=color,
+                    zorder=2,
+                )
+                ax.scatter(
+                    positions,
+                    means,
+                    s=markersize,
+                    marker=marker,
+                    color=color,
+                    zorder=3,
+                    label=hue_val,
+                )
+                if errorbar is not None:
+                    for j, cat in enumerate(categories):
+                        vals = subset.loc[subset[cat_col] == cat, val_col]
+                        if len(vals) > 1:
+                            err = _compute_error(vals, errorbar)
+                            ax.errorbar(
+                                positions[j],
+                                means.iloc[j],
+                                yerr=err,
+                                fmt="none",
+                                ecolor="black",
+                                elinewidth=0.7,
+                                capsize=2,
+                            )
+            else:
+                ax.hlines(
+                    positions,
+                    baseline,
+                    means,
+                    linewidth=linewidth,
+                    colors=color,
+                    zorder=2,
+                )
+                ax.scatter(
+                    means,
+                    positions,
+                    s=markersize,
+                    marker=marker,
+                    color=color,
+                    zorder=3,
+                    label=hue_val,
+                )
+                if errorbar is not None:
+                    for j, cat in enumerate(categories):
+                        vals = subset.loc[subset[cat_col] == cat, val_col]
+                        if len(vals) > 1:
+                            err = _compute_error(vals, errorbar)
+                            ax.errorbar(
+                                means.iloc[j],
+                                positions[j],
+                                xerr=err,
+                                fmt="none",
+                                ecolor="black",
+                                elinewidth=0.7,
+                                capsize=2,
+                            )
+
+        if orient == "v":
+            ax.set_xticks(cat_positions)
+            ax.set_xticklabels(categories)
+            if addtip:
+                for i, hue_val in enumerate(hue_levels):
+                    subset = data[data[hue] == hue_val]
+                    grouped = subset.groupby(cat_col, sort=False)[val_col]
+                    means = grouped.agg(agg_func).reindex(categories)
+                    positions = cat_positions + offsets[i]
+                    for j, val in enumerate(means):
+                        if not np.isnan(val):
+                            ax.text(
+                                positions[j],
+                                val + means.max() * 0.02,
+                                f"{val:.2f}",
+                                color="black",
+                                ha="center",
+                                va="bottom",
+                                fontsize=6,
+                            )
+        else:
+            ax.set_yticks(cat_positions)
+            ax.set_yticklabels(categories)
+            if addtip:
+                for i, hue_val in enumerate(hue_levels):
+                    subset = data[data[hue] == hue_val]
+                    grouped = subset.groupby(cat_col, sort=False)[val_col]
+                    means = grouped.agg(agg_func).reindex(categories)
+                    positions = cat_positions + offsets[i]
+                    for j, val in enumerate(means):
+                        if not np.isnan(val):
+                            ax.text(
+                                val + means.max() * 0.02,
+                                positions[j],
+                                f"{val:.2f}",
+                                color="black",
+                                ha="left",
+                                va="center",
+                                fontsize=6,
+                            )
+
+    # Statistical annotations
+    if pairs is not None:
+        plotting = {"data": data, "x": x, "y": y}
+        if order is not None:
+            plotting["order"] = order
+        if hue is not None:
+            plotting["hue"] = hue
+        if hue_order is not None:
+            plotting["hue_order"] = hue_order
+        cns.utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+
+    # Legend
     if show_legend:
         ax.legend(
             handles=legend_handles,
