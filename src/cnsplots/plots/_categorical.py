@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
     import pandas as pd
+    from matplotlib.axes import Axes
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -155,10 +155,11 @@ def lollipopplot(
     addtip: bool = False,
     estimator: str = "mean",
     errorbar: str | None = None,
-    markersize: float = 30,
+    markersize: float = 20,
     linewidth: float = 1.5,
     marker: str = "o",
     dodge: float = 0.8,
+    color: str | None = None,
     palette: Any = None,
     baseline: float = 0,
 ) -> Axes:
@@ -193,7 +194,7 @@ def lollipopplot(
     errorbar : {'se', 'sd', 'ci'}, optional
         Type of error bar to draw. ``'se'`` for standard error, ``'sd'`` for
         standard deviation, ``'ci'`` for 95% confidence interval.
-    markersize : float, default: 30
+    markersize : float, default: 20
         Size of the dot markers (in points squared, passed to scatter ``s``).
     linewidth : float, default: 1.5
         Width of the stem lines.
@@ -201,6 +202,9 @@ def lollipopplot(
         Marker style for the dots.
     dodge : float, default: 0.8
         Total width for grouped lollipops within each category position.
+    color : str, optional
+        A single color for all stems and dots (e.g. ``"black"``).
+        Overrides ``palette``.
     palette : str, list, or dict, optional
         Colors to use. Can be a seaborn palette name, a list of colors,
         or a column name in data for palette-as-column mapping.
@@ -256,7 +260,9 @@ def lollipopplot(
     legend_handles = []
     group_col = None
 
-    if isinstance(palette, str) and palette in data.columns:
+    if color is not None:
+        resolved_colors = [color] * len(categories)
+    elif isinstance(palette, str) and palette in data.columns:
         group_col = palette
         unique_labels = data[palette].unique()
         palette_colors = sns.color_palette(n_colors=len(unique_labels))
@@ -270,8 +276,7 @@ def lollipopplot(
         resolved_colors = [label_to_color[cat_col_vals[c]] for c in categories]
         show_legend = True
         legend_handles = [
-            Patch(facecolor=color, label=label)
-            for label, color in label_to_color.items()
+            Patch(facecolor=clr, label=label) for label, clr in label_to_color.items()
         ]
     elif palette is not None:
         resolved_colors = sns.color_palette(palette, n_colors=len(categories))
@@ -301,6 +306,7 @@ def lollipopplot(
                 baseline,
                 means,
                 linewidth=linewidth,
+                alpha=0.4,
                 colors=resolved_colors,
                 zorder=2,
             )
@@ -344,6 +350,7 @@ def lollipopplot(
                 baseline,
                 means,
                 linewidth=linewidth,
+                alpha=0.4,
                 colors=resolved_colors,
                 zorder=2,
             )
@@ -388,7 +395,9 @@ def lollipopplot(
         width = dodge / n_hue
         offsets = np.linspace(-(dodge - width) / 2, (dodge - width) / 2, n_hue)
 
-        if palette is not None and not (
+        if color is not None:
+            hue_colors = [color] * n_hue
+        elif palette is not None and not (
             isinstance(palette, str) and palette in data.columns
         ):
             hue_colors = sns.color_palette(palette, n_colors=n_hue)
@@ -408,6 +417,7 @@ def lollipopplot(
                     baseline,
                     means,
                     linewidth=linewidth,
+                    alpha=0.4,
                     colors=color,
                     zorder=2,
                 )
@@ -440,6 +450,7 @@ def lollipopplot(
                     baseline,
                     means,
                     linewidth=linewidth,
+                    alpha=0.4,
                     colors=color,
                     zorder=2,
                 )
