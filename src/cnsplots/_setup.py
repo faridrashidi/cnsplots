@@ -188,7 +188,13 @@ def setup_matplotlib(
         return {
             "mathtext.fontset": "custom",
             "font.family": "sans-serif",
-            "font.sans-serif": ["Helvetica"],
+            "font.sans-serif": [
+                "Helvetica",
+                "Helvetica Neue",
+                "Arial",
+                "DejaVu Sans",
+                "Liberation Sans",
+            ],
             "font.size": fontsize_title,
             "savefig.bbox": "tight",
             "savefig.pad_inches": 0.01,
@@ -417,7 +423,13 @@ def setup_ax(
         {
             "mathtext.fontset": "custom",
             "font.family": "sans-serif",
-            "font.sans-serif": ["Helvetica"],
+            "font.sans-serif": [
+                "Helvetica",
+                "Helvetica Neue",
+                "Arial",
+                "DejaVu Sans",
+                "Liberation Sans",
+            ],
         }
     )
     title_props = ax.title.get_fontproperties().copy()
