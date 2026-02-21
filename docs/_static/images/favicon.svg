@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64"
+     xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="white"/>
+  <text font-family="Helvetica, Arial, sans-serif"
+        font-size="24" font-weight="bold" text-anchor="middle">
+    <tspan x="32" y="22" fill="#377EB8">C</tspan>
+    <tspan x="32" y="42" fill="#4DAF4A">n</tspan>
+    <tspan x="32" y="62" fill="#E41A1C">S</tspan>
+  </text>
+</svg>
