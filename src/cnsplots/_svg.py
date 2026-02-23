@@ -6,13 +6,12 @@ if TYPE_CHECKING:
     from lxml.etree import _Element
 
 import os
-import re
 import shutil
 import subprocess
 
 import matplotlib.pyplot as plt
-from matplotlib.text import Text
 from lxml import etree
+from matplotlib.text import Text
 
 
 def _collect_bold_texts() -> set[str]:
@@ -82,14 +81,10 @@ def _correct_svg(
     with open(input_file) as f:
         svg_content = f.read()
 
-    # Step 1: First handle clip paths directly in the content
-    # Remove clip-path attributes from g elements but preserve the g tags initially
-    svg_content = re.sub(r'clip-path="[^"]+"', "", svg_content)
-
-    # Remove all clipPath definitions
-    svg_content = re.sub(
-        r"<clipPath[^>]*>.*?</clipPath>", "", svg_content, flags=re.DOTALL
-    )
+    # NOTE: clip-path attributes and clipPath definitions are intentionally
+    # preserved so that axes clipping (e.g. from set_xlim / set_ylim) is
+    # rendered correctly.  The _flatten_groups helper propagates clip-path
+    # from parent <g> elements to their children when groups are dissolved.
 
     # Parse the modified SVG with lxml
     parser = etree.XMLParser(remove_blank_text=True)
@@ -166,7 +161,12 @@ def _restore_bold_fonts(
 
 
 def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
-    """Flatten all group elements by moving their children to parent."""
+    """Flatten all group elements by moving their children to parent.
+
+    When a ``<g>`` carries a ``clip-path`` attribute the attribute is
+    propagated to each child element so that clipping (e.g. from
+    ``set_xlim`` / ``set_ylim``) is preserved after the group is removed.
+    """
     # Iteratively flatten groups until no more flattening occurs
     while True:
         # Find g elements
@@ -181,12 +181,18 @@ def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
             if parent is None:
                 continue
 
+            clip_path = g.get("clip-path")
+
             # Get index of g in parent
             g_index = parent.index(g)
 
             # Move all children of g to parent
             children = list(g)
             for child in children:
+                # Propagate clip-path from the group to children that
+                # don't already have their own clip-path.
+                if clip_path is not None and child.get("clip-path") is None:
+                    child.set("clip-path", clip_path)
                 g.remove(child)
                 parent.insert(g_index, child)
                 g_index += 1
