@@ -30,6 +30,10 @@ def _collect_bold_texts() -> set[str]:
                 isinstance(weight, (int, float)) and weight >= 600
             ):
                 bold_texts.add(txt)
+                for line in txt.split("\n"):
+                    line = line.strip()
+                    if line:
+                        bold_texts.add(line)
     return bold_texts
 
 
