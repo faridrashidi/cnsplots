@@ -74,6 +74,15 @@ plot_palettes(
         "Ecotyper4",
         "Ecotyper5",
         "Ecotyper6",
+        "NPG",
+        "AAAS",
+        "Lancet",
+        "NEJM",
+        "JAMA",
+        "JCO",
+        "OkabeIto",
+        "TolBright",
+        "TolMuted",
         "parula",
         "gnuplot",
         "hot",
@@ -82,7 +91,7 @@ plot_palettes(
         "OrBu_custom",
         "YlGnBu_custom",
     ],
-    1500,
+    2040,
     600,
 )
 
@@ -100,8 +109,11 @@ plot_palettes(
         "Bold",
         "Paired",
         "Dark2",
+        "NPG",
+        "AAAS",
+        "JAMA",
     ],
-    360,
+    540,
     600,
 )
 
@@ -361,3 +373,53 @@ mp.get_axes("E").set_title("Ecotyper5")
 mp.panel("F", 80, 100, color_cycle="Ecotyper6")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("F").set_title("Ecotyper6")
+
+
+# %%
+# Journal palettes for publication-ready figures
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Palettes from ggsci — matching Nature, Science, Lancet, NEJM, JAMA, JCO house styles.
+mp = cns.multipanel(max_width=600)
+
+mp.panel("A", 80, 100, color_cycle="NPG")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("A").set_title("NPG")
+
+mp.panel("B", 80, 100, color_cycle="AAAS")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("B").set_title("AAAS")
+
+mp.panel("C", 80, 100, color_cycle="Lancet")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("C").set_title("Lancet")
+
+mp.panel("D", 80, 100, color_cycle="NEJM")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("D").set_title("NEJM")
+
+mp.panel("E", 80, 100, color_cycle="JAMA")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("E").set_title("JAMA")
+
+mp.panel("F", 80, 100, color_cycle="JCO")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("F").set_title("JCO")
+
+
+# %%
+# Colorblind-safe palettes
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Okabe-Ito and Paul Tol palettes — recommended by Nature for accessibility.
+mp = cns.multipanel(max_width=400)
+
+mp.panel("A", 80, 100, color_cycle="OkabeIto")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("A").set_title("OkabeIto")
+
+mp.panel("B", 80, 100, color_cycle="TolBright")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("B").set_title("TolBright")
+
+mp.panel("C", 80, 100, color_cycle="TolMuted")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("C").set_title("TolMuted")

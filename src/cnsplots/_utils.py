@@ -710,6 +710,121 @@ def palettes(color):
             return palettable.cartocolors.qualitative.Bold_10.mpl_colors
         elif color == "BlueRed":
             return palettable.tableau.BlueRed_6.mpl_colors
+        elif color == "NPG":
+            colors = [
+                "#E64B35",
+                "#4DBBD5",
+                "#00A087",
+                "#3C5488",
+                "#F39B7F",
+                "#8491B4",
+                "#91D1C2",
+                "#DC0000",
+                "#7E6148",
+                "#B09C85",
+            ]
+            return sns.color_palette(colors)
+        elif color == "AAAS":
+            colors = [
+                "#3B4992",
+                "#EE0000",
+                "#008B45",
+                "#631879",
+                "#008280",
+                "#BB0021",
+                "#5F559B",
+                "#A20056",
+                "#808180",
+                "#1B1919",
+            ]
+            return sns.color_palette(colors)
+        elif color == "Lancet":
+            colors = [
+                "#00468B",
+                "#ED0000",
+                "#42B540",
+                "#0099B4",
+                "#925E9F",
+                "#FDAF91",
+                "#AD002A",
+                "#ADB6B6",
+                "#1B1919",
+            ]
+            return sns.color_palette(colors)
+        elif color == "NEJM":
+            colors = [
+                "#BC3C29",
+                "#0072B5",
+                "#E18727",
+                "#20854E",
+                "#7876B1",
+                "#6F99AD",
+                "#FFDC91",
+                "#EE4C97",
+            ]
+            return sns.color_palette(colors)
+        elif color == "JAMA":
+            colors = [
+                "#374E55",
+                "#DF8F44",
+                "#00A1D5",
+                "#B24745",
+                "#79AF97",
+                "#6A6599",
+                "#80796B",
+            ]
+            return sns.color_palette(colors)
+        elif color == "JCO":
+            colors = [
+                "#0073C2",
+                "#EFC000",
+                "#868686",
+                "#CD534C",
+                "#7AA6DC",
+                "#003C67",
+                "#8F7700",
+                "#3B3B3B",
+                "#A73030",
+                "#4A6990",
+            ]
+            return sns.color_palette(colors)
+        elif color == "OkabeIto":
+            colors = [
+                "#E69F00",
+                "#56B4E9",
+                "#009E73",
+                "#F0E442",
+                "#0072B2",
+                "#D55E00",
+                "#CC79A7",
+                "#000000",
+            ]
+            return sns.color_palette(colors)
+        elif color == "TolBright":
+            colors = [
+                "#4477AA",
+                "#EE6677",
+                "#228833",
+                "#CCBB44",
+                "#66CCEE",
+                "#AA3377",
+                "#BBBBBB",
+            ]
+            return sns.color_palette(colors)
+        elif color == "TolMuted":
+            colors = [
+                "#332288",
+                "#88CCEE",
+                "#44AA99",
+                "#117733",
+                "#999933",
+                "#DDCC77",
+                "#CC6677",
+                "#882255",
+                "#AA4499",
+                "#DDDDDD",
+            ]
+            return sns.color_palette(colors)
         elif color == "ECharts":
             colors = [
                 "#5470c6",
