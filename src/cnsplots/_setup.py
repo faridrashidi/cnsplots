@@ -264,6 +264,15 @@ def setup_matplotlib(
         "Ecotyper4",
         "Ecotyper5",
         "Ecotyper6",
+        "NPG",
+        "AAAS",
+        "Lancet",
+        "NEJM",
+        "JAMA",
+        "JCO",
+        "OkabeIto",
+        "TolBright",
+        "TolMuted",
     ]:
         if categorical not in mpl.colormaps:
             mpl.colormaps.register(
