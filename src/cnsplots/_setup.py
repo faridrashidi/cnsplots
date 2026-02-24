@@ -202,6 +202,8 @@ def setup_matplotlib(
             "savefig.transparent": True,
             "svg.fonttype": "none",
             "axes.titlesize": fontsize_title,
+            "axes.titleweight": "bold",
+            "axes.titlelocation": "center",
             "axes.labelsize": fontsize_title,
             "axes.grid": False,
             "axes.spines.top": False,
@@ -434,7 +436,8 @@ def setup_ax(
     )
     title_props = ax.title.get_fontproperties().copy()
     title_props.set_size(fontsize_title)
-    ax.set_title(ax.get_title(), fontproperties=title_props, pad=4)
+    title_props.set_weight("bold")
+    ax.set_title(ax.get_title(), fontproperties=title_props, loc="center")
     ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
     ax.set_ylabel(ax.get_ylabel(), fontsize=fontsize_title, color="black")
     ax.spines["top"].set_visible(False)
