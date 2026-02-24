@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import warnings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -43,7 +45,13 @@ def _save_svg(filepath: str, root: str) -> None:
     tmp_pdf = f"/tmp/{os.path.basename(root)}.pdf"
     tmp_dir = "/tmp/mutool_output"
     os.makedirs(tmp_dir, exist_ok=True)
-    plt.savefig(tmp_pdf)
+    ft_logger = logging.getLogger("fontTools")
+    prev_level = ft_logger.level
+    ft_logger.setLevel(logging.ERROR)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        plt.savefig(tmp_pdf)
+    ft_logger.setLevel(prev_level)
     try:
         subprocess.run(
             [
@@ -58,11 +66,12 @@ def _save_svg(filepath: str, root: str) -> None:
                 tmp_pdf,
             ],
             check=True,
+            capture_output=True,
         )
         tmp_svg = os.path.join(tmp_dir, "1.svg")
         _correct_svg(tmp_svg, filepath, bold_texts)
     except subprocess.CalledProcessError as e:
-        print(f"Error during SVG conversion: {e}")
+        print(f"Error during SVG conversion: {e.stderr.decode(errors='replace')}")
     finally:
         if os.path.exists(tmp_pdf):
             os.remove(tmp_pdf)

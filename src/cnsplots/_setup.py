@@ -201,6 +201,11 @@ def setup_matplotlib(
             "savefig.dpi": 72 * 4,
             "savefig.transparent": True,
             "svg.fonttype": "none",
+            # Embed fonts as TrueType (Type 42) in the intermediate PDF so that
+            # mutool can resolve every glyph back to a Unicode codepoint.  The
+            # default Type 3 encoding has no Unicode map, causing math/symbol
+            # glyphs (e.g. the minus sign in 10⁻⁹) to be converted to paths.
+            "pdf.fonttype": 42,
             "axes.titlesize": fontsize_title,
             "axes.titleweight": "bold",
             "axes.titlelocation": "center",
