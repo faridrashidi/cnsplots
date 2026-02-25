@@ -167,6 +167,7 @@ def violinplot(
     pairs: list[tuple[str, str]] | None = None,
     width: float = 0.6,
     add_box: bool = True,
+    addcount: bool = False,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -190,6 +191,8 @@ def violinplot(
         Width of each violin body.
     add_box : bool, default: True
         Whether to overlay a narrow box plot inside each violin.
+    addcount : bool, default: False
+        Whether to add sample size (n) labels above each violin.
     **kwargs
         Additional keyword arguments passed to `seaborn.violinplot`.
 
@@ -251,6 +254,9 @@ def violinplot(
         sns.boxplot(**boxplot_kwargs)
     if pairs is not None:
         cns.utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+
+    if addcount:
+        cns.utils._addcount_helper(data, x, ax)
 
     return ax
 
