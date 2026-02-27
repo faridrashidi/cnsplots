@@ -228,7 +228,7 @@ plt.savefig("figure.pdf")
 
 ## Requirements
 
-- Python ≥ 3.8
+- Python ≥ 3.9
 - Core: matplotlib, numpy, pandas, seaborn
 - Optional: lifelines, gseapy, scanpy (for specific plot types)
 

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.8 or higher (< 4.0)
+- Python 3.9 or higher (< 4.0)
 - pip (Python package installer)
 
 ## Basic Installation
@@ -57,13 +57,13 @@ This uses `uv sync --all-extras` to install the package in editable mode with al
 
 After installation, you can use the following commands:
 
-| Command        | Description                      |
-|----------------|----------------------------------|
-| `make help`    | Show available commands          |
-| `make lint`    | Run linting and formatting       |
-| `make test`    | Run all unit tests               |
-| `make doc`     | Build and serve documentation    |
-| `make clean`   | Clean build artifacts            |
+| Command      | Description                   |
+| ------------ | ----------------------------- |
+| `make help`  | Show available commands       |
+| `make lint`  | Run linting and formatting    |
+| `make test`  | Run all unit tests            |
+| `make doc`   | Build and serve documentation |
+| `make clean` | Clean build artifacts         |
 
 ## Dependencies
 

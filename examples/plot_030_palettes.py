@@ -13,6 +13,7 @@ select specific colors, and apply custom color schemes.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
+import glasbey
 import matplotlib.pyplot as plt
 import numpy as np
 import palettable
@@ -94,6 +95,33 @@ plot_palettes(
     2040,
     600,
 )
+
+# %%
+# Using glasbey directly
+# ~~~~~~~~~~~~~~~~~~~~~~
+# Access glasbey's extensive color library.
+cns.figure(color_cycle=glasbey.create_palette(palette_size=12))
+ax = cns.barplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    palette=glasbey.create_palette(palette_size=12),
+)
+ax.set_title("Glasbey Create")
+
+
+# %%
+# Using palettable directly
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Access palettable's extensive color library.
+cns.figure(color_cycle=palettable.wesanderson.GrandBudapest1_4.hex_colors)
+ax2 = cns.barplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    palette=palettable.wesanderson.GrandBudapest1_4.hex_colors,
+)
+ax2.set_title("Palettable Set1")
 
 
 # %%
@@ -225,15 +253,6 @@ ax.set_title("Selected from Paired Palette")
 
 
 # %%
-# Using palettable directly
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
-# Access palettable's extensive color library.
-cns.figure(color_cycle=palettable.colorbrewer.qualitative.Set1_9.hex_colors)
-ax = cns.barplot(data=tips, x="day", y="total_bill")
-ax.set_title("Palettable Set1")
-
-
-# %%
 # Reversed palette
 # ~~~~~~~~~~~~~~~~
 # Reverse color order with slicing.
@@ -265,6 +284,8 @@ print(f"  PURPLE: {cns.PURPLE}")
 print(f"  YELLOW: {cns.YELLOW}")
 print(f"  PINK: {cns.PINK}")
 print(f"  GRAY: {cns.GRAY}")
+print(f"  VIOLET: {cns.VIOLET}")
+print(f"  CHOCOLATE: {cns.CHOCOLATE}")
 
 
 # %%
