@@ -36,7 +36,13 @@ ax.set_title("Basic Barplot")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show variability with standard deviation error bars.
 cns.figure(150, 100)
-cns.barplot(data=tips, x="day", y="total_bill", errorbar="sd")
+palette = {
+    "Sat": cns.BLUE,
+    "Fri": cns.BLUE,
+    "Thur": cns.RED,
+    "Sun": cns.RED,
+}
+cns.barplot(data=tips, x="day", y="total_bill", errorbar="sd", palette=palette)
 
 
 # %%
