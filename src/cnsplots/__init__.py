@@ -133,3 +133,5 @@ warnings.filterwarnings("ignore", message="findfont: Font family 'Helvetica' not
 
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.ERROR)
+
+logging.getLogger("fontTools").setLevel(logging.ERROR)

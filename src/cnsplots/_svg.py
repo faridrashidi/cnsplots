@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import warnings
 from typing import TYPE_CHECKING
 
@@ -45,13 +44,9 @@ def _save_svg(filepath: str, root: str) -> None:
     tmp_pdf = f"/tmp/{os.path.basename(root)}.pdf"
     tmp_dir = "/tmp/mutool_output"
     os.makedirs(tmp_dir, exist_ok=True)
-    ft_logger = logging.getLogger("fontTools")
-    prev_level = ft_logger.level
-    ft_logger.setLevel(logging.ERROR)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         plt.savefig(tmp_pdf)
-    ft_logger.setLevel(prev_level)
     try:
         subprocess.run(
             [
