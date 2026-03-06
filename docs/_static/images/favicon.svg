@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="64" height="64" viewBox="0 0 64 64"
-     xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" fill="white"/>
-  <text font-family="Helvetica, Arial, sans-serif"
-        font-size="24" font-weight="bold" text-anchor="middle">
-    <tspan x="32" y="22" fill="#377EB8">C</tspan>
-    <tspan x="32" y="42" fill="#4DAF4A">n</tspan>
-    <tspan x="32" y="62" fill="#E41A1C">S</tspan>
-  </text>
+<svg width="64px" height="64px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>favicon</title>
+    <g id="favicon" stroke="none" fill="none" fill-rule="nonzero" font-family="Helvetica-Bold, Helvetica" font-size="24" font-weight="bold">
+        <text id="C" fill="#377EB8">
+            <tspan x="6" y="24">C</tspan>
+        </text>
+        <text id="n" fill="#4DAF4A">
+            <tspan x="24" y="38">n</tspan>
+        </text>
+        <text id="S" fill="#E41A1C">
+            <tspan x="38.5" y="57">S</tspan>
+        </text>
+    </g>
 </svg>
