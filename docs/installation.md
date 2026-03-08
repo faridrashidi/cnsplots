@@ -51,7 +51,9 @@ cd cnsplots
 make install
 ```
 
-This uses `uv sync --all-extras` to install the package in editable mode with all optional dependencies, and sets up pre-commit hooks.
+This uses `uv sync --all-extras` to install the package in editable mode with
+the project's development and documentation extras, and sets up pre-commit
+hooks.
 
 ### Development Commands
 
@@ -75,6 +77,10 @@ cnsplots relies on the following main packages (installed automatically):
 - scanpy - Single-cell analysis
 - lifelines - Survival analysis
 - gseapy - Gene set enrichment analysis
+
+For Illustrator-optimized SVG post-processing, you can optionally install
+MuPDF's `mutool`. Without it, `cns.savefig("figure.svg")` still works and
+falls back to a standard matplotlib SVG with a warning.
 
 ## Troubleshooting
 
