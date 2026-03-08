@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -196,7 +197,7 @@ def cumulativeincidenceplot(
     show_risk_table: bool = False,
     risk_table_rows: tuple[str, ...] = ("At risk",),
     risk_table_ypos: float = -0.2,
-    xticks: np.ndarray | list[float] | None = None,
+    xticks: np.ndarray | Sequence[int | float] | None = None,
 ) -> Axes:
     """
     Create a cumulative incidence plot for competing risks analysis.

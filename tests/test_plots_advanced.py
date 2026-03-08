@@ -3,10 +3,12 @@ from __future__ import annotations
 import sys
 import types
 
+import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.axes import Axes
 
 import cnsplots as cns
 
@@ -116,7 +118,7 @@ def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
 
 
 def test_heatmap_and_dotplot(
-    heatmap_adata: object,
+    heatmap_adata: ad.AnnData,
     dotplot_df: pd.DataFrame,
 ) -> None:
     cns.figure(180, 180)
@@ -189,7 +191,7 @@ def test_genomics_plots(
         x: str,
         cutoff: float,
         column: str,
-        ax: object,
+        ax: Axes,
         top_term: int,
         size: float,
     ) -> None:

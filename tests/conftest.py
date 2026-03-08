@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 import types
 from pathlib import Path
 
@@ -13,9 +14,20 @@ import numpy as np
 import pandas as pd
 import pytest
 
+ShowcaseBundle = tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    ad.AnnData,
+    pd.DataFrame,
+    list[set[int]],
+    pd.DataFrame,
+    pd.DataFrame,
+]
+
 
 @pytest.fixture(autouse=True)
-def _seed_and_close_figures() -> None:
+def _seed_and_close_figures() -> Iterator[None]:
     np.random.seed(42)
     yield
     plt.close("all")
@@ -227,7 +239,7 @@ def heatmap_adata() -> ad.AnnData:
     adata.obs["score"] = [0.1, 0.5, 0.9]
     adata.var["pathway"] = pd.Categorical(["P1", "P1", "P2", "P2"])
     adata.var["importance"] = [1, 2, 3, 4]
-    adata.layers["scaled"] = adata.X * 2
+    adata.layers["scaled"] = np.asarray(adata.X) * 2
     return adata
 
 
@@ -250,7 +262,7 @@ def showcase_bundle(
     volcano_df: pd.DataFrame,
     sets_fixture: dict[str, set[int]],
     roc_df: pd.DataFrame,
-) -> tuple[pd.DataFrame, ...]:
+) -> ShowcaseBundle:
     slope_df = pd.DataFrame(
         {
             "value": [1.0, 2.0, 1.2, 2.2, 0.8, 1.8],

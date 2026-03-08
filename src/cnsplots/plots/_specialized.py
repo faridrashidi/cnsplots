@@ -6,8 +6,6 @@ if TYPE_CHECKING:
     from anndata import AnnData
     from matplotlib.axes import Axes
 
-    from cnsplots._methods import CoxModel, LogisticModel
-
 import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
 import numpy as np
@@ -104,9 +102,7 @@ def phyloplot(adata: AnnData) -> None:
 
 
 def forestplot(
-    model: CoxModel | LogisticModel,
-    bar_width: float | None = None,
-    add_pvalue: bool = True,
+    model: object, bar_width: float | None = None, add_pvalue: bool = True
 ) -> Axes:
     """
     Create a forest plot displaying effect sizes from a regression model.
@@ -166,7 +162,9 @@ def forestplot(
         )
 
     # Validate results is a DataFrame
-    results = model.results
+    results = getattr(model, "results")
+    model_name = getattr(model, "name")
+    model_hue = getattr(model, "hue", None)
     validate_dataframe(results, "model.results", "forestplot")
     if not isinstance(results, pd.DataFrame):
         raise TypeError(
@@ -175,7 +173,7 @@ def forestplot(
     validate_dataframe_not_empty(results, "forestplot")
 
     # Validate required columns exist based on model type
-    if model.name == "cox":
+    if model_name == "cox":
         required_cols = [
             "display_label",
             "exp(coef)",
@@ -191,7 +189,7 @@ def forestplot(
 
     data = results.copy()
 
-    if model.name == "cox":
+    if model_name == "cox":
         y = "display_label"
         x1 = "exp(coef)"
         x2 = "log10_pvalue"
@@ -207,7 +205,7 @@ def forestplot(
         x2label = ""
     fig = plt.gcf()
 
-    if model.name == "cox" and add_pvalue:
+    if model_name == "cox" and add_pvalue:
         gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
     else:
         gs = grid_spec.GridSpec(1, 1)
@@ -257,14 +255,14 @@ def forestplot(
     ax1.set_ylim(-0.5, len(unique_labels) - 0.5)
     ax1.set_xlabel(x1label)
     if len(unique_hue_groups) > 1:
-        ax1.legend(title=model.hue, loc="lower right")
-    if model.name == "cox":
+        ax1.legend(title=model_hue, loc="lower right")
+    if model_name == "cox":
         ax1.axvline(x=1, color="red", linestyle="--", linewidth=0.8)
         ax1.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
     else:
         ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
-    if model.name == "cox" and add_pvalue:
+    if model_name == "cox" and add_pvalue:
         ax2 = fig.add_subplot(gs[1])
         if bar_width is None:
             bar_width = (

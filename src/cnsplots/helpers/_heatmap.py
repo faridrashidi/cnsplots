@@ -57,7 +57,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         legend_hpad: int = 2,
         legend_vpad: int = 5,
         legend_side: str = "right",
-        cmap: str = "jet",
+        cmap: str | list[Any] | dict[str, Any] = "jet",
         label: str | None = None,
         xticklabels_kws: dict[str, Any] | None = None,
         yticklabels_kws: dict[str, Any] | None = None,

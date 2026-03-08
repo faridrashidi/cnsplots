@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+from collections.abc import Iterable, Mapping, Sequence
 import subprocess
 import sys
 import types
@@ -146,10 +147,16 @@ def test_validation_helpers(heatmap_adata: object) -> None:
 def test_validate_anndata_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
     real_import = builtins.__import__
 
-    def fake_import(name: str, *args: object, **kwargs: object) -> object:
+    def fake_import(
+        name: str,
+        globals: Mapping[str, object] | None = None,
+        locals: Mapping[str, object] | None = None,
+        fromlist: Sequence[str] = (),
+        level: int = 0,
+    ) -> object:
         if name == "anndata":
             raise ImportError("missing")
-        return real_import(name, *args, **kwargs)
+        return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
     with pytest.raises(ImportError, match="Install with: pip install anndata"):
@@ -430,7 +437,9 @@ def test_utils_helpers_and_showcase_data(
     class DummyAnnotator:
         last: "DummyAnnotator | None" = None
 
-        def __init__(self, ax: object, pairs: object, **plotting: object) -> None:
+        def __init__(
+            self, ax: object, pairs: Iterable[object], **plotting: object
+        ) -> None:
             self.ax = ax
             self.pairs = list(pairs)
             self.plotting = plotting
@@ -479,7 +488,9 @@ def test_utils_helpers_and_showcase_data(
     assert r"\times 10^{-2}$" in formatted
 
     contingency = pd.DataFrame(
-        [[3, 1], [1, 3]], index=["A", "B"], columns=["Yes", "No"]
+        [[3, 1], [1, 3]],
+        index=pd.Index(["A", "B"]),
+        columns=pd.Index(["Yes", "No"]),
     )
     _utils._p_value_helper(
         "fisher-exact",

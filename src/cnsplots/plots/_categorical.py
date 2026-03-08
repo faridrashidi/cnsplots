@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -19,6 +19,8 @@ from cnsplots._validation import (
     validate_dataframe,
     validate_dataframe_not_empty,
 )
+
+LollipopPair = Union[tuple[str, str], tuple[tuple[str, str], tuple[str, str]]]
 
 
 def barplot(
@@ -151,7 +153,7 @@ def lollipopplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
-    pairs: list[tuple[str, str]] | None = None,
+    pairs: list[LollipopPair] | None = None,
     addtip: bool = False,
     estimator: str = "mean",
     errorbar: str | None = None,

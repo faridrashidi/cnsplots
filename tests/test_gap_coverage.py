@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import builtins
+from collections.abc import Mapping, Sequence
 import sys
 import types
 from pathlib import Path
+from typing import cast
 
+import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -31,7 +34,7 @@ def test_methods_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
                     "p": [0.5],
                     "covariate": ["123"],
                 },
-                index=["123"],
+                index=pd.Index(["123"]),
             )
 
         def fit(
@@ -47,6 +50,7 @@ def test_methods_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         variates=["123"],
     )
     model.fit()
+    assert model.results is not None
     assert model.results["display_label"].isna().all()
 
     samples = [np.array([0, 0, 0, 0]), np.array([0, 1, 2, 3])]
@@ -121,10 +125,16 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
         types.SimpleNamespace(ttflist=[], addfont=lambda path: None),
     )
 
-    def missing_fonttools(name: str, *args: object, **kwargs: object) -> object:
+    def missing_fonttools(
+        name: str,
+        globals: Mapping[str, object] | None = None,
+        locals: Mapping[str, object] | None = None,
+        fromlist: Sequence[str] = (),
+        level: int = 0,
+    ) -> object:
         if name == "fontTools.ttLib":
             raise ImportError("missing")
-        return real_import(name, *args, **kwargs)
+        return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", missing_fonttools)
     _setup._ensure_helvetica_bold()
@@ -149,11 +159,15 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
             self.fonts = [FakeRegularFace()]
 
     def import_fonttools_without_bold(
-        name: str, *args: object, **kwargs: object
+        name: str,
+        globals: Mapping[str, object] | None = None,
+        locals: Mapping[str, object] | None = None,
+        fromlist: Sequence[str] = (),
+        level: int = 0,
     ) -> object:
         if name == "fontTools.ttLib":
             return types.SimpleNamespace(TTCollection=NoBoldCollection)
-        return real_import(name, *args, **kwargs)
+        return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", import_fonttools_without_bold)
     _setup._ensure_helvetica_bold()
@@ -180,10 +194,16 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     )
     monkeypatch.setattr(_setup.fm, "fontManager", font_manager)
 
-    def import_fonttools(name: str, *args: object, **kwargs: object) -> object:
+    def import_fonttools(
+        name: str,
+        globals: Mapping[str, object] | None = None,
+        locals: Mapping[str, object] | None = None,
+        fromlist: Sequence[str] = (),
+        level: int = 0,
+    ) -> object:
         if name == "fontTools.ttLib":
             return types.SimpleNamespace(TTCollection=FakeCollection)
-        return real_import(name, *args, **kwargs)
+        return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", import_fonttools)
     _setup._ensure_helvetica_bold()
@@ -320,8 +340,10 @@ def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
         assert _utils.palettes(name)
 
 
-def test_validation_gap_coverage(heatmap_adata: object) -> None:
-    wide_df = pd.DataFrame(np.zeros((1, 11)), columns=[f"c{i}" for i in range(11)])
+def test_validation_gap_coverage(heatmap_adata: ad.AnnData) -> None:
+    wide_df = pd.DataFrame(
+        np.zeros((1, 11)), columns=pd.Index([f"c{i}" for i in range(11)])
+    )
     with pytest.raises(ValueError, match="11 total columns"):
         _validation.validate_column_exists(wide_df, "missing", "x", "func")
     with pytest.raises(ValueError, match="11 total columns"):
@@ -486,10 +508,10 @@ def test_phylo_and_sankey_gap_coverage() -> None:
 def test_plot_gap_coverage(
     categorical_df: pd.DataFrame,
     stack_df: pd.DataFrame,
-    heatmap_adata: object,
+    heatmap_adata: ad.AnnData,
     confusion_df: pd.DataFrame,
     survival_df: pd.DataFrame,
-    phylo_adata: object,
+    phylo_adata: ad.AnnData,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cns.figure(120, 120)
@@ -625,7 +647,9 @@ def test_plot_gap_coverage(
         heatmap_mod.pd,
         "crosstab",
         lambda *args, **kwargs: pd.DataFrame(
-            [[np.nan, 1], [1, 1]], index=["neg", "pos"], columns=["neg", "pos"]
+            [[np.nan, 1], [1, 1]],
+            index=pd.Index(["neg", "pos"]),
+            columns=pd.Index(["neg", "pos"]),
         ),
     )
     with pytest.raises(ValueError, match="TN cell contains NaN"):
@@ -728,7 +752,7 @@ def test_plot_gap_coverage(
 
 def test_remaining_visual_gap_coverage(
     confusion_df: pd.DataFrame,
-    heatmap_adata: object,
+    heatmap_adata: ad.AnnData,
     numeric_df: pd.DataFrame,
     volcano_df: pd.DataFrame,
     monkeypatch: pytest.MonkeyPatch,
@@ -738,7 +762,7 @@ def test_remaining_visual_gap_coverage(
     def fake_isinstance(obj: object, typ: object) -> bool:
         if typ is object and getattr(obj, "kind", None) in {"b", "i", "u", "f"}:
             return False
-        return real_isinstance(obj, typ)
+        return real_isinstance(obj, cast(type[object] | tuple[type[object], ...], typ))
 
     monkeypatch.setattr(heatmap_mod, "isinstance", fake_isinstance, raising=False)
     cns.figure(180, 180)
@@ -755,8 +779,8 @@ def test_remaining_visual_gap_coverage(
         "crosstab",
         lambda *args, **kwargs: pd.DataFrame(
             [[np.nan, 1], [1, 1]],
-            index=["neg", "pos"],
-            columns=["neg", "pos"],
+            index=pd.Index(["neg", "pos"]),
+            columns=pd.Index(["neg", "pos"]),
         ),
     )
     with pytest.raises(ValueError, match="contains NaN at position \\[0,0\\]"):
@@ -779,8 +803,8 @@ def test_remaining_visual_gap_coverage(
         "crosstab",
         lambda *args, **kwargs: pd.DataFrame(
             [[1, 0], [0, 1]],
-            index=["neg", "pos"],
-            columns=["pos1", "pos2"],
+            index=pd.Index(["neg", "pos"]),
+            columns=pd.Index(["pos1", "pos2"]),
         ),
     )
     with pytest.raises(ValueError, match="Could not find negative label in x_order"):

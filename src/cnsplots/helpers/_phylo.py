@@ -71,7 +71,7 @@ def phyloplot(adata: AnnData) -> None:
 
 
 def _heatmap(
-    data: pd.DataFrame | pd.Series,
+    data: pd.DataFrame | pd.Series | np.ndarray,
     cmap: dict[str, Any] | None = None,
     palette: str = "Set1",
     ax: Axes | None = None,
@@ -207,7 +207,9 @@ def _heatmap(
     return sns_ax, cmap
 
 
-def _is_categorical(x: pd.DataFrame | pd.Series | np.ndarray) -> bool | list[bool]:
+def _is_categorical(
+    x: pd.DataFrame | pd.Series | np.ndarray | str,
+) -> bool | list[bool]:
     """Return True if data is categorical (i.e. not numerical)."""
     if isinstance(x, pd.DataFrame):
         num_cols = x.mean(axis=0).index.tolist()
@@ -219,20 +221,21 @@ def _is_categorical(x: pd.DataFrame | pd.Series | np.ndarray) -> bool | list[boo
         except BaseException:
             return False
     elif isinstance(x, np.ndarray):
-        if x.ndim > 2:
+        arr = np.asarray(x)
+        if arr.ndim > 2:
             raise ValueError("Can only process 1d or 2d arrays.")
-        elif x.ndim == 2:
+        elif arr.ndim == 2:
             cat_cols: list[bool] = []
-            for i in range(x.shape[1]):
+            for i in range(arr.shape[1]):
                 try:
-                    x[:, i].astype(int)
+                    arr[:, i].astype(int)
                     cat_cols.append(False)
                 except BaseException:
                     cat_cols.append(True)
             return cat_cols
-        elif x.ndim == 1:
+        elif arr.ndim == 1:
             try:
-                x.astype(int)
+                arr.astype(int)
                 return False
             except BaseException:
                 return True

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import builtins
+from collections.abc import Mapping, Sequence
 import sys
 import types
 
+import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -143,10 +145,16 @@ def test_prerank_import_error_prints(
 ) -> None:
     real_import = builtins.__import__
 
-    def fake_import(name: str, *args: object, **kwargs: object) -> object:
+    def fake_import(
+        name: str,
+        globals: Mapping[str, object] | None = None,
+        locals: Mapping[str, object] | None = None,
+        fromlist: Sequence[str] = (),
+        level: int = 0,
+    ) -> object:
         if name == "gseapy":
             raise ImportError("missing")
-        return real_import(name, *args, **kwargs)
+        return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
     with pytest.raises(UnboundLocalError):
@@ -260,13 +268,13 @@ def test_sankey_helpers(
     assert result_ax is ax2
 
 
-def test_phylo_helper_functions(phylo_adata: object) -> None:
+def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
     cns.figure(150, 120)
     _phylo.phyloplot(phylo_adata)
     assert len(plt.gcf().axes) == 5
 
     fig, ax = plt.subplots()
-    sns = pytest.importorskip("seaborn")
+    pytest.importorskip("seaborn")
     out_ax, cmap = _phylo._heatmap(
         pd.DataFrame({"group": ["A", "B"]}),
         ax=ax,
@@ -277,7 +285,7 @@ def test_phylo_helper_functions(phylo_adata: object) -> None:
     assert set(cmap) == {"A", "B"}
 
     with pytest.raises(TypeError, match="Unable to work with data"):
-        _phylo._heatmap("bad")
+        _phylo._heatmap("bad")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="Unable to interpret colormap"):
         _phylo._heatmap(pd.DataFrame({"group": ["A", "B"]}), cmap="bad")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="leg_ax must be matplotlib axes"):
@@ -307,7 +315,7 @@ def test_phylo_helper_functions(phylo_adata: object) -> None:
 
 
 def test_cluster_map_plotter_new_collect_legends() -> None:
-    df = pd.DataFrame([[0, 1], [1, 0]], columns=["A", "B"])
+    df = pd.DataFrame([[0, 1], [1, 0]], columns=pd.Index(["A", "B"]))
     cns.figure(120, 120)
     plotter = helper_heatmap.ClusterMapPlotterNew(
         data=df,

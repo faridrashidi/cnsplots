@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     pass
 
-from collections.abc import Set as AbstractSet
+from collections.abc import Mapping, Set as AbstractSet
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +26,7 @@ def _normalize_text_position(text: Any) -> None:
     text.set_position((_to_scalar(x), _to_scalar(y)))
 
 
-def upsetplot(sets: dict[str, set | list], **kwargs: Any) -> dict:
+def upsetplot(sets: Mapping[str, AbstractSet[Any] | list[Any]], **kwargs: Any) -> dict:
     """
     Create an UpSet plot for visualizing set intersections.
 
