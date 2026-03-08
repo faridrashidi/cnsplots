@@ -25,7 +25,6 @@ extensions = [
     "myst_parser",
     "sphinx_copybutton",
     "sphinx.ext.autosummary",
-    "hoverxref.extension",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
@@ -182,22 +181,3 @@ def linkcode_resolve(domain, info):
 
     path = f"{path}#L{lineno}-L{lineno + len(src) - 1}"
     return f"{github_repo}/blob/{git_ref}/cnsplots/{path}"
-
-
-# -- Config for hoverxref -------------------------------------------
-
-hoverx_default_type = "tooltip"
-hoverxref_domains = ["py"]
-hoverxref_role_types = dict.fromkeys(
-    ["ref", "class", "func", "meth", "attr", "exc", "data", "mod", "obj"],
-    "tooltip",
-)
-hoverxref_intersphinx = [
-    "python",
-    "matplotlib",
-    "numpy",
-    "pandas",
-    "seaborn",
-    "anndata",
-    "scipy",
-]
