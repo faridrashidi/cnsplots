@@ -57,7 +57,7 @@ jobs:
         run: uv run pytest --disable-warnings ./tests
 
   package:
-    name: Package Validation
+    name: package-validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
