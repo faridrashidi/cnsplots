@@ -9,6 +9,7 @@ import itertools
 import operator
 import os
 import re
+from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.colors as mcolors
@@ -124,8 +125,10 @@ def savefig(filepath):
     -----
     The function automatically:
     - Expands user home directory (~) in the path
-    - Creates all necessary parent directories if they don't exist
+    - Creates parent directories when the path includes them
     - Determines the file format from the file extension
+    - Uses an Illustrator-optimized SVG export path when MuPDF's ``mutool``
+      is available, and falls back to matplotlib SVG output otherwise
 
     Supported formats include: PDF, PNG, SVG, JPG, EPS, and more (any format
     supported by matplotlib.pyplot.savefig).
@@ -138,19 +141,18 @@ def savefig(filepath):
     >>> cns.savefig("~/results/figures/boxplot.pdf")
 
     >>> # Save in multiple formats
-    >>> cns.savefig("output/plot.png")
-    >>> cns.savefig("output/plot.svg")
+    >>> cns.savefig("plot.png")
+    >>> cns.savefig("plot.svg")
     """
-    filepath = os.path.expanduser(filepath)
-    directory = os.path.dirname(filepath)
-    if not os.path.exists(directory):
-        os.makedirs(directory, exist_ok=True)
+    filepath = Path(filepath).expanduser()
+    if filepath.parent != Path("."):
+        filepath.parent.mkdir(parents=True, exist_ok=True)
     fig = plt.gcf()
     for ax in fig.get_axes():
         apply_unicode_font(ax)
     root, ext = os.path.splitext(filepath)
     if ext.lower() == ".svg":
-        _save_svg(filepath, root)
+        _save_svg(str(filepath), root)
     else:
         plt.savefig(filepath)
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import warnings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
 
-import os
-import shutil
 import subprocess
 
 import matplotlib.pyplot as plt
@@ -38,40 +38,55 @@ def _collect_bold_texts() -> set[str]:
     return bold_texts
 
 
-def _save_svg(filepath: str, root: str) -> None:
-    bold_texts = _collect_bold_texts()
-
-    tmp_pdf = f"/tmp/{os.path.basename(root)}.pdf"
-    tmp_dir = "/tmp/mutool_output"
-    os.makedirs(tmp_dir, exist_ok=True)
+def _save_plain_svg(filepath: str, message: str) -> None:
+    """Save a standard matplotlib SVG and surface why the optimized path was skipped."""
+    warnings.warn(message, RuntimeWarning, stacklevel=2)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        plt.savefig(tmp_pdf)
-    try:
-        subprocess.run(
-            [
-                "mutool",
-                "convert",
-                "-F",
-                "svg",
-                "-O",
-                "text=text",
-                "-o",
-                os.path.join(tmp_dir, "%d.svg"),
-                tmp_pdf,
-            ],
-            check=True,
-            capture_output=True,
-        )
-        tmp_svg = os.path.join(tmp_dir, "1.svg")
-        _correct_svg(tmp_svg, filepath, bold_texts)
-    except subprocess.CalledProcessError as e:
-        print(f"Error during SVG conversion: {e.stderr.decode(errors='replace')}")
-    finally:
-        if os.path.exists(tmp_pdf):
-            os.remove(tmp_pdf)
-        if os.path.isdir(tmp_dir):
-            shutil.rmtree(tmp_dir)
+        plt.savefig(filepath, format="svg")
+
+
+def _save_svg(filepath: str, root: str) -> None:
+    bold_texts = _collect_bold_texts()
+    stem = Path(root).name or Path(filepath).stem or "cnsplots"
+
+    with TemporaryDirectory(prefix=f"{stem}-svg-") as tmp_dir:
+        tmp_dir_path = Path(tmp_dir)
+        tmp_pdf = tmp_dir_path / f"{stem}.pdf"
+        tmp_svg = tmp_dir_path / "1.svg"
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            plt.savefig(tmp_pdf)
+        try:
+            subprocess.run(
+                [
+                    "mutool",
+                    "convert",
+                    "-F",
+                    "svg",
+                    "-O",
+                    "text=text",
+                    "-o",
+                    str(tmp_dir_path / "%d.svg"),
+                    str(tmp_pdf),
+                ],
+                check=True,
+                capture_output=True,
+            )
+            _correct_svg(str(tmp_svg), filepath, bold_texts)
+        except FileNotFoundError:
+            _save_plain_svg(
+                filepath,
+                "MuPDF's `mutool` is unavailable; saved a standard matplotlib SVG instead.",
+            )
+        except subprocess.CalledProcessError as exc:
+            stderr = (exc.stderr or b"").decode(errors="replace").strip()
+            detail = f" ({stderr})" if stderr else ""
+            _save_plain_svg(
+                filepath,
+                "MuPDF's `mutool` failed during SVG conversion"
+                f"{detail}; saved a standard matplotlib SVG instead.",
+            )
 
 
 def _correct_svg(
