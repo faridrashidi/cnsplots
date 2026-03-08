@@ -96,7 +96,7 @@ ignore_messages = '( No directive entry for.*|Hyperlink target.*|Unknown target 
 [tool.bumpversion]
 current_version = "0.0.1"
 commit = true
-message = "🔖 Bump version {current_version} -> {new_version}"
+message = "🔖 Release {new_version}"
 tag = true
 parse = '(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)'
 serialize = ["{major}.{minor}.{patch}"]
