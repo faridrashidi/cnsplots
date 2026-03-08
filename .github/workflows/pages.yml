@@ -1,4 +1,4 @@
-name: Pages
+name: create-the-docs
 on:
   push:
     branches:
