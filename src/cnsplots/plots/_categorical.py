@@ -522,7 +522,7 @@ def lollipopplot(
     # Statistical annotations
     if pairs is not None:
         # Draw invisible barplot so statannotations can find bar heights
-        bar_kw = {
+        bar_kw: dict[str, Any] = {
             "data": data,
             "x": x,
             "y": y,
@@ -537,7 +537,7 @@ def lollipopplot(
         if hue_order is not None:
             bar_kw["hue_order"] = hue_order
         sns.barplot(**bar_kw)
-        plotting = {"data": data, "x": x, "y": y}
+        plotting: dict[str, Any] = {"data": data, "x": x, "y": y}
         if order is not None:
             plotting["order"] = order
         if hue is not None:

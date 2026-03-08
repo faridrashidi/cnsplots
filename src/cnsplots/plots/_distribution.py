@@ -109,7 +109,7 @@ def boxplot(
         },
         "width": 0.5,
     }
-    plotting = {"data": data, "x": x, "y": y}
+    plotting: dict[str, Any] = {"data": data, "x": x, "y": y}
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
@@ -243,7 +243,7 @@ def violinplot(
         "width": 0.2,
         "color": "white",
     }
-    plotting = {"data": data, "x": x, "y": y}
+    plotting: dict[str, Any] = {"data": data, "x": x, "y": y}
     plotting.update(kwargs)
     ax = sns.violinplot(linewidth=0.001, width=width, **plotting)
     plotting.update(args)
