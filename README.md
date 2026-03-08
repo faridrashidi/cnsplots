@@ -2,6 +2,7 @@
 
 <div align="center">
 
+[![Build](https://img.shields.io/github/actions/workflow/status/faridrashidi/cnsplots/ci-tests.yml?branch=main&logo=github&logoColor=white&style=flat-square&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/actions/workflows/ci-tests.yml)
 [![PyPI](https://img.shields.io/pypi/v/cnsplots?logo=pypi&logoColor=white&style=flat-square&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
 [![Python Version](https://img.shields.io/pypi/pyversions/cnsplots?logo=python&logoColor=white&style=flat-square&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
 [![License](https://img.shields.io/pypi/l/cnsplots?logo=creativecommons&logoColor=white&style=flat-square&color=blueviolet&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/blob/main/LICENSE.md)
