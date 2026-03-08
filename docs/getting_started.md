@@ -19,7 +19,7 @@ cns.figure(150, 100)
 cns.boxplot(data=df, x="day", y="total_bill")
 
 # Save the figure
-plt.savefig("my_figure.svg")
+cns.savefig("my_figure.svg")
 ```
 
 ## Understanding Figure Dimensions
@@ -41,7 +41,7 @@ cns.figure(200, 150)
 ```python
 cns.figure(100, 80)
 cns.boxplot(data=df, x="day", y="total_bill", hue="sex")
-plt.savefig("boxplot.svg")
+cns.savefig("boxplot.svg")
 ```
 
 ### Barplot
@@ -49,7 +49,7 @@ plt.savefig("boxplot.svg")
 ```python
 cns.figure(100, 80)
 cns.barplot(data=df, x="day", y="total_bill", hue="sex")
-plt.savefig("barplot.svg")
+cns.savefig("barplot.svg")
 ```
 
 ### Scatter Plot
@@ -57,7 +57,7 @@ plt.savefig("barplot.svg")
 ```python
 cns.figure(100, 80)
 cns.scatterplot(data=df, x="total_bill", y="tip", hue="day")
-plt.savefig("scatter.svg")
+cns.savefig("scatter.svg")
 ```
 
 ## Customizing Plots
@@ -70,13 +70,14 @@ cns.boxplot(data=df, x="day", y="total_bill")
 plt.xlabel("Day of Week")
 plt.ylabel("Total Bill ($)")
 plt.title("Tips by Day")
-plt.savefig("labeled_plot.svg")
+cns.savefig("labeled_plot.svg")
 ```
 
 ### Working with Subplots
 
 ```python
-fig, axes = cns.subplots(1, 2, figsize=(170, 80))
+cns.setup_matplotlib()
+fig, axes = plt.subplots(1, 2, figsize=(170 / 72, 80 / 72), dpi=144)
 
 cns.boxplot(data=df, x="day", y="total_bill", ax=axes[0])
 axes[0].set_title("Box Plot")
@@ -85,7 +86,7 @@ cns.barplot(data=df, x="day", y="total_bill", ax=axes[1])
 axes[1].set_title("Bar Plot")
 
 plt.tight_layout()
-plt.savefig("subplots.svg")
+cns.savefig("subplots.svg")
 ```
 
 ## Saving Figures
@@ -94,14 +95,18 @@ For publication, save figures in vector formats:
 
 ```python
 # SVG - editable in Adobe Illustrator
-plt.savefig("figure.svg")
+cns.savefig("figure.svg")
 
 # PDF - maintains vector quality
-plt.savefig("figure.pdf")
+cns.savefig("figure.pdf")
 
-# High-resolution PNG (300 DPI)
-plt.savefig("figure.png", dpi=300)
+# PNG for presentations or raster workflows
+cns.savefig("figure.png")
 ```
+
+If MuPDF's `mutool` is available, `cnsplots` uses an enhanced SVG export path
+for Illustrator workflows. Otherwise it saves a standard matplotlib SVG and
+warns instead of failing.
 
 ## Next Steps
 
