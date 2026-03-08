@@ -34,6 +34,7 @@ dependencies = [
     "numpy",
     "palettable",
     "pandas",
+    "patsy",
     "pycomplexheatmap",
     "scanpy",
     "scikit-learn",
@@ -66,7 +67,7 @@ doc = [
 
 [project.urls]
 Homepage = "https://github.com/faridrashidi/cnsplots"
-Documentation = "https://cnsplots.readthedocs.io"
+Documentation = "https://cnsplots.farid.one"
 Repository = "https://github.com/faridrashidi/cnsplots"
 Issues = "https://github.com/faridrashidi/cnsplots/issues"
 
