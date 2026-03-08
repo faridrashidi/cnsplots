@@ -22,13 +22,16 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
 
+      - name: Sync dependencies
+        run: uv sync --all-extras
+
+      - name: Run lint
+        run: make lint
+
       - name: Install mutool
         run: |
           sudo apt-get update
           sudo apt-get install -y mupdf-tools
-
-      - name: Sync dependencies
-        run: uv sync --all-extras
 
       - name: Run tests
         run: uv run pytest --disable-warnings ./tests
