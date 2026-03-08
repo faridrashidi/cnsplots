@@ -18,10 +18,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install build
-        run: pip install build
+        run: pip install build twine
 
       - name: Build package
         run: python -m build
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
