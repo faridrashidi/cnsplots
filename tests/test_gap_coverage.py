@@ -34,7 +34,9 @@ def test_methods_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
                 index=["123"],
             )
 
-        def fit(self, data: pd.DataFrame, duration_col: str, event_col: str, formula: str) -> None:
+        def fit(
+            self, data: pd.DataFrame, duration_col: str, event_col: str, formula: str
+        ) -> None:
             return None
 
     monkeypatch.setattr(_methods.ll, "CoxPHFitter", FakeCoxPHFitter)
@@ -53,7 +55,9 @@ def test_methods_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         return samples.pop(0)
 
     monkeypatch.setattr(_methods.np.random, "choice", fake_choice)
-    logistic = cns.LogisticModel(pd.DataFrame({"event": [0, 0, 1, 1]}), event="event", variates=["1"])
+    logistic = cns.LogisticModel(
+        pd.DataFrame({"event": [0, 0, 1, 1]}), event="event", variates=["1"]
+    )
     auc, lower, upper = logistic._compute_auc_ci(
         np.array([0, 0, 1, 1]),
         np.array([0.1, 0.2, 0.8, 0.9]),
@@ -111,7 +115,11 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     monkeypatch.setattr(_setup, "_HELVETICA_BOLD_REGISTERED", False)
     monkeypatch.setattr(_setup.sys, "platform", "darwin")
     monkeypatch.setattr(_setup.Path, "home", lambda: tmp_path)
-    monkeypatch.setattr(_setup.fm, "fontManager", types.SimpleNamespace(ttflist=[], addfont=lambda path: None))
+    monkeypatch.setattr(
+        _setup.fm,
+        "fontManager",
+        types.SimpleNamespace(ttflist=[], addfont=lambda path: None),
+    )
 
     def missing_fonttools(name: str, *args: object, **kwargs: object) -> object:
         if name == "fontTools.ttLib":
@@ -140,7 +148,9 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
         def __init__(self, path: str) -> None:
             self.fonts = [FakeRegularFace()]
 
-    def import_fonttools_without_bold(name: str, *args: object, **kwargs: object) -> object:
+    def import_fonttools_without_bold(
+        name: str, *args: object, **kwargs: object
+    ) -> object:
         if name == "fontTools.ttLib":
             return types.SimpleNamespace(TTCollection=NoBoldCollection)
         return real_import(name, *args, **kwargs)
@@ -164,7 +174,9 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
 
     font_manager = types.SimpleNamespace(
         ttflist=[],
-        addfont=lambda path: font_manager.ttflist.append(types.SimpleNamespace(name="Helvetica", weight=700)),
+        addfont=lambda path: font_manager.ttflist.append(
+            types.SimpleNamespace(name="Helvetica", weight=700)
+        ),
     )
     monkeypatch.setattr(_setup.fm, "fontManager", font_manager)
 
@@ -179,7 +191,9 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     assert face.saved is True
 
     monkeypatch.setattr(_setup, "_HELVETICA_BOLD_REGISTERED", False)
-    bad_font_manager = types.SimpleNamespace(ttflist=[], addfont=lambda path: (_ for _ in ()).throw(RuntimeError("boom")))
+    bad_font_manager = types.SimpleNamespace(
+        ttflist=[], addfont=lambda path: (_ for _ in ()).throw(RuntimeError("boom"))
+    )
     monkeypatch.setattr(_setup.fm, "fontManager", bad_font_manager)
     _setup._ensure_helvetica_bold()
 
@@ -207,6 +221,9 @@ def test_svg_gap_coverage() -> None:
             return [FakeGroup()]
 
     _svg._flatten_groups(FakeGroupRoot(), {"svg": "http://www.w3.org/2000/svg"})
+    _svg._restore_bold_fonts(
+        types.SimpleNamespace(), {"svg": "http://www.w3.org/2000/svg"}, set()
+    )
 
 
 def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -215,6 +232,12 @@ def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     nested_path = tmp_path / "nested" / "plot.png"
     cns.savefig(str(nested_path))
     assert nested_path.exists()
+
+    monkeypatch.chdir(tmp_path)
+    cns.figure(100, 100)
+    plt.plot([0, 1], [0, 1])
+    cns.savefig("plot.png")
+    assert Path("plot.png").exists()
 
     fig, ax = plt.subplots()
     plt.sca(ax)
@@ -253,7 +276,14 @@ def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
 
     monkeypatch.setattr(_utils, "Annotator", DummyAnnotator)
     formatter_ax = plt.subplots()[1]
-    _utils._p_value_helper("Mann-Whitney", pd.DataFrame({"g": ["A", "B"], "v": [1, 2]}), formatter_ax, {"x": "g", "y": "v"}, "all", format="full")
+    _utils._p_value_helper(
+        "Mann-Whitney",
+        pd.DataFrame({"g": ["A", "B"], "v": [1, 2]}),
+        formatter_ax,
+        {"x": "g", "y": "v"},
+        "all",
+        format="full",
+    )
     formatter = DummyAnnotator(formatter_ax, [])._pvalue_format
     formatter = formatter or _utils.Annotator(formatter_ax, [])._pvalue_format
 
@@ -266,7 +296,14 @@ def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
 
     monkeypatch.setattr(_utils, "Annotator", CaptureAnnotator)
     fig2, ax2 = plt.subplots()
-    _utils._p_value_helper("Mann-Whitney", pd.DataFrame({"g": ["A", "B"], "v": [1, 2]}), ax2, {"x": "g", "y": "v"}, "all", format="full")
+    _utils._p_value_helper(
+        "Mann-Whitney",
+        pd.DataFrame({"g": ["A", "B"], "v": [1, 2]}),
+        ax2,
+        {"x": "g", "y": "v"},
+        "all",
+        format="full",
+    )
     formatted = CaptureAnnotator.last._pvalue_format.format_data(DummyResult(0.2))
     assert formatted == "ns"
 
@@ -311,8 +348,14 @@ def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         self.yticklabels = []
 
     monkeypatch.setattr(helper_heatmap.ClusterMapPlotterNew, "plot", fake_plot)
-    monkeypatch.setattr(helper_heatmap.ClusterMapPlotterNew, "post_processing", lambda self: None)
-    monkeypatch.setattr(helper_heatmap.ClusterMapPlotterNew, "plot_legends", lambda self, ax=None: calls.append(ax))
+    monkeypatch.setattr(
+        helper_heatmap.ClusterMapPlotterNew, "post_processing", lambda self: None
+    )
+    monkeypatch.setattr(
+        helper_heatmap.ClusterMapPlotterNew,
+        "plot_legends",
+        lambda self, ax=None: calls.append(ax),
+    )
 
     annotation = types.SimpleNamespace(
         plot_legend=False,
@@ -417,8 +460,12 @@ def test_phylo_and_sankey_gap_coverage() -> None:
     )
     _sankey.identify_labels(data_frame, ["A", "B"], ["C", "D"])
     fig2, ax2 = plt.subplots()
-    widths_left, _ = _sankey._get_positions_and_total_widths(data_frame, ["A", "B"], "left")
-    widths_right, _ = _sankey._get_positions_and_total_widths(data_frame, ["C", "D"], "right")
+    widths_left, _ = _sankey._get_positions_and_total_widths(
+        data_frame, ["A", "B"], "left"
+    )
+    widths_right, _ = _sankey._get_positions_and_total_widths(
+        data_frame, ["C", "D"], "right"
+    )
     assert set(widths_left) == {"A", "B"}
     assert set(widths_right) == {"C", "D"}
     _sankey.plot_strips(
@@ -499,9 +546,21 @@ def test_plot_gap_coverage(
     cns.figure(120, 120)
     cns.stripplot(categorical_df, x="group", y="value", hue="hue")
     cns.figure(120, 120)
-    cns.scatterplot(categorical_df.rename(columns={"value": "x"}).assign(y=lambda df: df["x"] * 2), x="x", y="y", hue="hue")
+    cns.scatterplot(
+        categorical_df.rename(columns={"value": "x"}).assign(y=lambda df: df["x"] * 2),
+        x="x",
+        y="y",
+        hue="hue",
+    )
     cns.figure(120, 120)
-    cns.regplot(categorical_df.rename(columns={"value": "x"}).assign(y=lambda df: df["x"] * 2, color_col=["A"] * 12), x="x", y="y", color="color_col")
+    cns.regplot(
+        categorical_df.rename(columns={"value": "x"}).assign(
+            y=lambda df: df["x"] * 2, color_col=["A"] * 12
+        ),
+        x="x",
+        y="y",
+        color="color_col",
+    )
 
     monkeypatch.undo()
 
@@ -513,8 +572,20 @@ def test_plot_gap_coverage(
     class FakeAxes:
         def __init__(self) -> None:
             self.patches: list[PathPatch] = []
-            self.artists = [types.SimpleNamespace(get_facecolor=lambda: (1, 0, 0, 1), set_edgecolor=lambda x: None, set_facecolor=lambda x: None)]
-            self.lines = [types.SimpleNamespace(set_color=lambda x: None, set_mfc=lambda x: None, set_mec=lambda x: None)] * 5
+            self.artists = [
+                types.SimpleNamespace(
+                    get_facecolor=lambda: (1, 0, 0, 1),
+                    set_edgecolor=lambda x: None,
+                    set_facecolor=lambda x: None,
+                )
+            ]
+            self.lines = [
+                types.SimpleNamespace(
+                    set_color=lambda x: None,
+                    set_mfc=lambda x: None,
+                    set_mec=lambda x: None,
+                )
+            ] * 5
 
         def get_legend_handles_labels(self) -> tuple[list[object], list[str]]:
             return [], []
@@ -527,10 +598,14 @@ def test_plot_gap_coverage(
     cns.boxplot(categorical_df, x="group", y="value")
 
     cns.figure(120, 120)
-    cns.histplot(data=categorical_df.rename(columns={"value": "x", "group": "y"}), y="x")
+    cns.histplot(
+        data=categorical_df.rename(columns={"value": "x", "group": "y"}), y="x"
+    )
 
     adata_nan = heatmap_adata.copy()
-    adata_nan.obs["cluster"] = pd.Series(["A", None, "B"], index=adata_nan.obs_names, dtype=object)
+    adata_nan.obs["cluster"] = pd.Series(
+        ["A", None, "B"], index=adata_nan.obs_names, dtype=object
+    )
     cns.figure(120, 120)
     cns.heatmapplot(adata_nan, row_annotation=["cluster"], cmap=None)
 
@@ -549,15 +624,36 @@ def test_plot_gap_coverage(
     monkeypatch.setattr(
         heatmap_mod.pd,
         "crosstab",
-        lambda *args, **kwargs: pd.DataFrame([[np.nan, 1], [1, 1]], index=["neg", "pos"], columns=["neg", "pos"]),
+        lambda *args, **kwargs: pd.DataFrame(
+            [[np.nan, 1], [1, 1]], index=["neg", "pos"], columns=["neg", "pos"]
+        ),
     )
     with pytest.raises(ValueError, match="TN cell contains NaN"):
-        cns.confusionplot(confusion_df, x="pred", y="truth", add_pvalue=True, annot=False, x_order=["neg", "pos"], y_order=["neg", "pos"])
+        cns.confusionplot(
+            confusion_df,
+            x="pred",
+            y="truth",
+            add_pvalue=True,
+            annot=False,
+            x_order=["neg", "pos"],
+            y_order=["neg", "pos"],
+        )
     monkeypatch.setattr(heatmap_mod.pd, "crosstab", original_crosstab)
 
-    monkeypatch.setattr(heatmap_mod, "fisher_exact", lambda table: (_ for _ in ()).throw(ValueError("bad")))
+    monkeypatch.setattr(
+        heatmap_mod,
+        "fisher_exact",
+        lambda table: (_ for _ in ()).throw(ValueError("bad")),
+    )
     with pytest.raises(ValueError, match="Fisher's exact test failed"):
-        cns.confusionplot(confusion_df, x="pred", y="truth", add_pvalue=True, x_order=["neg", "pos"], y_order=["neg", "pos"])
+        cns.confusionplot(
+            confusion_df,
+            x="pred",
+            y="truth",
+            add_pvalue=True,
+            x_order=["neg", "pos"],
+            y_order=["neg", "pos"],
+        )
 
     bad_survival = survival_df.copy()
     bad_survival["time"] = bad_survival["time"] * 20
@@ -566,6 +662,7 @@ def test_plot_gap_coverage(
     assert ax.get_xlabel() == "Time (Months)"
 
     import lifelines
+
     original_logrank_test = lifelines.statistics.multivariate_logrank_test
 
     monkeypatch.setattr(
@@ -588,7 +685,13 @@ def test_plot_gap_coverage(
     monkeypatch.setattr(lifelines, "CoxPHFitter", BadCox)
     with pytest.raises(RuntimeError, match="Cox proportional hazards model failed"):
         cns.survivalplot(
-            pd.DataFrame({"time": [1, 2, 3, 4, 5, 6], "event": [1, 0, 1, 0, 1, 0], "group": ["A", "A", "B", "B", "C", "C"]}),
+            pd.DataFrame(
+                {
+                    "time": [1, 2, 3, 4, 5, 6],
+                    "event": [1, 0, 1, 0, 1, 0],
+                    "group": ["A", "A", "B", "B", "C", "C"],
+                }
+            ),
             "time",
             "event",
             "group",
@@ -600,12 +703,27 @@ def test_plot_gap_coverage(
     cns.phyloplot(phylo_adata)
 
     fake_venn_obj = types.SimpleNamespace(
-        get_label_by_id=lambda area: (_ for _ in ()).throw(AttributeError()) if area in {"100", "110"} else types.SimpleNamespace(set_fontsize=lambda size: None),
-        get_patch_by_id=lambda area: (_ for _ in ()).throw(AttributeError()) if area in {"100", "110"} else types.SimpleNamespace(set_edgecolor=lambda color: None, set_linewidth=lambda width: None),
+        get_label_by_id=lambda area: (_ for _ in ()).throw(AttributeError())
+        if area in {"100", "110"}
+        else types.SimpleNamespace(set_fontsize=lambda size: None),
+        get_patch_by_id=lambda area: (_ for _ in ()).throw(AttributeError())
+        if area in {"100", "110"}
+        else types.SimpleNamespace(
+            set_edgecolor=lambda color: None, set_linewidth=lambda width: None
+        ),
     )
-    monkeypatch.setitem(sys.modules, "matplotlib_venn", types.SimpleNamespace(venn2=lambda *args, **kwargs: fake_venn_obj, venn3=lambda *args, **kwargs: fake_venn_obj))
+    monkeypatch.setitem(
+        sys.modules,
+        "matplotlib_venn",
+        types.SimpleNamespace(
+            venn2=lambda *args, **kwargs: fake_venn_obj,
+            venn3=lambda *args, **kwargs: fake_venn_obj,
+        ),
+    )
     cns.figure(120, 120)
-    assert cns.vennplot([{1, 2}, {2, 3}, {3, 4}], labels=["A", "B", "C"]) is fake_venn_obj
+    assert (
+        cns.vennplot([{1, 2}, {2, 3}, {3, 4}], labels=["A", "B", "C"]) is fake_venn_obj
+    )
 
 
 def test_remaining_visual_gap_coverage(
@@ -732,6 +850,10 @@ def test_remaining_visual_gap_coverage(
     ax = cns.forestplot(cox_like_model)
     assert ax.get_xlabel() == "Hazard ratio (95% CI)"
 
-    monkeypatch.setattr(specialized_mod, "validate_dataframe", lambda data, name, fn: None)
+    monkeypatch.setattr(
+        specialized_mod, "validate_dataframe", lambda data, name, fn: None
+    )
     with pytest.raises(TypeError, match="Internal type validation failed"):
-        cns.forestplot(types.SimpleNamespace(name="cox", results=["not", "a", "dataframe"]))
+        cns.forestplot(
+            types.SimpleNamespace(name="cox", results=["not", "a", "dataframe"])
+        )

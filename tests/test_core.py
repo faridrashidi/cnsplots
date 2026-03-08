@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import builtins
-import io
 import subprocess
 import sys
 import types
@@ -26,6 +25,11 @@ def test_public_api_exports_resolve() -> None:
     assert cns.methods.LogisticModel is cns.LogisticModel
     assert cns.validation.validate_dataframe is _validation.validate_dataframe
     assert cns.utils.figure is _utils.figure
+
+    namespace: dict[str, object] = {}
+    exec("from cnsplots import *", namespace)
+    assert namespace["boxplot"] is cns.boxplot
+    assert namespace["savefig"] is cns.savefig
 
 
 def test_validation_helpers(heatmap_adata: object) -> None:
@@ -90,13 +94,21 @@ def test_validation_helpers(heatmap_adata: object) -> None:
     with pytest.raises(ValueError, match="exactly 2 unique values"):
         _validation.validate_binary_column(pd.DataFrame({"b": [0, 1, 2]}), "b", "func")
 
-    _validation.validate_categorical_has_levels(df, "b", min_levels=2, max_levels=2, function_name="func")
+    _validation.validate_categorical_has_levels(
+        df, "b", min_levels=2, max_levels=2, function_name="func"
+    )
     with pytest.raises(ValueError, match="at least 3"):
-        _validation.validate_categorical_has_levels(df, "b", min_levels=3, function_name="func")
+        _validation.validate_categorical_has_levels(
+            df, "b", min_levels=3, function_name="func"
+        )
     with pytest.raises(ValueError, match="at most 1"):
-        _validation.validate_categorical_has_levels(df, "b", max_levels=1, function_name="func")
+        _validation.validate_categorical_has_levels(
+            df, "b", max_levels=1, function_name="func"
+        )
 
-    _validation.validate_numeric_range(df, "a", min_val=1, max_val=2, function_name="func")
+    _validation.validate_numeric_range(
+        df, "a", min_val=1, max_val=2, function_name="func"
+    )
     with pytest.raises(ValueError, match="less than 2"):
         _validation.validate_numeric_range(df, "a", min_val=2, function_name="func")
     with pytest.raises(ValueError, match="greater than 1"):
@@ -190,18 +202,28 @@ def test_settings_behavior() -> None:
     assert settings.palette_qual == "Ecotyper1"
 
 
-def test_ensure_helvetica_bold_branches(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_ensure_helvetica_bold_branches(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     monkeypatch.setattr(_setup, "_HELVETICA_BOLD_REGISTERED", True)
     _setup._ensure_helvetica_bold()
 
     monkeypatch.setattr(_setup, "_HELVETICA_BOLD_REGISTERED", False)
     fake_font = types.SimpleNamespace(name="Helvetica", weight=700)
-    monkeypatch.setattr(_setup.fm, "fontManager", types.SimpleNamespace(ttflist=[fake_font], addfont=lambda _p: None))
+    monkeypatch.setattr(
+        _setup.fm,
+        "fontManager",
+        types.SimpleNamespace(ttflist=[fake_font], addfont=lambda _p: None),
+    )
     _setup._ensure_helvetica_bold()
     assert _setup._HELVETICA_BOLD_REGISTERED is True
 
     monkeypatch.setattr(_setup, "_HELVETICA_BOLD_REGISTERED", False)
-    monkeypatch.setattr(_setup.fm, "fontManager", types.SimpleNamespace(ttflist=[], addfont=lambda _p: None))
+    monkeypatch.setattr(
+        _setup.fm,
+        "fontManager",
+        types.SimpleNamespace(ttflist=[], addfont=lambda _p: None),
+    )
     monkeypatch.setattr(_setup.sys, "platform", "linux")
     _setup._ensure_helvetica_bold()
     assert _setup._HELVETICA_BOLD_REGISTERED is False
@@ -214,7 +236,13 @@ def test_ensure_helvetica_bold_branches(monkeypatch: pytest.MonkeyPatch, tmp_pat
 
 def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     cns.settings.reset()
-    _setup.setup_matplotlib(color_cycle="Set2", color_map="parula", fontsize_title=9, fontsize_legend=8, linewidth_axes=1.2)
+    _setup.setup_matplotlib(
+        color_cycle="Set2",
+        color_map="parula",
+        fontsize_title=9,
+        fontsize_legend=8,
+        linewidth_axes=1.2,
+    )
     assert mpl.rcParams["axes.labelsize"] == 9
     assert mpl.rcParams["image.cmap"] == "parula"
 
@@ -224,7 +252,13 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     ax.set_title("Title")
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    _setup.setup_ax(ax, fontsize_title=10, fontsize_legend=9, linewidth_axes=1.1, colorbar_label="Custom")
+    _setup.setup_ax(
+        ax,
+        fontsize_title=10,
+        fontsize_legend=9,
+        linewidth_axes=1.1,
+        colorbar_label="Custom",
+    )
     assert ax.get_xlabel() == "X"
     assert heat.colorbar.ax.get_ylabel() == "Custom"
 
@@ -244,7 +278,10 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "theme_custom" in gg
 
 
-def test_svg_helpers_and_export(output_dir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_svg_helpers_and_export(
+    output_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     output_dir.mkdir(parents=True)
     cns.figure(120, 120)
     ax = plt.gca()
@@ -283,12 +320,57 @@ def test_svg_helpers_and_export(output_dir: Path, monkeypatch: pytest.MonkeyPatc
     assert png_path.exists()
     assert svg_path.exists()
 
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+    success_path = output_dir / "optimized.svg"
+    corrected: dict[str, object] = {}
+
+    def fake_run(args: list[str], **kwargs: object) -> object:
+        optimized_svg = Path(args[7].replace("%d", "1"))
+        optimized_svg.write_text(
+            "<svg xmlns='http://www.w3.org/2000/svg' />", encoding="utf-8"
+        )
+        return types.SimpleNamespace(returncode=0)
+
+    def fake_correct(
+        input_file: str, output_file: str, bold_texts: set[str] | None = None
+    ) -> None:
+        corrected["input_file"] = input_file
+        corrected["bold_texts"] = bold_texts
+        Path(output_file).write_text(
+            "<svg xmlns='http://www.w3.org/2000/svg' />", encoding="utf-8"
+        )
+
+    monkeypatch.setattr(_svg.subprocess, "run", fake_run)
+    monkeypatch.setattr(_svg, "_correct_svg", fake_correct)
+    _svg._save_svg(str(success_path), str(output_dir / "optimized"))
+    assert success_path.exists()
+    assert str(corrected["input_file"]).endswith("1.svg")
+    assert isinstance(corrected["bold_texts"], set)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+
+    def missing_run(*args: object, **kwargs: object) -> object:
+        raise FileNotFoundError("mutool")
+
+    monkeypatch.setattr(_svg.subprocess, "run", missing_run)
+    missing_path = output_dir / "missing-mutool.svg"
+    with pytest.warns(RuntimeWarning, match="mutool"):
+        _svg._save_svg(str(missing_path), str(output_dir / "missing-mutool"))
+    assert missing_path.exists()
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+
     def fail_run(*args: object, **kwargs: object) -> object:
         raise subprocess.CalledProcessError(1, ["mutool"], stderr=b"boom")
 
     monkeypatch.setattr(_svg.subprocess, "run", fail_run)
-    _svg._save_svg(str(output_dir / "failed.svg"), str(output_dir / "failed"))
-    assert "Error during SVG conversion: boom" in capsys.readouterr().out
+    failed_path = output_dir / "failed.svg"
+    with pytest.warns(RuntimeWarning, match="boom"):
+        _svg._save_svg(str(failed_path), str(output_dir / "failed"))
+    assert failed_path.exists()
 
 
 def test_utils_helpers_and_showcase_data(
@@ -372,18 +454,33 @@ def test_utils_helpers_and_showcase_data(
     monkeypatch.setattr(_utils, "Annotator", DummyAnnotator)
 
     fig5, ax5 = plt.subplots()
-    plotting = {"x": "group", "y": "value", "hue": "hue", "order": ["A", "B", "C"], "hue_order": ["H1", "H2"]}
+    plotting = {
+        "x": "group",
+        "y": "value",
+        "hue": "hue",
+        "order": ["A", "B", "C"],
+        "hue_order": ["H1", "H2"],
+    }
     _utils._p_value_helper("t-test_welch", categorical_df, ax5, plotting.copy(), "hue")
     assert DummyAnnotator.last is not None
     assert DummyAnnotator.last.pairs
 
-    _utils._p_value_helper("Mann-Whitney", categorical_df, ax5, {"x": "group", "y": "value"}, "all", format="full")
+    _utils._p_value_helper(
+        "Mann-Whitney",
+        categorical_df,
+        ax5,
+        {"x": "group", "y": "value"},
+        "all",
+        format="full",
+    )
     formatter = DummyAnnotator.last._pvalue_format
     formatted = formatter.format_data(DummyResult())
     assert formatted.startswith("$T P = ")
     assert r"\times 10^{-2}$" in formatted
 
-    contingency = pd.DataFrame([[3, 1], [1, 3]], index=["A", "B"], columns=["Yes", "No"])
+    contingency = pd.DataFrame(
+        [[3, 1], [1, 3]], index=["A", "B"], columns=["Yes", "No"]
+    )
     _utils._p_value_helper(
         "fisher-exact",
         categorical_df,
@@ -408,8 +505,14 @@ def test_utils_helpers_and_showcase_data(
     assert _utils.palettes("BuRd_custom").name == "BuRd_custom"
     assert isinstance(_utils.palettes("Wrong Choice!"), RuntimeError)
 
-    fake_sns = types.SimpleNamespace(load_dataset=lambda name: showcase_bundle[0] if name == "iris" else showcase_bundle[1])
-    fake_sc = types.SimpleNamespace(datasets=types.SimpleNamespace(blobs=lambda: heatmap_adata.copy()))
+    fake_sns = types.SimpleNamespace(
+        load_dataset=lambda name: showcase_bundle[0]
+        if name == "iris"
+        else showcase_bundle[1]
+    )
+    fake_sc = types.SimpleNamespace(
+        datasets=types.SimpleNamespace(blobs=lambda: heatmap_adata.copy())
+    )
     monkeypatch.setitem(sys.modules, "seaborn", fake_sns)
     monkeypatch.setitem(sys.modules, "scanpy", fake_sc)
     data = _utils.get_showcase_data()
