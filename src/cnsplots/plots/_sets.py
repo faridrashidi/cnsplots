@@ -8,9 +8,22 @@ if TYPE_CHECKING:
 from collections.abc import Set as AbstractSet
 
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 
 import cnsplots as cns
+
+
+def _normalize_text_position(text: Any) -> None:
+    """Coerce singleton array coordinates from upsetplot into scalar positions."""
+
+    def _to_scalar(value: Any) -> Any:
+        if isinstance(value, np.ndarray) and value.size == 1:
+            return float(value.reshape(-1)[0])
+        return value
+
+    x, y = text.get_position()
+    text.set_position((_to_scalar(x), _to_scalar(y)))
 
 
 def upsetplot(sets: dict[str, set | list], **kwargs: Any) -> dict:
@@ -80,10 +93,12 @@ def upsetplot(sets: dict[str, set | list], **kwargs: Any) -> dict:
     cns.setup_ax(axes["intersections"])
     axes["matrix"].tick_params(axis="both", which="both", length=0)
     for txt in axes["intersections"].texts:
+        _normalize_text_position(txt)
         txt.set_size(cns.settings.fontsize_legend)
     if ax_tot is not None:
         cns.setup_ax(ax_tot)
         for txt in ax_tot.texts:
+            _normalize_text_position(txt)
             txt.set_size(cns.settings.fontsize_legend)
         pos_mat = ax_tot.get_position()
         dx = 0.03
