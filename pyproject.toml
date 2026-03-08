@@ -56,12 +56,12 @@ dev = [
 doc = [
     "furo",
     "myst-parser",
-    "sphinx<9",
+    "sphinx<9; python_version < '3.11'",
+    "sphinx>=9,<9.1; python_version >= '3.11'",
     "sphinx-autodoc-typehints",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
-    "sphinx-hoverxref",
 ]
 
 [project.urls]
