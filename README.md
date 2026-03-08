@@ -2,10 +2,9 @@
 
 <div align="center">
 
-[![PyPI](https://img.shields.io/pypi/v/cnsplots?logo=pypi&logoColor=white&style=flat-square)](https://pypi.org/project/cnsplots/)
-[![Python Version](https://img.shields.io/pypi/pyversions/cnsplots?logo=python&logoColor=white&style=flat-square)](https://pypi.org/project/cnsplots/)
-[![License](https://img.shields.io/pypi/l/cnsplots.svg?logo=creativecommons&logoColor=white&style=flat-square&color=blueviolet)](https://github.com/faridrashidi/cnsplots/blob/main/LICENSE.md)
-[![Code Style](https://img.shields.io/badge/code%20style-ruff-000000.svg?logo=ruff&logoColor=white&style=flat-square)](https://github.com/astral-sh/ruff)
+[![PyPI](https://img.shields.io/pypi/v/cnsplots?logo=pypi&logoColor=white&style=flat-square&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
+[![Python Version](https://img.shields.io/pypi/pyversions/cnsplots?logo=python&logoColor=white&style=flat-square&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
+[![License](https://img.shields.io/pypi/l/cnsplots?logo=creativecommons&logoColor=white&style=flat-square&color=blueviolet&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/blob/main/LICENSE.md)
 
 **Publication-Ready Scientific Plots for Cell, Nature, and Science Journals**
 
