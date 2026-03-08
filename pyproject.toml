@@ -1,6 +1,6 @@
 [project]
 name = "cnsplots"
-version = "0.0.7"
+version = "0.0.1"
 description = "A comprehensive plotting library for bioinformatics and data visualization"
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
@@ -24,7 +24,7 @@ dependencies = [
     "biopython",
     "glasbey",
     "gseapy",
-    "lifelines<=0.30.0",
+    "lifelines",
     "lxml",
     "matplotlib",
     "matplotlib-venn",
@@ -39,7 +39,7 @@ dependencies = [
     "scikit-learn",
     "scipy",
     "seaborn",
-    "statannotations @ git+https://github.com/trevismd/statannotations@master",
+    "statannotations",
     "statsmodels",
     "upsetplot",
 ]
@@ -93,7 +93,7 @@ report_level = "info"
 ignore_messages = '( No directive entry for.*|Hyperlink target.*|Unknown target name:.*|No (directive|role) entry for "(auto)?(class|method|property|function|func|mod|module)" in module "docutils\.parsers\.rst\.languages\.en"\.)'
 
 [tool.bumpversion]
-current_version = "0.0.7"
+current_version = "0.0.1"
 commit = true
 message = "chore(release): 🔖 Bump version {current_version} -> {new_version}"
 tag = true
