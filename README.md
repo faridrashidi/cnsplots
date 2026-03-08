@@ -107,6 +107,10 @@ cd cnsplots
 make install
 ```
 
+This installs the package with its development and documentation extras. Core
+scientific integrations such as `scanpy`, `lifelines`, and `gseapy` remain
+runtime dependencies of `cnsplots` itself.
+
 ## Quick Start
 
 ### Basic Usage
@@ -114,7 +118,6 @@ make install
 ```python
 import cnsplots as cns
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 # Load example data
 df = sns.load_dataset("tips")
@@ -126,7 +129,7 @@ cns.figure(height=150, width=100)
 cns.boxplot(data=df, x="day", y="total_bill")
 
 # Save as vector graphic
-plt.savefig("figure.svg")
+cns.savefig("figure.svg")
 ```
 
 ### Statistical Comparisons
@@ -217,20 +220,25 @@ cns.stackplot(data=df, x="group", y="category", pairs=[("A", "B")])
 
 ```python
 # SVG for vector graphics (recommended)
-plt.savefig("figure.svg")
+cns.savefig("figure.svg")
 
 # High-resolution PNG
-plt.savefig("figure.png", dpi=300)
+cns.savefig("figure.png")
 
 # PDF with editable text
-plt.savefig("figure.pdf")
+cns.savefig("figure.pdf")
 ```
+
+For Illustrator-optimized SVG post-processing, install MuPDF's `mutool`.
+Without it, `cns.savefig("figure.svg")` falls back to a standard matplotlib SVG
+and emits a warning instead of failing.
 
 ## Requirements
 
 - Python ≥ 3.9
 - Core: matplotlib, numpy, pandas, seaborn
-- Optional: lifelines, gseapy, scanpy (for specific plot types)
+- Included integrations: lifelines, gseapy, scanpy, and other plotting backends
+- Optional external tool: MuPDF's `mutool` for enhanced SVG post-processing
 
 See [pyproject.toml](pyproject.toml) for complete dependency list.
 
@@ -257,7 +265,7 @@ If you use cnsplots in your research, please cite:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the BSD 3-Clause License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgments
 
@@ -290,6 +298,6 @@ Inspired by the visualization standards of Cell, Nature, and Science journals.
 
 Made with ❤️ for the scientific community
 
-[⭐ Star us on GitHub](https://github.com/faridrashidi/cnsplots) · [📖 Read the Docs](https://cnsplots.farid.one/)
+[⭐ Star us on GitHub](https://github.com/faridrashidi/cnsplots) · [📖 Documentation](https://cnsplots.farid.one/)
 
 </div>
