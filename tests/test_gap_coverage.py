@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 import sys
 import types
 from pathlib import Path
-from typing import cast
+from typing import Any
 
 import anndata as ad
 import matplotlib.pyplot as plt
@@ -759,10 +759,10 @@ def test_remaining_visual_gap_coverage(
 ) -> None:
     real_isinstance = builtins.isinstance
 
-    def fake_isinstance(obj: object, typ: object) -> bool:
+    def fake_isinstance(obj: object, typ: Any) -> bool:
         if typ is object and getattr(obj, "kind", None) in {"b", "i", "u", "f"}:
             return False
-        return real_isinstance(obj, cast(type[object] | tuple[type[object], ...], typ))
+        return real_isinstance(obj, typ)
 
     monkeypatch.setattr(heatmap_mod, "isinstance", fake_isinstance, raising=False)
     cns.figure(180, 180)
