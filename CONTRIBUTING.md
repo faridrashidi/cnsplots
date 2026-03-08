@@ -52,7 +52,6 @@ Found a bug? Help us fix it by:
 **Environment**:
 
 - Python 3.10
-- cnsplots 0.0.1
 - macOS 14.0
 ```
 

@@ -250,9 +250,8 @@ If you use cnsplots in your research, please cite:
 @software{cnsplots,
   author = {Rashidi, Farid},
   title = {cnsplots: Publication-Ready Scientific Plots},
-  year = {2023},
-  url = {https://github.com/faridrashidi/cnsplots},
-  version = {0.0.1}
+  year = {2026},
+  url = {https://github.com/faridrashidi/cnsplots}
 }
 ```
 
