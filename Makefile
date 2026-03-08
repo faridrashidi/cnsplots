@@ -3,7 +3,6 @@ help:
 	@echo " - clean        : clean the repo"
 	@echo " - lint         : run linting and flaking"
 	@echo " - test         : run all unit tests"
-	@echo " - serve        : open up the documentation"
 	@echo " - doc          : build the documentation"
 	@echo " - install      : install the package"
 
@@ -22,10 +21,7 @@ lint:
 	pre-commit run --all-files
 
 test:
-	pytest --disable-warnings ./tests
-
-serve:
-	cd docs/build/html && python -m http.server 8080
+	uv run pytest --disable-warnings ./tests
 
 doc: clean
 	cd docs && $(MAKE) html
