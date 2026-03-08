@@ -4,7 +4,8 @@
 # You can set these variables from the command line, and also
 # from the environment for the first two.
 SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
+# Run Sphinx through uv so `make html` uses the project's doc extras.
+SPHINXBUILD   ?= uv run --extra doc sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = build
 
