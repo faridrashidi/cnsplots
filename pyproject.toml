@@ -56,7 +56,7 @@ dev = [
 doc = [
     "furo",
     "myst-parser",
-    "sphinx",
+    "sphinx<9",
     "sphinx-autodoc-typehints",
     "sphinx-copybutton",
     "sphinx-design",
