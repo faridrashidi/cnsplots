@@ -11,7 +11,7 @@
 
 Create visually stunning, journal-quality figures with minimal code. Built on matplotlib, fully compatible with seaborn, and optimized for Adobe Illustrator.
 
-[Documentation](https://farid.one/cnsplots/) · [Examples Gallery](https://farid.one/cnsplots/examples/index.html) · [Report Bug](https://github.com/faridrashidi/cnsplots/issues) · [Request Feature](https://github.com/faridrashidi/cnsplots/issues)
+[Documentation](https://cnsplots.farid.one/) · [Examples Gallery](https://cnsplots.farid.one/examples/index.html) · [Report Bug](https://github.com/faridrashidi/cnsplots/issues) · [Request Feature](https://github.com/faridrashidi/cnsplots/issues)
 
 </div>
 
@@ -19,7 +19,7 @@ Create visually stunning, journal-quality figures with minimal code. Built on ma
 
 ## Overview
 
-[![Overview](docs/_static/images/overview.png?raw=true)](https://farid.one/cnsplots/examples/index.html)
+[![Overview](docs/_static/images/overview.png?raw=true)](https://cnsplots.farid.one/examples/index.html)
 
 **cnsplots** is a Python visualization library designed specifically for creating publication-ready scientific figures. It takes care of the tedious styling details so you can focus on your science.
 
@@ -153,7 +153,7 @@ cns.violinplot(data=df, x="day", y="total_bill", hue="sex")
 
 ## Examples Gallery
 
-Explore our comprehensive [examples gallery](https://farid.one/cnsplots/examples/index.html) featuring:
+Explore our comprehensive [examples gallery](https://cnsplots.farid.one/examples/index.html) featuring:
 
 - 📦 Basic statistical plots
 - 🧬 Genomics and bioinformatics visualizations
@@ -164,11 +164,11 @@ Explore our comprehensive [examples gallery](https://farid.one/cnsplots/examples
 
 ## Documentation
 
-Full documentation is available at [farid.one/cnsplots](https://farid.one/cnsplots/)
+Full documentation is available at [farid.one/cnsplots](https://cnsplots.farid.one/)
 
-- [Installation Guide](https://farid.one/cnsplots/installation.html)
-- [API Reference](https://farid.one/cnsplots/api.html)
-- [Examples Gallery](https://farid.one/cnsplots/examples/index.html)
+- [Installation Guide](https://cnsplots.farid.one/installation.html)
+- [API Reference](https://cnsplots.farid.one/api.html)
+- [Examples Gallery](https://cnsplots.farid.one/examples/index.html)
 
 ## Key Concepts
 
@@ -273,7 +273,7 @@ Inspired by the visualization standards of Cell, Nature, and Science journals.
 
 ## Support
 
-- 📖 [Documentation](https://farid.one/cnsplots/)
+- 📖 [Documentation](https://cnsplots.farid.one/)
 - 🐛 [Issue Tracker](https://github.com/faridrashidi/cnsplots/issues)
 - 💬 [Discussions](https://github.com/faridrashidi/cnsplots/discussions)
 
@@ -290,6 +290,6 @@ Inspired by the visualization standards of Cell, Nature, and Science journals.
 
 Made with ❤️ for the scientific community
 
-[⭐ Star us on GitHub](https://github.com/faridrashidi/cnsplots) · [📖 Read the Docs](https://farid.one/cnsplots/)
+[⭐ Star us on GitHub](https://github.com/faridrashidi/cnsplots) · [📖 Read the Docs](https://cnsplots.farid.one/)
 
 </div>

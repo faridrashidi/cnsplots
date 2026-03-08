@@ -283,8 +283,8 @@ Add screenshots for visual changes
 
 ### Getting Help
 
-- Check the [documentation](https://farid.one/cnsplots/)
-- Browse [examples](https://farid.one/cnsplots/examples/index.html)
+- Check the [documentation](https://cnsplots.farid.one/)
+- Browse [examples](https://cnsplots.farid.one/examples/index.html)
 - Search [existing issues](https://github.com/faridrashidi/cnsplots/issues)
 - Ask in [discussions](https://github.com/faridrashidi/cnsplots/discussions)
 
