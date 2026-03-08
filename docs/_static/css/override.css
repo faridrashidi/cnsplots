@@ -14,6 +14,10 @@ article table.align-default {
   margin-right: auto;
 }
 
+.sphx-glr-script-out {
+  display: none !important;
+}
+
 .sidebar-tree .toctree-l2 {
   display: none;
 }
