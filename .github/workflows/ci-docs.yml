@@ -1,0 +1,38 @@
+name: CI / Docs
+
+on:
+  workflow_run:
+    workflows:
+      - CI / Tests
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -e ".[doc]"
+      - id: deployment
+        uses: sphinx-notes/pages@v3
+        with:
+          checkout: false
+          publish: false
+          python_version: "3.11"
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.deployment.outputs.artifact }}
+          cname: cnsplots.farid.one
