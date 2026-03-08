@@ -110,6 +110,12 @@ filename = "src/cnsplots/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
+[[tool.bumpversion.files]]
+filename = "uv.lock"
+regex = true
+search = '(?ms)(\[\[package\]\]\nname = "cnsplots"\nversion = )"{current_version}"'
+replace = '\1"{new_version}"'
+
 [tool.ty.src]
 exclude = ["examples/", "docs/"]
 
