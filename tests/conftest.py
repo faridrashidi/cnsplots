@@ -78,7 +78,9 @@ def stack_df() -> pd.DataFrame:
 @pytest.fixture
 def numeric_df() -> pd.DataFrame:
     x = np.arange(1, 13, dtype=float)
-    y = x * 1.5 + np.array([0.1, -0.2, 0.3, -0.1, 0.2, 0.0, 0.1, -0.3, 0.2, -0.1, 0.4, 0.0])
+    y = x * 1.5 + np.array(
+        [0.1, -0.2, 0.3, -0.1, 0.2, 0.0, 0.1, -0.3, 0.2, -0.1, 0.4, 0.0]
+    )
     return pd.DataFrame(
         {
             "x": x,
@@ -267,7 +269,9 @@ def showcase_bundle(
         heatmap_adata,
         volcano_df,
         list(sets_fixture.values()),
-        roc_df.rename(columns={"truth": "label", "model_a": "Model A", "model_b": "Model B"}),
+        roc_df.rename(
+            columns={"truth": "label", "model_a": "Model A", "model_b": "Model B"}
+        ),
         slope_df,
     )
 

@@ -7,10 +7,8 @@ on:
       - main
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
-    env:
-      MPLBACKEND: Agg
     steps:
       - uses: actions/checkout@v5
 
@@ -28,6 +26,28 @@ jobs:
       - name: Run lint
         run: make lint
 
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    runs-on: ubuntu-latest
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --all-extras
+
       - name: Install mutool
         run: |
           sudo apt-get update
@@ -35,3 +55,32 @@ jobs:
 
       - name: Run tests
         run: uv run pytest --disable-warnings ./tests
+
+  package:
+    name: Package Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install packaging tools
+        run: python -m pip install --upgrade pip build twine
+
+      - name: Build distributions
+        run: python -m build
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Install wheel in a clean virtualenv
+        run: |
+          python -m venv .pkg-venv
+          . .pkg-venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install dist/*.whl
+          python -c "import cnsplots; print(cnsplots.__version__)"
+          python -m pip check

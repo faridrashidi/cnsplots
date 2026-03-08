@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import sys
-import types
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -17,7 +14,11 @@ def test_boxplot_and_violinplot(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     calls: list[object] = []
-    monkeypatch.setattr(cns.utils, "_p_value_helper", lambda *args, **kwargs: calls.append((args, kwargs)))
+    monkeypatch.setattr(
+        cns.utils,
+        "_p_value_helper",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
 
     cns.figure(120, 120)
     ax = cns.boxplot(
@@ -57,7 +58,11 @@ def test_barplot_and_lollipopplot(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[object] = []
-    monkeypatch.setattr(cns.utils, "_p_value_helper", lambda *args, **kwargs: calls.append((args, kwargs)))
+    monkeypatch.setattr(
+        cns.utils,
+        "_p_value_helper",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
 
     cns.figure(120, 120)
     ax = cns.barplot(
@@ -114,7 +119,11 @@ def test_stack_strip_pie_and_donut_plots(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[object] = []
-    monkeypatch.setattr(cns.utils, "_p_value_helper", lambda *args, **kwargs: calls.append((args, kwargs)))
+    monkeypatch.setattr(
+        cns.utils,
+        "_p_value_helper",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
 
     cns.figure(120, 120)
     ax = cns.stackplot(
@@ -154,17 +163,25 @@ def test_stack_strip_pie_and_donut_plots(
     assert ax3.get_legend() is not None
 
     cns.figure(120, 120)
-    ax4 = cns.pieplot(categorical_df, x="group", legend="left", hue_order=["C", "B", "A"])
+    ax4 = cns.pieplot(
+        categorical_df, x="group", legend="left", hue_order=["C", "B", "A"]
+    )
     assert ax4.get_legend() is not None
 
     cns.figure(120, 120)
-    ax5 = cns.donutplot(categorical_df, x="group", legend="top", hue_order=["A", "B", "C"])
+    ax5 = cns.donutplot(
+        categorical_df, x="group", legend="top", hue_order=["A", "B", "C"]
+    )
     assert ax5.get_legend() is not None
     assert any(text.get_text() == "group" for text in ax5.texts)
     assert calls
 
 
-def test_distribution_wrappers(numeric_df: pd.DataFrame, categorical_df: pd.DataFrame, capsys: pytest.CaptureFixture[str]) -> None:
+def test_distribution_wrappers(
+    numeric_df: pd.DataFrame,
+    categorical_df: pd.DataFrame,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     cns.figure(120, 120)
     ax = cns.distplot(numeric_df, x="x", hue="group")
     assert ax is plt.gca()
@@ -174,7 +191,9 @@ def test_distribution_wrappers(numeric_df: pd.DataFrame, categorical_df: pd.Data
     assert any(line.get_linestyle() == "--" for line in ax2.lines)
 
     cns.figure(120, 120)
-    ax3 = cns.kdeplot(categorical_df.rename(columns={"value": "score"}), x="score", hue="hue")
+    ax3 = cns.kdeplot(
+        categorical_df.rename(columns={"value": "score"}), x="score", hue="hue"
+    )
     assert ax3.get_legend() is not None
     assert "Anderson-Darling test" in capsys.readouterr().out
 

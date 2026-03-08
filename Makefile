@@ -18,7 +18,7 @@ clean:
 	rm -rf docs/sg_execution_times.rst
 
 lint:
-	pre-commit run --all-files
+	uv run pre-commit run --all-files
 
 test:
 	uv run pytest --disable-warnings ./tests
@@ -29,4 +29,4 @@ doc: clean
 
 install:
 	uv sync --all-extras
-	pre-commit install
+	uv run pre-commit install

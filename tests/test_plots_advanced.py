@@ -19,7 +19,9 @@ def test_survival_plots(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     cns.figure(120, 120)
-    ax = cns.survivalplot(survival_df, "time", "event", "group", hue_order=["Treatment", "Control"])
+    ax = cns.survivalplot(
+        survival_df, "time", "event", "group", hue_order=["Treatment", "Control"]
+    )
     assert ax.get_ylabel() == "Overall survival probability"
     assert "HR =" in ax.texts[0].get_text()
     assert "multivariate log-rank test" in capsys.readouterr().out
@@ -143,7 +145,14 @@ def test_heatmap_and_dotplot(
     assert cmp2.ax_heatmap is not None
 
     cns.figure(160, 160)
-    dp = cns.dotplot(dotplot_df, x="sample", y="gene", color="mean_expr", size="pct_expr", value="score")
+    dp = cns.dotplot(
+        dotplot_df,
+        x="sample",
+        y="gene",
+        color="mean_expr",
+        size="pct_expr",
+        value="score",
+    )
     assert dp.ax_heatmap is not None
 
     cns.figure(160, 160)
@@ -191,7 +200,9 @@ def test_genomics_plots(
         handles = [plt.Line2D([], [], marker="o", linestyle="none", color="black")]
         ax.legend(handles, ["20"], title="size")
 
-    monkeypatch.setitem(sys.modules, "gseapy", types.SimpleNamespace(dotplot=fake_dotplot))
+    monkeypatch.setitem(
+        sys.modules, "gseapy", types.SimpleNamespace(dotplot=fake_dotplot)
+    )
     cns.figure(160, 140)
     ax3 = cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=2)
     assert ax3.get_xlabel() == "Normalized Enrichment Score (NES)"
