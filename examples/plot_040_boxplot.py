@@ -34,6 +34,43 @@ ax.set_title("Basic Boxplot")
 
 
 # %%
+# Boxplot with Stripplot Overlay
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Overlay a stripplot to show individual observations on top of the boxplot.
+# Use one palette so both boxes and points share the same group colors.
+day_order = ["Thur", "Fri", "Sat", "Sun"]
+overlay_palette = dict(zip(day_order, sns.color_palette("NEJM", len(day_order))))
+cns.figure(150, 100)
+ax = cns.boxplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    order=day_order,
+    palette=overlay_palette,
+)
+cns.stripplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    hue="day",
+    order=day_order,
+    hue_order=day_order,
+    palette=overlay_palette,
+    legend=False,
+    ax=ax,
+    size=2,
+    alpha=0.5,
+    showmedian=False,
+)
+if ax.get_legend() is not None:
+    ax.get_legend().remove()
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
+ax.set_title("Boxplot with Stripplot Overlay")
+
+
+# %%
 # Boxplot with rotated and colored labels
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Customize x-axis tick labels with rotation and conditional coloring.

@@ -32,6 +32,39 @@ ax.set_title("Basic Barplot")
 
 
 # %%
+# Barplot with Stripplot Overlay
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Overlay a stripplot to show individual observations on top of the summary bars.
+# Use one palette so both bars and points share the same group colors.
+day_order = ["Thur", "Fri", "Sat", "Sun"]
+overlay_palette = dict(zip(day_order, sns.color_palette("NEJM", len(day_order))))
+cns.figure(150, 100)
+ax = cns.barplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    errorbar="se",
+    order=day_order,
+    palette=overlay_palette,
+)
+cns.stripplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    hue="day",
+    order=day_order,
+    hue_order=day_order,
+    palette=overlay_palette,
+    legend=False,
+    ax=ax,
+    size=2,
+    alpha=0.5,
+    showmedian=False,
+)
+ax.set_title("Barplot with Stripplot Overlay")
+
+
+# %%
 # Barplot with standard deviation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show variability with standard deviation error bars.
