@@ -117,6 +117,8 @@ This uses `uv sync --all-extras` to install the package in editable mode with al
 python -c "import cnsplots as cns; print(cns.__version__)"
 ```
 
+The project is CI-tested on Python 3.9 through 3.14.
+
 ## Code Style Guidelines
 
 We use [Ruff](https://github.com/astral-sh/ruff) for code formatting and linting.
