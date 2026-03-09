@@ -1,6 +1,6 @@
 [project]
 name = "cnsplots"
-version = "0.0.1"
+version = "0.0.2"
 description = "A comprehensive plotting library for bioinformatics and data visualization"
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
@@ -94,7 +94,7 @@ report_level = "info"
 ignore_messages = '( No directive entry for.*|Hyperlink target.*|Unknown target name:.*|No (directive|role) entry for "(auto)?(class|method|property|function|func|mod|module)" in module "docutils\.parsers\.rst\.languages\.en"\.)'
 
 [tool.bumpversion]
-current_version = "0.0.1"
+current_version = "0.0.2"
 commit = true
 message = "🔖 Release {new_version}"
 tag = true
