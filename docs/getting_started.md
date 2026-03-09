@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # Load example data
 df = sns.load_dataset("tips")
 
-# Create a figure with specific dimensions (width x height in pixels)
+# Create a figure with specific dimensions (height x width in pixels)
 cns.figure(150, 100)
 
 # Create a boxplot
