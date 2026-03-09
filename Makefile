@@ -1,3 +1,6 @@
+VALID_RELEASE_PARTS := patch minor major
+RELEASE_ARGS := $(filter-out release,$(MAKECMDGOALS))
+
 help:
 	@echo "available commands"
 	@echo " - clean        : clean the repo"
@@ -5,6 +8,7 @@ help:
 	@echo " - test         : run all unit tests"
 	@echo " - doc          : build the documentation"
 	@echo " - install      : install the package"
+	@echo " - release      : bump version with [patch|minor|major]"
 
 clean:
 	rm -rf htmlcov
@@ -39,3 +43,13 @@ doc: clean
 install:
 	uv sync --all-extras
 	uv run pre-commit install
+
+release:
+	@if [ "$(words $(RELEASE_ARGS))" -ne 1 ] || [ -n "$(filter-out $(VALID_RELEASE_PARTS),$(RELEASE_ARGS))" ]; then \
+		echo "usage: make release [patch|minor|major]"; \
+		exit 1; \
+	fi
+	uv run bump-my-version bump $(RELEASE_ARGS)
+
+patch minor major:
+	@:
