@@ -4,6 +4,11 @@
 
 cnsplots is a Python visualization library built on matplotlib and fully compatible with seaborn. It creates figures that meet the high standards of top-tier scientific publications while keeping the API simple and intuitive.
 
+```{image} _static/images/overview.png
+:alt: Overview of cnsplots visualizations
+:align: center
+```
+
 ## Key Features
 
 - **Publication-ready defaults** — Figures styled for Cell, Nature, and Science journals
@@ -18,7 +23,7 @@ import cnsplots as cns
 import seaborn as sns
 
 df = sns.load_dataset("tips")
-cns.figure(150, 100)  # Width x Height in pixels
+cns.figure(150, 100)  # Height x Width in pixels
 cns.boxplot(data=df, x="day", y="total_bill")
 cns.savefig("figure.svg")
 ```
