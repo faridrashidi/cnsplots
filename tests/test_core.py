@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import builtins
-from collections.abc import Iterable, Mapping, Sequence
 import subprocess
 import sys
 import types
+from collections.abc import Iterable, Mapping, Sequence
+from importlib.metadata import version
 from pathlib import Path
 
 import matplotlib as mpl
@@ -19,7 +20,7 @@ from cnsplots import _settings, _setup, _svg, _utils, _validation
 
 
 def test_public_api_exports_resolve() -> None:
-    assert cns.__version__ == "0.0.1"
+    assert cns.__version__ == version("cnsplots")
     assert cns.boxplot is not None
     assert cns.scatterplot is not None
     assert cns.methods.CoxModel is cns.CoxModel
@@ -517,9 +518,9 @@ def test_utils_helpers_and_showcase_data(
     assert isinstance(_utils.palettes("Wrong Choice!"), RuntimeError)
 
     fake_sns = types.SimpleNamespace(
-        load_dataset=lambda name: showcase_bundle[0]
-        if name == "iris"
-        else showcase_bundle[1]
+        load_dataset=lambda name: (
+            showcase_bundle[0] if name == "iris" else showcase_bundle[1]
+        )
     )
     fake_sc = types.SimpleNamespace(
         datasets=types.SimpleNamespace(blobs=lambda: heatmap_adata.copy())
