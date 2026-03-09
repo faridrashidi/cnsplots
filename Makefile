@@ -27,8 +27,6 @@ clean:
 	rm -rf docs/examples
 	rm -rf docs/gen_modules
 	rm -rf docs/sg_execution_times.rst
-	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
-	find . -type d -name "*.egg-info" -prune -exec rm -rf {} +
 
 lint:
 	uv run pre-commit run --all-files
