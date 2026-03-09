@@ -9,13 +9,22 @@ help:
 clean:
 	rm -rf htmlcov
 	rm -rf .coverage*
+	rm -rf coverage.xml
+	rm -rf .pytest_cache
+	rm -rf .ruff_cache
+	rm -rf .mypy_cache
+	rm -rf .tox
+	rm -rf .nox
+	rm -rf .hypothesis
+	rm -rf build
+	rm -rf dist
 	rm -rf docs/build
-	rm -rf docs/cnsplots*
 	rm -rf docs/api
 	rm -rf docs/examples
 	rm -rf docs/gen_modules
-	rm -rf examples/renv
 	rm -rf docs/sg_execution_times.rst
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	find . -type d -name "*.egg-info" -prune -exec rm -rf {} +
 
 lint:
 	uv run pre-commit run --all-files
