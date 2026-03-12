@@ -23,10 +23,12 @@ clean:
 	rm -rf build
 	rm -rf dist
 	rm -rf docs/build
+	rm -rf docs/_build
 	rm -rf docs/api
 	rm -rf docs/examples
 	rm -rf docs/gen_modules
 	rm -rf docs/sg_execution_times.rst
+	rm -rf tests/__pycache__
 
 lint:
 	uv run pre-commit run --all-files
