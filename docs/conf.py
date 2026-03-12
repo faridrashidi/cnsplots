@@ -185,19 +185,72 @@ def _resolve_gallery_source_path(pagename: str) -> str | None:
     return relative_source.as_posix()
 
 
-def _override_gallery_source_links(
+def _resolve_source_info(obj: Any) -> dict[str, Any] | None:
+    """Return repository-relative source information for a Python object."""
+    try:
+        obj = inspect.unwrap(obj)
+        if isinstance(obj, property):
+            obj = inspect.unwrap(obj.fget)
+
+        path = os.path.relpath(
+            inspect.getsourcefile(obj), start=_cnsplots_tools_module_path
+        )
+        src, lineno = inspect.getsourcelines(obj)
+    except Exception:  # noqa: B902
+        return None
+
+    return {
+        "path": (PurePosixPath("src/cnsplots") / PurePosixPath(path)).as_posix(),
+        "lineno": lineno,
+        "end_lineno": lineno + len(src) - 1,
+    }
+
+
+def _resolve_api_source_info(app, pagename: str) -> dict[str, Any] | None:
+    """Return source information for autosummary API object pages."""
+    if not pagename.startswith("api/"):
+        return None
+
+    github_url = app.env.metadata.get(pagename, {}).get("github_url")
+    if not github_url:
+        return None
+
+    try:
+        module_name, *parts = github_url.split(".")
+        obj: Any = importlib.import_module(module_name)
+        for part in parts:
+            obj = getattr(obj, part)
+    except Exception:  # noqa: B902
+        return None
+
+    return _resolve_source_info(obj)
+
+
+def _override_source_links(
     app, pagename: str, templatename, context: dict[str, Any], doctree
 ):
-    """Point gallery source buttons at repo-root example files."""
-    del app, templatename, doctree
+    """Point source buttons at repo-root example files and API implementations."""
+    del templatename, doctree
 
-    source_path = _resolve_gallery_source_path(pagename)
-    if source_path is None:
+    gallery_source_path = _resolve_gallery_source_path(pagename)
+    if gallery_source_path is not None:
+        context["theme_source_edit_link"] = (
+            f"{github_repo}/edit/{git_ref}/{gallery_source_path}"
+        )
+        context["theme_source_view_link"] = (
+            f"{github_repo}/blob/{git_ref}/{gallery_source_path}?plain=true"
+        )
         return
 
+    api_source_info = _resolve_api_source_info(app, pagename)
+    if api_source_info is None:
+        return
+
+    source_path = api_source_info["path"]
+    line_range = f"#L{api_source_info['lineno']}-L{api_source_info['end_lineno']}"
     context["theme_source_edit_link"] = f"{github_repo}/edit/{git_ref}/{source_path}"
     context["theme_source_view_link"] = (
-        f"{github_repo}/blob/{git_ref}/{source_path}?plain=true"
+        f"{github_repo}/blob/{git_ref}/{source_path}{line_range}"
     )
 
 
@@ -210,22 +263,19 @@ def linkcode_resolve(domain, info):
         obj: Any = sys.modules[info["module"]]
         for part in info["fullname"].split("."):
             obj = getattr(obj, part)
-        obj = inspect.unwrap(obj)
-
-        if isinstance(obj, property):
-            obj = inspect.unwrap(obj.fget)
-
-        path = os.path.relpath(
-            inspect.getsourcefile(obj), start=_cnsplots_tools_module_path
-        )
-        src, lineno = inspect.getsourcelines(obj)
     except Exception:  # noqa: B902
         return None
 
-    path = f"{path}#L{lineno}-L{lineno + len(src) - 1}"
-    return f"{github_repo}/blob/{git_ref}/src/cnsplots/{path}"
+    source_info = _resolve_source_info(obj)
+    if source_info is None:
+        return None
+
+    return (
+        f"{github_repo}/blob/{git_ref}/{source_info['path']}"
+        f"#L{source_info['lineno']}-L{source_info['end_lineno']}"
+    )
 
 
 def setup(app):
     """Register Sphinx hooks for per-page source link overrides."""
-    app.connect("html-page-context", _override_gallery_source_links)
+    app.connect("html-page-context", _override_source_links)
