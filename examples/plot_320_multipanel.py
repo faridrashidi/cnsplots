@@ -124,6 +124,7 @@ mp.get_axes("I").set_title("Regplot")
 # Panel J: survivalplot
 mp.panel("J", 90, 90, pad_top=5)
 cns.survivalplot(data=survival_df, duration="time", event="event", hue="group")
+mp.get_axes("J").legend(loc="upper right")
 mp.get_axes("J").set_title("Survivalplot")
 
 # Panel K: kdeplot
