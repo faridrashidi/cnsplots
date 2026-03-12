@@ -1,0 +1,19 @@
+:orphan:
+
+Page not found
+==============
+
+.. container:: not-found-page
+
+   The page you requested does not exist, may have moved, or may have been renamed.
+
+   Use the link below to get back to the main documentation.
+
+   .. grid:: 1 1 1 1
+      :gutter: 2
+
+      .. grid-item-card:: Home
+         :link: index
+         :link-type: doc
+
+         Return to the documentation homepage.
