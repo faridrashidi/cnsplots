@@ -19,12 +19,15 @@ release = cns.__version__
 
 # -- General configuration ---------------------------------------------------
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "_ext"))
+
 extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_design",
     "myst_parser",
     "sphinx_copybutton",
     "sphinx.ext.autosummary",
+    "root_page_autosummary",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
@@ -180,4 +183,4 @@ def linkcode_resolve(domain, info):
         return None
 
     path = f"{path}#L{lineno}-L{lineno + len(src) - 1}"
-    return f"{github_repo}/blob/{git_ref}/cnsplots/{path}"
+    return f"{github_repo}/blob/{git_ref}/src/cnsplots/{path}"

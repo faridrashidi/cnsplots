@@ -12,7 +12,7 @@ import cnsplots as cns
 
 ```{eval-rst}
 .. currentmodule:: cnsplots
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -30,7 +30,7 @@ import cnsplots as cns
 ### Scatter & Regression Plots
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -43,7 +43,7 @@ import cnsplots as cns
 ### Heatmaps & Matrix Plots
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -55,7 +55,7 @@ import cnsplots as cns
 ### Categorical & Proportion Plots
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -70,7 +70,7 @@ import cnsplots as cns
 ### Survival Analysis Plots
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -82,7 +82,7 @@ import cnsplots as cns
 ### Genomics & Statistical Plots
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -95,7 +95,7 @@ import cnsplots as cns
 ### Specialized Plots
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -105,7 +105,7 @@ import cnsplots as cns
 ## Statistical Models
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -117,7 +117,7 @@ import cnsplots as cns
 ## Figure & Layout Utilities
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -131,7 +131,7 @@ import cnsplots as cns
 ## Configuration & Setup
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
@@ -144,7 +144,7 @@ import cnsplots as cns
 ## Color Palettes
 
 ```{eval-rst}
-.. autosummary::
+.. apirootsummary::
    :toctree: api
    :nosignatures:
 
