@@ -246,10 +246,6 @@ See [pyproject.toml](pyproject.toml) for complete dependency list.
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-### Development Setup
-
-Follow the development installation instructions above, then use `make lint` to run formatters and linters before submitting a PR.
-
 ## Citation
 
 If you use cnsplots in your research, please cite:
