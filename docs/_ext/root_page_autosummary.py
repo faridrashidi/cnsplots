@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import posixpath
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 from docutils import nodes
 from docutils.statemachine import StringList
@@ -103,11 +104,35 @@ def _find_autosummary_in_lines_with_apirootsummary(
     )
 
 
+def _strip_matching_api_fragments(app: Any, doctree: nodes.document, _docname: str) -> None:
+    if getattr(app.builder, "format", None) != "html":
+        return
+
+    for node in doctree.findall(nodes.reference):
+        refuri = node.get("refuri")
+        if not refuri:
+            continue
+
+        parts = urlsplit(refuri)
+        if not parts.path.endswith(".html") or not parts.fragment:
+            continue
+
+        basename = posixpath.basename(parts.path)
+        stem, _suffix = posixpath.splitext(basename)
+        if not stem.startswith("cnsplots.") or parts.fragment != stem:
+            continue
+
+        node["refuri"] = urlunsplit(
+            (parts.scheme, parts.netloc, parts.path, parts.query, "")
+        )
+
+
 def setup(app: Any) -> dict[str, Any]:
     autosummary_generate.find_autosummary_in_lines = (
         _find_autosummary_in_lines_with_apirootsummary
     )
     app.add_directive("apirootsummary", ApiRootSummary)
+    app.connect("doctree-resolved", _strip_matching_api_fragments)
     return {
         "parallel_read_safe": True,
         "parallel_write_safe": True,
