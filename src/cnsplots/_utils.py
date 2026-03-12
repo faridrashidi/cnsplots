@@ -124,6 +124,7 @@ def savefig(filepath):
     Notes
     -----
     The function automatically:
+
     - Expands user home directory (~) in the path
     - Creates parent directories when the path includes them
     - Determines the file format from the file extension
