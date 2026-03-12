@@ -6,7 +6,6 @@ from urllib.parse import urlsplit, urlunsplit
 
 from docutils import nodes
 from docutils.statemachine import StringList
-
 from sphinx import addnodes
 from sphinx.ext.autosummary import Autosummary, autosummary_table
 from sphinx.ext.autosummary import generate as autosummary_generate
@@ -104,7 +103,9 @@ def _find_autosummary_in_lines_with_apirootsummary(
     )
 
 
-def _strip_matching_api_fragments(app: Any, doctree: nodes.document, _docname: str) -> None:
+def _strip_matching_api_fragments(
+    app: Any, doctree: nodes.document, _docname: str
+) -> None:
     if getattr(app.builder, "format", None) != "html":
         return
 
