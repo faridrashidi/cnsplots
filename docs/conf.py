@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import cnsplots as cns
@@ -159,6 +160,45 @@ if not git_ref or re.search(r"[\^~]", git_ref):
 _cnsplots_tools_module_path = os.path.dirname(
     importlib.util.find_spec("cnsplots").origin
 )
+_docs_dir = Path(__file__).resolve().parent
+_repo_root = _docs_dir.parent
+
+
+def _resolve_gallery_source_path(pagename: str) -> str | None:
+    """Return the repository path for gallery sources, if applicable."""
+    gallery_root = "examples"
+    if pagename == gallery_root:
+        relative_source = PurePosixPath(gallery_root) / "README.rst"
+    elif pagename.startswith(f"{gallery_root}/"):
+        gallery_page = PurePosixPath(pagename)
+        if gallery_page.name == "index":
+            relative_source = gallery_page.parent / "README.rst"
+        else:
+            relative_source = gallery_page.with_suffix(".py")
+    else:
+        return None
+
+    source_path = _repo_root / Path(relative_source)
+    if not source_path.exists():
+        return None
+
+    return relative_source.as_posix()
+
+
+def _override_gallery_source_links(
+    app, pagename: str, templatename, context: dict[str, Any], doctree
+):
+    """Point gallery source buttons at repo-root example files."""
+    del app, templatename, doctree
+
+    source_path = _resolve_gallery_source_path(pagename)
+    if source_path is None:
+        return
+
+    context["theme_source_edit_link"] = f"{github_repo}/edit/{git_ref}/{source_path}"
+    context["theme_source_view_link"] = (
+        f"{github_repo}/blob/{git_ref}/{source_path}?plain=true"
+    )
 
 
 def linkcode_resolve(domain, info):
@@ -184,3 +224,8 @@ def linkcode_resolve(domain, info):
 
     path = f"{path}#L{lineno}-L{lineno + len(src) - 1}"
     return f"{github_repo}/blob/{git_ref}/src/cnsplots/{path}"
+
+
+def setup(app):
+    """Register Sphinx hooks for per-page source link overrides."""
+    app.connect("html-page-context", _override_gallery_source_links)
