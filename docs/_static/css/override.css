@@ -33,6 +33,32 @@ body {
   --syntax-name-tag: #116329;
   --syntax-string: #0a3069;
   --syntax-number: #0550ae;
+  --gallery-download-background: color-mix(
+    in srgb,
+    var(--color-brand-content) 12%,
+    var(--color-background-primary)
+  );
+  --gallery-download-border: color-mix(
+    in srgb,
+    var(--color-brand-content) 18%,
+    var(--color-foreground-border)
+  );
+  --gallery-download-text: var(--color-brand-content);
+  --gallery-download-hover-background: color-mix(
+    in srgb,
+    var(--color-brand-content) 16%,
+    var(--color-background-primary)
+  );
+  --gallery-download-hover-border: color-mix(
+    in srgb,
+    var(--color-brand-content) 24%,
+    var(--color-foreground-border)
+  );
+  --gallery-download-focus-ring: color-mix(
+    in srgb,
+    var(--color-brand-content) 28%,
+    transparent
+  );
   --color-code-background: var(--code-block-background);
   --color-code-foreground: var(--syntax-text);
 }
@@ -60,6 +86,36 @@ body[data-theme="dark"] {
   --syntax-name-tag: #7ee787;
   --syntax-string: #a5d6ff;
   --syntax-number: #79c0ff;
+  --gallery-download-background: color-mix(
+    in srgb,
+    var(--color-brand-content) 30%,
+    var(--color-background-secondary)
+  );
+  --gallery-download-border: color-mix(
+    in srgb,
+    var(--color-brand-content) 44%,
+    var(--color-foreground-border)
+  );
+  --gallery-download-text: color-mix(
+    in srgb,
+    white 78%,
+    var(--color-brand-content)
+  );
+  --gallery-download-hover-background: color-mix(
+    in srgb,
+    var(--color-brand-content) 38%,
+    var(--color-background-secondary)
+  );
+  --gallery-download-hover-border: color-mix(
+    in srgb,
+    var(--color-brand-content) 52%,
+    var(--color-foreground-border)
+  );
+  --gallery-download-focus-ring: color-mix(
+    in srgb,
+    white 24%,
+    var(--color-brand-content)
+  );
   --color-code-background: var(--code-block-background);
   --color-code-foreground: var(--syntax-text);
 }
@@ -88,6 +144,36 @@ body[data-theme="dark"] {
     --syntax-name-tag: #7ee787;
     --syntax-string: #a5d6ff;
     --syntax-number: #79c0ff;
+    --gallery-download-background: color-mix(
+      in srgb,
+      var(--color-brand-content) 30%,
+      var(--color-background-secondary)
+    );
+    --gallery-download-border: color-mix(
+      in srgb,
+      var(--color-brand-content) 44%,
+      var(--color-foreground-border)
+    );
+    --gallery-download-text: color-mix(
+      in srgb,
+      white 78%,
+      var(--color-brand-content)
+    );
+    --gallery-download-hover-background: color-mix(
+      in srgb,
+      var(--color-brand-content) 38%,
+      var(--color-background-secondary)
+    );
+    --gallery-download-hover-border: color-mix(
+      in srgb,
+      var(--color-brand-content) 52%,
+      var(--color-foreground-border)
+    );
+    --gallery-download-focus-ring: color-mix(
+      in srgb,
+      white 24%,
+      var(--color-brand-content)
+    );
     --color-code-background: var(--code-block-background);
     --color-code-foreground: var(--syntax-text);
   }
@@ -454,6 +540,72 @@ article[role="main"] .highlight span.linenos {
   display: block;
   width: auto;
   max-height: 80% !important;
+}
+
+/* Match gallery download buttons to the docs accent palette. */
+article[role="main"] .sphx-glr-download {
+  margin: 0.85rem auto;
+}
+
+article[role="main"] .sphx-glr-download a.reference.download.internal {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1rem;
+  border-radius: 0.2rem;
+  background-color: var(--gallery-download-background);
+  background-image: none;
+  box-shadow: none;
+  color: var(--gallery-download-text);
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+article[role="main"] .sphx-glr-download a.reference.download.internal:hover,
+article[role="main"]
+  .sphx-glr-download
+  a.reference.download.internal:focus-visible {
+  border-color: var(--gallery-download-hover-border);
+  background-color: var(--gallery-download-hover-background);
+  color: var(--gallery-download-text);
+  text-decoration: none;
+}
+
+article[role="main"]
+  .sphx-glr-download
+  a.reference.download.internal:focus-visible {
+  outline: 2px solid var(--gallery-download-focus-ring);
+  outline-offset: 2px;
+}
+
+article[role="main"]
+  .sphx-glr-download
+  a.reference.download.internal
+  code.download {
+  display: inline-block;
+  max-width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+article[role="main"]
+  .sphx-glr-download
+  a.reference.download.internal
+  code.download
+  .pre {
+  white-space: inherit;
 }
 
 article table.align-default {
