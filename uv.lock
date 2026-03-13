@@ -663,7 +663,7 @@ wheels = [
 
 [[package]]
 name = "cnsplots"
-version = "0.0.3"
+version = "0.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "adjusttext" },
