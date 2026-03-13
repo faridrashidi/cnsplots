@@ -675,6 +675,7 @@ article table.align-default {
   justify-content: space-around;
   width: 2rem;
   flex-shrink: 0;
+  color: var(--color-foreground-secondary);
   font-size: 1.875rem;
   line-height: 1.2;
 }
