@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Any
+from urllib.parse import urlparse
 
 import cnsplots as cns
 
@@ -97,6 +98,23 @@ sphinx_gallery_conf = {
 }
 
 
+def _build_repo_stats_context(repo_url: str) -> dict[str, str]:
+    """Return template context for the docs repo stats card."""
+    parsed_url = urlparse(repo_url)
+    repo_parts = [part for part in parsed_url.path.split("/") if part]
+    user = repo_parts[0] if len(repo_parts) > 0 else ""
+    repo = repo_parts[1] if len(repo_parts) > 1 else ""
+    return {
+        "repo_stats_url": repo_url,
+        "repo_stats_user": user,
+        "repo_stats_repo": repo,
+        "repo_stats_type": "github",
+    }
+
+
+repo_stats_context = _build_repo_stats_context(github_repo)
+
+
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = "furo"
@@ -106,8 +124,13 @@ html_title = "cnsplots"
 html_logo = "_static/images/logo.svg"
 html_favicon = "_static/images/favicon.ico"
 html_css_files = ["css/override.css"]
+html_js_files = [
+    "https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js",
+    "js/repo-stats.js",
+]
 html_baseurl = site_url
 html_copy_source = False
+html_context = repo_stats_context.copy()
 sitemap_url_scheme = "{link}"
 
 # Add any paths that contain custom static files (such as style sheets) here,

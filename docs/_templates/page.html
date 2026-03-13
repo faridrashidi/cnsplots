@@ -22,6 +22,24 @@
   <meta name="twitter:image" content="{{ seo_image_url|e }}">
 {% endblock extrahead %}
 
+{% block right_sidebar %}
+{% if not furo_hide_toc %}
+<div class="toc-sticky toc-scroll">
+  <div class="toc-title-container">
+    <span class="toc-title">
+      {{ _("On this page") }}
+    </span>
+  </div>
+  <div class="toc-tree-container">
+    <div class="toc-tree">
+      {{ toc }}
+    </div>
+  </div>
+  {% include "components/repo-stats.html" %}
+</div>
+{% endif %}
+{% endblock right_sidebar %}
+
 {% block footer %}
 <div class="related-pages">
   {% if next -%}

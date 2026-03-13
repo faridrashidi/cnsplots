@@ -1,0 +1,27 @@
+{% if repo_stats_url and repo_stats_user and repo_stats_repo %}
+<a
+  class="js-repo-stats repo-stats muted-link flex items-center"
+  href="{{ repo_stats_url }}"
+  data-type="{{ repo_stats_type|e }}"
+  data-user="{{ repo_stats_user|e }}"
+  data-repo="{{ repo_stats_repo|e }}"
+  aria-label="{{ repo_stats_repo|e }} repository statistics"
+>
+  <span class="repo-stats-icon w-8 flex items-center justify-around shrink-0 text-3xl" aria-hidden="true">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="repo-stats-body flex-grow px-2 break-all">
+    <span class="repo-stats-name">{{ repo_stats_repo }}</span>
+    <span class="repo-stats-count flex text-sm">
+      <span class="repo-stats-metric flex items-center pr-3" aria-label="Stars">
+        <iconify-icon icon="lucide:star" aria-hidden="true"></iconify-icon>
+        <strong class="repo-stats-value js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="repo-stats-metric flex items-center" aria-label="Forks">
+        <iconify-icon icon="lucide:git-fork" aria-hidden="true"></iconify-icon>
+        <strong class="repo-stats-value js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a>
+{% endif %}
