@@ -65,6 +65,7 @@ doc = [
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
+    "sphinx-sitemap",
 ]
 
 [project.urls]
