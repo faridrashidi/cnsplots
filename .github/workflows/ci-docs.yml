@@ -8,7 +8,13 @@ on:
       - completed
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -18,21 +24,32 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          pip install -e ".[doc]"
-      - id: deployment
-        uses: sphinx-notes/pages@v3
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+      - name: Sync docs dependencies
+        run: uv sync --extra doc
+      - name: Build documentation
+        run: uv run sphinx-build -b html docs docs/build/html
+      # Keep the custom domain in GitHub Pages settings, not as a committed CNAME file.
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
-          checkout: false
-          publish: false
-          python_version: "3.11"
-      - uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ steps.deployment.outputs.artifact }}
-          cname: cnsplots.farid.one
+          path: docs/build/html
+
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
