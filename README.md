@@ -1,5 +1,9 @@
 # cnsplots
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/faridrashidi/cnsplots/main/docs/_static/images/logo.svg" alt="cnsplots logo" width="240">
+</p>
+
 <div align="center">
 
 [![Build](https://img.shields.io/github/actions/workflow/status/faridrashidi/cnsplots/ci-tests.yml?branch=main&logo=github&logoColor=white&style=flat-square&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/actions/workflows/ci-tests.yml)
