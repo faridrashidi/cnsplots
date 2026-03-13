@@ -502,7 +502,7 @@ def prerank(
         - FDR q-val: False Discovery Rate q-value
         - Other columns from gseapy results
 
-        Results are filtered for FDR q-val < 0.25 and \|NES\| > 1.5, and sorted
+        Results are filtered for FDR q-val < 0.25 and abs(NES) > 1.5, and sorted
         by absolute NES value (descending).
 
     See Also
@@ -527,8 +527,8 @@ def prerank(
     NES interpretation:
     - NES > 0: Enriched in genes with positive ranking metric
     - NES < 0: Enriched in genes with negative ranking metric
-    - \|NES\| > 1.5: Moderate enrichment
-    - \|NES\| > 2.0: Strong enrichment
+    - abs(NES) > 1.5: Moderate enrichment
+    - abs(NES) > 2.0: Strong enrichment
 
     Examples
     --------
