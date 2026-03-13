@@ -395,6 +395,9 @@ def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         verbose=0,
     )
     assert calls[-1] is plotter.ax
+    assert plotter.legend_order == "auto"
+    assert plotter.legend_vgap == 7
+    assert plotter.legend_hgap == 7
 
     cns.figure(100, 100)
     plotter2 = helper_heatmap.ClusterMapPlotterNew(
@@ -405,6 +408,17 @@ def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         verbose=0,
     )
     assert calls[-1] is plotter2.ax_heatmap
+
+    plotter_gap_override = helper_heatmap.ClusterMapPlotterNew(
+        data=pd.DataFrame([[1]]),
+        plot=False,
+        legend_gap=9,
+        legend_vgap=3,
+        legend_hgap=1,
+        verbose=0,
+    )
+    assert plotter_gap_override.legend_vgap == 3
+    assert plotter_gap_override.legend_hgap == 1
 
     cns.figure(100, 100)
     plotter3 = helper_heatmap.ClusterMapPlotterNew(
@@ -443,6 +457,21 @@ def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     plotter5.heights = [1, 1, 1]
     gs = plt.gcf().add_gridspec(1, 1)
     plotter5._define_axes(gs[0])
+
+    monkeypatch.undo()
+
+    cns.figure(120, 120)
+    plotter6 = helper_heatmap.ClusterMapPlotterNew(
+        data=pd.DataFrame([[0, 1], [1, 0]], columns=pd.Index(["A", "B"])),
+        cmap="Set1",
+        show_rownames=True,
+        show_colnames=True,
+        plot=True,
+        plot_legend=True,
+        legend_anchor="ax_heatmap",
+        verbose=0,
+    )
+    assert plotter6.ax_heatmap is not None
 
 
 def test_phylo_and_sankey_gap_coverage() -> None:
