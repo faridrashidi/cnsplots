@@ -1,5 +1,27 @@
 {% extends "!page.html" %}
 
+{% block extrahead %}
+  {{ super() }}
+  <meta name="description" content="{{ seo_description|e }}">
+  <meta name="robots" content="{{ seo_robots|e }}">
+  <meta name="theme-color" content="#003262">
+  <link rel="icon" type="image/svg+xml" href="{{ pathto('_static/images/favicon.svg', 1) }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ pathto('_static/images/favicon-16x16.png', 1) }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ pathto('_static/images/favicon-32x32.png', 1) }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ pathto('_static/images/apple-touch-icon.png', 1) }}">
+  <meta property="og:site_name" content="cnsplots">
+  <meta property="og:type" content="{{ seo_og_type|e }}">
+  <meta property="og:title" content="{{ seo_title|e }}">
+  <meta property="og:description" content="{{ seo_description|e }}">
+  <meta property="og:url" content="{{ seo_canonical_url|e }}">
+  <meta property="og:image" content="{{ seo_image_url|e }}">
+  <meta property="og:image:alt" content="{{ seo_image_alt|e }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ seo_title|e }}">
+  <meta name="twitter:description" content="{{ seo_description|e }}">
+  <meta name="twitter:image" content="{{ seo_image_url|e }}">
+{% endblock extrahead %}
+
 {% block footer %}
 <div class="related-pages">
   {% if next -%}

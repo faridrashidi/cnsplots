@@ -17,6 +17,12 @@ copyright = f"2023-{datetime.now().year}, Farid Rashidi"
 author = "Farid Rashidi"
 version = cns.__version__
 release = cns.__version__
+site_url = "https://cnsplots.farid.one/"
+site_description = (
+    "Publication-ready scientific visualizations for Cell, Nature, and Science "
+    "journals built on matplotlib and seaborn."
+)
+social_preview_image = f"{site_url.rstrip('/')}/_static/images/overview.png"
 
 # -- General configuration ---------------------------------------------------
 
@@ -35,6 +41,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx.ext.extlinks",
     "sphinx.ext.linkcode",
+    "sphinx_sitemap",
 ]
 github_repo = "https://github.com/faridrashidi/cnsplots"
 templates_path = ["_templates"]
@@ -94,15 +101,20 @@ sphinx_gallery_conf = {
 
 html_theme = "furo"
 html_static_path = ["_static"]
+html_extra_path = ["robots.txt"]
 html_title = "cnsplots"
 html_logo = "_static/images/logo.svg"
-html_favicon = "_static/images/favicon.svg"
+html_favicon = "_static/images/favicon.ico"
 html_css_files = ["css/override.css"]
+html_baseurl = site_url
+html_copy_source = False
+sitemap_url_scheme = "{link}"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_show_sphinx = False
+sitemap_excludes = ["404.html", "search.html", "genindex.html", "py-modindex.html"]
 
 
 html_theme_options = {
@@ -254,6 +266,73 @@ def _override_source_links(
     )
 
 
+def _build_page_url(app, pagename: str) -> str:
+    """Return the public URL for the current documentation page."""
+    target_uri = app.builder.get_target_uri(pagename)
+    baseurl = app.config.html_baseurl.rstrip("/")
+    if not target_uri:
+        return f"{baseurl}/"
+    return f"{baseurl}/{target_uri}"
+
+
+def _build_page_description(pagename: str, title: str) -> str:
+    """Return a concise search and social description for a page."""
+    descriptions = {
+        "index": site_description,
+        "getting_started": (
+            "Get started with cnsplots and create publication-ready scientific "
+            "figures with a compact matplotlib-compatible API."
+        ),
+        "installation": (
+            "Install cnsplots and optional documentation dependencies for "
+            "publication-ready scientific plotting."
+        ),
+        "api": (
+            "API reference for cnsplots, a Python plotting library for "
+            "publication-ready scientific figures."
+        ),
+        "404": "Page not found.",
+    }
+
+    if pagename in descriptions:
+        return descriptions[pagename]
+    if pagename.startswith("examples/"):
+        return (
+            f"{title} examples for cnsplots, a Python library for "
+            "publication-ready scientific plotting."
+        )
+    if pagename.startswith("api/"):
+        return (
+            f"{title} reference for cnsplots, a Python library for "
+            "publication-ready scientific plotting."
+        )
+    return f"{title} in the cnsplots documentation. {site_description}"
+
+
+def _inject_page_seo(
+    app, pagename: str, templatename, context: dict[str, Any], doctree
+):
+    """Add canonical URLs and social metadata to every HTML page."""
+    del templatename, doctree
+
+    title = str(context.get("title") or project)
+    if pagename == "index" or title == project:
+        seo_title = project
+    else:
+        seo_title = f"{title} - {project}"
+
+    noindex_pages = {"404", "search", "genindex", "py-modindex"}
+    context["seo_title"] = seo_title
+    context["seo_description"] = _build_page_description(pagename, title)
+    context["seo_canonical_url"] = _build_page_url(app, pagename)
+    context["seo_image_url"] = social_preview_image
+    context["seo_image_alt"] = "Overview of cnsplots visualizations"
+    context["seo_robots"] = (
+        "noindex, nofollow" if pagename in noindex_pages else "index, follow"
+    )
+    context["seo_og_type"] = "website" if pagename == "index" else "article"
+
+
 def linkcode_resolve(domain, info):
     """Determine the URL corresponding to Python object."""
     if domain != "py":
@@ -277,5 +356,6 @@ def linkcode_resolve(domain, info):
 
 
 def setup(app):
-    """Register Sphinx hooks for per-page source link overrides."""
+    """Register Sphinx hooks for page metadata and source link overrides."""
     app.connect("html-page-context", _override_source_links)
+    app.connect("html-page-context", _inject_page_seo)
