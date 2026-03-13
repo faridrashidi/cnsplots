@@ -51,8 +51,11 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         legend_kws: dict[str, Any] | None = None,
         plot: bool = True,
         plot_legend: bool = True,
+        legend_order: str = "auto",
         legend_anchor: str = "auto",
         legend_gap: int = 7,
+        legend_vgap: int | None = None,
+        legend_hgap: int | None = None,
         legend_width: float = 4.5,
         legend_hpad: int = 2,
         legend_vpad: int = 5,
@@ -120,10 +123,13 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.cmap = cmap
         self.label = label if label is not None else "heatmap"
         self.legend_gap = legend_gap
+        self.legend_vgap = legend_gap if legend_vgap is None else legend_vgap
+        self.legend_hgap = legend_gap if legend_hgap is None else legend_hgap
         self.legend_width = legend_width
         self.legend_hpad = legend_hpad
         self.legend_vpad = legend_vpad
         self.legend_anchor = legend_anchor
+        self.legend_order = legend_order
         self.legend_delta_x = legend_delta_x
         self.xlabel = xlabel
         self.ylabel = ylabel

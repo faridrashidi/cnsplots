@@ -135,7 +135,7 @@ ignore-words-list = "thur,whis,fpr,socio-economic"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-addopts = "--cov=cnsplots --cov-report=term-missing --fail-under=100"
+addopts = "--cov=cnsplots --cov-report=term-missing --cov-fail-under=100"
 
 [tool.coverage.run]
 source = ["cnsplots"]
