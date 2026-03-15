@@ -6,10 +6,11 @@
 
 <div align="center">
 
-[![Build](https://img.shields.io/github/actions/workflow/status/faridrashidi/cnsplots/ci-tests.yml?branch=main&logo=github&logoColor=white&style=flat-square&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/actions/workflows/ci-tests.yml)
-[![PyPI](https://img.shields.io/pypi/v/cnsplots?logo=pypi&logoColor=white&style=flat-square&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
-[![Python Version](https://img.shields.io/pypi/pyversions/cnsplots?logo=python&logoColor=white&style=flat-square&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
-[![License](https://img.shields.io/pypi/l/cnsplots?logo=creativecommons&logoColor=white&style=flat-square&color=blueviolet&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/blob/main/LICENSE.md)
+[![Tests](https://img.shields.io/github/actions/workflow/status/faridrashidi/cnsplots/ci-tests.yml?branch=main&logo=github&logoColor=white&style=flat-square&label=tests&labelColor=000000&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/actions/workflows/ci-tests.yml)
+[![Docs](https://img.shields.io/website?url=https%3A%2F%2Fcnsplots.farid.one%2F&up_message=online&down_message=offline&logo=readthedocs&logoColor=white&style=flat-square&label=docs&labelColor=000000&cacheSeconds=0)](https://cnsplots.farid.one/)
+[![PyPI](https://img.shields.io/pypi/v/cnsplots?logo=pypi&logoColor=white&style=flat-square&labelColor=000000&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
+[![Python Version](https://img.shields.io/pypi/pyversions/cnsplots?logo=python&logoColor=white&style=flat-square&labelColor=000000&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
+[![License](https://img.shields.io/pypi/l/cnsplots?logo=creativecommons&logoColor=white&style=flat-square&labelColor=000000&color=blueviolet&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/blob/main/LICENSE.md)
 
 **Publication-Ready Scientific Plots for Cell, Nature, and Science Journals**
 
