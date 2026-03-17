@@ -137,6 +137,28 @@ class multipanel:
             return 0
         return max(12, cns.settings.fontsize_title + 4)
 
+    def _get_content_horizontal_bounds_px(self) -> tuple[float, float]:
+        """Get the visible left/right bounds of the multipanel content."""
+        left_bound = float(self._max_width)
+        right_bound = 0.0
+        found_panel = False
+
+        for idx, panel in enumerate(self._panels):
+            if panel.get("_is_spacer"):
+                continue
+
+            x, _ = self._get_panel_position(idx)
+            left_bound = min(
+                left_bound,
+                x - panel.get("pad_left", 0) - panel["label_left"],
+            )
+            right_bound = max(right_bound, x + panel["width"])
+            found_panel = True
+
+        if not found_panel:
+            return 0.0, float(self._max_width)
+        return left_bound, right_bound
+
     def _get_panel_total_size(self, panel: dict) -> tuple[float, float]:
         """Get the total width and height of a panel including margins."""
         total_width = (
@@ -303,11 +325,12 @@ class multipanel:
                 self._title_text.remove()
                 self._title_text = None
         else:
-            inset_px = 2
+            left_bound_px, right_bound_px = self._get_content_horizontal_bounds_px()
+            center_bound_px = (left_bound_px + right_bound_px) / 2
             x_positions = {
-                "left": inset_px / fig_width_px,
-                "center": 0.5,
-                "right": 1 - inset_px / fig_width_px,
+                "left": left_bound_px / fig_width_px,
+                "center": center_bound_px / fig_width_px,
+                "right": right_bound_px / fig_width_px,
             }
             title_y_px = title_height_px / 2
             title_y_fig = (fig_height_px - title_y_px) / fig_height_px
@@ -391,6 +414,8 @@ class multipanel:
                     label_x_fig = label_x_px / fig_width_px
                     label_y_fig = (fig_height_px - label_y_px) / fig_height_px
                     label_text.set_position((label_x_fig, label_y_fig))
+                    label_text.set_ha("left")
+                    label_text.set_va("center")
 
     def panel(
         self,

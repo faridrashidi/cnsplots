@@ -75,6 +75,9 @@ def test_multipanel_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     mp._panels = [{"label": "A", "_below": "missing"}]
     assert mp._get_panel_position(0) == (0, 0)
 
+    mp_title = cns.multipanel(title="Overview")
+    assert mp_title._get_content_horizontal_bounds_px() == (0.0, 540.0)
+
     mp2 = cns.multipanel()
     mp2._panels = [
         {
@@ -97,6 +100,12 @@ def test_multipanel_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     mp3.panel(None, width=40, height=20)
     mp3.panel("B", width=40, height=20)
     assert mp3._get_panel_position(1)[0] > 0
+
+    mp_spacer = cns.multipanel(max_width=200, title="Overview")
+    mp_spacer.panel("A", width=40, height=20)
+    mp_spacer.newline()
+    mp_spacer.panel("B", width=40, height=20)
+    assert mp_spacer._title_text is not None
 
     mp4 = cns.multipanel()
     monkeypatch.setattr(mp4, "_create_or_update_figure", lambda: None)

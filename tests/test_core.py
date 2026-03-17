@@ -585,9 +585,9 @@ def test_multipanel_layout() -> None:
 @pytest.mark.parametrize(
     ("loc", "expected_x"),
     [
-        ("left", 2 / 200),
-        ("center", 0.5),
-        ("right", 1 - (2 / 200)),
+        ("left", 10 / 200),
+        ("center", 55 / 200),
+        ("right", 100 / 200),
     ],
 )
 def test_multipanel_title_alignment_and_default_fontweight(
@@ -601,6 +601,7 @@ def test_multipanel_title_alignment_and_default_fontweight(
     assert mp._title_text.get_ha() == loc
     assert mp._title_text.get_fontweight() == "bold"
     assert mp._title_text.get_position()[0] == pytest.approx(expected_x)
+    assert mp._label_texts["A"].get_ha() == "left"
 
 
 def test_multipanel_title_fontweight_and_height_reservation() -> None:
@@ -621,6 +622,40 @@ def test_multipanel_title_fontweight_and_height_reservation() -> None:
     assert mp_titled._title_text is not None
     assert mp_titled._title_text.get_fontweight() == "normal"
     assert titled_height_px - plain_height_px == pytest.approx(expected_delta)
+
+
+def test_multipanel_title_updates_existing_artist() -> None:
+    mp = cns.multipanel(max_width=200, title="Overview", loc="left")
+    mp.panel("A", width=60, height=40)
+
+    original_title_text = mp._title_text
+    assert original_title_text is not None
+
+    mp._title = "Updated Overview"
+    mp._title_loc = "right"
+    mp._fontweight_title = "normal"
+    mp._create_or_update_figure()
+
+    assert mp._title_text is original_title_text
+    assert mp._title_text.get_text() == "Updated Overview"
+    assert mp._title_text.get_ha() == "right"
+    assert mp._title_text.get_va() == "center"
+    assert mp._title_text.get_fontweight() == "normal"
+    assert mp._title_text.get_position()[0] == pytest.approx(100 / 200)
+    assert mp._label_texts["A"].get_ha() == "left"
+    assert mp._label_texts["A"].get_va() == "center"
+
+
+def test_multipanel_title_can_be_removed() -> None:
+    mp = cns.multipanel(max_width=200, title="Overview")
+    mp.panel("A", width=60, height=40)
+
+    assert mp._title_text is not None
+
+    mp._title = None
+    mp._create_or_update_figure()
+
+    assert mp._title_text is None
 
 
 def test_multipanel_title_invalid_loc_raises() -> None:
