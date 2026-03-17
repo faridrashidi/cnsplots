@@ -179,10 +179,35 @@ def test_genomics_plots(
     cns.figure(120, 120)
     ax = cns.volcanoplot(volcano_df)
     assert ax.get_xlabel() == "log2(fold change)"
+    assert {text.get_text() for text in ax.texts} == {
+        "GENE1",
+        "GENE2",
+        "GENE5",
+        "GENE6",
+    }
 
     cns.figure(120, 120)
-    ax2 = cns.volcanoplot(volcano_df, show_list=["GENE1", "GENE6"])
+    ax2 = cns.volcanoplot(volcano_df, n_show=1)
     assert ax2.get_ylabel() == "–log10(adjusted p-value)"
+    assert {text.get_text() for text in ax2.texts} == {"GENE1", "GENE6"}
+
+    cns.figure(120, 120)
+    ax3 = cns.volcanoplot(volcano_df, n_show=0)
+    assert len(ax3.texts) == 0
+
+    cns.figure(120, 120)
+    ax4 = cns.volcanoplot(volcano_df, show_list=["GENE1", "GENE6"], n_show=1)
+    assert ax4.get_ylabel() == "–log10(adjusted p-value)"
+    assert {text.get_text() for text in ax4.texts} == {"GENE1", "GENE6"}
+
+    with pytest.raises(TypeError, match="Parameter 'n_show' must be an integer"):
+        cns.volcanoplot(volcano_df, n_show=1.5)  # type: ignore[arg-type]
+
+    with pytest.raises(ValueError, match="Parameter 'n_show' must be non-negative"):
+        cns.volcanoplot(volcano_df, n_show=-1)
+
+    with pytest.raises(TypeError, match="Parameter 'n_show' must be an integer"):
+        cns.volcanoplot(volcano_df, n_show=True)  # type: ignore[arg-type]
 
     def fake_dotplot(
         data: pd.DataFrame,
@@ -206,8 +231,8 @@ def test_genomics_plots(
         sys.modules, "gseapy", types.SimpleNamespace(dotplot=fake_dotplot)
     )
     cns.figure(160, 140)
-    ax3 = cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=2)
-    assert ax3.get_xlabel() == "Normalized Enrichment Score (NES)"
+    ax5 = cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=2)
+    assert ax5.get_xlabel() == "Normalized Enrichment Score (NES)"
 
 
 def test_sets_validation_errors(sets_fixture: dict[str, set[int]]) -> None:

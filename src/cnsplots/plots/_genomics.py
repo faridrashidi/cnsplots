@@ -25,6 +25,7 @@ def volcanoplot(
     y: str = "-log10(adjp)",
     symbol: str = "symbol",
     show_list: list[str] | None = None,
+    n_show: int = 10,
 ) -> Axes:
     """
     Create a volcano plot for differential expression analysis.
@@ -45,6 +46,10 @@ def volcanoplot(
         Column name for gene symbols or feature names to label.
     show_list : list, optional
         List of specific gene symbols to highlight and label.
+    n_show : int, default: 10
+        Number of top upregulated and downregulated genes to label automatically
+        when ``show_list`` is ``None``. If ``show_list`` is provided, it takes
+        precedence and ``n_show`` is ignored.
 
     Returns
     -------
@@ -64,6 +69,15 @@ def volcanoplot(
     ... )
     >>> ax.set_title("Differential Expression")
 
+    >>> # Label fewer top genes automatically
+    >>> ax = cns.volcanoplot(
+    ...     data=de_results,
+    ...     x="log2FoldChange",
+    ...     y="-log10(padj)",
+    ...     symbol="gene_name",
+    ...     n_show=5,
+    ... )
+
     >>> # Highlight specific genes
     >>> ax = cns.volcanoplot(
     ...     data=de_results,
@@ -77,11 +91,14 @@ def volcanoplot(
     validate_dataframe(data, "data", "volcanoplot")
     validate_columns_exist(data, [x, y, symbol], "volcanoplot")
     validate_dataframe_not_empty(data, "volcanoplot")
+    if isinstance(n_show, bool) or not isinstance(n_show, (int, np.integer)):
+        raise TypeError("[volcanoplot] Parameter 'n_show' must be an integer")
+    if n_show < 0:
+        raise ValueError("[volcanoplot] Parameter 'n_show' must be non-negative")
 
     import adjustText as at
 
     hue = "DEG"
-    n_show = 10
     de = data.copy()
 
     de[hue] = "NS"

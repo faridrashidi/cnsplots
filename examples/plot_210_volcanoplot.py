@@ -45,6 +45,14 @@ cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol")
 
 
 # %%
+# Control automatic labels
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Limit the number of top up/down genes labeled automatically.
+cns.figure(200, 200)
+cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol", n_show=3)
+
+
+# %%
 # More labeled genes
 # ~~~~~~~~~~~~~~~~~~
 # Highlight additional genes of interest.
@@ -87,11 +95,7 @@ cns.volcanoplot(
 # Show the distribution without annotations.
 cns.figure(200, 200)
 ax = cns.volcanoplot(
-    de,
-    x="log2FoldChange",
-    y="-log10(adjp)",
-    symbol="symbol",
-    show_list=[],
+    de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol", show_list=[]
 )
 ax.set_title("Volcano Plot")
 
