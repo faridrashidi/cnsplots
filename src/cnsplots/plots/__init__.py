@@ -21,7 +21,13 @@ from cnsplots.plots._genomics import gseaplot, volcanoplot
 from cnsplots.plots._heatmap import confusionplot, dotplot, heatmapplot
 from cnsplots.plots._regression import lineplot, regplot, scatterplot, slopeplot
 from cnsplots.plots._sets import upsetplot, vennplot
-from cnsplots.plots._specialized import forestplot, phyloplot, rocplot, sankeyplot
+from cnsplots.plots._specialized import (
+    forestplot,
+    phyloplot,
+    placeholderplot,
+    rocplot,
+    sankeyplot,
+)
 from cnsplots.plots._survival import cumulativeincidenceplot, survivalplot
 
 __all__ = [
@@ -40,6 +46,7 @@ __all__ = [
     "lineplot",
     "lollipopplot",
     "phyloplot",
+    "placeholderplot",
     "pieplot",
     "qqplot",
     "regplot",

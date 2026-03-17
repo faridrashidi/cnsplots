@@ -4,6 +4,8 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
+from matplotlib.colors import to_hex
+from matplotlib.patches import Rectangle
 
 import cnsplots as cns
 
@@ -244,6 +246,35 @@ def test_line_scatter_reg_and_slope_plots(
     cns.figure(120, 120)
     ax6 = cns.slopeplot(slope_df, x="site", y="value", hue="label")
     assert ax6.get_legend() is not None
+
+
+def test_placeholderplot_renders_centered_placeholder() -> None:
+    cns.figure(120, 180)
+    plt.plot([0, 1], [0, 1])
+    ax = cns.placeholderplot("A description to be centered in the panel")
+
+    assert ax is plt.gca()
+    assert len(ax.lines) == 0
+    assert len(ax.texts) == 1
+
+    text = ax.texts[0]
+    assert text.get_text() == "A description to be centered in the panel"
+    assert text.get_ha() == "center"
+    assert text.get_va() == "center"
+    assert text.get_wrap() is True
+
+    rectangle = next(patch for patch in ax.patches if isinstance(patch, Rectangle))
+    assert to_hex(rectangle.get_facecolor(), keep_alpha=False) == "#e6e6e6"
+    assert to_hex(rectangle.get_edgecolor(), keep_alpha=False) == "#b3b3b3"
+    assert rectangle.get_linewidth() == pytest.approx(0.8)
+
+    assert not ax.axison
+
+
+def test_placeholderplot_requires_string_description() -> None:
+    cns.figure(120, 120)
+    with pytest.raises(TypeError, match="must be a string"):
+        cns.placeholderplot(123)  # type: ignore[arg-type]
 
 
 def test_sets_and_specialized_plots(

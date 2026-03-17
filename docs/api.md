@@ -100,6 +100,7 @@ import cnsplots as cns
    :nosignatures:
 
    phyloplot
+   placeholderplot
 ```
 
 ## Statistical Models

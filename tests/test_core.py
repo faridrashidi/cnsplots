@@ -22,6 +22,7 @@ from cnsplots import _settings, _setup, _svg, _utils, _validation
 def test_public_api_exports_resolve() -> None:
     assert cns.__version__ == version("cnsplots")
     assert cns.boxplot is not None
+    assert cns.placeholderplot is not None
     assert cns.scatterplot is not None
     assert cns.methods.CoxModel is cns.CoxModel
     assert cns.methods.LogisticModel is cns.LogisticModel
@@ -31,6 +32,7 @@ def test_public_api_exports_resolve() -> None:
     namespace: dict[str, object] = {}
     exec("from cnsplots import *", namespace)
     assert namespace["boxplot"] is cns.boxplot
+    assert namespace["placeholderplot"] is cns.placeholderplot
     assert namespace["savefig"] is cns.savefig
 
 

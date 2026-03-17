@@ -156,7 +156,7 @@ for text in ax.texts:
             f"{hr_line.split(' (', 1)[0]}{sep}{remainder}" if sep else hr_line
         )
         break
-ax.legend(loc="upper right", bbox_to_anchor=(1.02, 1.0), borderaxespad=0)
+ax.legend(loc="upper right", bbox_to_anchor=(1.03, 1.0), borderaxespad=0)
 ax.set_title("Survivalplot")
 
 # Panel K: kdeplot
@@ -350,6 +350,20 @@ ax = mp.panel(
 ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
 ax.set_title("H&E Histology")
 ax.set_axis_off()
+
+ax = mp.panel(
+    "G",
+    160,
+    200,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(0, 0, 0, 0),
+)
+cns.placeholderplot("salam chetori")
+ax.set_title("Placeholder")
+
 
 # Save final figure
 cns.savefig("~/Desktop/Figure2.pdf")

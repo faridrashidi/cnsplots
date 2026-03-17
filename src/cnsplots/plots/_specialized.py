@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.patches import Rectangle
 from sklearn.metrics import auc, roc_curve
 
 import cnsplots.helpers._phylo as helper_phylo
@@ -22,6 +23,68 @@ from cnsplots._validation import (
     validate_dataframe,
     validate_dataframe_not_empty,
 )
+
+
+def placeholderplot(description: str) -> Axes:
+    """
+    Create a text placeholder panel for figure layout mockups.
+
+    This helper clears the current axes, draws a light-gray placeholder panel,
+    and centers wrapped descriptive text inside it.
+
+    Parameters
+    ----------
+    description : str
+        Text to display in the center of the placeholder panel.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the placeholder panel.
+
+    See Also
+    --------
+    figure : Initialize a new figure with custom size and styling.
+    multipanel : Create multi-panel figures with automatic layout.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.figure(100, 200)
+    >>> ax = cns.placeholderplot("A description to be centered in the panel")
+    >>> ax.set_title("Placeholder")
+    """
+    if not isinstance(description, str):
+        raise TypeError("[placeholderplot] 'description' must be a string.")
+
+    ax = plt.gca()
+    ax.cla()
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.add_patch(
+        Rectangle(
+            (0, 0),
+            1,
+            1,
+            transform=ax.transAxes,
+            facecolor="#E6E6E6",
+            edgecolor="#B3B3B3",
+            linewidth=0.8,
+            clip_on=False,
+        )
+    )
+    ax.text(
+        0.5,
+        0.5,
+        description,
+        transform=ax.transAxes,
+        ha="center",
+        va="center",
+        color="#4D4D4D",
+        wrap=True,
+    )
+    ax.set_axis_off()
+    return ax
 
 
 def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
