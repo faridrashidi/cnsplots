@@ -548,6 +548,14 @@ def test_utils_helpers_and_showcase_data(
     monkeypatch.setitem(sys.modules, "scanpy", fake_sc)
     data = _utils.get_showcase_data()
     assert len(data) == 8
+    data_with_assets = _utils.get_showcase_data(
+        include_showcase_images=True,
+        caller_file=Path(__file__).resolve().parents[1]
+        / "examples"
+        / "plot_320_multipanel.py",
+    )
+    assert len(data_with_assets) == 9
+    assert data_with_assets[-1].name == "assets"
 
 
 def test_multipanel_layout() -> None:

@@ -521,11 +521,59 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
         print("   ---> P-values were determined by two-sided Chi-squared test.")
 
 
-def get_showcase_data():
+def get_showcase_data(
+    *,
+    include_showcase_images: bool = False,
+    caller_file: str | os.PathLike[str] | None = None,
+):
+    """
+    Load synthetic showcase datasets and optionally resolve the image asset directory.
+
+    Parameters
+    ----------
+    include_showcase_images : bool, default: False
+        When True, append the showcase image assets directory to the returned tuple.
+    caller_file : path-like or None, default: None
+        File path used to seed the assets-directory search. When omitted, the
+        caller frame's ``__file__`` is used when available.
+    """
     import numpy as np
     import pandas as pd
     import scanpy as sc
     import seaborn as sns
+
+    resolved_caller_file = caller_file
+    if resolved_caller_file is None:
+        import inspect
+
+        frame = inspect.currentframe()
+        try:
+            caller_frame = None if frame is None else frame.f_back
+            resolved_caller_file = (
+                None if caller_frame is None else caller_frame.f_globals.get("__file__")
+            )
+        finally:
+            del frame
+
+    def _resolve_showcase_images() -> Path:
+        search_roots = []
+        if resolved_caller_file is not None:
+            search_roots.append(Path(resolved_caller_file).resolve().parent)
+
+        cwd = Path.cwd().resolve()
+        search_roots.extend([cwd, *cwd.parents])
+
+        seen = set()
+        for root in search_roots:
+            for candidate in (root / "assets", root / "examples" / "assets"):
+                if candidate in seen:
+                    continue
+                seen.add(candidate)
+                if candidate.exists():
+                    return candidate
+
+        msg = "Could not locate examples/assets"
+        raise FileNotFoundError(msg)
 
     np.random.seed(42)
     survival_data = []
@@ -600,7 +648,7 @@ def get_showcase_data():
             + np.random.normal(0, 0.2, 200),
         }
     )
-    return (
+    data = (
         iris_df,
         tips_df,
         survival_df,
@@ -610,6 +658,9 @@ def get_showcase_data():
         roc_df,
         slope_df,
     )
+    if include_showcase_images:
+        return (*data, _resolve_showcase_images())
+    return data
 
 
 def palettes(color):
