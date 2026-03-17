@@ -142,7 +142,7 @@ for text in ax.texts:
             f"{hr_line.split(' (', 1)[0]}{sep}{remainder}" if sep else hr_line
         )
         break
-ax.legend(bbox_to_anchor=(1.1, 1.0))
+ax.legend(bbox_to_anchor=(1.05, 1.0))
 ax.set_title("Survivalplot")
 
 # Panel K: kdeplot
