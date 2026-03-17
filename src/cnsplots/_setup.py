@@ -71,6 +71,7 @@ def setup_matplotlib(
     color_cycle: str | None = None,
     color_map: str | None = None,
     fontsize_title: int | float | None = None,
+    fontweight_title: str | int | float | None = None,
     fontsize_legend: int | float | None = None,
     linewidth_axes: float | None = None,
 ) -> None:
@@ -96,6 +97,9 @@ def setup_matplotlib(
     fontsize_title : int, default: None
         Font size for titles, axis labels, and legend titles.
         If None, uses cns.settings.fontsize_title.
+    fontweight_title : str | int | float, default: None
+        Font weight for titles.
+        If None, uses cns.settings.fontweight_title.
     fontsize_legend : int, default: None
         Font size for tick labels and legend text.
         If None, uses cns.settings.fontsize_legend.
@@ -122,6 +126,7 @@ def setup_matplotlib(
     - Family: Sans-serif (Helvetica)
     - Math text: Custom fontset
     - Sizes: title=8pt, legend=7pt (by default)
+    - Title weight: bold (by default)
 
     **Axes:**
     - Spines: Bottom and left only (top and right hidden)
@@ -159,7 +164,11 @@ def setup_matplotlib(
 
     >>> # Customize colors and sizes
     >>> cns.setup_matplotlib(
-    ...     color_cycle="Set2", color_map="parula", fontsize_title=10, fontsize_legend=8
+    ...     color_cycle="Set2",
+    ...     color_map="parula",
+    ...     fontsize_title=10,
+    ...     fontweight_title="normal",
+    ...     fontsize_legend=8,
     ... )
     """
     # Use settings values if parameters are not provided
@@ -169,6 +178,8 @@ def setup_matplotlib(
         color_map = cns.settings.palette_seq
     if fontsize_title is None:
         fontsize_title = cns.settings.fontsize_title
+    if fontweight_title is None:
+        fontweight_title = cns.settings.fontweight_title
     if fontsize_legend is None:
         fontsize_legend = cns.settings.fontsize_legend
     if linewidth_axes is None:
@@ -207,7 +218,7 @@ def setup_matplotlib(
             # glyphs (e.g. the minus sign in 10⁻⁹) to be converted to paths.
             "pdf.fonttype": 42,
             "axes.titlesize": fontsize_title,
-            "axes.titleweight": "bold",
+            "axes.titleweight": fontweight_title,
             "axes.titlelocation": "center",
             "axes.labelsize": fontsize_title,
             "axes.grid": False,
@@ -343,6 +354,7 @@ def setup_scanpy() -> None:
 def setup_ax(
     ax: Axes,
     fontsize_title: int | float | None = None,
+    fontweight_title: str | int | float | None = None,
     fontsize_legend: int | float | None = None,
     linewidth_axes: float | None = None,
     colorbar_label: str = "FDR q-val",
@@ -360,6 +372,9 @@ def setup_ax(
     fontsize_title : int, default: None
         Font size for axis labels and title.
         If None, uses cns.settings.fontsize_title.
+    fontweight_title : str | int | float, default: None
+        Font weight for the title.
+        If None, uses cns.settings.fontweight_title.
     fontsize_legend : int, default: None
         Font size for tick labels and colorbar labels.
         If None, uses cns.settings.fontsize_legend.
@@ -387,6 +402,7 @@ def setup_ax(
     **Font settings:**
     - Family: Sans-serif (Helvetica)
     - Sizes: title=8pt, tick labels=7pt (by default)
+    - Title weight: bold (by default)
     - Color: Black
 
     **Axis spines:**
@@ -417,8 +433,10 @@ def setup_ax(
     >>> ax.scatter(x, y)
     >>> cns.setup_ax(ax)
 
-    >>> # Format with custom sizes
-    >>> cns.setup_ax(ax, fontsize_title=10, fontsize_legend=9)
+    >>> # Format with custom sizes and title weight
+    >>> cns.setup_ax(
+    ...     ax, fontsize_title=10, fontweight_title="normal", fontsize_legend=9
+    ... )
 
     >>> # Format axes from external library
     >>> import seaborn as sns
@@ -428,6 +446,8 @@ def setup_ax(
     # Use settings values if parameters are not provided
     if fontsize_title is None:
         fontsize_title = cns.settings.fontsize_title
+    if fontweight_title is None:
+        fontweight_title = cns.settings.fontweight_title
     if fontsize_legend is None:
         fontsize_legend = cns.settings.fontsize_legend
     if linewidth_axes is None:
@@ -450,7 +470,7 @@ def setup_ax(
     )
     title_props = ax.title.get_fontproperties().copy()
     title_props.set_size(fontsize_title)
-    title_props.set_weight("bold")
+    title_props.set_weight(fontweight_title)
     ax.set_title(ax.get_title(), fontproperties=title_props, loc="center")
     ax.set_xlabel(ax.get_xlabel(), fontsize=fontsize_title, color="black")
     ax.set_ylabel(ax.get_ylabel(), fontsize=fontsize_title, color="black")

@@ -170,15 +170,21 @@ def test_settings_behavior() -> None:
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
     settings.fontsize_title = 10
+    settings.fontweight_title = "normal"
     settings.fontsize_legend = 9
     settings.linewidth_axes = 1.0
     settings.verbosity = 0
     assert "CNSSettings(" in repr(settings)
+    assert "fontweight_title='normal'" in repr(settings)
 
-    with settings.context(fontsize_title=12, palette_qual="Dark2") as ctx:
+    with settings.context(
+        fontsize_title=12, fontweight_title=600, palette_qual="Dark2"
+    ) as ctx:
         assert ctx.fontsize_title == 12
+        assert ctx.fontweight_title == 600
         assert settings.palette_qual == "Dark2"
     assert settings.fontsize_title == 10
+    assert settings.fontweight_title == "normal"
     assert settings.palette_qual == "Set2"
 
     with pytest.raises(AttributeError, match="not a valid setting"):
@@ -194,6 +200,8 @@ def test_settings_behavior() -> None:
     with pytest.raises(ValueError):
         settings.fontsize_title = 0
     with pytest.raises(TypeError):
+        settings.fontweight_title = []  # type: ignore[assignment]
+    with pytest.raises(TypeError):
         settings.fontsize_legend = "1"  # type: ignore[assignment]
     with pytest.raises(ValueError):
         settings.fontsize_legend = 0
@@ -208,6 +216,7 @@ def test_settings_behavior() -> None:
 
     settings.reset()
     assert settings.palette_qual == "Ecotyper1"
+    assert settings.fontweight_title == "bold"
 
 
 def test_ensure_helvetica_bold_branches(
@@ -248,10 +257,12 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         color_cycle="Set2",
         color_map="parula",
         fontsize_title=9,
+        fontweight_title="normal",
         fontsize_legend=8,
         linewidth_axes=1.2,
     )
     assert mpl.rcParams["axes.labelsize"] == 9
+    assert mpl.rcParams["axes.titleweight"] == "normal"
     assert mpl.rcParams["image.cmap"] == "parula"
 
     fig, ax = plt.subplots()
@@ -263,11 +274,13 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     _setup.setup_ax(
         ax,
         fontsize_title=10,
+        fontweight_title="normal",
         fontsize_legend=9,
         linewidth_axes=1.1,
         colorbar_label="Custom",
     )
     assert ax.get_xlabel() == "X"
+    assert ax.title.get_fontweight() == "normal"
     assert heat.colorbar.ax.get_ylabel() == "Custom"
 
     fig2, ax2 = plt.subplots()

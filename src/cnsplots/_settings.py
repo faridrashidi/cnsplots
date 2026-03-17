@@ -14,6 +14,7 @@ Examples
 >>> # Change settings
 >>> cns.settings.palette_qual = "Set2"
 >>> cns.settings.fontsize_title = 10
+>>> cns.settings.fontweight_title = "normal"
 
 >>> # Suppress print statements
 >>> cns.settings.verbosity = 0
@@ -52,6 +53,9 @@ class CNSSettings:
     fontsize_title : int
         Font size for titles and axis labels.
         Default: 8
+    fontweight_title : str | int | float
+        Font weight for titles.
+        Default: "bold"
     fontsize_legend : int
         Font size for tick labels and legend text.
         Default: 7
@@ -73,6 +77,7 @@ class CNSSettings:
     >>> # Modify settings
     >>> cns.settings.palette_qual = "Dark2"
     >>> cns.settings.fontsize_title = 10
+    >>> cns.settings.fontweight_title = "normal"
     >>> cns.settings.verbosity = 0  # Suppress prints
 
     >>> # Reset all settings to defaults
@@ -84,6 +89,7 @@ class CNSSettings:
         "palette_qual": "Ecotyper1",
         "palette_seq": "gnuplot",
         "fontsize_title": 8,
+        "fontweight_title": "bold",
         "fontsize_legend": 7,
         "linewidth_axes": 0.5,
         "verbosity": 1,
@@ -92,6 +98,7 @@ class CNSSettings:
     _palette_qual: str
     _palette_seq: str
     _fontsize_title: int | float
+    _fontweight_title: str | int | float
     _fontsize_legend: int | float
     _linewidth_axes: int | float
     _verbosity: int
@@ -114,6 +121,7 @@ class CNSSettings:
         self._palette_qual = str(self._defaults["palette_qual"])
         self._palette_seq = str(self._defaults["palette_seq"])
         self._fontsize_title = int(self._defaults["fontsize_title"])
+        self._fontweight_title = str(self._defaults["fontweight_title"])
         self._fontsize_legend = int(self._defaults["fontsize_legend"])
         self._linewidth_axes = float(self._defaults["linewidth_axes"])
         self._verbosity = int(self._defaults["verbosity"])
@@ -155,6 +163,18 @@ class CNSSettings:
         if value <= 0:
             raise ValueError("fontsize_title must be positive")
         self._fontsize_title = value
+
+    # --- fontweight_title ---
+    @property
+    def fontweight_title(self) -> str | int | float:
+        """str | int | float: Font weight for titles."""
+        return self._fontweight_title
+
+    @fontweight_title.setter
+    def fontweight_title(self, value: str | int | float) -> None:
+        if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+            raise TypeError("fontweight_title must be a string or number")
+        self._fontweight_title = value
 
     # --- fontsize_legend ---
     @property
@@ -209,8 +229,8 @@ class CNSSettings:
         ----------
         **kwargs
             Setting names and their temporary values. Valid keys are:
-            palette_qual, palette_seq, fontsize_title, fontsize_legend,
-            linewidth_axes, verbosity.
+            palette_qual, palette_seq, fontsize_title, fontweight_title,
+            fontsize_legend, linewidth_axes, verbosity.
 
         Raises
         ------
@@ -254,6 +274,7 @@ class CNSSettings:
             f"    palette_qual={self.palette_qual!r},\n"
             f"    palette_seq={self.palette_seq!r},\n"
             f"    fontsize_title={self.fontsize_title},\n"
+            f"    fontweight_title={self.fontweight_title!r},\n"
             f"    fontsize_legend={self.fontsize_legend},\n"
             f"    linewidth_axes={self.linewidth_axes},\n"
             f"    verbosity={self.verbosity}\n"

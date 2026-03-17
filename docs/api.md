@@ -173,5 +173,6 @@ Default settings:
 - `PALETTE_QUAL` - Default qualitative palette ('Ecotyper1')
 - `PALETTE_SEQ` - Default sequential colormap ('gnuplot')
 - `FONTSIZE_TITLE` - Title font size (8)
+- `FONTWEIGHT_TITLE` - Title font weight ('bold')
 - `FONTSIZE_LEGEND` - Legend font size (7)
 - `LINEWIDTH_AXES` - Axes line width (0.5)

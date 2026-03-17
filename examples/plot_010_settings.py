@@ -5,8 +5,8 @@ settings
 Configure global defaults for cnsplots.
 
 cnsplots provides a settings module to customize global defaults
-for palettes, font sizes, line widths, and verbosity. Changes to
-settings affect all subsequent plotting calls.
+for palettes, title font styles, line widths, and verbosity.
+Changes to settings affect all subsequent plotting calls.
 """
 
 # %%
@@ -33,6 +33,7 @@ print(cns.settings)
 print(f"palette_qual: {cns.settings.palette_qual}")
 print(f"palette_seq: {cns.settings.palette_seq}")
 print(f"fontsize_title: {cns.settings.fontsize_title}")
+print(f"fontweight_title: {cns.settings.fontweight_title}")
 print(f"fontsize_legend: {cns.settings.fontsize_legend}")
 print(f"linewidth_axes: {cns.settings.linewidth_axes}")
 print(f"verbosity: {cns.settings.verbosity}")
@@ -68,6 +69,17 @@ cns.settings.fontsize_legend = 9
 cns.figure(150, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("Larger Font Sizes")
+
+
+# %%
+# Change title weight
+# ~~~~~~~~~~~~~~~~~~~
+# Use a lighter title weight when you do not want bold titles.
+cns.settings.fontweight_title = "normal"
+
+cns.figure(150, 150)
+ax = cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("fontweight_title = 'normal'")
 
 
 # %%
@@ -115,6 +127,7 @@ cns.settings.verbosity = 1
 cns.settings.palette_qual = "Dark2"
 cns.settings.palette_seq = "parula"
 cns.settings.fontsize_title = 9
+cns.settings.fontweight_title = "bold"
 cns.settings.fontsize_legend = 8
 cns.settings.linewidth_axes = 0.75
 
@@ -139,13 +152,16 @@ ax.set_title("Same Custom Style")
 # automatically revert when the block exits.
 cns.settings.reset()
 
-with cns.settings.context(fontsize_title=12, palette_qual="Set2"):
+with cns.settings.context(
+    fontsize_title=12, fontweight_title="normal", palette_qual="Set2"
+):
     cns.figure(150, 150)
     ax = cns.boxplot(data=tips, x="day", y="total_bill")
-    ax.set_title("Context Manager: Set2, fontsize=12")
+    ax.set_title("Context Manager: Set2, fontsize=12, weight='normal'")
 
 # Settings are restored after the context block
 print(f"After context: fontsize_title={cns.settings.fontsize_title}")
+print(f"After context: fontweight_title={cns.settings.fontweight_title}")
 print(f"After context: palette_qual={cns.settings.palette_qual}")
 
 
