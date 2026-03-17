@@ -88,7 +88,7 @@ ax.set_title("Stackplot")
 ax.get_legend().set_title(None)
 
 # Panel E: barplot
-mp.panel("E", 40, 80, pad_top=5, margin=(10, 0, 0, 15), color_cycle=[cns.VIOLET])
+mp.panel("E", 40, 80, pad_top=5, margin=(5, 0, 0, 15), color_cycle=[cns.VIOLET])
 ax = cns.barplot(
     data=tips_df,
     y="day",
@@ -106,7 +106,7 @@ mp.panel(
     40,
     40,
     pad_top=5,
-    margin=(0, 0, 0, 0),
+    margin=(5, 0, 0, 0),
     pad_left=0,
     below="E",
     color_cycle="Ecotyper3",
@@ -128,8 +128,8 @@ mp.panel(
     50,
     50,
     pad_top=5,
-    margin=(0, 0, 0, 10),
-    pad_left=0,
+    margin=(10, 0, 0, 10),
+    pad_left=10,
     below="G",
     color_cycle="Ecotyper3",
 )
@@ -190,7 +190,7 @@ ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
 ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
-mp.panel("P", 65, 80, pad_top=3, margin=(0, 0, 0, 0), below="O")
+mp.panel("P", 65, 80, pad_top=3, margin=(10, 0, 0, 0), below="O")
 ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
 ax.set_title("Slopeplot")
 
@@ -237,7 +237,7 @@ cmp = cns.heatmapplot(
 )
 cmp.ax.set_title("Heatmapplot")
 
-# cns.savefig("~/Desktop/overview.png")
+cns.savefig("~/Desktop/overview.pdf")
 
 
 # %%
@@ -286,10 +286,20 @@ ax = mp.panel(
 ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
 ax.set_axis_off()
 
+mp.panel("D", 100, 45, pad_top=5, margin=(10, 0, 0, 30), color_cycle=[cns.VIOLET])
+ax = cns.boxplot(
+    data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
+)
+ax.set_title("Barplot")
+ax.set_xlabel("")
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
+
 mp.newline()
 
 ax = mp.panel(
-    "D",
+    "E",
     160,
     319,
     label_left=10,
@@ -301,4 +311,4 @@ ax = mp.panel(
 ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
 ax.set_axis_off()
 
-cns.savefig("~/Desktop/overview2.png")
+cns.savefig("~/Desktop/overview2.pdf")
