@@ -240,7 +240,7 @@ cmp = cns.heatmapplot(
 cmp.ax.set_title("Heatmapplot")
 
 # Save final figure
-cns.savefig("~/Desktop/Figure1.pdf")
+cns.savefig("~/Desktop/Figure1.jpg")
 
 
 # %%
@@ -310,7 +310,7 @@ ax.set_xticklabels(
 )
 
 # Panel E: dotplot
-mp.panel("E", 62, 72, pad_left=5, pad_top=3, margin=(0, 4, 0, 0), below="D")
+mp.panel("E", 62, 72, pad_left=20, pad_top=3, margin=(10, 4, 0, 0), below="D")
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
@@ -353,7 +353,7 @@ ax.set_axis_off()
 
 ax = mp.panel(
     "G",
-    150,
+    155,
     200,
     label_left=10,
     label_top=12,
@@ -361,8 +361,8 @@ ax = mp.panel(
     pad_top=5,
     margin=(0, 0, 0, 0),
 )
-cns.placeholderplot("This is a placehoder plot\n160 ⨯ 200")
+cns.placeholderplot("This is a placeholder plot\n155 ⨯ 200")
 ax.set_title("Placeholder")
 
 # Save final figure
-cns.savefig("~/Desktop/Figure2.pdf")
+cns.savefig("~/Desktop/Figure2.jpg")
