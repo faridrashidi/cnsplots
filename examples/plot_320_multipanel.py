@@ -28,10 +28,9 @@ mp = cns.multipanel(max_width=540)
 
 # Panel A: boxplot
 mp.panel("A", 100, 45, pad_top=5, margin=(10, 0, 0, 30), color_cycle=[cns.VIOLET])
-cns.boxplot(
+ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
-ax = mp.get_axes("A")
 ax.set_title("Barplot")
 ax.set_xlabel("")
 ax.set_xticklabels(
@@ -40,8 +39,7 @@ ax.set_xticklabels(
 
 # Panel B: violinplot
 mp.panel("B", 100, 45, pad_top=5, color_cycle=[cns.CHOCOLATE])
-cns.violinplot(data=iris_df, x="species", y="sepal_width", pairs="all")
-ax = mp.get_axes("B")
+ax = cns.violinplot(data=iris_df, x="species", y="sepal_width", pairs="all")
 ax.set_title("Violinplot")
 ax.set_xlabel("")
 ax.set_xticklabels(
@@ -50,8 +48,9 @@ ax.set_xticklabels(
 
 # Panel C: stripplot
 mp.panel("C", 100, 60, pad_top=5, color_cycle="BlueRed")
-cns.stripplot(data=tips_df, x="day", y="tip", hue="sex")
-mp.get_axes("C").set_title("Stripplot")
+ax = cns.stripplot(data=tips_df, x="day", y="tip", hue="sex")
+# ax.legend(loc="upper left")
+ax.set_title("Stripplot")
 
 # Panel D: stackplot
 mp.panel(
@@ -62,13 +61,13 @@ mp.panel(
     margin=(10, 0, 35, 20),
     color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"),
 )
-cns.stackplot(data=tips_df, x="day", y="sex", pairs=[("Thur", "Sun")])
-mp.get_axes("D").set_title("Stackplot")
-mp.get_axes("D").get_legend().set_title(None)
+ax = cns.stackplot(data=tips_df, x="day", y="sex", pairs=[("Thur", "Sun")])
+ax.set_title("Stackplot")
+ax.get_legend().set_title(None)
 
 # Panel E: barplot
 mp.panel("E", 40, 80, pad_top=5, margin=(10, 0, 0, 15), color_cycle=[cns.VIOLET])
-cns.barplot(
+ax = cns.barplot(
     data=tips_df,
     y="day",
     x="total_bill",
@@ -76,8 +75,8 @@ cns.barplot(
     width=0.7,
     pairs=[("Thur", "Sun"), ("Thur", "Fri")],
 )
-mp.get_axes("E").set_title("Barplot")
-mp.get_axes("E").set_ylabel("")
+ax.set_title("Barplot")
+ax.set_ylabel("")
 
 # Panel F: pieplot (stacked below E)
 mp.panel(
@@ -90,9 +89,9 @@ mp.panel(
     below="E",
     color_cycle="Ecotyper3",
 )
-cns.pieplot(iris_df, "species", legend="right")
-mp.get_axes("F").set_title("Pieplot")
-mp.get_axes("F").get_legend().set_title(None)
+ax = cns.pieplot(iris_df, "species", legend="right")
+ax.set_title("Pieplot")
+ax.get_legend().set_title(None)
 
 # Panel G: vennplot
 mp.panel(
@@ -112,60 +111,61 @@ mp.panel(
     below="G",
     color_cycle="Ecotyper3",
 )
-cns.donutplot(iris_df, "species", legend="right")
-mp.get_axes("H").set_title("Donutplot")
-mp.get_axes("H").get_legend().set_title(None)
+ax = cns.donutplot(iris_df, "species", legend="right")
+ax.set_title("Donutplot")
+ax.get_legend().set_title(None)
 
 # Panel I: regplot
 mp.panel("I", 90, 90, pad_top=5)
-cns.regplot(data=tips_df, x="total_bill", y="tip", s=1)
-mp.get_axes("I").set_title("Regplot")
+ax = cns.regplot(data=tips_df, x="total_bill", y="tip", s=1)
+ax.set_title("Regplot")
 
 # Panel J: survivalplot
 mp.panel("J", 90, 90, pad_top=5)
-cns.survivalplot(data=survival_df, duration="time", event="event", hue="group")
-mp.get_axes("J").legend(loc="upper right")
-mp.get_axes("J").set_title("Survivalplot")
+ax = cns.survivalplot(data=survival_df, duration="time", event="event", hue="group")
+ax.legend(loc="upper right")
+ax.set_title("Survivalplot")
 
 # Panel K: kdeplot
 mp.panel("K", 90, 90, pad_top=5, color_cycle="Ecotyper3")
-cns.kdeplot(data=iris_df, x="petal_length", hue="species")
-mp.get_axes("K").get_legend().set_title(None)
-mp.get_axes("K").set_title("Kdeplot")
+ax = cns.kdeplot(data=iris_df, x="petal_length", hue="species")
+ax.get_legend().set_title(None)
+ax.set_title("Kdeplot")
 
 # Panel L: volcanoplot
 mp.panel("L", 90, 90, pad_top=5, margin=(10, 0, 50, 0))
-cns.volcanoplot(volcano_df)
-mp.get_axes("L").set_title("Volcanoplot")
+ax = cns.volcanoplot(volcano_df)
+ax.set_title("Volcanoplot")
 
 # Panel M: rocplot
 mp.panel("M", 90, 90, pad_top=5, color_cycle="ECharts")
-cns.rocplot(roc_df, "label", ["Model A", "Model B"])
-mp.get_axes("M").legend(loc="lower right")
-mp.get_axes("M").set_title("Rocplot")
+ax = cns.rocplot(roc_df, "label", ["Model A", "Model B"])
+ax.legend(loc="lower right")
+ax.set_title("Rocplot")
 
 # Panel N: sankeyplot
 mp.panel(
     "N", 100, 30, pad_top=5, pad_left=10, margin=(10, 0, 15, 0), color_cycle="Ecotyper4"
 )
-cns.sankeyplot(tips_df, x="day", y="sex")
-mp.get_axes("N").set_title("Sankeyplot")
+ax = cns.sankeyplot(tips_df, x="day", y="sex")
+ax.set_title("Sankeyplot")
 
 # Panel O: ridgeplot
 mp.panel("O", 35, 80, pad_top=3)
-cns.ridgeplot(data=iris_df, x="petal_length", y="species")
-mp.get_axes("O").set_title("Ridgeplot")
+ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
+ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
 mp.panel("P", 65, 80, pad_top=3, margin=(0, 0, 0, 0), below="O")
-cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
-mp.get_axes("P").set_title("Slopeplot")
+ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
+ax.set_title("Slopeplot")
 
 # Panel Q: scatterplot
 mp.newline()
 mp.panel("Q", 90, 90, pad_top=5, margin=(10, 0, 40, 0), color_cycle="Set1")
-cns.scatterplot(data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5)
-ax = mp.get_axes("Q")
+ax = cns.scatterplot(
+    data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
+)
 ax.set_title("Scatterplot")
 ax.get_legend().set_title(None)
 ax.axhline(
@@ -203,7 +203,7 @@ cmp = cns.heatmapplot(
 )
 cmp.ax.set_title("Heatmapplot")
 
-# cns.savefig("~/Desktop/final.svg")
+# cns.savefig("~/Desktop/overview.png")
 
 
 # %%
