@@ -582,6 +582,57 @@ def test_multipanel_layout() -> None:
     assert len(mp.axes) == 3
 
 
+@pytest.mark.parametrize(
+    ("loc", "expected_x"),
+    [
+        ("left", 2 / 200),
+        ("center", 0.5),
+        ("right", 1 - (2 / 200)),
+    ],
+)
+def test_multipanel_title_alignment_and_default_fontweight(
+    loc: str, expected_x: float
+) -> None:
+    mp = cns.multipanel(max_width=200, title="Overview", loc=loc)
+    mp.panel("A", width=60, height=40)
+
+    assert mp._title_text is not None
+    assert mp._title_text.get_text() == "Overview"
+    assert mp._title_text.get_ha() == loc
+    assert mp._title_text.get_fontweight() == "bold"
+    assert mp._title_text.get_position()[0] == pytest.approx(expected_x)
+
+
+def test_multipanel_title_fontweight_and_height_reservation() -> None:
+    mp_plain = cns.multipanel(max_width=200)
+    mp_plain.panel("A", width=60, height=40)
+
+    mp_titled = cns.multipanel(
+        max_width=200,
+        title="Overview",
+        fontweight_title="normal",
+    )
+    mp_titled.panel("A", width=60, height=40)
+
+    plain_height_px = mp_plain.fig.get_size_inches()[1] * 72
+    titled_height_px = mp_titled.fig.get_size_inches()[1] * 72
+    expected_delta = max(12, cns.settings.fontsize_title + 4)
+
+    assert mp_titled._title_text is not None
+    assert mp_titled._title_text.get_fontweight() == "normal"
+    assert titled_height_px - plain_height_px == pytest.approx(expected_delta)
+
+
+def test_multipanel_title_invalid_loc_raises() -> None:
+    with pytest.raises(ValueError, match="loc must be one of"):
+        cns.multipanel(title="Overview", loc="top")
+
+
+def test_multipanel_title_invalid_fontweight_raises() -> None:
+    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
+        cns.multipanel(title="Overview", fontweight_title=1.5)  # type: ignore[arg-type]
+
+
 def test_multipanel_below_aligns_to_parent_column() -> None:
     mp = cns.multipanel(max_width=540)
     mp.panel(

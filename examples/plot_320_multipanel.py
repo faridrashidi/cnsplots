@@ -45,7 +45,12 @@ cns.stripplot(data=tips, x="day", y="tip", hue="sex")
 # 1x3 horizontal layout with titles
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create a row of panels, useful for comparing related analyses.
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(
+    max_width=540,
+    title="Distribution Overview",
+    loc="left",
+    fontweight_title="normal",
+)
 
 mp.panel("A", 120, 120, pad_top=10)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species")

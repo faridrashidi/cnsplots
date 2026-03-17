@@ -6,10 +6,25 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
+    from matplotlib.text import Text
 
 import matplotlib.pyplot as plt
 
 import cnsplots as cns
+
+
+def _validate_title_loc(loc: str) -> str:
+    """Validate figure title alignment."""
+    if loc not in {"left", "center", "right"}:
+        raise ValueError("loc must be one of: 'left', 'center', or 'right'")
+    return loc
+
+
+def _validate_title_fontweight(value: str | int) -> str | int:
+    """Validate figure title font weight values."""
+    if value is None or isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise TypeError("fontweight_title must be a string or integer")
+    return value
 
 
 class multipanel:
@@ -30,6 +45,12 @@ class multipanel:
     max_width : int, optional
         Maximum figure width in pixels (default: 540). Panels wrap to new
         rows when this width would be exceeded.
+    title : str or None, optional
+        Figure-level title shown above the panel grid (default: None).
+    loc : {'left', 'center', 'right'}, optional
+        Horizontal alignment for the figure title (default: 'center').
+    fontweight_title : str or int, optional
+        Font weight for the figure title (default: 'bold').
 
     Attributes
     ----------
@@ -85,13 +106,23 @@ class multipanel:
     ensuring it appears to the left of the ylabel and axes content.
     """
 
-    def __init__(self, max_width: int = 540) -> None:
+    def __init__(
+        self,
+        max_width: int = 540,
+        title: str | None = None,
+        loc: str = "center",
+        fontweight_title: str | int = "bold",
+    ) -> None:
         self._max_width = max_width
+        self._title = title
+        self._title_loc = _validate_title_loc(loc)
+        self._fontweight_title = _validate_title_fontweight(fontweight_title)
         self._panels = []  # List of panel info dicts
         self.fig = None
         self.axes = []
         self._created_axes = {}
         self._label_texts = {}
+        self._title_text: Text | None = None
         self._labels = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         self._panel_index = 0
 
@@ -99,6 +130,12 @@ class multipanel:
         # Each row is a list of panel indices
         self._rows = []
         self._row_heights = []  # Max total height in each row
+
+    def _get_title_height_px(self) -> float:
+        """Get the reserved height for the figure title band."""
+        if self._title is None:
+            return 0
+        return max(12, cns.settings.fontsize_title + 4)
 
     def _get_panel_total_size(self, panel: dict) -> tuple[float, float]:
         """Get the total width and height of a panel including margins."""
@@ -222,7 +259,7 @@ class multipanel:
             return 0, 0
 
         # Calculate y position (from top of figure)
-        y = sum(self._row_heights[:row_idx])
+        y = self._get_title_height_px() + sum(self._row_heights[:row_idx])
 
         # Calculate x position
         x = 0
@@ -248,7 +285,8 @@ class multipanel:
         self._calculate_layout()
 
         # Calculate total figure size
-        fig_height_px = sum(self._row_heights)
+        title_height_px = self._get_title_height_px()
+        fig_height_px = title_height_px + sum(self._row_heights)
         fig_width_px = self._max_width
 
         # Convert pixels to inches (72 dpi base)
@@ -259,6 +297,40 @@ class multipanel:
             self.fig = plt.figure(figsize=(fig_width, fig_height), dpi=72 * 2)
         else:
             self.fig.set_size_inches(fig_width, fig_height)
+
+        if self._title is None:
+            if self._title_text is not None:
+                self._title_text.remove()
+                self._title_text = None
+        else:
+            inset_px = 2
+            x_positions = {
+                "left": inset_px / fig_width_px,
+                "center": 0.5,
+                "right": 1 - inset_px / fig_width_px,
+            }
+            title_y_px = title_height_px / 2
+            title_y_fig = (fig_height_px - title_y_px) / fig_height_px
+
+            if self._title_text is None:
+                self._title_text = self.fig.text(
+                    x_positions[self._title_loc],
+                    title_y_fig,
+                    self._title,
+                    fontsize=cns.settings.fontsize_title,
+                    fontweight=self._fontweight_title,
+                    va="center",
+                    ha=self._title_loc,
+                )
+            else:
+                self._title_text.set_position(
+                    (x_positions[self._title_loc], title_y_fig)
+                )
+                self._title_text.set_text(self._title)
+                self._title_text.set_ha(self._title_loc)
+                self._title_text.set_va("center")
+                self._title_text.set_fontsize(cns.settings.fontsize_title)
+                self._title_text.set_fontweight(self._fontweight_title)
 
         # Create or update axes for all panels
         for idx, panel in enumerate(self._panels):
