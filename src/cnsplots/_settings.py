@@ -53,7 +53,7 @@ class CNSSettings:
     fontsize_title : int
         Font size for titles and axis labels.
         Default: 8
-    fontweight_title : str | int | float
+    fontweight_title : str | int
         Font weight for titles.
         Default: "bold"
     fontsize_legend : int
@@ -98,7 +98,7 @@ class CNSSettings:
     _palette_qual: str
     _palette_seq: str
     _fontsize_title: int | float
-    _fontweight_title: str | int | float
+    _fontweight_title: str | int
     _fontsize_legend: int | float
     _linewidth_axes: int | float
     _verbosity: int
@@ -166,14 +166,14 @@ class CNSSettings:
 
     # --- fontweight_title ---
     @property
-    def fontweight_title(self) -> str | int | float:
-        """str | int | float: Font weight for titles."""
+    def fontweight_title(self) -> str | int:
+        """str | int: Font weight for titles."""
         return self._fontweight_title
 
     @fontweight_title.setter
-    def fontweight_title(self, value: str | int | float) -> None:
-        if isinstance(value, bool) or not isinstance(value, (str, int, float)):
-            raise TypeError("fontweight_title must be a string or number")
+    def fontweight_title(self, value: str | int) -> None:
+        if isinstance(value, bool) or not isinstance(value, (str, int)):
+            raise TypeError("fontweight_title must be a string or integer")
         self._fontweight_title = value
 
     # --- fontsize_legend ---

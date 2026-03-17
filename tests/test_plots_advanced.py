@@ -34,10 +34,10 @@ def test_survival_plots(
     assert "trend" in capsys.readouterr().out
 
     added: dict[str, object] = {}
-    import lifelines
+    import lifelines.plotting as lifelines_plotting
 
     monkeypatch.setattr(
-        lifelines.plotting,
+        lifelines_plotting,
         "add_at_risk_counts",
         lambda *fitters, **kwargs: added.update({"fitters": fitters, **kwargs}),
     )
@@ -207,7 +207,7 @@ def test_genomics_plots(
         cns.volcanoplot(volcano_df, n_show=-1)
 
     with pytest.raises(TypeError, match="Parameter 'n_show' must be an integer"):
-        cns.volcanoplot(volcano_df, n_show=True)  # type: ignore[arg-type]
+        cns.volcanoplot(volcano_df, n_show=True)
 
     def fake_dotplot(
         data: pd.DataFrame,

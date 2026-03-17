@@ -90,6 +90,7 @@ def survivalplot(
     validate_sufficient_data(data, duration, 2, "survivalplot")
 
     import lifelines as ll
+    from lifelines.statistics import multivariate_logrank_test
 
     ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
@@ -131,9 +132,7 @@ def survivalplot(
 
     if len(hue_order) == 2:
         try:
-            logrank_test = ll.statistics.multivariate_logrank_test(
-                df[duration], df[hue], df[event]
-            )
+            logrank_test = multivariate_logrank_test(df[duration], df[hue], df[event])
             p = num2tex.num2tex(logrank_test.p_value, precision=2)
             print(
                 "   ---> P-value was determined by two-sided multivariate log-rank test."
@@ -276,6 +275,7 @@ def cumulativeincidenceplot(
     validate_sufficient_data(data, duration, 2, "cumulativeincidenceplot")
 
     import lifelines as ll
+    from lifelines.plotting import add_at_risk_counts
 
     ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
@@ -334,7 +334,7 @@ def cumulativeincidenceplot(
         xticks = xticks[
             (xticks >= ax.get_xlim()[0] - 1e-8) & (xticks <= ax.get_xlim()[1] + 1e-8)
         ]
-        ll.plotting.add_at_risk_counts(
+        add_at_risk_counts(
             *fitters,
             ax=ax,
             rows_to_show=rows,

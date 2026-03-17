@@ -67,11 +67,20 @@ def _ensure_helvetica_bold() -> None:
             return
 
 
+def _validate_fontweight_title(value: str | int | None) -> str | int:
+    """
+    Validate font weight values against the public setup/settings contract.
+    """
+    if value is None or isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise TypeError("fontweight_title must be a string or integer")
+    return value
+
+
 def setup_matplotlib(
     color_cycle: str | None = None,
     color_map: str | None = None,
     fontsize_title: int | float | None = None,
-    fontweight_title: str | int | float | None = None,
+    fontweight_title: str | int | None = None,
     fontsize_legend: int | float | None = None,
     linewidth_axes: float | None = None,
 ) -> None:
@@ -97,7 +106,7 @@ def setup_matplotlib(
     fontsize_title : int, default: None
         Font size for titles, axis labels, and legend titles.
         If None, uses cns.settings.fontsize_title.
-    fontweight_title : str | int | float, default: None
+    fontweight_title : str | int, default: None
         Font weight for titles.
         If None, uses cns.settings.fontweight_title.
     fontsize_legend : int, default: None
@@ -180,6 +189,7 @@ def setup_matplotlib(
         fontsize_title = cns.settings.fontsize_title
     if fontweight_title is None:
         fontweight_title = cns.settings.fontweight_title
+    fontweight_title = _validate_fontweight_title(fontweight_title)
     if fontsize_legend is None:
         fontsize_legend = cns.settings.fontsize_legend
     if linewidth_axes is None:
@@ -354,7 +364,7 @@ def setup_scanpy() -> None:
 def setup_ax(
     ax: Axes,
     fontsize_title: int | float | None = None,
-    fontweight_title: str | int | float | None = None,
+    fontweight_title: str | int | None = None,
     fontsize_legend: int | float | None = None,
     linewidth_axes: float | None = None,
     colorbar_label: str = "FDR q-val",
@@ -372,7 +382,7 @@ def setup_ax(
     fontsize_title : int, default: None
         Font size for axis labels and title.
         If None, uses cns.settings.fontsize_title.
-    fontweight_title : str | int | float, default: None
+    fontweight_title : str | int, default: None
         Font weight for the title.
         If None, uses cns.settings.fontweight_title.
     fontsize_legend : int, default: None
@@ -448,6 +458,7 @@ def setup_ax(
         fontsize_title = cns.settings.fontsize_title
     if fontweight_title is None:
         fontweight_title = cns.settings.fontweight_title
+    fontweight_title = _validate_fontweight_title(fontweight_title)
     if fontsize_legend is None:
         fontsize_legend = cns.settings.fontsize_legend
     if linewidth_axes is None:

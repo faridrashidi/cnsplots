@@ -201,6 +201,8 @@ def test_settings_behavior() -> None:
         settings.fontsize_title = 0
     with pytest.raises(TypeError):
         settings.fontweight_title = []  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
+        settings.fontweight_title = 1.5  # type: ignore[assignment]
     with pytest.raises(TypeError):
         settings.fontsize_legend = "1"  # type: ignore[assignment]
     with pytest.raises(ValueError):
@@ -264,6 +266,8 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     assert mpl.rcParams["axes.labelsize"] == 9
     assert mpl.rcParams["axes.titleweight"] == "normal"
     assert mpl.rcParams["image.cmap"] == "parula"
+    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
+        _setup.setup_matplotlib(fontweight_title=1.5)  # type: ignore[arg-type]
 
     fig, ax = plt.subplots()
     heat = ax.pcolormesh(np.array([[1, 2], [3, 4]]))
@@ -282,6 +286,8 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     assert ax.get_xlabel() == "X"
     assert ax.title.get_fontweight() == "normal"
     assert heat.colorbar.ax.get_ylabel() == "Custom"
+    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
+        _setup.setup_ax(ax, fontweight_title=1.5)  # type: ignore[arg-type]
 
     fig2, ax2 = plt.subplots()
     ax2.plot([0, 1], [0, 1])

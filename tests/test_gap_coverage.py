@@ -715,18 +715,19 @@ def test_plot_gap_coverage(
     assert ax.get_xlabel() == "Time (Months)"
 
     import lifelines
+    import lifelines.statistics as lifelines_statistics
 
-    original_logrank_test = lifelines.statistics.multivariate_logrank_test
+    original_logrank_test = lifelines_statistics.multivariate_logrank_test
 
     monkeypatch.setattr(
-        lifelines.statistics,
+        lifelines_statistics,
         "multivariate_logrank_test",
         lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("bad")),
     )
     with pytest.raises(RuntimeError, match="Log-rank test failed"):
         cns.survivalplot(survival_df, "time", "event", "group")
     monkeypatch.setattr(
-        lifelines.statistics,
+        lifelines_statistics,
         "multivariate_logrank_test",
         original_logrank_test,
     )
@@ -756,13 +757,17 @@ def test_plot_gap_coverage(
     cns.phyloplot(phylo_adata)
 
     fake_venn_obj = types.SimpleNamespace(
-        get_label_by_id=lambda area: (_ for _ in ()).throw(AttributeError())
-        if area in {"100", "110"}
-        else types.SimpleNamespace(set_fontsize=lambda size: None),
-        get_patch_by_id=lambda area: (_ for _ in ()).throw(AttributeError())
-        if area in {"100", "110"}
-        else types.SimpleNamespace(
-            set_edgecolor=lambda color: None, set_linewidth=lambda width: None
+        get_label_by_id=lambda area: (
+            (_ for _ in ()).throw(AttributeError())
+            if area in {"100", "110"}
+            else types.SimpleNamespace(set_fontsize=lambda size: None)
+        ),
+        get_patch_by_id=lambda area: (
+            (_ for _ in ()).throw(AttributeError())
+            if area in {"100", "110"}
+            else types.SimpleNamespace(
+                set_edgecolor=lambda color: None, set_linewidth=lambda width: None
+            )
         ),
     )
     monkeypatch.setitem(
