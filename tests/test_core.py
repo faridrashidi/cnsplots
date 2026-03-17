@@ -569,3 +569,30 @@ def test_multipanel_layout() -> None:
     assert ax_c is mp.get_axes("C")
     assert mp.get_axes("missing") is None
     assert len(mp.axes) == 3
+
+
+def test_multipanel_below_aligns_to_parent_column() -> None:
+    mp = cns.multipanel(max_width=540)
+    mp.panel(
+        "B",
+        width=145,
+        height=128,
+        label_left=10,
+        label_top=12,
+        pad_left=0,
+        pad_top=0,
+        margin=(10, 0, 0, 10),
+    )
+    mp.panel(
+        "C",
+        width=145,
+        height=128,
+        label_left=10,
+        label_top=12,
+        pad_left=0,
+        pad_top=0,
+        margin=(10, 0, 0, 0),
+        below="B",
+    )
+
+    assert mp._get_panel_position(0)[0] == mp._get_panel_position(1)[0]

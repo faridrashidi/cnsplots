@@ -184,9 +184,12 @@ class multipanel:
             parent = self._panels[parent_idx]
             parent_x, parent_y = self._get_panel_position(parent_idx)
 
-            # x: align to parent's column (adjust for difference in label_left/pad_left)
+            # x: align to the parent's column origin, then apply this panel's
+            # own left spacing. This keeps stacked panels in the same column
+            # instead of reapplying the parent's left margin as an offset.
             x = (
                 parent_x
+                - parent["margin_left"]
                 - parent.get("pad_left", 0)
                 - parent["label_left"]
                 + panel["margin_left"]
