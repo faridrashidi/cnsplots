@@ -168,6 +168,43 @@ def test_heatmap_and_dotplot(
         )
 
 
+def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:
+    mp = cns.multipanel(max_width=180)
+    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    host_box = host_ax.get_position().frozen()
+
+    dp = cns.dotplot(
+        dotplot_df,
+        x="sample",
+        y="gene",
+        color="mean_expr",
+        size="pct_expr",
+        value="score",
+        legend=False,
+        xlabel="",
+        ylabel="",
+        xticklabels_rotation=0,
+    )
+
+    assert dp.ax_heatmap is not None
+    assert len(dp.cbars) == 0
+
+    eps = 1e-9
+    for ax in dp.heatmap_axes.flat:
+        box = ax.get_position()
+        assert box.x0 >= host_box.x0 - eps
+        assert box.y0 >= host_box.y0 - eps
+        assert box.x1 <= host_box.x1 + eps
+        assert box.y1 <= host_box.y1 + eps
+
+    for ax in plt.gcf().axes:
+        box = ax.get_position()
+        assert box.x0 >= host_box.x0 - eps
+        assert box.y0 >= host_box.y0 - eps
+        assert box.x1 <= host_box.x1 + eps
+        assert box.y1 <= host_box.y1 + eps
+
+
 def test_genomics_plots(
     volcano_df: pd.DataFrame,
     gsea_plot_df: pd.DataFrame,

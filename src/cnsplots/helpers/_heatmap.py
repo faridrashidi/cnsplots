@@ -4,10 +4,99 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from PyComplexHeatmap import ClusterMapPlotter
+from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
 from PyComplexHeatmap.clustermap import mm2inch
 
 import cnsplots as cns
+
+
+def _define_axes_within_current_bounds(
+    plotter: ClusterMapPlotter,
+    subplot_spec: Any = None,
+) -> bool:
+    """Constrain embedded heatmap-like plotters to the active host axes."""
+    if subplot_spec is not None:
+        return False
+
+    pos = plotter.ax.get_position()
+    wspace = (
+        plotter.subplot_gap
+        * mm2inch
+        * plotter.ax.figure.dpi
+        / (plotter.ax.get_window_extent().width / 3)
+    )
+    hspace = (
+        plotter.subplot_gap
+        * mm2inch
+        * plotter.ax.figure.dpi
+        / (plotter.ax.get_window_extent().height / 3)
+    )
+
+    plotter.gs = plotter.ax.figure.add_gridspec(
+        3,
+        3,
+        width_ratios=plotter.widths,
+        height_ratios=plotter.heights,
+        wspace=0,
+        hspace=0,
+        left=pos.x0,
+        right=pos.x1,
+        top=pos.y1,
+        bottom=pos.y0,
+    )
+    plotter.wspace = wspace
+    plotter.hspace = hspace
+
+    plotter.ax_heatmap = plotter.ax.figure.add_subplot(plotter.gs[1, 1])
+    plotter.ax_top = plotter.ax.figure.add_subplot(
+        plotter.gs[0, 1], sharex=plotter.ax_heatmap
+    )
+    plotter.ax_bottom = plotter.ax.figure.add_subplot(
+        plotter.gs[2, 1], sharex=plotter.ax_heatmap
+    )
+    plotter.ax_left = plotter.ax.figure.add_subplot(
+        plotter.gs[1, 0], sharey=plotter.ax_heatmap
+    )
+    plotter.ax_right = plotter.ax.figure.add_subplot(
+        plotter.gs[1, 2], sharey=plotter.ax_heatmap
+    )
+    plotter.ax_heatmap.set_xlim((0, plotter.data2d.shape[1]))
+    plotter.ax_heatmap.set_ylim((0, plotter.data2d.shape[0]))
+    plotter.ax_heatmap.yaxis.set_visible(False)
+    plotter.ax_heatmap.xaxis.set_visible(False)
+    plotter.ax.tick_params(
+        axis="both",
+        which="both",
+        left=False,
+        right=False,
+        labelleft=False,
+        labelright=False,
+        top=False,
+        bottom=False,
+        labeltop=False,
+        labelbottom=False,
+    )
+    plotter.ax_heatmap.tick_params(
+        axis="both",
+        which="both",
+        left=False,
+        right=False,
+        top=False,
+        bottom=False,
+        labeltop=False,
+        labelbottom=False,
+        labelleft=False,
+        labelright=False,
+    )
+    for side in ["left", "right", "top", "bottom"]:
+        plotter.ax.spines[side].set_visible(False)
+
+    from matplotlib.figure import Figure
+
+    fig = plotter.ax.figure
+    if isinstance(fig, Figure):
+        fig.set_layout_engine("none")
+    return True
 
 
 class ClusterMapPlotterNew(ClusterMapPlotter):
@@ -158,87 +247,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         self.post_processing()
 
     def _define_axes(self, subplot_spec: Any = None) -> None:
-        if subplot_spec is None:
-            # Constrain the GridSpec to the current axes' position so the
-            # heatmap doesn't span the entire figure.
-            pos = self.ax.get_position()
-            wspace = (
-                self.subplot_gap
-                * mm2inch
-                * self.ax.figure.dpi
-                / (self.ax.get_window_extent().width / 3)
-            )
-            hspace = (
-                self.subplot_gap
-                * mm2inch
-                * self.ax.figure.dpi
-                / (self.ax.get_window_extent().height / 3)
-            )
-
-            self.gs = self.ax.figure.add_gridspec(
-                3,
-                3,
-                width_ratios=self.widths,
-                height_ratios=self.heights,
-                wspace=0,
-                hspace=0,
-                left=pos.x0,
-                right=pos.x1,
-                top=pos.y1,
-                bottom=pos.y0,
-            )
-            self.wspace = wspace
-            self.hspace = hspace
-
-            self.ax_heatmap = self.ax.figure.add_subplot(self.gs[1, 1])
-            self.ax_top = self.ax.figure.add_subplot(
-                self.gs[0, 1], sharex=self.ax_heatmap
-            )
-            self.ax_bottom = self.ax.figure.add_subplot(
-                self.gs[2, 1], sharex=self.ax_heatmap
-            )
-            self.ax_left = self.ax.figure.add_subplot(
-                self.gs[1, 0], sharey=self.ax_heatmap
-            )
-            self.ax_right = self.ax.figure.add_subplot(
-                self.gs[1, 2], sharey=self.ax_heatmap
-            )
-            self.ax_heatmap.set_xlim((0, self.data2d.shape[1]))
-            self.ax_heatmap.set_ylim((0, self.data2d.shape[0]))
-            self.ax_heatmap.yaxis.set_visible(False)
-            self.ax_heatmap.xaxis.set_visible(False)
-            self.ax.tick_params(
-                axis="both",
-                which="both",
-                left=False,
-                right=False,
-                labelleft=False,
-                labelright=False,
-                top=False,
-                bottom=False,
-                labeltop=False,
-                labelbottom=False,
-            )
-            self.ax_heatmap.tick_params(
-                axis="both",
-                which="both",
-                left=False,
-                right=False,
-                top=False,
-                bottom=False,
-                labeltop=False,
-                labelbottom=False,
-                labelleft=False,
-                labelright=False,
-            )
-            for side in ["left", "right", "top", "bottom"]:
-                self.ax.spines[side].set_visible(False)
-            from matplotlib.figure import Figure
-
-            fig = self.ax.figure
-            if isinstance(fig, Figure):
-                fig.set_layout_engine("none")
-        else:
+        if not _define_axes_within_current_bounds(self, subplot_spec):
             super()._define_axes(subplot_spec)
 
     def collect_legends(self) -> None:
@@ -306,3 +315,9 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 self.label_max_width = heatmap_label_max_width * 1.1
             if len(self.legend_list) > 1:
                 self.legend_list = sorted(self.legend_list, key=lambda x: x[3])
+
+
+class DotClustermapPlotterNew(DotClustermapPlotter):
+    def _define_axes(self, subplot_spec: Any = None) -> None:
+        if not _define_axes_within_current_bounds(self, subplot_spec):
+            super()._define_axes(subplot_spec)

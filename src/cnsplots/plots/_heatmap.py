@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     import pandas as pd
     from anndata import AnnData
     from matplotlib.axes import Axes
+    from PyComplexHeatmap import DotClustermapPlotter
 
     from cnsplots.helpers._heatmap import ClusterMapPlotterNew
 
@@ -18,7 +19,6 @@ import pandas as pd
 import PyComplexHeatmap as pch
 import seaborn as sns
 from natsort import natsort_keygen
-from PyComplexHeatmap import DotClustermapPlotter
 from scipy.stats import fisher_exact
 
 import cnsplots as cns
@@ -425,7 +425,9 @@ def dotplot(
     if value is not None:
         plotter_kwargs["value"] = value
     plotter_kwargs.update(kwargs)
-    cmp = DotClustermapPlotter(**plotter_kwargs)
+    plotter_kwargs.setdefault("plot_legend", plotter_kwargs.get("legend", True))
+    cmp = helper_heatmap.DotClustermapPlotterNew(**plotter_kwargs)
+    cmp.cbars = getattr(cmp, "cbars", [])
 
     hm_ax = cmp.heatmap_axes[-1, 0]
     for ax in [cmp.ax_heatmap, hm_ax]:

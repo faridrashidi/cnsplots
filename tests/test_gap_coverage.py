@@ -481,6 +481,21 @@ def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     gs = plt.gcf().add_gridspec(1, 1)
     plotter5._define_axes(gs[0])
 
+    dot_calls: dict[str, object] = {}
+
+    def fake_dot_define_axes(self: object, subplot_spec: object = None) -> None:
+        dot_calls["subplot_spec"] = subplot_spec
+
+    monkeypatch.setattr(
+        helper_heatmap.DotClustermapPlotter,
+        "_define_axes",
+        fake_dot_define_axes,
+    )
+    plotter_dot = object.__new__(helper_heatmap.DotClustermapPlotterNew)
+    subplot_spec = object()
+    plotter_dot._define_axes(subplot_spec)
+    assert dot_calls["subplot_spec"] is subplot_spec
+
     monkeypatch.undo()
 
     cns.figure(120, 120)
