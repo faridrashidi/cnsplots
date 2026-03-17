@@ -621,6 +621,14 @@ article table.align-default {
   display: none !important;
 }
 
+.sidebar-tree .toctree-checkbox ~ label {
+  display: none;
+}
+
+.sidebar-tree li.has-children > .reference {
+  padding-right: var(--sidebar-item-spacing-horizontal);
+}
+
 .sidebar-tree .toctree-l2 {
   display: none;
 }
