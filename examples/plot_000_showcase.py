@@ -27,7 +27,6 @@ import cnsplots as cns
     showcase_images,
 ) = cns.get_showcase_data(
     include_showcase_images=True,
-    caller_file=__file__,
 )
 
 
@@ -253,10 +252,11 @@ ax = mp.panel(
     label_left=10,
     label_top=12,
     pad_left=0,
-    pad_top=0,
+    pad_top=5,
     margin=(10, 0, 0, 10),
 )
 ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
+ax.set_title("Pathology Image")
 ax.set_axis_off()
 
 ax = mp.panel(
@@ -266,10 +266,11 @@ ax = mp.panel(
     label_left=10,
     label_top=12,
     pad_left=0,
-    pad_top=0,
+    pad_top=5,
     margin=(10, 0, 0, 10),
 )
 ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
+ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 ax = mp.panel(
@@ -279,18 +280,19 @@ ax = mp.panel(
     label_left=10,
     label_top=12,
     pad_left=0,
-    pad_top=0,
+    pad_top=5,
     margin=(10, 0, 0, 0),
     below="B",
 )
 ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
+ax.set_title("Western Blot")
 ax.set_axis_off()
 
 mp.panel("D", 100, 45, pad_top=5, margin=(10, 0, 0, 30), color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
-ax.set_title("Barplot")
+ax.set_title("Boxplot")
 ax.set_xlabel("")
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
@@ -305,10 +307,11 @@ ax = mp.panel(
     label_left=10,
     label_top=12,
     pad_left=0,
-    pad_top=0,
+    pad_top=5,
     margin=(10, 0, 0, 0),
 )
 ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
+ax.set_title("H&E Histology")
 ax.set_axis_off()
 
 cns.savefig("~/Desktop/overview2.pdf")
