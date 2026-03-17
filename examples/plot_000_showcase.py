@@ -37,10 +37,12 @@ import cnsplots as cns
 # A comprehensive showcase of cnsplots capabilities for the README.
 
 cns.settings._fontweight_title = "normal"
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(
+    max_width=540, title="Figure 1", fontweight_title="bold", loc="left"
+)
 
 # Panel A: boxplot
-mp.panel("A", 100, 45, pad_top=5, margin=(10, 0, 0, 30), color_cycle=[cns.VIOLET])
+mp.panel("A", 100, 45, pad_top=5, margin=(0, 0, 0, 30), color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
@@ -117,7 +119,7 @@ ax.get_legend().set_title(None)
 
 # Panel G: vennplot
 mp.panel(
-    "G", 40, 40, pad_top=5, margin=(10, 0, 40, 5), pad_left=10, color_cycle="Tableau"
+    "G", 40, 40, pad_top=5, margin=(0, 0, 40, 5), pad_left=10, color_cycle="Tableau"
 )
 cns.vennplot(gene_sets, labels=("Set A", "Set B", "Set C"))
 mp.get_axes("G").set_title("Vennplot")
@@ -128,7 +130,7 @@ mp.panel(
     50,
     50,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin=(0, 0, 0, 10),
     pad_left=10,
     below="G",
     color_cycle="Ecotyper3",
@@ -164,7 +166,7 @@ ax.get_legend().set_title(None)
 ax.set_title("Kdeplot")
 
 # Panel L: volcanoplot
-mp.panel("L", 90, 90, pad_top=5, margin=(10, 0, 50, 0))
+mp.panel("L", 90, 90, pad_top=5, margin=(0, 0, 50, 0))
 ax = cns.volcanoplot(volcano_df)
 ax.set_title("Volcanoplot")
 
@@ -196,7 +198,7 @@ ax.set_title("Slopeplot")
 
 # Panel Q: scatterplot
 mp.newline()
-mp.panel("Q", 90, 90, pad_top=5, margin=(10, 0, 40, 0), color_cycle="Set1")
+mp.panel("Q", 90, 90, pad_top=5, margin=(0, 0, 40, 0), color_cycle="Set1")
 ax = cns.scatterplot(
     data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
 )
@@ -246,7 +248,9 @@ cns.savefig("~/Desktop/Figure1.pdf")
 # ~~~~~~~~
 # A multipanel image layout sized directly from the source image dimensions.
 
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(
+    max_width=540, title="Figure 2", fontweight_title="bold", loc="left"
+)
 
 # Panel A: load pathology image
 ax = mp.panel(
@@ -257,7 +261,7 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin=(0, 0, 0, 10),
 )
 ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
 ax.set_title("Pathology Image")
@@ -341,7 +345,7 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 0),
+    margin=(0, 0, 0, 0),
 )
 ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
 ax.set_title("H&E Histology")
