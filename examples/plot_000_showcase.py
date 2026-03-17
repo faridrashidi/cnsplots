@@ -9,6 +9,7 @@ focused per-feature examples in the rest of the gallery.
 """
 
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 
 # %%
 # Load data
@@ -294,7 +295,7 @@ ax.set_title("Western Blot")
 ax.set_axis_off()
 
 # Panel D: boxplot
-mp.panel("D", 100, 45, pad_top=5, margin=(10, 0, 0, 30), color_cycle=[cns.VIOLET])
+mp.panel("D", 100, 60, pad_top=5, margin=(10, 0, 0, 10), color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
@@ -305,19 +306,29 @@ ax.set_xticklabels(
 )
 
 # Panel E: dotplot
-mp.panel("E", 40, 80, pad_top=3, margin=(0, 0, 0, 0))
+mp.panel("E", 62, 72, pad_left=5, pad_top=3, margin=(0, 4, 0, 0), below="D")
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
-cns.dotplot(
+plt.sca(mp.get_axes("E"))
+dp = cns.dotplot(
     tips_minmax,
     x="sex",
     y="day",
     color="size",
     size="min",
     value="size",
-    max_s=60,
+    legend=False,
+    xlabel="",
+    ylabel="",
+    xticklabels_rotation=0,
+    xticklabels_fontsize=6,
+    yticklabels_fontsize=6,
+    max_s=40,
 )
+for label in dp.heatmap_axes[-1, 0].get_xticklabels():
+    label.set_ha("center")
+dp.ax_heatmap.set_title("Dotplot")
 
 mp.newline()
 
