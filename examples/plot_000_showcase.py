@@ -261,8 +261,8 @@ ax.set_axis_off()
 
 ax = mp.panel(
     "B",
-    284,
-    322,
+    128,
+    145,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -272,10 +272,24 @@ ax = mp.panel(
 ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_axis_off()
 
+ax = mp.panel(
+    "C",
+    128,
+    145,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=0,
+    margin=(10, 0, 0, 0),
+    below="B",
+)
+ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
+ax.set_axis_off()
+
 mp.newline()
 
 ax = mp.panel(
-    "C",
+    "D",
     160,
     319,
     label_left=10,
@@ -285,19 +299,6 @@ ax = mp.panel(
     margin=(10, 0, 0, 0),
 )
 ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
-ax.set_axis_off()
-
-ax = mp.panel(
-    "D",
-    160,
-    181,
-    label_left=10,
-    label_top=12,
-    pad_left=0,
-    pad_top=0,
-    margin=(10, 0, 0, 0),
-)
-ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
 ax.set_axis_off()
 
 cns.savefig("~/Desktop/overview2.png")
