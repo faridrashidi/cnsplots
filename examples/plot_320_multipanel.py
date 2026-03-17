@@ -24,6 +24,7 @@ iris_df, tips_df, survival_df, blobs, volcano_df, gene_sets, roc_df, slope_df = 
 # ~~~~~~~~~~~~~~~~~~~~~~
 # A comprehensive showcase of cnsplots capabilities for the README.
 
+cns.settings._fontweight_title = "normal"
 mp = cns.multipanel(max_width=540)
 
 # Panel A: boxplot
@@ -49,7 +50,16 @@ ax.set_xticklabels(
 # Panel C: stripplot
 mp.panel("C", 100, 60, pad_top=5, color_cycle="BlueRed")
 ax = cns.stripplot(data=tips_df, x="day", y="tip", hue="sex")
-# ax.legend(loc="upper left")
+legend = ax.get_legend()
+ax.legend(
+    handles=legend.legend_handles,
+    labels=[text.get_text() for text in legend.get_texts()],
+    title=legend.get_title().get_text(),
+    loc="upper left",
+    bbox_to_anchor=(-0.02, 1.0),
+    borderaxespad=0,
+    markerscale=1,
+)
 ax.set_title("Stripplot")
 
 # Panel D: stackplot
@@ -123,7 +133,16 @@ ax.set_title("Regplot")
 # Panel J: survivalplot
 mp.panel("J", 90, 90, pad_top=5)
 ax = cns.survivalplot(data=survival_df, duration="time", event="event", hue="group")
-ax.legend(loc="upper right")
+# Keep the showcase annotation compact by dropping the CI from the HR line.
+for text in ax.texts:
+    label = text.get_text()
+    if label.startswith("HR ="):
+        hr_line, sep, remainder = label.partition("\n")
+        text.set_text(
+            f"{hr_line.split(' (', 1)[0]}{sep}{remainder}" if sep else hr_line
+        )
+        break
+ax.legend(bbox_to_anchor=(1.1, 1.0))
 ax.set_title("Survivalplot")
 
 # Panel K: kdeplot
@@ -140,7 +159,10 @@ ax.set_title("Volcanoplot")
 # Panel M: rocplot
 mp.panel("M", 90, 90, pad_top=5, color_cycle="ECharts")
 ax = cns.rocplot(roc_df, "label", ["Model A", "Model B"])
-ax.legend(loc="lower right")
+ax.legend(loc="lower right", bbox_to_anchor=(1.1, 0.0))
+for text in ax.get_legend().get_texts():
+    text.set_text(text.get_text().replace(" (AUC=", "\n(AUC="))
+    text.set_multialignment("left")
 ax.set_title("Rocplot")
 
 # Panel N: sankeyplot
@@ -231,6 +253,7 @@ cns.stripplot(data=tips_df, x="day", y="tip", hue="sex")
 # 1x3 horizontal layout with titles
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create a row of panels, useful for comparing related analyses.
+cns.settings._fontweight_title = "bold"
 mp = cns.multipanel(max_width=540)
 
 mp.panel("A", 120, 120, pad_top=10)
