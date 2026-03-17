@@ -557,6 +557,17 @@ def test_utils_helpers_and_showcase_data(
     assert len(data_with_assets) == 9
     assert data_with_assets[-1].name == "assets"
 
+    monkeypatch.chdir(Path(__file__).resolve().parents[1])
+    module_globals: dict[str, object] = {"_utils": _utils}
+    exec(
+        "result = _utils.get_showcase_data(include_showcase_images=True)",
+        module_globals,
+    )
+    data_without_file = module_globals["result"]
+    assert isinstance(data_without_file, tuple)
+    assert len(data_without_file) == 9
+    assert data_without_file[-1].name == "assets"
+
 
 def test_multipanel_layout() -> None:
     mp = cns.multipanel(max_width=150)
