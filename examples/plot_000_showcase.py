@@ -236,7 +236,8 @@ cmp = cns.heatmapplot(
 )
 cmp.ax.set_title("Heatmapplot")
 
-cns.savefig("~/Desktop/overview.pdf")
+# Save final figure
+cns.savefig("~/Desktop/Figure1.pdf")
 
 
 # %%
@@ -246,6 +247,7 @@ cns.savefig("~/Desktop/overview.pdf")
 
 mp = cns.multipanel(max_width=540)
 
+# Panel A: load pathology image
 ax = mp.panel(
     "A",
     284,
@@ -260,6 +262,7 @@ ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
 ax.set_title("Pathology Image")
 ax.set_axis_off()
 
+# Panel B: load immunofluorescence image
 ax = mp.panel(
     "B",
     128,
@@ -274,6 +277,7 @@ ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
+# Panel C: load western blot image
 ax = mp.panel(
     "C",
     128,
@@ -289,6 +293,7 @@ ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
 ax.set_title("Western Blot")
 ax.set_axis_off()
 
+# Panel D: boxplot
 mp.panel("D", 100, 45, pad_top=5, margin=(10, 0, 0, 30), color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
@@ -299,10 +304,26 @@ ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
 )
 
+# Panel E: dotplot
+mp.panel("E", 40, 80, pad_top=3, margin=(0, 0, 0, 0))
+tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
+tips_minmax.columns = ["min", "size"]
+tips_minmax = tips_minmax.reset_index()
+cns.dotplot(
+    tips_minmax,
+    x="sex",
+    y="day",
+    color="size",
+    size="min",
+    value="size",
+    max_s=60,
+)
+
 mp.newline()
 
+# Panel F: h&e histology image
 ax = mp.panel(
-    "E",
+    "F",
     160,
     319,
     label_left=10,
@@ -315,4 +336,5 @@ ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
 ax.set_title("H&E Histology")
 ax.set_axis_off()
 
-cns.savefig("~/Desktop/overview2.pdf")
+# Save final figure
+cns.savefig("~/Desktop/Figure2.pdf")
