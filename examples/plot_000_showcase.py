@@ -353,7 +353,7 @@ ax.set_axis_off()
 
 ax = mp.panel(
     "G",
-    160,
+    150,
     200,
     label_left=10,
     label_top=12,
@@ -361,9 +361,8 @@ ax = mp.panel(
     pad_top=5,
     margin=(0, 0, 0, 0),
 )
-cns.placeholderplot("salam chetori")
+cns.placeholderplot("This is a placehoder plot\n160 ⨯ 200")
 ax.set_title("Placeholder")
-
 
 # Save final figure
 cns.savefig("~/Desktop/Figure2.pdf")

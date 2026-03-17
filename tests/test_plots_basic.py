@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 from matplotlib.colors import to_hex
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 
 import cnsplots as cns
 
@@ -249,26 +249,47 @@ def test_line_scatter_reg_and_slope_plots(
 
 
 def test_placeholderplot_renders_centered_placeholder() -> None:
-    cns.figure(120, 180)
-    plt.plot([0, 1], [0, 1])
-    ax = cns.placeholderplot("A description to be centered in the panel")
+    with cns.settings.context(fontsize_title=11, fontweight_title="normal"):
+        cns.figure(120, 180)
+        plt.plot([0, 1], [0, 1])
+        ax = cns.placeholderplot("A description to be centered in the panel")
 
-    assert ax is plt.gca()
-    assert len(ax.lines) == 0
-    assert len(ax.texts) == 1
+        assert ax is plt.gca()
+        assert len(ax.lines) == 0
+        assert len(ax.texts) == 1
+        assert len(ax.patches) >= 6
 
-    text = ax.texts[0]
-    assert text.get_text() == "A description to be centered in the panel"
-    assert text.get_ha() == "center"
-    assert text.get_va() == "center"
-    assert text.get_wrap() is True
+        text = ax.texts[0]
+        assert text.get_text() == "A description to be centered in the panel"
+        assert text.get_ha() == "center"
+        assert text.get_va() == "center"
+        assert text.get_wrap() is True
+        assert text.get_fontsize() == pytest.approx(11)
+        assert text.get_fontweight() == "normal"
+        assert text.get_fontfamily() == list(plt.rcParams["font.family"])
 
-    rectangle = next(patch for patch in ax.patches if isinstance(patch, Rectangle))
-    assert to_hex(rectangle.get_facecolor(), keep_alpha=False) == "#e6e6e6"
-    assert to_hex(rectangle.get_edgecolor(), keep_alpha=False) == "#b3b3b3"
-    assert rectangle.get_linewidth() == pytest.approx(0.8)
+        outer_card = next(
+            patch
+            for patch in ax.patches
+            if isinstance(patch, FancyBboxPatch)
+            and to_hex(patch.get_facecolor(), keep_alpha=False) == "#eef1f4"
+        )
+        assert to_hex(outer_card.get_edgecolor(), keep_alpha=False) == "#b8c0cc"
+        assert outer_card.get_linewidth() == pytest.approx(0.9)
 
-    assert not ax.axison
+        assert any(
+            isinstance(patch, FancyBboxPatch)
+            and to_hex(patch.get_facecolor(), keep_alpha=False) == "#e0e5eb"
+            for patch in ax.patches
+        )
+        assert any(
+            isinstance(patch, Circle)
+            and to_hex(patch.get_facecolor(), keep_alpha=False) == "#c7d0db"
+            for patch in ax.patches
+        )
+        assert sum(isinstance(patch, Polygon) for patch in ax.patches) >= 2
+
+        assert not ax.axison
 
 
 def test_placeholderplot_requires_string_description() -> None:

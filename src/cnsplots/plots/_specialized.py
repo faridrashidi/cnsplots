@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 from sklearn.metrics import auc, roc_curve
 
 import cnsplots.helpers._phylo as helper_phylo
@@ -27,10 +27,11 @@ from cnsplots._validation import (
 
 def placeholderplot(description: str) -> Axes:
     """
-    Create a text placeholder panel for figure layout mockups.
+    Create a stylized placeholder panel for figure layout mockups.
 
-    This helper clears the current axes, draws a light-gray placeholder panel,
-    and centers wrapped descriptive text inside it.
+    This helper clears the current axes, draws a rounded placeholder card with
+    a mock image area, and places wrapped descriptive text in a centered
+    caption area.
 
     Parameters
     ----------
@@ -62,25 +63,79 @@ def placeholderplot(description: str) -> Axes:
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.add_patch(
-        Rectangle(
-            (0, 0),
-            1,
-            1,
+        FancyBboxPatch(
+            (0.02, 0.02),
+            0.96,
+            0.96,
             transform=ax.transAxes,
-            facecolor="#E6E6E6",
-            edgecolor="#B3B3B3",
-            linewidth=0.8,
+            boxstyle="round,pad=0.02,rounding_size=0.01",
+            facecolor="#EEF1F4",
+            edgecolor="#B8C0CC",
+            linewidth=0.9,
             clip_on=False,
+        )
+    )
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.08, 0.34),
+            0.84,
+            0.44,
+            transform=ax.transAxes,
+            boxstyle="round,pad=0.015,rounding_size=0.01",
+            facecolor="#E0E5EB",
+            edgecolor="#C5CCD6",
+            linewidth=0.8,
+        )
+    )
+    ax.add_patch(
+        Circle(
+            (0.77, 0.68),
+            0.045,
+            transform=ax.transAxes,
+            facecolor="#C7D0DB",
+            edgecolor="none",
+        )
+    )
+    ax.add_patch(
+        Polygon(
+            [(0.15, 0.38), (0.34, 0.60), (0.52, 0.38)],
+            closed=True,
+            transform=ax.transAxes,
+            facecolor="#B7C2D0",
+            edgecolor="none",
+        )
+    )
+    ax.add_patch(
+        Polygon(
+            [(0.36, 0.38), (0.58, 0.55), (0.82, 0.38)],
+            closed=True,
+            transform=ax.transAxes,
+            facecolor="#A8B5C5",
+            edgecolor="none",
+        )
+    )
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.13, 0.10),
+            0.74,
+            0.14,
+            transform=ax.transAxes,
+            boxstyle="round,pad=0.015,rounding_size=0.01",
+            facecolor="#F8F9FB",
+            edgecolor="none",
         )
     )
     ax.text(
         0.5,
-        0.5,
+        0.17,
         description,
         transform=ax.transAxes,
         ha="center",
         va="center",
-        color="#4D4D4D",
+        fontfamily=plt.rcParams["font.family"],
+        fontsize=plt.rcParams["axes.labelsize"],
+        fontweight=plt.rcParams["axes.titleweight"],
+        color="#59616B",
         wrap=True,
     )
     ax.set_axis_off()
