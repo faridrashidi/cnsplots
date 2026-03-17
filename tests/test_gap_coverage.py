@@ -246,7 +246,11 @@ def test_svg_gap_coverage() -> None:
     )
 
 
-def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_utils_gap_coverage(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    showcase_bundle: tuple[pd.DataFrame, ...],
+) -> None:
     cns.figure(100, 100)
     plt.plot([0, 1], [0, 1])
     nested_path = tmp_path / "nested" / "plot.png"
@@ -334,6 +338,25 @@ def test_utils_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
             ax2,
             {"x": "value", "y": "group"},
             "hue",
+        )
+
+    fake_sns = types.SimpleNamespace(
+        load_dataset=lambda name: (
+            showcase_bundle[0] if name == "iris" else showcase_bundle[1]
+        )
+    )
+    fake_sc = types.SimpleNamespace(
+        datasets=types.SimpleNamespace(blobs=lambda: showcase_bundle[3].copy())
+    )
+    monkeypatch.setitem(sys.modules, "seaborn", fake_sns)
+    monkeypatch.setitem(sys.modules, "scanpy", fake_sc)
+    missing_assets_root = tmp_path / "missing_assets"
+    missing_assets_root.mkdir()
+    monkeypatch.chdir(missing_assets_root)
+    with pytest.raises(FileNotFoundError, match="Could not locate examples/assets"):
+        _utils.get_showcase_data(
+            include_showcase_images=True,
+            caller_file=missing_assets_root / "plot.py",
         )
 
     for name in ["Set3", "Pastel1", "Pastel2", "Paired", "Dark2", "Accent", "Bold"]:
