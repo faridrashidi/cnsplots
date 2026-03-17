@@ -31,8 +31,8 @@ import cnsplots as cns
 
 
 # %%
-# README Showcase figure
-# ~~~~~~~~~~~~~~~~~~~~~~
+# Figure 1
+# ~~~~~~~~
 # A comprehensive showcase of cnsplots capabilities for the README.
 
 cns.settings._fontweight_title = "normal"
@@ -240,9 +240,10 @@ cns.savefig("~/Desktop/overview.pdf")
 
 
 # %%
-# Showcase figure 2
-# ~~~~~~~~~~~~~~~~~
+# Figure 2
+# ~~~~~~~~
 # A multipanel image layout sized directly from the source image dimensions.
+
 mp = cns.multipanel(max_width=540)
 
 ax = mp.panel(
