@@ -44,17 +44,7 @@ mp = cns.multipanel(
 )
 
 # Panel A: boxplot
-mp.panel(
-    "A",
-    100,
-    45,
-    pad_top=5,
-    margin_left=0,
-    margin_top=0,
-    margin_right=0,
-    margin_bottom=30,
-    color_cycle=[cns.VIOLET],
-)
+mp.panel("A", 100, 45, color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
@@ -65,7 +55,7 @@ ax.set_xticklabels(
 )
 
 # Panel B: violinplot
-mp.panel("B", 100, 45, pad_top=5, color_cycle=[cns.CHOCOLATE])
+mp.panel("B", 100, 45, color_cycle=[cns.CHOCOLATE])
 ax = cns.violinplot(data=iris_df, x="species", y="sepal_width", pairs="all")
 ax.set_title("Violinplot")
 ax.set_xlabel("")
@@ -74,7 +64,7 @@ ax.set_xticklabels(
 )
 
 # Panel C: stripplot
-mp.panel("C", 100, 60, pad_top=5, color_cycle="BlueRed")
+mp.panel("C", 100, 60, color_cycle="BlueRed")
 ax = cns.stripplot(data=tips_df, x="day", y="tip", hue="sex")
 legend = ax.get_legend()
 ax.legend(
@@ -89,17 +79,7 @@ ax.legend(
 ax.set_title("Stripplot")
 
 # Panel D: stackplot
-mp.panel(
-    "D",
-    100,
-    50,
-    pad_top=5,
-    margin_left=10,
-    margin_top=0,
-    margin_right=35,
-    margin_bottom=20,
-    color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"),
-)
+mp.panel("D", 100, 50, color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"))
 ax = cns.stackplot(data=tips_df, x="day", y="sex", pairs=[("Thur", "Sun")])
 ax.set_title("Stackplot")
 ax.get_legend().set_title(None)

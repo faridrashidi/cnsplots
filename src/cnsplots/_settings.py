@@ -511,12 +511,12 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default panel height in pixels for multipanel.panel().",
     ),
     "panel_pad_left": _spec(
-        20,
+        40,
         lambda value: _validate_number("panel_pad_left", value, non_negative=True),
         "Default left padding in pixels for multipanel.panel() and add_panel_label().",
     ),
     "panel_pad_top": _spec(
-        0,
+        15,
         lambda value: _validate_number("panel_pad_top", value, non_negative=True),
         "Default top padding in pixels for multipanel.panel() and add_panel_label().",
     ),
@@ -526,17 +526,17 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default top margin in pixels for multipanel.panel().",
     ),
     "panel_margin_bottom": _spec(
-        20,
+        10,
         lambda value: _validate_number("panel_margin_bottom", value, non_negative=True),
         "Default bottom margin in pixels for multipanel.panel().",
     ),
     "panel_margin_left": _spec(
-        10,
+        0,
         lambda value: _validate_number("panel_margin_left", value, non_negative=True),
         "Default left margin in pixels for multipanel.panel().",
     ),
     "panel_margin_right": _spec(
-        0,
+        10,
         lambda value: _validate_number("panel_margin_right", value, non_negative=True),
         "Default right margin in pixels for multipanel.panel().",
     ),
