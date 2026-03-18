@@ -469,6 +469,11 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         lambda value: _validate_number("figure_height", value, positive=True),
         "Default figure height in pixels for figure().",
     ),
+    "figure_autofit": _spec(
+        True,
+        lambda value: _validate_bool("figure_autofit", value),
+        "Whether figure() auto-expands the canvas to fit overflowing decorations.",
+    ),
     "figure_dpi": _spec(
         72 * 2,
         lambda value: _validate_number("figure_dpi", value, positive=True),

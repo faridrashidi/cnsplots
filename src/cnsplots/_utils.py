@@ -15,6 +15,7 @@ import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
+from matplotlib.backend_bases import DrawEvent
 import num2tex
 import palettable
 import pandas as pd
@@ -38,6 +39,185 @@ PINK = "#E787E5"
 GRAY = "#A3A3A3"
 VIOLET = "#442288"
 CHOCOLATE = "#662506"
+
+_FIGURE_AUTOFIT_TOLERANCE_PX = 0.8
+_FIGURE_AUTOFIT_MAX_PASSES = 3
+
+
+class _FigureAutofitManager:
+    """Grow cns.figure canvases when rendered artists overflow the figure bbox."""
+
+    def __init__(self, fig):
+        self.fig = fig
+        self._draw_event_cid = None
+        self._is_relayout_in_draw = False
+        self._connect_draw_handler()
+
+    def _connect_draw_handler(self):
+        if self._draw_event_cid is not None:
+            return
+        self._draw_event_cid = self.fig.canvas.mpl_connect("draw_event", self._on_draw)
+
+    def _get_canvas_renderer(self, canvas):
+        """Return the canvas renderer when the backend exposes it."""
+        get_renderer = getattr(canvas, "get_renderer", None)
+        if not callable(get_renderer):
+            return None
+        return get_renderer()
+
+    def _get_artist_bbox(self, artist, renderer):
+        """Get a rendered bbox for an artist when available."""
+        get_tightbbox = getattr(artist, "get_tightbbox", None)
+        if callable(get_tightbbox):
+            bbox = get_tightbbox(renderer=renderer)
+            if bbox is not None:
+                return bbox
+        get_window_extent = getattr(artist, "get_window_extent", None)
+        if callable(get_window_extent):
+            try:
+                return get_window_extent(renderer=renderer)
+            except TypeError:
+                return get_window_extent()
+        return None
+
+    def _iter_figure_artists(self):
+        """Yield figure-level artists that can overflow the canvas."""
+        yield from self.fig.texts
+        yield from self.fig.legends
+        for artist in self.fig.artists:
+            if artist not in self.fig.texts and artist not in self.fig.legends:
+                yield artist
+
+    def _iter_axes_artists(self, ax):
+        """Yield axes-level artists that can overflow the canvas."""
+        for title_name in ("title", "_left_title", "_right_title"):
+            title = getattr(ax, title_name, None)
+            if title is not None:
+                yield title
+
+        yield ax.xaxis.label
+        yield ax.yaxis.label
+        yield ax.xaxis.get_offset_text()
+        yield ax.yaxis.get_offset_text()
+        yield from ax.get_xticklabels()
+        yield from ax.get_yticklabels()
+
+        legend = ax.get_legend()
+        if legend is not None:
+            yield legend
+
+        yield from ax.texts
+
+        for artist in (*ax.lines, *ax.collections, *ax.patches, *ax.artists):
+            get_clip_on = getattr(artist, "get_clip_on", None)
+            if callable(get_clip_on) and not get_clip_on():
+                yield artist
+
+    def _measure_overflow_px(self, renderer):
+        """Measure how far visible artists extend past the current figure bbox."""
+        fig_bbox = self.fig.bbox.frozen()
+        overflow = {
+            "left": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "top": 0.0,
+        }
+
+        artists = list(self._iter_figure_artists())
+        for ax in self.fig.get_axes():
+            artists.extend(self._iter_axes_artists(ax))
+
+        for artist in artists:
+            get_visible = getattr(artist, "get_visible", None)
+            if callable(get_visible) and not get_visible():
+                continue
+            bbox = self._get_artist_bbox(artist, renderer)
+            if bbox is None:
+                continue
+            if bbox.width <= 0 and bbox.height <= 0:
+                continue
+            overflow["left"] = max(overflow["left"], float(fig_bbox.x0 - bbox.x0))
+            overflow["right"] = max(overflow["right"], float(bbox.x1 - fig_bbox.x1))
+            overflow["bottom"] = max(overflow["bottom"], float(fig_bbox.y0 - bbox.y0))
+            overflow["top"] = max(overflow["top"], float(bbox.y1 - fig_bbox.y1))
+
+        return tuple(
+            max(0.0, overflow[key]) for key in ("left", "right", "bottom", "top")
+        )
+
+    def _grow_canvas(self, left, right, bottom, top):
+        """Increase canvas size and keep existing axes at their current pixel size."""
+        fig_bbox = self.fig.bbox.frozen()
+        current_width_px = float(fig_bbox.width)
+        current_height_px = float(fig_bbox.height)
+        if current_width_px <= 0 or current_height_px <= 0:
+            return
+
+        axes_positions = []
+        for ax in self.fig.get_axes():
+            x0, y0, width, height = ax.get_position().bounds
+            axes_positions.append(
+                (
+                    ax,
+                    x0 * current_width_px,
+                    y0 * current_height_px,
+                    width * current_width_px,
+                    height * current_height_px,
+                )
+            )
+
+        new_width_px = current_width_px + left + right
+        new_height_px = current_height_px + bottom + top
+        self.fig.set_size_inches(
+            new_width_px / self.fig.dpi,
+            new_height_px / self.fig.dpi,
+            forward=True,
+        )
+
+        for ax, x0_px, y0_px, width_px, height_px in axes_positions:
+            ax.set_position(
+                [
+                    (x0_px + left) / new_width_px,
+                    (y0_px + bottom) / new_height_px,
+                    width_px / new_width_px,
+                    height_px / new_height_px,
+                ]
+            )
+
+    def _on_draw(self, event):
+        """Relayout once after draw when axes decorations overflow the figure."""
+        if self._is_relayout_in_draw or not cns.settings.figure_autofit:
+            return
+        if not isinstance(event, DrawEvent):
+            return
+        canvas = event.canvas
+        if canvas is not self.fig.canvas:
+            return
+        renderer = event.renderer
+
+        left, right, bottom, top = self._measure_overflow_px(renderer)
+        if max(left, right, bottom, top) <= _FIGURE_AUTOFIT_TOLERANCE_PX:
+            return
+
+        self._is_relayout_in_draw = True
+        try:
+            for _ in range(_FIGURE_AUTOFIT_MAX_PASSES):
+                left, right, bottom, top = self._measure_overflow_px(renderer)
+                if max(left, right, bottom, top) <= _FIGURE_AUTOFIT_TOLERANCE_PX:
+                    break
+                self._grow_canvas(left, right, bottom, top)
+                canvas.draw()
+                renderer = self._get_canvas_renderer(canvas)
+                if renderer is None:
+                    break
+        finally:
+            self._is_relayout_in_draw = False
+
+
+def _attach_figure_autofit(fig):
+    """Attach the single-figure autofit manager to a figure once."""
+    if getattr(fig, "_cnsplots_autofit_manager", None) is None:
+        fig._cnsplots_autofit_manager = _FigureAutofitManager(fig)
 
 
 def figure(height=None, width=None, color_cycle=None, color_map=None):
@@ -80,6 +260,11 @@ def figure(height=None, width=None, color_cycle=None, color_map=None):
 
     The figure size formula: inches = pixels / 72, with DPI = 144
 
+    Dimensions are interpreted as ``height, width`` in pixels. When
+    ``cns.settings.figure_autofit`` is enabled, the requested size is the
+    minimum canvas size and the rendered figure may grow on draw if visible
+    decorations would otherwise be clipped.
+
     Examples
     --------
     >>> import cnsplots as cns
@@ -100,7 +285,9 @@ def figure(height=None, width=None, color_cycle=None, color_map=None):
     if color_map is None:
         color_map = cns.settings.palette_seq
     cns.setup_matplotlib(color_cycle, color_map)
-    plt.figure(figsize=(width / 72, height / 72), dpi=cns.settings.figure_dpi)
+    fig = plt.figure(figsize=(width / 72, height / 72), dpi=cns.settings.figure_dpi)
+    if cns.settings.figure_autofit:
+        _attach_figure_autofit(fig)
 
 
 def savefig(filepath):

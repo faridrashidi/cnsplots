@@ -127,7 +127,7 @@ import seaborn as sns
 # Load example data
 df = sns.load_dataset("tips")
 
-# Create a figure (dimensions in pixels)
+# Create a figure (height, width in pixels)
 cns.figure(height=150, width=100)
 
 # Create a publication-ready boxplot
@@ -185,8 +185,12 @@ Full documentation is available at [farid.one/cnsplots](https://cnsplots.farid.o
 Specify sizes in **pixels** for precise control:
 
 ```python
-cns.figure(height=150, width=100)  # Creates 150px × 100px figure
+cns.figure(height=150, width=100)  # Creates a 150px × 100px minimum canvas
 ```
+
+With `cns.settings.figure_autofit=True` (the default), the final rendered
+canvas can grow on draw to keep long titles, outside legends, and annotations
+from being clipped.
 
 ### Color Palettes
 

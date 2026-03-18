@@ -27,12 +27,17 @@ cns.savefig("my_figure.svg")
 cnsplots uses **pixels** for figure dimensions:
 
 ```python
-# Small figure
+# Small figure: 100 px tall and 80 px wide
 cns.figure(100, 80)
 
-# Larger figure
+# Larger figure: 200 px tall and 150 px wide
 cns.figure(200, 150)
 ```
+
+`cns.figure(height, width)` uses height first. With the default
+`cns.settings.figure_autofit=True`, those values are the minimum canvas size;
+the rendered figure may expand on draw if a long title, outside legend, or
+annotation would otherwise be clipped.
 
 ## Basic Plot Types
 

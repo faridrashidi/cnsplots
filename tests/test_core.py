@@ -1112,6 +1112,155 @@ def test_utils_helpers_and_showcase_data(
     assert data_without_file[-1].name == "assets"
 
 
+def test_figure_autofit_keeps_stackplot_title_and_legend_in_bounds() -> None:
+    tips = sns.load_dataset("tips")
+
+    with cns.settings.context(figure_autofit=True):
+        cns.figure(120, 100)
+        fig = plt.gcf()
+        initial_size = tuple(fig.get_size_inches())
+
+        ax = cns.stackplot(
+            data=tips,
+            x="sex",
+            y="day",
+            width=0.4,
+            normalize=True,
+            addtip=True,
+        )
+        ax.set_title("Normalized Stacked Bar (with labels)")
+
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        legend = ax.get_legend()
+
+        assert legend is not None
+        assert fig.get_size_inches()[0] > initial_size[0]
+        assert _bbox_is_within(fig.bbox, ax.title.get_window_extent(renderer=renderer))
+        assert _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
+
+
+def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
+    with cns.settings.context(figure_autofit=True):
+        cns.figure(120, 100)
+        fig = plt.gcf()
+        initial_size = tuple(fig.get_size_inches())
+        ax = plt.gca()
+        ax.plot([0, 1], [0, 1], label="Series")
+        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
+        fig_title = fig.suptitle("A Generic Figure-Level Title That Needs More Width")
+        outside_text = ax.text(1.02, 1.05, "Outside note", transform=ax.transAxes)
+        unclipped_line = ax.plot(
+            [0, 1],
+            [1.04, 1.04],
+            transform=ax.transAxes,
+            clip_on=False,
+            color="black",
+        )[0]
+        figure_artist = mpl.lines.Line2D(
+            [10, float(fig.bbox.width) + 40],
+            [float(fig.bbox.height) - 8, float(fig.bbox.height) - 8],
+            transform=mtransforms.IdentityTransform(),
+            clip_on=False,
+            color="black",
+        )
+        fig.add_artist(figure_artist)
+
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+
+        assert fig.get_size_inches()[0] > initial_size[0]
+        assert _bbox_is_within(fig.bbox, fig_title.get_window_extent(renderer=renderer))
+        assert _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
+        assert _bbox_is_within(
+            fig.bbox, outside_text.get_window_extent(renderer=renderer)
+        )
+        assert _bbox_is_within(
+            fig.bbox, unclipped_line.get_window_extent(renderer=renderer)
+        )
+        assert _bbox_is_within(
+            fig.bbox, figure_artist.get_window_extent(renderer=renderer)
+        )
+
+
+def test_figure_autofit_can_be_disabled() -> None:
+    with cns.settings.context(figure_autofit=False):
+        cns.figure(120, 100)
+        fig = plt.gcf()
+        initial_size = tuple(fig.get_size_inches())
+        ax = plt.gca()
+        ax.plot([0, 1], [0, 1], label="Series")
+        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
+        ax.set_title("Normalized Stacked Bar (with labels)")
+
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+
+        assert tuple(fig.get_size_inches()) == pytest.approx(initial_size)
+        assert not _bbox_is_within(fig.bbox, ax.title.get_window_extent(renderer))
+        assert not _bbox_is_within(fig.bbox, legend.get_window_extent(renderer))
+
+
+def test_figure_autofit_internal_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
+    cns.figure(120, 120)
+    fig = plt.gcf()
+    manager = fig._cnsplots_autofit_manager
+    original_cid = manager._draw_event_cid
+
+    manager._connect_draw_handler()
+    assert manager._draw_event_cid == original_cid
+    assert manager._get_canvas_renderer(object()) is None
+
+    class TightBBoxArtist:
+        def get_tightbbox(self, renderer: object) -> mtransforms.Bbox:
+            return mtransforms.Bbox.from_bounds(1, 2, 3, 4)
+
+    class WindowExtentFallbackArtist:
+        def get_window_extent(self, renderer: object | None = None) -> mtransforms.Bbox:
+            if renderer is not None:
+                raise TypeError
+            return mtransforms.Bbox.from_bounds(5, 6, 7, 8)
+
+    assert manager._get_artist_bbox(TightBBoxArtist(), cast(Any, object())) is not None
+    fallback_bbox = manager._get_artist_bbox(
+        WindowExtentFallbackArtist(),
+        cast(Any, object()),
+    )
+    assert fallback_bbox is not None
+    assert fallback_bbox.bounds == pytest.approx((5, 6, 7, 8))
+    assert manager._get_artist_bbox(object(), cast(Any, object())) is None
+
+    manager._on_draw(cast(Any, object()))
+
+    other_fig = plt.figure()
+    other_fig.canvas.draw()
+    other_event = DrawEvent(
+        "draw_event",
+        other_fig.canvas,
+        other_fig.canvas.get_renderer(),
+    )
+    manager._on_draw(other_event)
+
+    cns.figure(120, 100)
+    fig2 = plt.gcf()
+    manager2 = fig2._cnsplots_autofit_manager
+    ax2 = plt.gca()
+    ax2.plot([0, 1], [0, 1], label="Series")
+    ax2.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
+    ax2.set_title("Normalized Stacked Bar (with labels)")
+    manager2._is_relayout_in_draw = True
+    fig2.canvas.draw()
+    manager2._is_relayout_in_draw = False
+    monkeypatch.setattr(manager2, "_get_canvas_renderer", lambda canvas: None)
+    manager2._on_draw(DrawEvent("draw_event", fig2.canvas, fig2.canvas.get_renderer()))
+
+    zero_size_manager = object.__new__(_utils._FigureAutofitManager)
+    zero_size_manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 0, 0)
+    )
+    zero_size_manager._grow_canvas(1, 1, 1, 1)
+
+
 def test_multipanel_layout() -> None:
     mp = cns.multipanel(max_width=150)
     ax_a = mp.panel(
