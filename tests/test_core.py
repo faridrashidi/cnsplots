@@ -242,8 +242,6 @@ def test_settings_behavior() -> None:
     settings.multipanel_title_height_pad = 5
     settings.panel_width = 160
     settings.panel_height = 140
-    settings.panel_label_left = 11
-    settings.panel_label_top = 13
     settings.panel_pad_left = 21
     settings.panel_pad_top = 2
     settings.panel_margin_top = 2
@@ -259,8 +257,20 @@ def test_settings_behavior() -> None:
     assert "title_fontweight='normal'" in repr(settings)
     assert "figure_width=180" in repr(settings)
     assert "font_sans_serif=('Arial', 'DejaVu Sans')" in repr(settings)
+    assert "panel_label_left" not in repr(settings)
+    assert "panel_label_top" not in repr(settings)
     assert "panel_label_offset_x" not in repr(settings)
 
+    with pytest.raises(AttributeError, match="panel_label_left"):
+        settings.panel_label_left = 11
+    with pytest.raises(AttributeError, match="panel_label_left"):
+        with settings.context(panel_label_left=11):
+            pass
+    with pytest.raises(AttributeError, match="panel_label_top"):
+        settings.panel_label_top = 13
+    with pytest.raises(AttributeError, match="panel_label_top"):
+        with settings.context(panel_label_top=13):
+            pass
     with pytest.raises(AttributeError, match="panel_label_offset_x"):
         settings.panel_label_offset_x = -0.3
     with pytest.raises(AttributeError, match="panel_label_offset_x"):
@@ -360,6 +370,8 @@ def test_settings_behavior() -> None:
     assert settings.title_fontweight == "bold"
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)
+    assert settings.panel_pad_left == 20
+    assert settings.panel_pad_top == 0
     assert settings.panel_margin_top == 0
     assert settings.panel_margin_bottom == 20
     assert settings.panel_margin_left == 10
@@ -979,8 +991,6 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         multipanel_title_loc="left",
         panel_width=70,
         panel_height=50,
-        panel_label_left=11,
-        panel_label_top=13,
         panel_pad_left=14,
         panel_pad_top=5,
         panel_margin_top=7,
@@ -1001,12 +1011,16 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         assert ax.get_position().width == pytest.approx(70 / 180)
         assert panel["width"] == 70
         assert panel["height"] == 50
-        assert panel["label_left"] == 11
-        assert panel["label_top"] == 13
         assert panel["pad_left"] == 14
         assert panel["pad_top"] == 5
-        assert mp._label_texts["A"].get_fontproperties().get_name() == "DejaVu Sans"
-        assert mp._label_texts["A"].get_fontweight() == "normal"
+        label_text = mp._label_texts["A"]
+        label_pad_left, label_pad_top = _panel_label_padding(ax, label_text)
+        assert label_pad_left == pytest.approx(14, abs=0.5)
+        assert label_pad_top == pytest.approx(5, abs=0.5)
+        assert label_text.get_fontproperties().get_name() == "DejaVu Sans"
+        assert label_text.get_fontweight() == "normal"
+        assert label_text.get_ha() == "right"
+        assert label_text.get_va() == "bottom"
 
 
 def test_multipanel_margin_args_inherit_settings_defaults() -> None:
@@ -1037,14 +1051,18 @@ def test_multipanel_panel_rejects_margin_tuple_argument() -> None:
 
     with pytest.raises(TypeError, match="unexpected keyword argument 'margin'"):
         mp.panel("A", width=60, height=40, margin=(0, 0, 10, 10))  # type: ignore[call-arg]
+    with pytest.raises(TypeError, match="unexpected keyword argument 'label_left'"):
+        mp.panel("A", width=60, height=40, label_left=10)  # type: ignore[call-arg]
+    with pytest.raises(TypeError, match="unexpected keyword argument 'label_top'"):
+        mp.panel("A", width=60, height=40, label_top=12)  # type: ignore[call-arg]
 
 
 @pytest.mark.parametrize(
     ("loc", "expected_x"),
     [
         ("left", 10 / 200),
-        ("center", 55 / 200),
-        ("right", 100 / 200),
+        ("center", 50 / 200),
+        ("right", 90 / 200),
     ],
 )
 def test_multipanel_title_alignment_and_default_fontweight(
@@ -1058,7 +1076,8 @@ def test_multipanel_title_alignment_and_default_fontweight(
     assert mp._title_text.get_ha() == loc
     assert mp._title_text.get_fontweight() == "bold"
     assert mp._title_text.get_position()[0] == pytest.approx(expected_x)
-    assert mp._label_texts["A"].get_ha() == "left"
+    assert mp._label_texts["A"].get_ha() == "right"
+    assert mp._label_texts["A"].get_va() == "bottom"
 
 
 def test_multipanel_title_fontweight_and_height_reservation() -> None:
@@ -1101,9 +1120,9 @@ def test_multipanel_title_updates_existing_artist() -> None:
     assert mp._title_text.get_ha() == "right"
     assert mp._title_text.get_va() == "center"
     assert mp._title_text.get_fontweight() == "normal"
-    assert mp._title_text.get_position()[0] == pytest.approx(100 / 200)
-    assert mp._label_texts["A"].get_ha() == "left"
-    assert mp._label_texts["A"].get_va() == "center"
+    assert mp._title_text.get_position()[0] == pytest.approx(90 / 200)
+    assert mp._label_texts["A"].get_ha() == "right"
+    assert mp._label_texts["A"].get_va() == "bottom"
 
 
 def test_multipanel_title_can_be_removed() -> None:
@@ -1138,8 +1157,6 @@ def test_multipanel_below_aligns_to_parent_column() -> None:
         "B",
         width=145,
         height=128,
-        label_left=10,
-        label_top=12,
         pad_left=0,
         pad_top=0,
         margin_left=10,
@@ -1151,8 +1168,6 @@ def test_multipanel_below_aligns_to_parent_column() -> None:
         "C",
         width=145,
         height=128,
-        label_left=10,
-        label_top=12,
         pad_left=0,
         pad_top=0,
         margin_left=10,

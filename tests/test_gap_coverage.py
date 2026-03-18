@@ -84,8 +84,6 @@ def test_multipanel_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
             "label": "A",
             "width": 10,
             "height": 10,
-            "label_left": 0,
-            "label_top": 0,
             "pad_left": 0,
             "pad_top": 0,
             "margin_left": 0,

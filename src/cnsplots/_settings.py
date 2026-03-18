@@ -510,16 +510,6 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         lambda value: _validate_number("panel_height", value, positive=True),
         "Default panel height in pixels for multipanel.panel().",
     ),
-    "panel_label_left": _spec(
-        10,
-        lambda value: _validate_number("panel_label_left", value, non_negative=True),
-        "Default left label reservation in pixels for multipanel.panel().",
-    ),
-    "panel_label_top": _spec(
-        12,
-        lambda value: _validate_number("panel_label_top", value, non_negative=True),
-        "Default top label reservation in pixels for multipanel.panel().",
-    ),
     "panel_pad_left": _spec(
         20,
         lambda value: _validate_number("panel_pad_left", value, non_negative=True),

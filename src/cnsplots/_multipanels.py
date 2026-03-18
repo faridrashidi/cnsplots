@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from matplotlib.text import Text
 
 import matplotlib.pyplot as plt
+from matplotlib import transforms as mtransforms
 
 import cnsplots as cns
 
@@ -35,8 +36,8 @@ class multipanel:
     left-to-right and wrap to new rows when they exceed max_width.
 
     Each panel consists of:
-    - Label space (label_left, label_top): reserved area for the panel label
-    - Padding (pad_left, pad_top): space for ylabel/xlabel and tick labels
+    - Padding (pad_left, pad_top): space for panel labels, axis titles, labels,
+      and tick labels
     - Axes area (width, height): the plotting area
     - Margins (left, top, right, bottom): space around the entire panel
 
@@ -68,9 +69,8 @@ class multipanel:
     ...     "A",
     ...     width=100,
     ...     height=200,
-    ...     label_left=10,
-    ...     label_top=12,
-    ...     pad_left=30,
+    ...     pad_left=40,
+    ...     pad_top=12,
     ...     margin_left=0,
     ...     margin_top=0,
     ...     margin_right=10,
@@ -83,31 +83,31 @@ class multipanel:
     -----
     Panel layout structure::
 
-        +----------------------------------------------------------+
-        |                         margin_top                       |
-        |   +-- label ------------------------------------------+  |
-        |   |                      pad_top                     |   |
-        |   |   +--------------------------------------------+ |   |
-        | m |   |                    title                   | | m |
-        | a |   |   +--------------------------------------+ | | a |
-        | r | p |   |                                      | | | r |
-        | g | a | y |                                      | | | g |
-        | i | d | l |           axes content area          | | | i |
-        | n | _ | a |           (width x height)           | | | n |
-        | _ | l | b |                                      | | | _ |
-        | l | e | e |                                      | | | r |
-        | e | f | l |                                      | | | i |
-        | f | t |   |                                      | | | g |
-        | t |   |   |                                      | | | h |
-        |   |   |   +--------------------------------------+ | | t |
-        |   |   |                   xlabel                   | |   |
-        |   |   +--------------------------------------------+ |   |
-        |   +--------------------------------------------------+   |
-        |                         margin_bottom                    |
-        +----------------------------------------------------------+
+        +------------------------------------------------------+
+        |                     margin_top                       |
+        |   +----------------------------------------------+   |
+        |   |                   pad_top                    |   |
+        |   |   +--------------------------------------+   |   |
+        | m |   |                title                 |   | m |
+        | a | p |   +--------------------------------+ |   | a |
+        | r | a | y |                                | |   | r |
+        | g | d | l |        axes content area       | |   | g |
+        | i | _ | a |        (width x height)        | |   | i |
+        | n | l | b |                                | |   | n |
+        | _ | e | e |                                | |   | _ |
+        | l | f | l |                                | |   | r |
+        | e | t |   |                                | |   | i |
+        | f |   |   +--------------------------------+ |   | g |
+        | t |   |                xlabel                |   | h |
+        |   |   +--------------------------------------+   | t |
+        |   |        panel label uses the pad band         |   |
+        |   +----------------------------------------------+   |
+        |                    margin_bottom                     |
+        +------------------------------------------------------+
 
-    The panel label ("A", "B", etc.) is positioned in the label_left space,
-    ensuring it appears to the left of the ylabel and axes content.
+    The panel label ("A", "B", etc.) uses the same pad-based contract as
+    add_panel_label(): its right edge sits pad_left pixels to the left of the
+    axes and its bottom edge sits pad_top pixels above the axes.
     """
 
     def __init__(
@@ -161,7 +161,7 @@ class multipanel:
             x, _ = self._get_panel_position(idx)
             left_bound = min(
                 left_bound,
-                x - panel.get("pad_left", 0) - panel["label_left"],
+                x - panel.get("pad_left", 0),
             )
             right_bound = max(right_bound, x + panel["width"])
             found_panel = True
@@ -174,19 +174,26 @@ class multipanel:
         """Get the total width and height of a panel including margins."""
         total_width = (
             panel["margin_left"]
-            + panel["label_left"]
             + panel.get("pad_left", 0)
             + panel["width"]
             + panel["margin_right"]
         )
         total_height = (
             panel["margin_top"]
-            + panel["label_top"]
             + panel.get("pad_top", 0)
             + panel["height"]
             + panel["margin_bottom"]
         )
         return total_width, total_height
+
+    def _get_label_transform(self, ax: Axes, pad_left: float, pad_top: float):
+        """Build the padded axes-relative transform used for panel labels."""
+        fig = ax.figure
+        return ax.transAxes + mtransforms.ScaledTranslation(
+            -pad_left / fig.dpi,
+            pad_top / fig.dpi,
+            fig.dpi_scale_trans,
+        )
 
     def _get_stacked_height(self, panel_idx: int) -> float:
         """Get total height of a panel plus any panels stacked below it."""
@@ -261,9 +268,7 @@ class multipanel:
                 parent_x
                 - parent["margin_left"]
                 - parent.get("pad_left", 0)
-                - parent["label_left"]
                 + panel["margin_left"]
-                + panel["label_left"]
                 + panel.get("pad_left", 0)
             )
 
@@ -273,7 +278,6 @@ class multipanel:
                 + parent["height"]
                 + parent["margin_bottom"]
                 + panel["margin_top"]
-                + panel["label_top"]
                 + panel.get("pad_top", 0)
             )
 
@@ -301,15 +305,14 @@ class multipanel:
             prev_panel = self._panels[prev_idx]
             x += (
                 prev_panel["margin_left"]
-                + prev_panel["label_left"]
                 + prev_panel.get("pad_left", 0)
                 + prev_panel["width"]
                 + prev_panel["margin_right"]
             )
 
-        # Add this panel's left margin, label space, and padding
-        x += panel["margin_left"] + panel["label_left"] + panel.get("pad_left", 0)
-        y += panel["margin_top"] + panel["label_top"] + panel.get("pad_top", 0)
+        # Add this panel's left margin and padding
+        x += panel["margin_left"] + panel.get("pad_left", 0)
+        y += panel["margin_top"] + panel.get("pad_top", 0)
 
         return x, y
 
@@ -393,29 +396,6 @@ class multipanel:
                 ax = self.fig.add_axes((left, bottom, ax_width, ax_height))
                 self.axes.append(ax)
                 self._created_axes[label] = ax
-
-                # Add panel label in the label space area (before pad_left)
-                # Position: label is in label_left space, which is to the left of pad_left
-                # x is the left edge of axes, so label_x = x - pad_left - label_left
-                label_x_px = x - pad_left - panel["label_left"]
-                # Vertically: label is in label_top space, above pad_top
-                label_y_px = y - pad_top - panel["label_top"] / 2
-
-                # Convert to figure coordinates
-                label_x_fig = label_x_px / fig_width_px
-                label_y_fig = (fig_height_px - label_y_px) / fig_height_px
-
-                label_text = self.fig.text(
-                    label_x_fig,
-                    label_y_fig,
-                    label,
-                    fontsize=cns.settings.title_fontsize,
-                    fontweight=cns.settings.panel_label_fontweight,
-                    fontname=cns.settings.panel_label_fontname,
-                    va="center",
-                    ha="left",
-                )
-                self._label_texts[label] = label_text
             else:
                 # Update existing axes position
                 ax.set_position([left, bottom, ax_width, ax_height])
@@ -423,27 +403,36 @@ class multipanel:
                 if callable(sync_embedded_axes):
                     sync_embedded_axes()
 
-                # Update label position
-                label_text = self._label_texts.get(label)
-                if label_text is not None:
-                    label_x_px = x - pad_left - panel["label_left"]
-                    label_y_px = y - pad_top - panel["label_top"] / 2
-                    label_x_fig = label_x_px / fig_width_px
-                    label_y_fig = (fig_height_px - label_y_px) / fig_height_px
-                    label_text.set_position((label_x_fig, label_y_fig))
-                    label_text.set_fontsize(cns.settings.title_fontsize)
-                    label_text.set_fontweight(cns.settings.panel_label_fontweight)
-                    label_text.set_fontname(cns.settings.panel_label_fontname)
-                    label_text.set_ha("left")
-                    label_text.set_va("center")
+            label_text = self._label_texts.get(label)
+            label_transform = self._get_label_transform(ax, pad_left, pad_top)
+            if label_text is None:
+                label_text = ax.text(
+                    0,
+                    1,
+                    label,
+                    transform=label_transform,
+                    fontsize=cns.settings.title_fontsize,
+                    fontweight=cns.settings.panel_label_fontweight,
+                    fontname=cns.settings.panel_label_fontname,
+                    ha="right",
+                    va="bottom",
+                )
+                self._label_texts[label] = label_text
+            else:
+                label_text.set_position((0, 1))
+                label_text.set_text(label)
+                label_text.set_transform(label_transform)
+                label_text.set_fontsize(cns.settings.title_fontsize)
+                label_text.set_fontweight(cns.settings.panel_label_fontweight)
+                label_text.set_fontname(cns.settings.panel_label_fontname)
+                label_text.set_ha("right")
+                label_text.set_va("bottom")
 
     def panel(
         self,
         label: str | None = None,
         height: int | float | None = None,
         width: int | float | None = None,
-        label_left: int | float | None = None,
-        label_top: int | float | None = None,
         pad_left: int | float | None = None,
         pad_top: int | float | None = None,
         *,
@@ -456,7 +445,7 @@ class multipanel:
         below: str | None = None,
     ) -> Axes:
         """
-        Add a panel with specified dimensions, label space, padding, and margins.
+        Add a panel with specified dimensions, padding, and margins.
 
         Parameters
         ----------
@@ -467,23 +456,15 @@ class multipanel:
             Axes height in pixels. If None, uses cns.settings.panel_height.
         width : int, optional
             Axes width in pixels. If None, uses cns.settings.panel_width.
-        label_left : int, optional
-            Space reserved for the panel label to the left in pixels.
-            If None, uses cns.settings.panel_label_left.
-            The label is positioned here, outside of pad_left.
-        label_top : int, optional
-            Space reserved for the panel label above in pixels.
-            If None, uses cns.settings.panel_label_top.
-            The label is positioned here, outside of pad_top.
         pad_left : int, optional
-            Padding between label and axes for ylabel/yticks in pixels.
+            Padding between the axes and the panel label/ylabel/yticks in pixels.
             If None, uses cns.settings.panel_pad_left.
-            This space accommodates matplotlib's ylabel which is drawn outside
-            the axes bounding box.
+            The panel label's right edge sits pad_left pixels to the left of
+            the axes.
         pad_top : int, optional
-            Padding between label and axes for title in pixels.
+            Padding between the axes and the panel label/title in pixels.
             If None, uses cns.settings.panel_pad_top.
-            Set this if you have axes titles that need space.
+            The panel label's bottom edge sits pad_top pixels above the axes.
         margin_top : int, optional
             Top margin in pixels. If None, uses cns.settings.panel_margin_top.
         margin_bottom : int, optional
@@ -514,9 +495,8 @@ class multipanel:
         ...     "A",
         ...     width=100,
         ...     height=150,
-        ...     label_left=10,
-        ...     label_top=12,
-        ...     pad_left=35,
+        ...     pad_left=45,
+        ...     pad_top=12,
         ...     margin_left=0,
         ...     margin_top=0,
         ...     margin_right=10,
@@ -530,9 +510,8 @@ class multipanel:
         ...     "B",
         ...     width=100,
         ...     height=150,
-        ...     label_left=10,
-        ...     label_top=12,
-        ...     pad_left=5,
+        ...     pad_left=15,
+        ...     pad_top=12,
         ...     margin_left=0,
         ...     margin_top=0,
         ...     margin_right=10,
@@ -543,12 +522,11 @@ class multipanel:
         Notes
         -----
         Total panel dimensions are calculated as:
-        - Total width = margin_left + label_left + pad_left + width + margin_right
-        - Total height = margin_top + label_top + pad_top + height + margin_bottom
+        - Total width = margin_left + pad_left + width + margin_right
+        - Total height = margin_top + pad_top + height + margin_bottom
 
-        The panel label ("A", "B", etc.) is positioned in the label_left/label_top
-        space, which is outside the pad_left/pad_top space where ylabel/title appear.
-        This ensures the panel label is always the leftmost/topmost element.
+        The panel label ("A", "B", etc.) uses the pad_left/pad_top band rather
+        than a separate reserved label band.
         """
         if color_cycle is None:
             color_cycle = cns.settings.palette_qual
@@ -558,10 +536,6 @@ class multipanel:
             height = cns.settings.panel_height
         if width is None:
             width = cns.settings.panel_width
-        if label_left is None:
-            label_left = cns.settings.panel_label_left
-        if label_top is None:
-            label_top = cns.settings.panel_label_top
         if pad_left is None:
             pad_left = cns.settings.panel_pad_left
         if pad_top is None:
@@ -584,8 +558,6 @@ class multipanel:
             "label": label,
             "width": width,
             "height": height,
-            "label_left": label_left,
-            "label_top": label_top,
             "pad_left": pad_left,
             "pad_top": pad_top,
             "margin_left": margin_left,
@@ -651,7 +623,6 @@ class multipanel:
                     p = self._panels[idx]
                     used_width += (
                         p["margin_left"]
-                        + p.get("label_left", 0)
                         + p.get("pad_left", 0)
                         + p["width"]
                         + p["margin_right"]
@@ -664,8 +635,6 @@ class multipanel:
                             "label": f"_spacer_{len(self._panels)}",
                             "width": 0,
                             "height": 0,
-                            "label_left": 0,
-                            "label_top": 0,
                             "pad_left": 0,
                             "pad_top": 0,
                             "margin_left": 0,
