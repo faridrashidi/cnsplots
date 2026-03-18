@@ -8,7 +8,6 @@ from matplotlib.backend_bases import DrawEvent, Event, RendererBase
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
-    from matplotlib.artist import Artist
     from matplotlib.text import Text
     from matplotlib.transforms import Bbox
 
@@ -255,6 +254,16 @@ class multipanel:
             fig.dpi_scale_trans,
         )
 
+    def _get_live_label_text(self, label: str, ax: Axes) -> Text | None:
+        """Return the current label artist when it still belongs to this axes."""
+        label_text = self._label_texts.get(label)
+        if label_text is None:
+            return None
+        if label_text.figure is not self.fig or label_text.axes is not ax:
+            self._label_texts.pop(label, None)
+            return None
+        return label_text
+
     def _connect_draw_handler(self) -> None:
         """Connect a draw handler that can refine left reserves after rendering."""
         if self.fig is None or self._draw_event_cid is not None:
@@ -283,7 +292,7 @@ class multipanel:
         """Measure the rendered height of a panel label."""
         return float(label_text.get_window_extent(renderer=renderer).height)
 
-    def _get_artist_bbox(self, artist: Artist, renderer: RendererBase) -> Bbox | None:
+    def _get_artist_bbox(self, artist: object, renderer: RendererBase) -> Bbox | None:
         """Get a rendered bbox for an artist when available."""
         get_tightbbox = getattr(artist, "get_tightbbox", None)
         if callable(get_tightbbox):
@@ -356,8 +365,9 @@ class multipanel:
                 panel["left_decoration_width_px"] = measured_left
                 changed = True
 
-            label_text = self._label_texts.get(panel["label"])
+            label_text = self._get_live_label_text(panel["label"], ax)
             if label_text is None:
+                changed = True
                 continue
             measured_label = self._measure_label_width_px(label_text, renderer)
             current_label = self._get_label_width_px(panel)
@@ -626,7 +636,7 @@ class multipanel:
                 if callable(sync_embedded_axes):
                     sync_embedded_axes()
 
-            label_text = self._label_texts.get(label)
+            label_text = self._get_live_label_text(label, ax)
             label_transform = self._get_label_transform(
                 ax,
                 label_gap,

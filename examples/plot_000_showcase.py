@@ -165,12 +165,12 @@ ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
 ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
-mp.panel("P", 65, 80, below="O")
+mp.panel("P", 65, 80, below="O", margin_top=10, pad_top=-5)
 ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
 ax.set_title("Slopeplot")
 
 # Panel Q: scatterplot
-mp.panel("Q", 90, 90, margin_right=50, color_cycle="Set1")
+mp.panel("Q", 90, 90, margin_right=50, margin_top=-10, color_cycle="Set1")
 ax = cns.scatterplot(
     data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
 )
@@ -193,7 +193,7 @@ ax.axvline(
 cns.take_legend_out()
 
 # Panel R: heatmapplot
-mp.panel("R", 100, 190)
+mp.panel("R", 100, 190, margin_top=-10)
 cmp = cns.heatmapplot(
     blobs,
     label="Z-score",
@@ -225,7 +225,7 @@ mp = cns.multipanel(
 )
 
 # Panel A: load pathology image
-ax = mp.panel("A", 237, 149, pad_top=10)
+ax = mp.panel("A", 237, 149)
 ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
 ax.set_title("Pathology Image")
 ax.set_axis_off()

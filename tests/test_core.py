@@ -11,6 +11,7 @@ from typing import Any, cast
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
 import pytest
@@ -1282,6 +1283,55 @@ def test_multipanel_pad_top_matches_topmost_panel_content_gap() -> None:
     assert gap == pytest.approx(10, abs=1.0)
 
 
+def test_multipanel_pad_top_matches_image_title_gap_with_axis_off() -> None:
+    mp = cns.multipanel(max_width=260)
+    ax = mp.panel(
+        "A",
+        width=90,
+        height=60,
+        pad_left=0,
+        pad_top=10,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    ax.imshow(np.zeros((8, 8, 3)))
+    ax.set_title("Pathology Image")
+    ax.set_axis_off()
+
+    gap = _panel_label_title_gap(ax, mp._label_texts["A"])
+    assert gap == pytest.approx(10, abs=0.8)
+
+
+def test_multipanel_recreates_panel_label_after_axes_clear(
+    output_dir: Path,
+) -> None:
+    output_dir.mkdir(parents=True)
+    output_path = output_dir / "placeholder_panel.png"
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel(
+        "A",
+        width=100,
+        height=100,
+        pad_left=0,
+        pad_top=8,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    cns.placeholderplot("Placeholder")
+    ax.set_title("?")
+
+    mp.fig.savefig(output_path, dpi=300)
+
+    assert output_path.exists()
+    label_text = mp._label_texts["A"]
+    assert label_text.figure is mp.fig
+    assert _panel_label_title_gap(ax, label_text) == pytest.approx(8, abs=1.0)
+
+
 def test_multipanel_top_row_label_stays_visible() -> None:
     mp = cns.multipanel(max_width=240, title="Figure 1")
     ax = mp.panel(
@@ -1414,8 +1464,8 @@ def test_multipanel_artist_bbox_and_top_artist_helpers() -> None:
     assert label_text not in artists
 
     class WindowExtentOnlyArtist:
-        def get_window_extent(self) -> mpl.transforms.Bbox:
-            return mpl.transforms.Bbox.from_bounds(1, 2, 3, 4)
+        def get_window_extent(self) -> mtransforms.Bbox:
+            return mtransforms.Bbox.from_bounds(1, 2, 3, 4)
 
     bbox = mp._get_artist_bbox(WindowExtentOnlyArtist(), cast(Any, None))
     assert bbox is not None
