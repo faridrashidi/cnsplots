@@ -27,15 +27,18 @@ blobs.obs["selected"] = np.where(blobs.obs["mitf"] > 0.95, "o", None)
 blobs.obs["cluster"] = pd.Categorical(
     [f"C{x}" for x in np.random.randint(0, 4, blobs.shape[0])]
 )
+blobs_full = blobs[:120, :].copy()
+blobs_annot = blobs[:240, :].copy()
 
 
 # %%
 # Full-featured clustered heatmap
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Complete heatmap with clustering, annotations, and dendrograms.
+# Use a display subset to keep the gallery image readable and stable to render.
 cns.figure(300, 250)
 cmp = cns.heatmapplot(
-    blobs,
+    blobs_full,
     label="Expression",
     xlabel="Genes",
     ylabel="Samples",
@@ -120,9 +123,10 @@ cmp = cns.heatmapplot(
 # Heatmap with multiple annotations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add both categorical and continuous annotations.
+# Use a display subset to keep the gallery image readable and stable to render.
 cns.figure(320, 250)
 cmp = cns.heatmapplot(
-    blobs,
+    blobs_annot,
     label="Expression",
     row_annotation=["blobs", "mitf", "cluster"],
     col_annotation=["ensemble"],
