@@ -31,7 +31,7 @@ mp = cns.multipanel(max_width=350)
 mp.panel("A", 70, 70)
 cns.boxplot(data=tips, x="day", y="total_bill")
 
-mp.panel("B", 100, 100)
+mp.panel("B", 100, 100, margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
 
 mp.panel("C", 100, 80)
@@ -94,9 +94,9 @@ cns.stripplot(data=iris, x="species", y="petal_width")
 # 2x3 layout with varying panel sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Different panel sizes for different plot types.
-mp = cns.multipanel(max_width=500)
+mp = cns.multipanel(max_width=420)
 
-mp.panel("A", 100, 100)
+mp.panel("A", 100, 100, margin_bottom=30)
 cns.boxplot(data=tips, x="day", y="total_bill", pairs="all")
 
 mp.panel("B", 100, 100)

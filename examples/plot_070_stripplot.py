@@ -198,7 +198,7 @@ ax.set_title("Multi-Variable Comparison")
 # Strip plot with all options combined
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Comprehensive example showing multiple features.
-cns.figure(150, 120, "Set2")
+cns.figure(150, 150, "Set2")
 ax = cns.stripplot(
     data=tips,
     x="day",

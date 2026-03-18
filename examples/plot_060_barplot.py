@@ -249,15 +249,15 @@ mp.get_axes("D").set_title("Petal Width")
 # Compare different error bar types side by side.
 mp = cns.multipanel(max_width=480)
 
-mp.panel("A", 100, 130)
+mp.panel("A", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
 mp.get_axes("A").set_title("Standard Error")
 
-mp.panel("B", 100, 130)
+mp.panel("B", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="sd")
 mp.get_axes("B").set_title("Std Deviation")
 
-mp.panel("C", 100, 130)
+mp.panel("C", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="ci")
 mp.get_axes("C").set_title("95% CI")
 
@@ -298,7 +298,7 @@ colors = [
     "gray" if x == 0 else ("green" if x > 0 else "red") for x in baseline["pct_change"]
 ]
 cns.figure(150, 100, color_cycle=colors)
-cns.barplot(data=baseline, x="treatment", y="pct_change", errorbar=None)
+ax = cns.barplot(data=baseline, x="treatment", y="pct_change", errorbar=None)
 ax.axhline(0, color="k", lw=0.8)
 ax.set_ylabel("% Change from Baseline")
 ax.set_xticklabels(
@@ -351,10 +351,10 @@ mp.panel("B", 80, 120, color_cycle="Tableau")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("Tableau")
 
-mp.panel("C", 80, 120, color_cycle="Bold")
+mp.panel("C", 80, 120, color_cycle="Bold", margin_top=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Bold")
 
-mp.panel("D", 80, 120, color_cycle="Pastel1")
+mp.panel("D", 80, 120, color_cycle="Pastel1", margin_top=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Pastel1")
