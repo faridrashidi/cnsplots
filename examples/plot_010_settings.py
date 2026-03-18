@@ -4,9 +4,11 @@ settings
 
 Configure global defaults for cnsplots.
 
-cnsplots provides a settings module to customize global defaults
-for palettes, title font styles, line widths, and verbosity.
-Changes to settings affect all subsequent plotting calls.
+cnsplots provides a ``settings`` object to customize global defaults for
+plot styling, export behavior, figure helpers, multipanel layout, and
+annotation helpers such as legends and panel labels.
+Changes to settings affect all subsequent plotting calls until you reset
+them or override them inside ``settings.context()``.
 """
 
 # %%
@@ -27,156 +29,167 @@ print(cns.settings)
 
 
 # %%
-# Access individual settings
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Each setting can be accessed directly.
+# Access representative settings
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings now cover setup defaults, figure helpers, and multipanel helpers.
 print(f"palette_qual: {cns.settings.palette_qual}")
-print(f"palette_seq: {cns.settings.palette_seq}")
 print(f"title_fontsize: {cns.settings.title_fontsize}")
-print(f"title_fontweight: {cns.settings.title_fontweight}")
-print(f"fontsize_legend: {cns.settings.fontsize_legend}")
-print(f"axes_linewidth: {cns.settings.axes_linewidth}")
-print(f"verbosity: {cns.settings.verbosity}")
+print(f"savefig_dpi: {cns.settings.savefig_dpi}")
+print(
+    "figure defaults: "
+    f"{cns.settings.figure_width} x {cns.settings.figure_height} px "
+    f"at {cns.settings.figure_dpi} dpi"
+)
+print(f"scanpy_figsize: {cns.settings.scanpy_figsize}")
+print(f"multipanel_max_width: {cns.settings.multipanel_max_width}")
+print(f"panel defaults: {cns.settings.panel_width} x {cns.settings.panel_height} px")
+print(f"legend_out_bbox_to_anchor: {cns.settings.legend_out_bbox_to_anchor}")
+print(
+    "panel_label_offsets: "
+    f"({cns.settings.panel_label_offset_x}, {cns.settings.panel_label_offset_y})"
+)
 
 
 # %%
 # Plot with default settings
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# First, let's see how plots look with default settings.
-cns.figure(150, 150, [cns.GRAY])
+# Start from the package defaults.
+cns.settings.reset()
+
+cns.figure(color_cycle=[cns.GRAY])
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("Default Settings")
 
 
 # %%
-# Change the default palette
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Set a different qualitative palette for all subsequent plots.
+# Change the core plotting style
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The original palette, font, and spine settings still work as before.
+cns.settings.reset()
 cns.settings.palette_qual = "Set2"
-
-cns.figure(150, 150)
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("palette_qual = 'Set2'")
-
-
-# %%
-# Change font sizes
-# ~~~~~~~~~~~~~~~~~
-# Increase font sizes for larger figures or presentations.
+cns.settings.palette_seq = "parula"
 cns.settings.title_fontsize = 10
-cns.settings.fontsize_legend = 9
-
-cns.figure(150, 150)
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("Larger Font Sizes")
-
-
-# %%
-# Change title weight
-# ~~~~~~~~~~~~~~~~~~~
-# Use a lighter title weight when you do not want bold titles.
 cns.settings.title_fontweight = "normal"
-
-cns.figure(150, 150)
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("title_fontweight = 'normal'")
-
-
-# %%
-# Change axis line width
-# ~~~~~~~~~~~~~~~~~~~~~~
-# Make axis lines thicker or thinner.
+cns.settings.fontsize_legend = 9
 cns.settings.axes_linewidth = 1.0
 
-cns.figure(150, 150)
+cns.figure()
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("Thicker Axis Lines")
+ax.set_title("Core Style Defaults")
 
 
 # %%
-# Reset all settings to defaults
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use reset() to restore all settings to their original values.
+# Change setup and figure defaults
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Settings can now control default figure size, dpi, legend sizing,
+# axis title placement, and tick styling for setup functions.
 cns.settings.reset()
+cns.settings.figure_width = 220
+cns.settings.figure_height = 140
+cns.settings.figure_dpi = 180
+cns.settings.legend_fontsize = 8
+cns.settings.legend_title_fontsize = 9
+cns.settings.axes_titlelocation = "left"
+cns.settings.axes_edgecolor = "#444444"
+cns.settings.axes_labelcolor = "#444444"
+cns.settings.xtick_labelrotation = 20
+cns.settings.xtick_alignment = "right"
 
-cns.figure(150, 150)
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("Back to Defaults")
-
-
-# %%
-# Suppress output with verbosity
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Set verbosity to 0 to suppress print statements from cnsplots functions.
-cns.settings.verbosity = 0
-
-# Functions that would normally print will now be silent
-# (This is useful for batch processing or notebooks)
-
-
-# %%
-# Restore verbosity
-# ~~~~~~~~~~~~~~~~~
-cns.settings.verbosity = 1
+cns.figure()
+ax = cns.scatterplot(data=tips, x="total_bill", y="tip", hue="day", s=12)
+ax.set_title("Figure + Setup Defaults")
 
 
 # %%
-# Combine multiple settings
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
-# Configure multiple settings for a custom style.
-cns.settings.palette_qual = "Dark2"
-cns.settings.palette_seq = "parula"
-cns.settings.title_fontsize = 9
-cns.settings.title_fontweight = "bold"
-cns.settings.fontsize_legend = 8
-cns.settings.axes_linewidth = 0.75
+# Change helper defaults
+# ~~~~~~~~~~~~~~~~~~~~~~
+# Helper settings cover legend placement plus panel label typography
+# and offsets.
+cns.settings.reset()
+cns.settings.legend_out_bbox_to_anchor = (1.05, 1.0)
+cns.settings.legend_out_loc = "upper left"
+cns.settings.legend_out_markerscale = 1.2
+cns.settings.panel_label_fontname = "DejaVu Sans"
+cns.settings.panel_label_fontweight = "normal"
+cns.settings.panel_label_offset_x = -0.18
+cns.settings.panel_label_offset_y = 1.04
 
-cns.figure(150, 150)
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("Custom Style")
-
-
-# %%
-# Settings persist across calls
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Once set, settings apply to all subsequent plots.
-cns.figure(150, 150)
-ax = cns.barplot(data=tips, x="day", y="total_bill")
-ax.set_title("Same Custom Style")
+cns.figure()
+ax = cns.scatterplot(data=tips, x="total_bill", y="tip", hue="time", s=14)
+cns.take_legend_out(title="Time")
+cns.add_panel_label("A")
+ax.set_title("Legend + Panel Label Defaults")
 
 
 # %%
-# Temporarily override settings with context manager
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``settings.context()`` to apply temporary settings that
-# automatically revert when the block exits.
+# Change multipanel defaults
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ``multipanel()`` and ``panel()`` now read their omitted defaults from
+# ``cns.settings`` as well.
+cns.settings.reset()
+cns.settings.multipanel_max_width = 320
+cns.settings.multipanel_title_loc = "left"
+cns.settings.panel_width = 130
+cns.settings.panel_height = 120
+cns.settings.panel_label_left = 12
+cns.settings.panel_label_top = 14
+cns.settings.panel_pad_left = 24
+cns.settings.panel_margin = (8, 0, 10, 16)
+cns.settings.panel_label_fontname = "DejaVu Sans"
+
+mp = cns.multipanel(title="Settings-driven Multipanel")
+ax = mp.panel()
+cns.boxplot(data=tips, x="day", y="total_bill")
+ax.set_title("Panel A")
+
+ax = mp.panel()
+cns.barplot(data=tips, x="day", y="tip")
+ax.set_title("Panel B")
+
+
+# %%
+# Temporarily override settings with a context manager
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ``settings.context()`` works with the new setup/helper defaults too.
 cns.settings.reset()
 
 with cns.settings.context(
-    title_fontsize=12, title_fontweight="normal", palette_qual="Set2"
+    palette_qual="Dark2",
+    figure_width=200,
+    figure_height=120,
+    axes_titlelocation="left",
+    panel_label_fontweight="normal",
 ):
-    cns.figure(150, 150)
-    ax = cns.boxplot(data=tips, x="day", y="total_bill")
-    ax.set_title("Context Manager: Set2, fontsize=12, weight='normal'")
+    cns.figure()
+    ax = cns.boxplot(data=tips, x="day", y="tip")
+    cns.add_panel_label("B")
+    ax.set_title("Context Manager Override")
 
 # Settings are restored after the context block
-print(f"After context: title_fontsize={cns.settings.title_fontsize}")
-print(f"After context: title_fontweight={cns.settings.title_fontweight}")
 print(f"After context: palette_qual={cns.settings.palette_qual}")
+print(
+    "After context: "
+    f"figure={cns.settings.figure_width} x {cns.settings.figure_height} px"
+)
+print(f"After context: panel_label_fontweight={cns.settings.panel_label_fontweight}")
 
 
 # %%
 # Override settings per-call
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# You can still override settings for individual calls.
+# Explicit function arguments still override the global defaults.
+cns.settings.reset()
+cns.settings.figure_width = 220
+cns.settings.figure_height = 140
+
 cns.figure(150, 150, color_cycle="Tableau")
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("Per-call Override: Tableau")
+ax.set_title("Per-call Override: 150 x 150, Tableau")
 
 
 # %%
-# Reset for clean state
-# ~~~~~~~~~~~~~~~~~~~~~
+# Reset for a clean state
+# ~~~~~~~~~~~~~~~~~~~~~~~
 cns.settings.reset()
 print("Settings reset to defaults:")
 print(cns.settings)

@@ -171,9 +171,14 @@ The following color constants are available:
 
 Default settings:
 
-- `PALETTE_QUAL` - Default qualitative palette ('Ecotyper1')
-- `PALETTE_SEQ` - Default sequential colormap ('gnuplot')
-- `TITLE_FONTSIZE` - Title font size (8)
-- `TITLE_FONTWEIGHT` - Title font weight ('bold')
-- `FONTSIZE_LEGEND` - Legend font size (7)
-- `AXES_LINEWIDTH` - Axes line width (0.5)
+`cnsplots` exposes its configurable defaults through `cns.settings`.
+These include:
+
+- palettes and font defaults
+- matplotlib setup and export defaults
+- scanpy and ggplot helper defaults
+- figure sizing defaults
+- multipanel layout defaults
+- legend placement and panel label defaults
+
+See `examples/plot_010_settings.py` for a runnable overview of the settings API.
