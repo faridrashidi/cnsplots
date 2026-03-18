@@ -1264,6 +1264,23 @@ def test_figure_autofit_internal_helpers(monkeypatch: pytest.MonkeyPatch) -> Non
     )
     manager._on_draw(other_event)
 
+    original_canvas = fig.canvas
+    seen_canvases: list[str] = []
+    monkeypatch.setattr(
+        manager,
+        "_on_draw",
+        lambda event: seen_canvases.append(
+            type(getattr(event, "canvas", None)).__name__
+        ),
+    )
+    _utils._preflight_autofit_for_export(fig)
+    assert seen_canvases == ["FigureCanvasAgg"]
+    assert fig.canvas is original_canvas
+    seen_canvases.clear()
+    with cns.settings.context(figure_autofit=False):
+        _utils._preflight_autofit_for_export(fig)
+    assert seen_canvases == []
+
     cns.figure(120, 100)
     fig2 = plt.gcf()
     manager2 = fig2._cnsplots_autofit_manager

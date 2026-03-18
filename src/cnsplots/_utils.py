@@ -16,6 +16,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 from matplotlib.backend_bases import DrawEvent
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import num2tex
 import palettable
 import pandas as pd
@@ -368,6 +369,21 @@ def _attach_figure_autofit(fig):
         fig._cnsplots_autofit_manager = _FigureAutofitManager(fig)
 
 
+def _preflight_autofit_for_export(fig):
+    """Run autofit once with an Agg renderer so exports are backend-independent."""
+    manager = getattr(fig, "_cnsplots_autofit_manager", None)
+    if manager is None or not cns.settings.figure_autofit:
+        return
+
+    original_canvas = fig.canvas
+    try:
+        agg_canvas = FigureCanvasAgg(fig)
+        agg_canvas.draw()
+        manager._on_draw(DrawEvent("draw_event", agg_canvas, agg_canvas.get_renderer()))
+    finally:
+        fig.set_canvas(original_canvas)
+
+
 def figure(height=None, width=None, color_cycle=None, color_map=None):
     """
     Initialize a new figure with custom size and styling.
@@ -497,6 +513,7 @@ def savefig(filepath):
     try:
         if target_dpi != original_dpi:
             fig.set_dpi(target_dpi)
+        _preflight_autofit_for_export(fig)
         fig.canvas.draw()
         if ext.lower() == ".svg":
             _save_svg(str(filepath), root)
