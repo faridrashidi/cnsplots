@@ -108,11 +108,15 @@ class multipanel:
 
     def __init__(
         self,
-        max_width: int = 540,
+        max_width: int | float | None = None,
         title: str | None = None,
-        loc: str = "center",
+        loc: str | None = None,
         title_fontweight: str | int = "bold",
     ) -> None:
+        if max_width is None:
+            max_width = cns.settings.multipanel_max_width
+        if loc is None:
+            loc = cns.settings.multipanel_title_loc
         self._max_width = max_width
         self._title = title
         self._title_loc = _validate_title_loc(loc)
@@ -135,7 +139,10 @@ class multipanel:
         """Get the reserved height for the figure title band."""
         if self._title is None:
             return 0
-        return max(12, cns.settings.title_fontsize + 4)
+        return max(
+            cns.settings.multipanel_title_height_min,
+            cns.settings.title_fontsize + cns.settings.multipanel_title_height_pad,
+        )
 
     def _get_content_horizontal_bounds_px(self) -> tuple[float, float]:
         """Get the visible left/right bounds of the multipanel content."""
@@ -316,9 +323,12 @@ class multipanel:
         fig_height = fig_height_px / 72
 
         if self.fig is None:
-            self.fig = plt.figure(figsize=(fig_width, fig_height), dpi=72 * 2)
+            self.fig = plt.figure(
+                figsize=(fig_width, fig_height), dpi=cns.settings.figure_dpi
+            )
         else:
             self.fig.set_size_inches(fig_width, fig_height)
+            self.fig.set_dpi(cns.settings.figure_dpi)
 
         if self._title is None:
             if self._title_text is not None:
@@ -396,8 +406,8 @@ class multipanel:
                     label_y_fig,
                     label,
                     fontsize=cns.settings.title_fontsize,
-                    fontweight="bold",
-                    fontname="Arial",
+                    fontweight=cns.settings.panel_label_fontweight,
+                    fontname=cns.settings.panel_label_fontname,
                     va="center",
                     ha="left",
                 )
@@ -417,19 +427,22 @@ class multipanel:
                     label_x_fig = label_x_px / fig_width_px
                     label_y_fig = (fig_height_px - label_y_px) / fig_height_px
                     label_text.set_position((label_x_fig, label_y_fig))
+                    label_text.set_fontsize(cns.settings.title_fontsize)
+                    label_text.set_fontweight(cns.settings.panel_label_fontweight)
+                    label_text.set_fontname(cns.settings.panel_label_fontname)
                     label_text.set_ha("left")
                     label_text.set_va("center")
 
     def panel(
         self,
         label: str | None = None,
-        height: int = 150,
-        width: int = 150,
-        label_left: int = 10,
-        label_top: int = 12,
-        pad_left: int = 20,
-        pad_top: int = 0,
-        margin: tuple[int, int, int, int] = (10, 0, 0, 20),
+        height: int | float | None = None,
+        width: int | float | None = None,
+        label_left: int | float | None = None,
+        label_top: int | float | None = None,
+        pad_left: int | float | None = None,
+        pad_top: int | float | None = None,
+        margin: tuple[int | float, int | float, int | float, int | float] | None = None,
         color_cycle: str | None = None,
         color_map: str | None = None,
         below: str | None = None,
@@ -518,6 +531,20 @@ class multipanel:
             color_cycle = cns.settings.palette_qual
         if color_map is None:
             color_map = cns.settings.palette_seq
+        if height is None:
+            height = cns.settings.panel_height
+        if width is None:
+            width = cns.settings.panel_width
+        if label_left is None:
+            label_left = cns.settings.panel_label_left
+        if label_top is None:
+            label_top = cns.settings.panel_label_top
+        if pad_left is None:
+            pad_left = cns.settings.panel_pad_left
+        if pad_top is None:
+            pad_top = cns.settings.panel_pad_top
+        if margin is None:
+            margin = cns.settings.panel_margin
         cns.setup_matplotlib(color_cycle, color_map)
 
         if label is None:

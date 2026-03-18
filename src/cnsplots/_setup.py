@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import json
+import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
-
-import sys
-from pathlib import Path
 
 import matplotlib as mpl
 from matplotlib import font_manager as fm
@@ -74,6 +74,30 @@ def _validate_title_fontweight(value: str | int | None) -> str | int:
     if value is None or isinstance(value, bool) or not isinstance(value, (str, int)):
         raise TypeError("title_fontweight must be a string or integer")
     return value
+
+
+def _font_rcparams() -> dict[str, object]:
+    """Return the shared font-related matplotlib rcParams."""
+    return {
+        "mathtext.fontset": cns.settings.mathtext_fontset,
+        "font.family": cns.settings.font_family,
+        "font.sans-serif": list(cns.settings.font_sans_serif),
+    }
+
+
+def _resolve_legend_fontsizes(
+    title_fontsize: int | float,
+) -> tuple[int | float, int | float]:
+    """Resolve legend font sizes while preserving title-font inheritance."""
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        legend_fontsize = title_fontsize
+
+    legend_title_fontsize = cns.settings.legend_title_fontsize
+    if legend_title_fontsize is None:
+        legend_title_fontsize = title_fontsize
+
+    return legend_fontsize, legend_title_fontsize
 
 
 def setup_matplotlib(
@@ -196,6 +220,7 @@ def setup_matplotlib(
         axes_linewidth = cns.settings.axes_linewidth
 
     _ensure_helvetica_bold()
+    legend_fontsize, legend_title_fontsize = _resolve_legend_fontsizes(title_fontsize)
 
     def config() -> dict[str, object]:
         """
@@ -207,63 +232,55 @@ def setup_matplotlib(
             Configuration dictionary for matplotlib.rcParams.update().
         """
         return {
-            "mathtext.fontset": "custom",
-            "font.family": "sans-serif",
-            "font.sans-serif": [
-                "Helvetica",
-                "Helvetica Neue",
-                "Arial",
-                "DejaVu Sans",
-                "Liberation Sans",
-            ],
+            **_font_rcparams(),
             "font.size": title_fontsize,
-            "savefig.bbox": "tight",
-            "savefig.pad_inches": 0.01,
-            "savefig.dpi": 72 * 4,
-            "savefig.transparent": True,
-            "svg.fonttype": "none",
+            "savefig.bbox": cns.settings.savefig_bbox,
+            "savefig.pad_inches": cns.settings.savefig_pad_inches,
+            "savefig.dpi": cns.settings.savefig_dpi,
+            "savefig.transparent": cns.settings.savefig_transparent,
+            "svg.fonttype": cns.settings.svg_fonttype,
             # Embed fonts as TrueType (Type 42) in the intermediate PDF so that
             # mutool can resolve every glyph back to a Unicode codepoint.  The
             # default Type 3 encoding has no Unicode map, causing math/symbol
             # glyphs (e.g. the minus sign in 10⁻⁹) to be converted to paths.
-            "pdf.fonttype": 42,
+            "pdf.fonttype": cns.settings.pdf_fonttype,
             "axes.titlesize": title_fontsize,
             "axes.titleweight": title_fontweight,
-            "axes.titlelocation": "center",
+            "axes.titlelocation": cns.settings.axes_titlelocation,
             "axes.labelsize": title_fontsize,
-            "axes.grid": False,
-            "axes.spines.top": False,
-            "axes.spines.right": False,
+            "axes.grid": cns.settings.axes_grid,
+            "axes.spines.top": cns.settings.axes_spines_top,
+            "axes.spines.right": cns.settings.axes_spines_right,
             "axes.linewidth": axes_linewidth,
-            "axes.edgecolor": "black",
-            "axes.labelcolor": "black",
-            "axes.labelpad": 2,
-            "axes.titlepad": 4,
-            "axes.xmargin": 0.05,
-            "axes.ymargin": 0.05,
+            "axes.edgecolor": cns.settings.axes_edgecolor,
+            "axes.labelcolor": cns.settings.axes_labelcolor,
+            "axes.labelpad": cns.settings.axes_labelpad,
+            "axes.titlepad": cns.settings.axes_titlepad,
+            "axes.xmargin": cns.settings.axes_xmargin,
+            "axes.ymargin": cns.settings.axes_ymargin,
             "axes.prop_cycle": mpl.cycler(color=cns.palettes(color_cycle)),
             "image.cmap": color_map,
-            "legend.fontsize": title_fontsize,
-            "legend.title_fontsize": title_fontsize,
-            "legend.frameon": False,
-            "legend.markerscale": 0.5,
-            "legend.handlelength": 0.7,
-            "legend.handleheight": 0.7,
-            "legend.handletextpad": 0.3,
+            "legend.fontsize": legend_fontsize,
+            "legend.title_fontsize": legend_title_fontsize,
+            "legend.frameon": cns.settings.legend_frameon,
+            "legend.markerscale": cns.settings.legend_markerscale,
+            "legend.handlelength": cns.settings.legend_handlelength,
+            "legend.handleheight": cns.settings.legend_handleheight,
+            "legend.handletextpad": cns.settings.legend_handletextpad,
             "xtick.labelsize": fontsize_legend,
-            "xtick.bottom": True,
-            "xtick.color": "black",
-            "xtick.major.size": 2,
-            "xtick.major.width": 0.6,
-            "xtick.major.pad": 1,
-            "xtick.alignment": "center",
+            "xtick.bottom": cns.settings.xtick_bottom,
+            "xtick.color": cns.settings.xtick_color,
+            "xtick.major.size": cns.settings.xtick_major_size,
+            "xtick.major.width": cns.settings.xtick_major_width,
+            "xtick.major.pad": cns.settings.xtick_major_pad,
+            "xtick.alignment": cns.settings.xtick_alignment,
             "ytick.labelsize": fontsize_legend,
-            "ytick.left": True,
-            "ytick.color": "black",
-            "ytick.major.size": 2,
-            "ytick.major.width": 0.6,
-            "ytick.major.pad": 1,
-            "ytick.alignment": "center_baseline",
+            "ytick.left": cns.settings.ytick_left,
+            "ytick.color": cns.settings.ytick_color,
+            "ytick.major.size": cns.settings.ytick_major_size,
+            "ytick.major.width": cns.settings.ytick_major_width,
+            "ytick.major.pad": cns.settings.ytick_major_pad,
+            "ytick.alignment": cns.settings.ytick_alignment,
         }
 
     for categorical in [
@@ -358,7 +375,11 @@ def setup_scanpy() -> None:
     import scanpy
 
     setup_matplotlib()
-    scanpy.set_figure_params(scanpy=False, figsize=(2.5, 2.5), facecolor="white")
+    scanpy.set_figure_params(
+        scanpy=cns.settings.scanpy_use_default_style,
+        figsize=cns.settings.scanpy_figsize,
+        facecolor=cns.settings.scanpy_facecolor,
+    )
 
 
 def setup_ax(
@@ -367,7 +388,7 @@ def setup_ax(
     title_fontweight: str | int | None = None,
     fontsize_legend: int | float | None = None,
     axes_linewidth: float | None = None,
-    colorbar_label: str = "FDR q-val",
+    colorbar_label: str | None = None,
 ) -> None:
     """
     Apply publication-quality styling to a specific matplotlib axes.
@@ -463,59 +484,73 @@ def setup_ax(
         fontsize_legend = cns.settings.fontsize_legend
     if axes_linewidth is None:
         axes_linewidth = cns.settings.axes_linewidth
+    if colorbar_label is None:
+        colorbar_label = cns.settings.setup_ax_colorbar_label
 
     _ensure_helvetica_bold()
 
-    mpl.rcParams.update(
-        {
-            "mathtext.fontset": "custom",
-            "font.family": "sans-serif",
-            "font.sans-serif": [
-                "Helvetica",
-                "Helvetica Neue",
-                "Arial",
-                "DejaVu Sans",
-                "Liberation Sans",
-            ],
-        }
-    )
+    mpl.rcParams.update(_font_rcparams())
     title_props = ax.title.get_fontproperties().copy()
     title_props.set_size(title_fontsize)
     title_props.set_weight(title_fontweight)
-    ax.set_title(ax.get_title(), fontproperties=title_props, loc="center")
-    ax.set_xlabel(ax.get_xlabel(), fontsize=title_fontsize, color="black")
-    ax.set_ylabel(ax.get_ylabel(), fontsize=title_fontsize, color="black")
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["bottom"].set_linewidth(axes_linewidth)
-    ax.spines["left"].set_linewidth(axes_linewidth)
-    ax.spines["bottom"].set_color("black")
-    ax.spines["left"].set_color("black")
+    ax.set_title(
+        ax.get_title(),
+        fontproperties=title_props,
+        loc=cns.settings.axes_titlelocation,
+        pad=cns.settings.axes_titlepad,
+    )
+    ax.set_xlabel(
+        ax.get_xlabel(),
+        fontsize=title_fontsize,
+        color=cns.settings.axes_labelcolor,
+        labelpad=cns.settings.axes_labelpad,
+    )
+    ax.set_ylabel(
+        ax.get_ylabel(),
+        fontsize=title_fontsize,
+        color=cns.settings.axes_labelcolor,
+        labelpad=cns.settings.axes_labelpad,
+    )
+    ax.spines["top"].set_visible(cns.settings.axes_spines_top)
+    ax.spines["right"].set_visible(cns.settings.axes_spines_right)
+    for spine_name in ("top", "right", "bottom", "left"):
+        ax.spines[spine_name].set_linewidth(axes_linewidth)
+        ax.spines[spine_name].set_color(cns.settings.axes_edgecolor)
     ax.tick_params(
         axis="x",
         labelsize=fontsize_legend,
-        colors="black",
-        length=2,
-        width=0.6,
-        pad=1,
-        labelrotation=0,
+        colors=cns.settings.xtick_color,
+        length=cns.settings.xtick_major_size,
+        width=cns.settings.xtick_major_width,
+        pad=cns.settings.xtick_major_pad,
+        labelrotation=cns.settings.xtick_labelrotation,
+        bottom=cns.settings.xtick_bottom,
     )
     ax.tick_params(
         axis="y",
         labelsize=fontsize_legend,
-        colors="black",
-        length=2,
-        width=0.6,
-        pad=1,
-        labelrotation=0,
+        colors=cns.settings.ytick_color,
+        length=cns.settings.ytick_major_size,
+        width=cns.settings.ytick_major_width,
+        pad=cns.settings.ytick_major_pad,
+        labelrotation=cns.settings.ytick_labelrotation,
+        left=cns.settings.ytick_left,
     )
-    ax.grid(False)
-    ax.margins(x=0.05, y=0.05)
+    for tick_label in ax.get_xticklabels():
+        tick_label.set_horizontalalignment(cns.settings.xtick_alignment)
+    for tick_label in ax.get_yticklabels():
+        tick_label.set_verticalalignment(cns.settings.ytick_alignment)
+    ax.grid(cns.settings.axes_grid)
+    ax.margins(x=cns.settings.axes_xmargin, y=cns.settings.axes_ymargin)
     cbar = ax.collections[0].colorbar if ax.collections else None
     if cbar is not None:
-        cbar.ax.tick_params(labelsize=fontsize_legend)
+        cbar.ax.tick_params(labelsize=fontsize_legend, colors=cns.settings.ytick_color)
         if colorbar_label:
-            cbar.set_label(colorbar_label, fontsize=title_fontsize, color="black")
+            cbar.set_label(
+                colorbar_label,
+                fontsize=title_fontsize,
+                color=cns.settings.axes_labelcolor,
+            )
 
 
 def setup_ggplot() -> str:
@@ -580,46 +615,51 @@ def setup_ggplot() -> str:
     >>> p < -ggplot(data, aes(x=x, y=y)) + geom_point()
     >>> p + theme_custom
     """
-    return """
-    fontsize <- 10
+    fontsize = cns.settings.ggplot_fontsize
+    font_family = json.dumps(cns.settings.ggplot_font_family)
+    font_face = json.dumps(cns.settings.ggplot_font_face)
+    text_color = json.dumps(cns.settings.ggplot_text_color)
+
+    return f"""
+    fontsize <- {fontsize}
     theme_custom <- theme(
       text = element_text(
         size = fontsize,
-        color = 'black',
-        family = "sans",
-        face = "plain"
+        color = {text_color},
+        family = {font_family},
+        face = {font_face}
       ),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
 
       axis.text.x = element_text(
         size = fontsize,
-        color = 'black'
+        color = {text_color}
       ),
       axis.text.y = element_text(
         size = fontsize,
-        color = 'black'
+        color = {text_color}
       ),
 
       axis.title.x = element_text(
         size = fontsize,
-        color = 'black'
+        color = {text_color}
       ),
       axis.title.y = element_text(
         size = fontsize,
-        color = 'black'
+        color = {text_color}
       ),
 
       axis.title = element_text(
         size = fontsize,
-        color = 'black',
-        face = "plain"
+        color = {text_color},
+        face = {font_face}
       ),
 
       plot.title = element_text(
         size = fontsize,
-        color = 'black',
-        face = "plain"
+        color = {text_color},
+        face = {font_face}
       ),
 
       legend.text = element_text(size = fontsize),

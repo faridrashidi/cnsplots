@@ -39,7 +39,7 @@ VIOLET = "#442288"
 CHOCOLATE = "#662506"
 
 
-def figure(height=150, width=150, color_cycle=None, color_map=None):
+def figure(height=None, width=None, color_cycle=None, color_map=None):
     """
     Initialize a new figure with custom size and styling.
 
@@ -90,12 +90,16 @@ def figure(height=150, width=150, color_cycle=None, color_map=None):
     >>> cns.figure(height=150, width=150, color_cycle="Set2", color_map="parula")
     >>> cns.heatmapplot(adata)
     """
+    if height is None:
+        height = cns.settings.figure_height
+    if width is None:
+        width = cns.settings.figure_width
     if color_cycle is None:
         color_cycle = cns.settings.palette_qual
     if color_map is None:
         color_map = cns.settings.palette_seq
     cns.setup_matplotlib(color_cycle, color_map)
-    plt.figure(figsize=(width / 72, height / 72), dpi=72 * 2)
+    plt.figure(figsize=(width / 72, height / 72), dpi=cns.settings.figure_dpi)
 
 
 def savefig(filepath):
@@ -215,14 +219,14 @@ def take_legend_out(title=None):
     plt.legend(
         handles=handles,
         labels=labels,
-        bbox_to_anchor=(1, 1.02),
-        loc="upper left",
+        bbox_to_anchor=cns.settings.legend_out_bbox_to_anchor,
+        loc=cns.settings.legend_out_loc,
         title=title,
-        markerscale=1,
+        markerscale=cns.settings.legend_out_markerscale,
     )
 
 
-def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
+def add_panel_label(name="A", offset_x=None, offset_y=None):
     """
     Add a panel label (e.g., 'A', 'B', 'C') to the current axes.
 
@@ -272,14 +276,19 @@ def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
     >>> cns.barplot(data=df, x="treatment", y="response")
     >>> cns.add_panel_label("B", offset_x=-0.3, offset_y=1.15)
     """
+    if offset_x is None:
+        offset_x = cns.settings.panel_label_offset_x
+    if offset_y is None:
+        offset_y = cns.settings.panel_label_offset_y
+
     plt.text(
         offset_x,
         offset_y,
         name,
         transform=plt.gca().transAxes,
         fontsize=cns.settings.title_fontsize,
-        fontname="Arial",
-        fontweight="bold",
+        fontname=cns.settings.panel_label_fontname,
+        fontweight=cns.settings.panel_label_fontweight,
     )
 
 

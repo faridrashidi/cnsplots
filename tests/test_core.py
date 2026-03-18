@@ -176,18 +176,100 @@ def test_settings_behavior() -> None:
     settings.fontsize_legend = 9
     settings.axes_linewidth = 1.0
     settings.verbosity = 0
+    settings.mathtext_fontset = "stix"
+    settings.font_family = "serif"
+    settings.font_sans_serif = ["Arial", "DejaVu Sans"]
+    settings.savefig_bbox = "standard"
+    settings.savefig_pad_inches = 0.1
+    settings.savefig_dpi = 300
+    settings.savefig_transparent = False
+    settings.svg_fonttype = "path"
+    settings.pdf_fonttype = 3
+    settings.axes_titlelocation = "left"
+    settings.axes_grid = True
+    settings.axes_spines_top = True
+    settings.axes_spines_right = True
+    settings.axes_edgecolor = "red"
+    settings.axes_labelcolor = "blue"
+    settings.axes_labelpad = 5
+    settings.axes_titlepad = 6
+    settings.axes_xmargin = 0.1
+    settings.axes_ymargin = 0.2
+    settings.legend_fontsize = 11
+    settings.legend_title_fontsize = 12
+    settings.legend_frameon = True
+    settings.legend_markerscale = 1.2
+    settings.legend_handlelength = 1.3
+    settings.legend_handleheight = 1.4
+    settings.legend_handletextpad = 0.4
+    settings.xtick_bottom = False
+    settings.xtick_color = "purple"
+    settings.xtick_major_size = 3
+    settings.xtick_major_width = 0.9
+    settings.xtick_major_pad = 2
+    settings.xtick_alignment = "right"
+    settings.xtick_labelrotation = 15
+    settings.ytick_left = False
+    settings.ytick_color = "green"
+    settings.ytick_major_size = 4
+    settings.ytick_major_width = 1.1
+    settings.ytick_major_pad = 3
+    settings.ytick_alignment = "top"
+    settings.ytick_labelrotation = 20
+    settings.setup_ax_colorbar_label = "Configured"
+    settings.scanpy_use_default_style = True
+    settings.scanpy_figsize = (3.0, 4.0)
+    settings.scanpy_facecolor = "ivory"
+    settings.ggplot_fontsize = 11
+    settings.ggplot_font_family = "mono"
+    settings.ggplot_font_face = "bold"
+    settings.ggplot_text_color = "gray20"
+    settings.figure_width = 180
+    settings.figure_height = 120
+    settings.figure_dpi = 200
+    settings.multipanel_max_width = 600
+    settings.multipanel_title_loc = "right"
+    settings.multipanel_title_height_min = 14
+    settings.multipanel_title_height_pad = 5
+    settings.panel_width = 160
+    settings.panel_height = 140
+    settings.panel_label_left = 11
+    settings.panel_label_top = 13
+    settings.panel_pad_left = 21
+    settings.panel_pad_top = 2
+    settings.panel_margin = (1, 2, 3, 4)
+    settings.panel_label_fontname = "DejaVu Sans"
+    settings.panel_label_fontweight = 500
+    settings.panel_label_offset_x = -0.3
+    settings.panel_label_offset_y = 1.2
+    settings.legend_out_bbox_to_anchor = (1.1, 1.2)
+    settings.legend_out_loc = "lower left"
+    settings.legend_out_markerscale = 2
     assert "CNSSettings(" in repr(settings)
     assert "title_fontweight='normal'" in repr(settings)
+    assert "figure_width=180" in repr(settings)
+    assert "font_sans_serif=('Arial', 'DejaVu Sans')" in repr(settings)
 
     with settings.context(
-        title_fontsize=12, title_fontweight=600, palette_qual="Dark2"
+        title_fontsize=12,
+        title_fontweight=600,
+        palette_qual="Dark2",
+        legend_fontsize=None,
+        scanpy_figsize=(5.0, 4.0),
+        panel_margin=(5, 6, 7, 8),
     ) as ctx:
         assert ctx.title_fontsize == 12
         assert ctx.title_fontweight == 600
         assert settings.palette_qual == "Dark2"
+        assert ctx.legend_fontsize is None
+        assert ctx.scanpy_figsize == (5.0, 4.0)
+        assert ctx.panel_margin == (5, 6, 7, 8)
     assert settings.title_fontsize == 10
     assert settings.title_fontweight == "normal"
     assert settings.palette_qual == "Set2"
+    assert settings.legend_fontsize == 11
+    assert settings.scanpy_figsize == (3.0, 4.0)
+    assert settings.panel_margin == (1, 2, 3, 4)
 
     with pytest.raises(AttributeError, match="not a valid setting"):
         with settings.context(unknown=1):
@@ -244,6 +326,71 @@ def test_settings_behavior() -> None:
     settings.reset()
     assert settings.palette_qual == "Ecotyper1"
     assert settings.title_fontweight == "bold"
+    assert settings.legend_fontsize is None
+    assert settings.scanpy_figsize == (2.5, 2.5)
+    assert settings.panel_margin == (10, 0, 0, 20)
+    assert settings.font_sans_serif[0] == "Helvetica"
+
+
+def test_settings_validation_errors() -> None:
+    settings = _settings.CNSSettings()
+
+    with pytest.raises(TypeError):
+        settings.palette_qual = 1  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.palette_seq = 1  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.title_fontsize = "1"  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.figure_width = None  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.title_fontsize = 0
+    with pytest.raises(TypeError):
+        settings.title_fontweight = []  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.panel_label_fontweight = None  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
+        settings.title_fontweight = 1.5  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.fontsize_legend = "1"  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.fontsize_legend = 0
+    with pytest.raises(TypeError):
+        settings.axes_linewidth = "1"  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.axes_linewidth = 0
+    with pytest.raises(TypeError):
+        settings.verbosity = 1.5  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.verbosity = -1
+    with pytest.raises(TypeError):
+        settings.axes_grid = "yes"  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.axes_titlelocation = 1  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="axes_titlelocation must be one of"):
+        settings.axes_titlelocation = "top"
+    with pytest.raises(TypeError):
+        settings.font_sans_serif = "Arial"  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.font_sans_serif = ["Arial", 1]  # type: ignore[list-item]
+    with pytest.raises(ValueError):
+        settings.font_sans_serif = []  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.scanpy_figsize = "big"  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.scanpy_figsize = (1.0,)  # type: ignore[assignment]
+    with pytest.raises(TypeError):
+        settings.legend_fontsize = "big"  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.legend_markerscale = -1
+    with pytest.raises(TypeError):
+        settings.pdf_fonttype = 1.5  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.pdf_fonttype = 0
+    with pytest.raises(TypeError):
+        settings.legend_out_loc = 1  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="legend_out_loc must be one of"):
+        settings.legend_out_loc = "corner"
 
 
 def test_ensure_helvetica_bold_branches(
@@ -280,6 +427,56 @@ def test_ensure_helvetica_bold_branches(
 
 def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     cns.settings.reset()
+    with cns.settings.context(
+        legend_fontsize=11,
+        legend_title_fontsize=12,
+        axes_titlelocation="left",
+        axes_grid=True,
+        axes_spines_top=True,
+        axes_spines_right=True,
+        axes_edgecolor="green",
+        axes_labelcolor="purple",
+        axes_labelpad=5,
+        axes_titlepad=6,
+        axes_xmargin=0.2,
+        axes_ymargin=0.3,
+        xtick_bottom=False,
+        xtick_color="red",
+        xtick_major_size=3,
+        xtick_major_width=1.2,
+        xtick_major_pad=2,
+        xtick_alignment="right",
+        xtick_labelrotation=15,
+        ytick_left=False,
+        ytick_color="blue",
+        ytick_major_size=4,
+        ytick_major_width=1.4,
+        ytick_major_pad=3,
+        ytick_alignment="top",
+        ytick_labelrotation=20,
+        setup_ax_colorbar_label="Configured",
+        scanpy_use_default_style=True,
+        scanpy_figsize=(3.0, 4.0),
+        scanpy_facecolor="ivory",
+        ggplot_fontsize=11,
+        ggplot_font_family="mono",
+        ggplot_font_face="bold",
+        ggplot_text_color="gray20",
+    ):
+        _setup.setup_matplotlib()
+        assert mpl.rcParams["legend.fontsize"] == 11
+        assert mpl.rcParams["legend.title_fontsize"] == 12
+        assert mpl.rcParams["axes.titlelocation"] == "left"
+        assert mpl.rcParams["axes.grid"] is True
+        assert mpl.rcParams["axes.spines.top"] is True
+        assert mpl.rcParams["axes.spines.right"] is True
+        assert mpl.rcParams["axes.edgecolor"] == "green"
+        assert mpl.rcParams["axes.labelcolor"] == "purple"
+        assert mpl.rcParams["xtick.bottom"] is False
+        assert mpl.rcParams["xtick.color"] == "red"
+        assert mpl.rcParams["ytick.left"] is False
+        assert mpl.rcParams["ytick.color"] == "blue"
+
     _setup.setup_matplotlib(
         color_cycle="Set2",
         color_map="parula",
@@ -291,6 +488,14 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     assert mpl.rcParams["axes.labelsize"] == 9
     assert mpl.rcParams["axes.titleweight"] == "normal"
     assert mpl.rcParams["image.cmap"] == "parula"
+    with cns.settings.context(
+        title_fontsize=13,
+        legend_fontsize=None,
+        legend_title_fontsize=None,
+    ):
+        _setup.setup_matplotlib(title_fontsize=14)
+        assert mpl.rcParams["legend.fontsize"] == 14
+        assert mpl.rcParams["legend.title_fontsize"] == 14
     with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
         _setup.setup_matplotlib(title_fontweight=1.5)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="unexpected keyword argument 'fontsize_title'"):
@@ -308,17 +513,52 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     ax.set_title("Title")
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    _setup.setup_ax(
-        ax,
-        title_fontsize=10,
-        title_fontweight="normal",
-        fontsize_legend=9,
-        axes_linewidth=1.1,
-        colorbar_label="Custom",
-    )
-    assert ax.get_xlabel() == "X"
-    assert ax.title.get_fontweight() == "normal"
-    assert heat.colorbar.ax.get_ylabel() == "Custom"
+    with cns.settings.context(
+        axes_titlelocation="left",
+        axes_grid=True,
+        axes_spines_top=True,
+        axes_spines_right=True,
+        axes_edgecolor="green",
+        axes_labelcolor="purple",
+        axes_labelpad=5,
+        axes_titlepad=6,
+        axes_xmargin=0.2,
+        axes_ymargin=0.3,
+        xtick_bottom=False,
+        xtick_color="red",
+        xtick_major_size=3,
+        xtick_major_width=1.2,
+        xtick_major_pad=2,
+        xtick_alignment="right",
+        xtick_labelrotation=15,
+        ytick_left=False,
+        ytick_color="blue",
+        ytick_major_size=4,
+        ytick_major_width=1.4,
+        ytick_major_pad=3,
+        ytick_alignment="top",
+        ytick_labelrotation=20,
+        setup_ax_colorbar_label="Configured",
+    ):
+        _setup.setup_ax(
+            ax,
+            title_fontsize=10,
+            title_fontweight="normal",
+            fontsize_legend=9,
+            axes_linewidth=1.1,
+        )
+        fig.canvas.draw()
+        assert ax.get_xlabel() == "X"
+        assert ax._left_title.get_text() == "Title"
+        assert ax.xaxis.label.get_color() == "purple"
+        assert ax.xaxis.labelpad == 5
+        assert ax.spines["top"].get_visible() is True
+        assert ax.spines["right"].get_visible() is True
+        assert ax.spines["bottom"].get_edgecolor() == mpl.colors.to_rgba("green")
+        assert ax.get_xticklabels()[0].get_ha() == "right"
+        assert ax.get_yticklabels()[0].get_va() == "top"
+        assert heat.colorbar.ax.get_ylabel() == "Configured"
+        assert heat.colorbar.ax.yaxis.label.get_color() == "purple"
     with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
         _setup.setup_ax(ax, title_fontweight=1.5)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="unexpected keyword argument 'fontsize_title'"):
@@ -339,11 +579,26 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         set_figure_params=lambda **kwargs: calls.update(kwargs)
     )
     monkeypatch.setitem(sys.modules, "scanpy", fake_scanpy)
-    _setup.setup_scanpy()
-    assert calls == {"scanpy": False, "figsize": (2.5, 2.5), "facecolor": "white"}
+    with cns.settings.context(
+        scanpy_use_default_style=True,
+        scanpy_figsize=(3.0, 4.0),
+        scanpy_facecolor="ivory",
+    ):
+        _setup.setup_scanpy()
+    assert calls == {"scanpy": True, "figsize": (3.0, 4.0), "facecolor": "ivory"}
 
-    gg = _setup.setup_ggplot()
+    with cns.settings.context(
+        ggplot_fontsize=11,
+        ggplot_font_family="mono",
+        ggplot_font_face="bold",
+        ggplot_text_color="gray20",
+    ):
+        gg = _setup.setup_ggplot()
     assert "theme_custom" in gg
+    assert "fontsize <- 11" in gg
+    assert 'family = "mono"' in gg
+    assert 'face = "bold"' in gg
+    assert 'color = "gray20"' in gg
 
 
 def test_svg_helpers_and_export(
@@ -448,17 +703,43 @@ def test_utils_helpers_and_showcase_data(
     showcase_bundle: tuple[pd.DataFrame, ...],
 ) -> None:
     cns.settings.reset()
-    cns.figure(100, 100, color_cycle="Set1", color_map="parula")
-    assert plt.gcf().dpi == 144
+    with cns.settings.context(
+        figure_width=160,
+        figure_height=110,
+        figure_dpi=180,
+        legend_out_bbox_to_anchor=(1.3, 1.4),
+        legend_out_loc="lower left",
+        legend_out_markerscale=2,
+        panel_label_fontname="DejaVu Sans",
+        panel_label_fontweight="normal",
+        panel_label_offset_x=-0.2,
+        panel_label_offset_y=1.05,
+    ):
+        cns.figure()
+        assert plt.gcf().dpi == 180
+        assert plt.gcf().get_size_inches()[0] == pytest.approx(160 / 72)
+        assert plt.gcf().get_size_inches()[1] == pytest.approx(110 / 72)
+        plt.close(plt.gcf())
 
-    fig, ax = plt.subplots()
-    ax.plot([0, 1], [1, 2], label="L1")
-    ax.legend(title="Legend")
-    _utils.take_legend_out(title="Moved")
-    assert ax.get_legend().get_title().get_text() == "Moved"
+        cns.figure(100, 100, color_cycle="Set1", color_map="parula")
+        assert plt.gcf().dpi == 180
 
-    _utils.add_panel_label("A", offset_x=-0.1, offset_y=1.0)
-    assert any(text.get_text() == "A" for text in plt.gca().texts)
+        fig, ax = plt.subplots()
+        ax.plot([0, 1], [1, 2], label="L1")
+        ax.legend(title="Legend")
+        _utils.take_legend_out(title="Moved")
+        legend = ax.get_legend()
+        assert legend.get_title().get_text() == "Moved"
+        assert legend.markerscale == 2
+        assert legend.get_bbox_to_anchor()._bbox.x0 == pytest.approx(1.3)
+        assert legend.get_bbox_to_anchor()._bbox.y0 == pytest.approx(1.4)
+
+        _utils.add_panel_label("A")
+        panel_text = plt.gca().texts[-1]
+        assert panel_text.get_text() == "A"
+        assert panel_text.get_position() == (-0.2, 1.05)
+        assert panel_text.get_fontproperties().get_name() == "DejaVu Sans"
+        assert panel_text.get_fontweight() == "normal"
 
     assert len(_utils.get_hexcolors_from_apalette([0, 1], "Set1")) == 2
     assert _utils.get_hexcolors_from_apalette([0, 1], ["#111111", "#222222"]) == [
@@ -623,6 +904,33 @@ def test_multipanel_layout() -> None:
     assert len(mp.axes) == 3
 
 
+def test_multipanel_settings_defaults_and_label_style() -> None:
+    with cns.settings.context(
+        figure_dpi=160,
+        multipanel_max_width=180,
+        multipanel_title_loc="left",
+        panel_width=70,
+        panel_height=50,
+        panel_label_left=11,
+        panel_label_top=13,
+        panel_pad_left=14,
+        panel_pad_top=5,
+        panel_margin=(6, 7, 8, 9),
+        panel_label_fontname="DejaVu Sans",
+        panel_label_fontweight="normal",
+    ):
+        mp = cns.multipanel(title="Overview")
+        ax = mp.panel()
+
+        assert mp._max_width == 180
+        assert mp.fig.dpi == 160
+        assert mp._title_text is not None
+        assert mp._title_text.get_ha() == "left"
+        assert ax.get_position().width == pytest.approx(70 / 180)
+        assert mp._label_texts["A"].get_fontproperties().get_name() == "DejaVu Sans"
+        assert mp._label_texts["A"].get_fontweight() == "normal"
+
+
 @pytest.mark.parametrize(
     ("loc", "expected_x"),
     [
@@ -658,7 +966,10 @@ def test_multipanel_title_fontweight_and_height_reservation() -> None:
 
     plain_height_px = mp_plain.fig.get_size_inches()[1] * 72
     titled_height_px = mp_titled.fig.get_size_inches()[1] * 72
-    expected_delta = max(12, cns.settings.title_fontsize + 4)
+    expected_delta = max(
+        cns.settings.multipanel_title_height_min,
+        cns.settings.title_fontsize + cns.settings.multipanel_title_height_pad,
+    )
 
     assert mp_titled._title_text is not None
     assert mp_titled._title_text.get_fontweight() == "normal"
