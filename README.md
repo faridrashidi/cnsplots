@@ -185,12 +185,12 @@ Full documentation is available at [farid.one/cnsplots](https://cnsplots.farid.o
 Specify sizes in **pixels** for precise control:
 
 ```python
-cns.figure(height=150, width=100)  # Creates a 150px × 100px minimum canvas
+cns.figure(height=150, width=100)  # Starts from a 150px × 100px canvas
 ```
 
 With `cns.settings.figure_autofit=True` (the default), the final rendered
-canvas can grow on draw to keep long titles, outside legends, and annotations
-from being clipped.
+canvas can expand or trim on draw to keep long titles, outside legends, and
+annotations tightly in bounds.
 
 ### Color Palettes
 

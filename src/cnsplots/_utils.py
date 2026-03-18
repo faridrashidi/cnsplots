@@ -49,6 +49,8 @@ class _FigureAutofitManager:
 
     def __init__(self, fig):
         self.fig = fig
+        self._min_width_px = float(fig.get_figwidth() * fig.dpi)
+        self._min_height_px = float(fig.get_figheight() * fig.dpi)
         self._draw_event_cid = None
         self._is_relayout_in_draw = False
         self._connect_draw_handler()
@@ -113,20 +115,42 @@ class _FigureAutofitManager:
             if callable(get_clip_on) and not get_clip_on():
                 yield artist
 
-    def _measure_overflow_px(self, renderer):
-        """Measure how far visible artists extend past the current figure bbox."""
-        fig_bbox = self.fig.bbox.frozen()
-        overflow = {
-            "left": 0.0,
-            "right": 0.0,
-            "bottom": 0.0,
-            "top": 0.0,
-        }
+    def _iter_axes_non_title_artists(self, ax):
+        """Yield axes artists that can move with the axes during tightening."""
+        yield ax.xaxis.label
+        yield ax.yaxis.label
+        yield ax.xaxis.get_offset_text()
+        yield ax.yaxis.get_offset_text()
+        yield from ax.get_xticklabels()
+        yield from ax.get_yticklabels()
 
+        legend = ax.get_legend()
+        if legend is not None:
+            yield legend
+
+        yield from ax.texts
+
+        for artist in (*ax.lines, *ax.collections, *ax.patches, *ax.artists):
+            get_clip_on = getattr(artist, "get_clip_on", None)
+            if callable(get_clip_on) and not get_clip_on():
+                yield artist
+
+    def _figure_has_expanded(self):
+        """Report whether the current canvas is larger than the requested minimum."""
+        fig_bbox = self.fig.bbox.frozen()
+        return (
+            float(fig_bbox.width) > self._min_width_px + _FIGURE_AUTOFIT_TOLERANCE_PX
+            or float(fig_bbox.height)
+            > self._min_height_px + _FIGURE_AUTOFIT_TOLERANCE_PX
+        )
+
+    def _get_content_bbox(self, renderer):
+        """Return the union bbox of all visible figure content."""
         artists = list(self._iter_figure_artists())
         for ax in self.fig.get_axes():
             artists.extend(self._iter_axes_artists(ax))
 
+        bboxes = []
         for artist in artists:
             get_visible = getattr(artist, "get_visible", None)
             if callable(get_visible) and not get_visible():
@@ -136,22 +160,36 @@ class _FigureAutofitManager:
                 continue
             if bbox.width <= 0 and bbox.height <= 0:
                 continue
-            overflow["left"] = max(overflow["left"], float(fig_bbox.x0 - bbox.x0))
-            overflow["right"] = max(overflow["right"], float(bbox.x1 - fig_bbox.x1))
-            overflow["bottom"] = max(overflow["bottom"], float(fig_bbox.y0 - bbox.y0))
-            overflow["top"] = max(overflow["top"], float(bbox.y1 - fig_bbox.y1))
+            bboxes.append(bbox.frozen())
+
+        if not bboxes:
+            return None
+        return mtransforms.Bbox.union(bboxes)
+
+    def _measure_overflow_px(self, renderer):
+        """Measure how far visible artists extend past the current figure bbox."""
+        fig_bbox = self.fig.bbox.frozen()
+        content_bbox = self._get_content_bbox(renderer)
+        if content_bbox is None:
+            return 0.0, 0.0, 0.0, 0.0
 
         return tuple(
-            max(0.0, overflow[key]) for key in ("left", "right", "bottom", "top")
+            max(0.0, value)
+            for value in (
+                float(fig_bbox.x0 - content_bbox.x0),
+                float(content_bbox.x1 - fig_bbox.x1),
+                float(fig_bbox.y0 - content_bbox.y0),
+                float(content_bbox.y1 - fig_bbox.y1),
+            )
         )
 
-    def _grow_canvas(self, left, right, bottom, top):
-        """Increase canvas size and keep existing axes at their current pixel size."""
+    def _resize_canvas(self, left, right, bottom, top):
+        """Resize the canvas and keep existing axes at their current pixel size."""
         fig_bbox = self.fig.bbox.frozen()
         current_width_px = float(fig_bbox.width)
         current_height_px = float(fig_bbox.height)
         if current_width_px <= 0 or current_height_px <= 0:
-            return
+            return False
 
         axes_positions = []
         for ax in self.fig.get_axes():
@@ -168,6 +206,8 @@ class _FigureAutofitManager:
 
         new_width_px = current_width_px + left + right
         new_height_px = current_height_px + bottom + top
+        if new_width_px <= 0 or new_height_px <= 0:
+            return False
         self.fig.set_size_inches(
             new_width_px / self.fig.dpi,
             new_height_px / self.fig.dpi,
@@ -183,6 +223,107 @@ class _FigureAutofitManager:
                     height_px / new_height_px,
                 ]
             )
+        return True
+
+    def _grow_canvas(self, left, right, bottom, top):
+        """Increase canvas size and keep existing axes at their current pixel size."""
+        return self._resize_canvas(left, right, bottom, top)
+
+    def _tighten_single_axes_horizontal_layout(self, renderer):
+        """Reduce excess left margin for expanded single-axes figures."""
+        axes = self.fig.get_axes()
+        if len(axes) != 1:
+            return False
+
+        ax = axes[0]
+        fig_bbox = self.fig.bbox.frozen()
+        leftmost = None
+        for artist in self._iter_axes_non_title_artists(ax):
+            get_visible = getattr(artist, "get_visible", None)
+            if callable(get_visible) and not get_visible():
+                continue
+            bbox = self._get_artist_bbox(artist, renderer)
+            if bbox is None:
+                continue
+            if bbox.width <= 0 and bbox.height <= 0:
+                continue
+            leftmost = (
+                float(bbox.x0) if leftmost is None else min(leftmost, float(bbox.x0))
+            )
+
+        if leftmost is None:
+            return False
+
+        shift_left_px = max(0.0, leftmost - float(fig_bbox.x0))
+        if shift_left_px <= _FIGURE_AUTOFIT_TOLERANCE_PX:
+            return False
+
+        axes_bbox = ax.get_window_extent(renderer=renderer)
+        axes_width_px = float(axes_bbox.width)
+        if axes_width_px <= 0:
+            return False
+
+        fig_width_px = float(fig_bbox.width)
+        position = list(ax.get_position().bounds)
+        shift_fraction = shift_left_px / fig_width_px
+        if position[0] - shift_fraction < 0:
+            shift_fraction = position[0]
+            shift_left_px = shift_fraction * fig_width_px
+        if shift_left_px <= _FIGURE_AUTOFIT_TOLERANCE_PX:
+            return False
+
+        ax.set_position(
+            [
+                position[0] - shift_fraction,
+                position[1],
+                position[2],
+                position[3],
+            ]
+        )
+
+        updated_axes_bbox = ax.get_window_extent(renderer=renderer)
+        updated_axes_width_px = float(updated_axes_bbox.width)
+        if updated_axes_width_px <= 0:
+            return True
+
+        center_title = ax.title
+        if center_title.get_text():
+            centered_x = (
+                (float(fig_bbox.width) / 2.0) - float(updated_axes_bbox.x0)
+            ) / updated_axes_width_px
+            center_title.set_x(centered_x)
+
+        for title_name in ("_left_title", "_right_title"):
+            title = getattr(ax, title_name, None)
+            if title is None or not title.get_text():
+                continue
+            title.set_x(title.get_position()[0] + shift_left_px / updated_axes_width_px)
+
+        return True
+
+    def _crop_canvas_to_content(self, renderer):
+        """Trim outer canvas whitespace back to the tight content bbox."""
+        fig_bbox = self.fig.bbox.frozen()
+        content_bbox = self._get_content_bbox(renderer)
+        if content_bbox is None:
+            return False
+
+        crop_left = max(0.0, float(content_bbox.x0 - fig_bbox.x0))
+        crop_right = max(0.0, float(fig_bbox.x1 - content_bbox.x1))
+        crop_bottom = max(0.0, float(content_bbox.y0 - fig_bbox.y0))
+        crop_top = max(0.0, float(fig_bbox.y1 - content_bbox.y1))
+        if (
+            max(crop_left, crop_right, crop_bottom, crop_top)
+            <= _FIGURE_AUTOFIT_TOLERANCE_PX
+        ):
+            return False
+
+        return self._resize_canvas(
+            -crop_left,
+            -crop_right,
+            -crop_bottom,
+            -crop_top,
+        )
 
     def _on_draw(self, event):
         """Relayout once after draw when axes decorations overflow the figure."""
@@ -196,7 +337,8 @@ class _FigureAutofitManager:
         renderer = event.renderer
 
         left, right, bottom, top = self._measure_overflow_px(renderer)
-        if max(left, right, bottom, top) <= _FIGURE_AUTOFIT_TOLERANCE_PX:
+        needs_growth = max(left, right, bottom, top) > _FIGURE_AUTOFIT_TOLERANCE_PX
+        if not needs_growth and not self._figure_has_expanded():
             return
 
         self._is_relayout_in_draw = True
@@ -210,6 +352,12 @@ class _FigureAutofitManager:
                 renderer = self._get_canvas_renderer(canvas)
                 if renderer is None:
                     break
+            if renderer is not None and self._figure_has_expanded():
+                if self._tighten_single_axes_horizontal_layout(renderer):
+                    canvas.draw()
+                    renderer = self._get_canvas_renderer(canvas)
+                if renderer is not None and self._crop_canvas_to_content(renderer):
+                    canvas.draw()
         finally:
             self._is_relayout_in_draw = False
 

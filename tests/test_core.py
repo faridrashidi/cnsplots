@@ -1133,11 +1133,20 @@ def test_figure_autofit_keeps_stackplot_title_and_legend_in_bounds() -> None:
         fig.canvas.draw()
         renderer = fig.canvas.get_renderer()
         legend = ax.get_legend()
+        title_bbox = ax.title.get_window_extent(renderer=renderer)
+        ylabel_bbox = ax.yaxis.label.get_window_extent(renderer=renderer)
+        content_bbox = fig._cnsplots_autofit_manager._get_content_bbox(renderer)
 
         assert legend is not None
         assert fig.get_size_inches()[0] > initial_size[0]
-        assert _bbox_is_within(fig.bbox, ax.title.get_window_extent(renderer=renderer))
+        assert content_bbox is not None
+        assert _bbox_is_within(fig.bbox, title_bbox)
         assert _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
+        assert ylabel_bbox.x0 == pytest.approx(fig.bbox.x0, abs=1.0)
+        assert content_bbox.x0 == pytest.approx(fig.bbox.x0, abs=1.0)
+        assert content_bbox.x1 == pytest.approx(fig.bbox.x1, abs=1.0)
+        assert content_bbox.y0 == pytest.approx(fig.bbox.y0, abs=1.0)
+        assert content_bbox.y1 == pytest.approx(fig.bbox.y1, abs=1.0)
 
 
 def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
@@ -1168,8 +1177,10 @@ def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
 
         fig.canvas.draw()
         renderer = fig.canvas.get_renderer()
+        content_bbox = fig._cnsplots_autofit_manager._get_content_bbox(renderer)
 
         assert fig.get_size_inches()[0] > initial_size[0]
+        assert content_bbox is not None
         assert _bbox_is_within(fig.bbox, fig_title.get_window_extent(renderer=renderer))
         assert _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
         assert _bbox_is_within(
@@ -1181,6 +1192,10 @@ def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
         assert _bbox_is_within(
             fig.bbox, figure_artist.get_window_extent(renderer=renderer)
         )
+        assert content_bbox.x0 == pytest.approx(fig.bbox.x0, abs=1.0)
+        assert content_bbox.x1 == pytest.approx(fig.bbox.x1, abs=1.0)
+        assert content_bbox.y0 == pytest.approx(fig.bbox.y0, abs=1.0)
+        assert content_bbox.y1 == pytest.approx(fig.bbox.y1, abs=1.0)
 
 
 def test_figure_autofit_can_be_disabled() -> None:
@@ -1216,7 +1231,10 @@ def test_figure_autofit_internal_helpers(monkeypatch: pytest.MonkeyPatch) -> Non
             return mtransforms.Bbox.from_bounds(1, 2, 3, 4)
 
     class WindowExtentFallbackArtist:
-        def get_window_extent(self, renderer: object | None = None) -> mtransforms.Bbox:
+        def get_window_extent(
+            self,
+            renderer: object | None = None,
+        ) -> mtransforms.Bbox:
             if renderer is not None:
                 raise TypeError
             return mtransforms.Bbox.from_bounds(5, 6, 7, 8)
@@ -1229,6 +1247,11 @@ def test_figure_autofit_internal_helpers(monkeypatch: pytest.MonkeyPatch) -> Non
     assert fallback_bbox is not None
     assert fallback_bbox.bounds == pytest.approx((5, 6, 7, 8))
     assert manager._get_artist_bbox(object(), cast(Any, object())) is None
+    assert manager._figure_has_expanded() is False
+    assert manager._tighten_single_axes_horizontal_layout(cast(Any, object())) is False
+    assert manager._get_content_bbox(cast(Any, object())) is None
+    assert manager._measure_overflow_px(cast(Any, object())) == (0.0, 0.0, 0.0, 0.0)
+    assert manager._crop_canvas_to_content(cast(Any, object())) is False
 
     manager._on_draw(cast(Any, object()))
 
@@ -1248,17 +1271,161 @@ def test_figure_autofit_internal_helpers(monkeypatch: pytest.MonkeyPatch) -> Non
     ax2.plot([0, 1], [0, 1], label="Series")
     ax2.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
     ax2.set_title("Normalized Stacked Bar (with labels)")
+    fig2.canvas.draw()
+    assert manager2._figure_has_expanded() is True
     manager2._is_relayout_in_draw = True
     fig2.canvas.draw()
     manager2._is_relayout_in_draw = False
     monkeypatch.setattr(manager2, "_get_canvas_renderer", lambda canvas: None)
     manager2._on_draw(DrawEvent("draw_event", fig2.canvas, fig2.canvas.get_renderer()))
 
+    cns.figure(120, 120)
+    fig3 = plt.gcf()
+    ax3 = fig3.add_subplot(121)
+    fig3.add_subplot(122)
+    ax3.plot([0, 1], [0, 1])
+    fig3.canvas.draw()
+    assert (
+        fig3._cnsplots_autofit_manager._tighten_single_axes_horizontal_layout(
+            fig3.canvas.get_renderer()
+        )
+        is False
+    )
+
     zero_size_manager = object.__new__(_utils._FigureAutofitManager)
     zero_size_manager.fig = types.SimpleNamespace(
         bbox=mtransforms.Bbox.from_bounds(0, 0, 0, 0)
     )
     zero_size_manager._grow_canvas(1, 1, 1, 1)
+    assert zero_size_manager._resize_canvas(-1, -1, -1, -1) is False
+
+    collapsed_manager = object.__new__(_utils._FigureAutofitManager)
+    collapsed_manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 10, 10),
+        dpi=100,
+        get_axes=lambda: [],
+        set_size_inches=lambda *args, **kwargs: None,
+    )
+    assert collapsed_manager._resize_canvas(-11, 0, 0, 0) is False
+
+
+def test_figure_autofit_tighten_single_axes_helper_branches() -> None:
+    class DummyArtist:
+        def __init__(self, visible: bool = True) -> None:
+            self._visible = visible
+
+        def get_visible(self) -> bool:
+            return self._visible
+
+    class DummyTitle:
+        def __init__(self, text: str = "") -> None:
+            self._text = text
+            self._x = 0.5
+
+        def get_text(self) -> str:
+            return self._text
+
+        def get_position(self) -> tuple[float, float]:
+            return self._x, 0.0
+
+        def set_x(self, value: float) -> None:
+            self._x = value
+
+    class DummyAxes:
+        def __init__(
+            self,
+            *,
+            position: tuple[float, float, float, float] = (0.2, 0.1, 0.5, 0.5),
+            extents: list[mtransforms.Bbox] | None = None,
+            left_title: str = "",
+            right_title: str = "",
+        ) -> None:
+            self._position = list(position)
+            self._extents = list(
+                extents or [mtransforms.Bbox.from_bounds(20, 20, 50, 40)]
+            )
+            self.title = DummyTitle("Center")
+            self._left_title = DummyTitle(left_title)
+            self._right_title = DummyTitle(right_title)
+
+        def get_window_extent(
+            self,
+            renderer: object | None = None,
+        ) -> mtransforms.Bbox:
+            if len(self._extents) > 1:
+                return self._extents.pop(0)
+            return self._extents[0]
+
+        def get_position(self) -> mtransforms.Bbox:
+            return mtransforms.Bbox.from_bounds(*self._position)
+
+        def set_position(self, position: list[float]) -> None:
+            self._position = list(position)
+
+    manager = object.__new__(_utils._FigureAutofitManager)
+    renderer = cast(Any, object())
+
+    invisible_ax = DummyAxes()
+    manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
+        get_axes=lambda: [invisible_ax],
+    )
+    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist(False)])
+    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
+        5, 5, 10, 10
+    )
+    assert manager._tighten_single_axes_horizontal_layout(renderer) is False
+
+    zero_width_ax = DummyAxes(extents=[mtransforms.Bbox.from_bounds(20, 20, 0, 40)])
+    manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
+        get_axes=lambda: [zero_width_ax],
+    )
+    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
+    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
+        5, 5, 10, 10
+    )
+    assert manager._tighten_single_axes_horizontal_layout(renderer) is False
+
+    clamped_ax = DummyAxes(position=(0.001, 0.1, 0.5, 0.5))
+    manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
+        get_axes=lambda: [clamped_ax],
+    )
+    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
+    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
+        5, 5, 10, 10
+    )
+    assert manager._tighten_single_axes_horizontal_layout(renderer) is False
+
+    updated_zero_ax = DummyAxes(
+        extents=[
+            mtransforms.Bbox.from_bounds(20, 20, 50, 40),
+            mtransforms.Bbox.from_bounds(20, 20, 0, 40),
+        ]
+    )
+    manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
+        get_axes=lambda: [updated_zero_ax],
+    )
+    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
+    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
+        5, 5, 10, 10
+    )
+    assert manager._tighten_single_axes_horizontal_layout(renderer) is True
+
+    titled_ax = DummyAxes(left_title="Left", right_title="Right")
+    manager.fig = types.SimpleNamespace(
+        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
+        get_axes=lambda: [titled_ax],
+    )
+    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
+    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
+        5, 5, 10, 10
+    )
+    assert manager._tighten_single_axes_horizontal_layout(renderer) is True
+    assert titled_ax._left_title.get_position()[0] > 0.5
+    assert titled_ax._right_title.get_position()[0] > 0.5
 
 
 def test_multipanel_layout() -> None:
