@@ -8,12 +8,11 @@ These examples group the larger overview layouts separately from the
 focused per-feature examples in the rest of the gallery.
 """
 
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
-
 # %%
 # Load data
 # ~~~~~~~~~
+import matplotlib.image as mpimg
+
 import cnsplots as cns
 
 (

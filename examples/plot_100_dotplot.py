@@ -32,7 +32,7 @@ tips_agg.columns = ["mean_bill", "count"]
 tips_agg = tips_agg.reset_index()
 
 cns.figure(80, 50)
-cns.dotplot(
+dp = cns.dotplot(
     tips_agg,
     x="sex",
     y="day",
@@ -41,6 +41,7 @@ cns.dotplot(
     value="count",
     max_s=60,
 )
+dp.ax_heatmap.set_title("Basic Dotplot")
 
 
 # %%
