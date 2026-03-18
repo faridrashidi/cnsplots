@@ -86,14 +86,14 @@ class multipanel:
         +----------------------------------------------------------+
         |                        margin_top                        |
         |  +- label --------------------------------------------+  |
-        |  |      label_top                                     |  |
+        |  |                      pad_top                       |  |
         |  |  +-------------------- title -------------------+  |  |
-        |m |  |    pad_top (for title if any)                |  |m |
-        |a |l |    +--------------------------------------+  |  |a |
-        |r |a |    |                                      |  |  |r |
-        |g |b y  p |                                      |  |  |g |
-        |i |e l  a |         axes content area            |  |  |i |
-        |n |l a  d |         (width x height)             |  |  |n |
+        |m |  |    label_top (for title if any)              |  |m |
+        |a |  |  l +--------------------------------------+  |  |a |
+        |r |  |  a |                                      |  |  |r |
+        |g |p y  b |                                      |  |  |g |
+        |i |a l  e |         axes content area            |  |  |i |
+        |n |d a  l |         (width x height)             |  |  |n |
         |_ |_ b  _ |                                      |  |  |_ |
         |l |l e  l |    (ylabel drawn here by mpl)        |  |  |r |
         |e |e l  e |                                      |  |  |i |
