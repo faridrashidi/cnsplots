@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 from matplotlib.backend_bases import DrawEvent
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+import matplotlib.legend  # noqa: F401  # ensure submodule is importable for isinstance checks
 import num2tex
 import palettable
 import pandas as pd
@@ -93,25 +94,30 @@ class _FigureAutofitManager:
 
     def _iter_axes_artists(self, ax):
         """Yield axes-level artists that can overflow the canvas."""
+        axis_is_visible = getattr(ax, "axison", True)
+
         for title_name in ("title", "_left_title", "_right_title"):
             title = getattr(ax, title_name, None)
             if title is not None:
                 yield title
 
-        yield ax.xaxis.label
-        yield ax.yaxis.label
-        yield ax.xaxis.get_offset_text()
-        yield ax.yaxis.get_offset_text()
-        yield from ax.get_xticklabels()
-        yield from ax.get_yticklabels()
+        if axis_is_visible:
+            yield ax.xaxis.label
+            yield ax.yaxis.label
+            yield ax.xaxis.get_offset_text()
+            yield ax.yaxis.get_offset_text()
+            yield from ax.get_xticklabels()
+            yield from ax.get_yticklabels()
 
-        legend = ax.get_legend()
-        if legend is not None:
-            yield legend
+            legend = ax.get_legend()
+            if legend is not None:
+                yield legend
 
         yield from ax.texts
 
         for artist in (*ax.lines, *ax.collections, *ax.patches, *ax.artists):
+            if not axis_is_visible and isinstance(artist, mpl.legend.Legend):
+                continue
             get_clip_on = getattr(artist, "get_clip_on", None)
             if callable(get_clip_on) and not get_clip_on():
                 yield artist

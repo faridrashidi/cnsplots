@@ -26,7 +26,7 @@ iris = sns.load_dataset("iris")
 # Create a simple grid layout with different panel sizes.
 # Each panel has explicit size: ``mp.panel(label, height, width)``.
 # Labels (A, B, C, D) are automatically added in bold, 8pt font.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=245)
 
 mp.panel("A", 70, 70)
 cns.boxplot(data=tips, x="day", y="total_bill")

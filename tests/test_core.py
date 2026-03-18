@@ -10,6 +10,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Any, cast
 
+import anndata as ad
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
@@ -1221,6 +1222,86 @@ def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
         assert content_bbox.x1 == pytest.approx(fig.bbox.x1, abs=1.0)
         assert content_bbox.y0 == pytest.approx(fig.bbox.y0, abs=1.0)
         assert content_bbox.y1 == pytest.approx(fig.bbox.y1, abs=1.0)
+
+
+def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> None:
+    rng = np.random.default_rng(42)
+    n_rows = 120
+    n_cols = 10
+    n_groups = 5
+    row_groups = np.repeat(np.arange(n_groups), n_rows // n_groups)
+    base_profile = np.linspace(-1.0, 1.0, n_cols)
+    group_profiles = np.vstack(
+        [
+            np.roll(base_profile, shift) + np.linspace(0.0, 0.8, n_groups)[shift]
+            for shift in range(n_groups)
+        ]
+    )
+    matrix = np.vstack(
+        [
+            group_profiles[group] + rng.normal(scale=0.12, size=n_cols)
+            for group in row_groups
+        ]
+    )
+    adata = ad.AnnData(matrix)
+    adata.obs_names = [str(i) for i in range(n_rows)]
+    adata.var_names = [str(i) for i in range(n_cols)]
+    adata.obs["selected"] = np.where(
+        np.linspace(0.0, 1.0, n_rows) > 0.96,
+        "o",
+        None,
+    )
+    adata.obs["mitf"] = np.linspace(0.0, 1.0, n_rows)
+    adata.obs["blobs"] = pd.Categorical([f"C{group}" for group in row_groups])
+    adata.var["ensemble"] = pd.Categorical([f"ens{i % 3}" for i in range(n_cols)])
+
+    with cns.settings.context(figure_autofit=True):
+        cns.figure(300, 250)
+        fig = plt.gcf()
+        initial_bbox = fig.bbox.frozen()
+        cmp = cns.heatmapplot(
+            adata,
+            label="Expression",
+            xlabel="Genes",
+            ylabel="Samples",
+            row_annotation=["selected", "mitf", "blobs"],
+            col_annotation=["ensemble"],
+            row_split=5,
+            row_cluster=True,
+            col_cluster=True,
+            row_cluster_method="ward",
+            row_cluster_metric="euclidean",
+            col_cluster_method="ward",
+            col_cluster_metric="euclidean",
+            show_rownames=True,
+            show_colnames=True,
+            xticklabels_fontsize=7,
+            yticklabels_fontsize=7,
+            row_dendrogram=True,
+            col_dendrogram=True,
+            row_split_gap=1,
+            col_split_gap=1,
+            legend_hpad=-2,
+            legend_vpad=6,
+            legend_width=20,
+        )
+        cmp.ax.set_title("Basic Heatmapplot")
+
+        assert cmp.ax_heatmap is not None
+
+        fig.canvas.draw()
+        first_bbox = fig.bbox.frozen()
+        renderer = fig.canvas.get_renderer()
+        fig.canvas.draw()
+        second_bbox = fig.bbox.frozen()
+
+        assert float(first_bbox.width) < float(initial_bbox.width) * 2.0
+        assert float(first_bbox.height) < float(initial_bbox.height) * 2.0
+        assert second_bbox.bounds == pytest.approx(first_bbox.bounds, abs=1.0)
+        assert _bbox_is_within(
+            fig.bbox,
+            cmp.ax.title.get_window_extent(renderer=renderer),
+        )
 
 
 def test_figure_autofit_can_be_disabled() -> None:
