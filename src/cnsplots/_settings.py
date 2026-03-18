@@ -231,7 +231,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Preferred sans-serif font family fallbacks.",
     ),
     "savefig_bbox": _spec(
-        "tight",
+        "standard",
         lambda value: _validate_string("savefig_bbox", value),
         "Default savefig bounding box mode.",
     ),
@@ -246,7 +246,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default savefig DPI.",
     ),
     "savefig_transparent": _spec(
-        True,
+        False,
         lambda value: _validate_bool("savefig_transparent", value),
         "Whether saved figures are transparent by default.",
     ),

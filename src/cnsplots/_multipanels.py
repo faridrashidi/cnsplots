@@ -677,7 +677,7 @@ class multipanel:
         margin_bottom: int | float | None = None,
         margin_left: int | float | None = None,
         margin_right: int | float | None = None,
-        color_cycle: str | None = None,
+        color_cycle: str | list[str] | None = None,
         color_map: str | None = None,
         below: str | None = None,
     ) -> Axes:
@@ -714,8 +714,9 @@ class multipanel:
             Left margin in pixels. If None, uses cns.settings.panel_margin_left.
         margin_right : int, optional
             Right margin in pixels. If None, uses cns.settings.panel_margin_right.
-        color_cycle : str, optional
-            Color palette name for this panel. If None, uses cns.settings.palette_qual.
+        color_cycle : str or list of str, optional
+            Color palette name or explicit color list for this panel. If None,
+            uses cns.settings.palette_qual.
         color_map : str, optional
             Colormap name for this panel. If None, uses cns.settings.palette_seq.
         below : str, optional
@@ -887,7 +888,7 @@ class multipanel:
                             "pad_top": 0,
                             "margin_left": 0,
                             "margin_top": 0,
-                            "margin_right": remaining,
+                            "margin_right": 0,
                             "margin_bottom": 0,
                             "_is_spacer": True,
                         }

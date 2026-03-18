@@ -111,6 +111,39 @@ def test_multipanel_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         mp4.panel("A", width=10, height=10)
 
 
+def test_multipanel_calculate_layout_wraps_to_new_row() -> None:
+    mp = cns.multipanel(max_width=100)
+    mp._panels = [
+        {
+            "label": "A",
+            "width": 60,
+            "height": 20,
+            "pad_left": 0,
+            "pad_top": 0,
+            "margin_left": 0,
+            "margin_top": 0,
+            "margin_right": 0,
+            "margin_bottom": 0,
+        },
+        {
+            "label": "B",
+            "width": 60,
+            "height": 30,
+            "pad_left": 0,
+            "pad_top": 0,
+            "margin_left": 0,
+            "margin_top": 0,
+            "margin_right": 0,
+            "margin_bottom": 0,
+        },
+    ]
+
+    mp._calculate_layout()
+
+    assert mp._rows == [[0], [1]]
+    assert mp._row_heights == [20, 30]
+
+
 def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     real_import = builtins.__import__
     real_exists = Path.exists

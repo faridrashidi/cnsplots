@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import re
 import subprocess
 import sys
 import types
@@ -82,6 +83,17 @@ def _panel_label_top_gap(ax, text) -> float:
             topmost = max(topmost, float(bbox.y1))
 
     return text_bbox.y0 - topmost
+
+
+def _pdf_media_box_size(path: Path) -> tuple[float, float]:
+    match = re.search(
+        rb"/MediaBox\s*\[\s*([-+]?\d*\.?\d+)\s+([-+]?\d*\.?\d+)\s+([-+]?\d*\.?\d+)\s+([-+]?\d*\.?\d+)\s*\]",
+        path.read_bytes(),
+    )
+    if match is None:
+        raise AssertionError(f"MediaBox not found in {path}")
+    x0, y0, x1, y1 = (float(value) for value in match.groups())
+    return x1 - x0, y1 - y0
 
 
 def _panel_column_origin(mp: cns.multipanel, panel_idx: int) -> float:
@@ -252,6 +264,8 @@ def test_validate_anndata_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_settings_behavior() -> None:
     settings = _settings.CNSSettings()
     assert settings.palette_qual == "Ecotyper1"
+    assert settings.savefig_bbox == "standard"
+    assert settings.savefig_transparent is False
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
     settings.title_fontsize = 10
@@ -442,6 +456,8 @@ def test_settings_behavior() -> None:
     settings.reset()
     assert settings.palette_qual == "Ecotyper1"
     assert settings.title_fontweight == "bold"
+    assert settings.savefig_bbox == "standard"
+    assert settings.savefig_transparent is False
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)
     assert settings.panel_pad_left == 0
@@ -854,6 +870,38 @@ def test_svg_helpers_and_export(
     with pytest.warns(RuntimeWarning, match="boom"):
         _svg._save_svg(str(failed_path), str(output_dir / "failed"))
     assert failed_path.exists()
+
+
+def test_savefig_default_bounds_match_jpg_and_pdf(
+    output_dir: Path,
+    categorical_df: pd.DataFrame,
+) -> None:
+    output_dir.mkdir(parents=True)
+    cns.settings.reset()
+    try:
+        mp = cns.multipanel(max_width=220, title="Figure 1", loc="left")
+
+        mp.panel("A", 90, 70, color_cycle=[cns.VIOLET])
+        ax = cns.boxplot(data=categorical_df, x="group", y="value")
+        ax.set_title("Boxplot")
+
+        mp.panel("B", 90, 70, color_cycle="BlueRed")
+        ax = cns.stripplot(data=categorical_df, x="group", y="value", hue="hue")
+        ax.set_title("Stripplot")
+
+        jpg_path = output_dir / "figure.jpg"
+        pdf_path = output_dir / "figure.pdf"
+        cns.savefig(str(jpg_path))
+        cns.savefig(str(pdf_path))
+
+        jpg_height, jpg_width = plt.imread(str(jpg_path)).shape[:2]
+        pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
+        scale = float(cns.settings.savefig_dpi) / 72
+
+        assert jpg_width == pytest.approx(pdf_width_pt * scale, abs=1)
+        assert jpg_height == pytest.approx(pdf_height_pt * scale, abs=1)
+    finally:
+        cns.settings.reset()
 
 
 def test_utils_helpers_and_showcase_data(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -14,6 +14,7 @@ from matplotlib import font_manager as fm
 import cnsplots as cns
 
 _HELVETICA_BOLD_REGISTERED = False
+ColorCycle = Union[str, list[str]]
 
 
 def _ensure_helvetica_bold() -> None:
@@ -101,7 +102,7 @@ def _resolve_legend_fontsizes(
 
 
 def setup_matplotlib(
-    color_cycle: str | None = None,
+    color_cycle: ColorCycle | None = None,
     color_map: str | None = None,
     title_fontsize: int | float | None = None,
     title_fontweight: str | int | None = None,
@@ -117,11 +118,11 @@ def setup_matplotlib(
 
     Parameters
     ----------
-    color_cycle : str, default: None
-        Name of the qualitative color palette for the default color cycle.
-        If None, uses cns.settings.palette_qual.
-        Options include: 'Set1', 'Set2', 'Dark2', 'Ecotyper1'-'Ecotyper6',
-        'Tableau', 'Bold', 'ECharts', etc.
+    color_cycle : str or list of str, default: None
+        Name of the qualitative color palette for the default color cycle, or
+        an explicit list of colors. If None, uses cns.settings.palette_qual.
+        Named options include: 'Set1', 'Set2', 'Dark2',
+        'Ecotyper1'-'Ecotyper6', 'Tableau', 'Bold', 'ECharts', etc.
     color_map : str, default: None
         Name of the sequential colormap for continuous data.
         If None, uses cns.settings.palette_seq.
