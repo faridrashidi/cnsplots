@@ -463,21 +463,25 @@ class multipanel:
             Panel label (e.g., "A", "B", "C"). If None, uses automatic
             sequential labeling (A, B, C, ...).
         height : int, optional
-            Axes height in pixels (default: 150).
+            Axes height in pixels. If None, uses cns.settings.panel_height.
         width : int, optional
-            Axes width in pixels (default: 150).
+            Axes width in pixels. If None, uses cns.settings.panel_width.
         label_left : int, optional
-            Space reserved for the panel label to the left in pixels (default: 10).
+            Space reserved for the panel label to the left in pixels.
+            If None, uses cns.settings.panel_label_left.
             The label is positioned here, outside of pad_left.
         label_top : int, optional
-            Space reserved for the panel label above in pixels (default: 12).
+            Space reserved for the panel label above in pixels.
+            If None, uses cns.settings.panel_label_top.
             The label is positioned here, outside of pad_top.
         pad_left : int, optional
-            Padding between label and axes for ylabel/yticks in pixels (default: 20).
+            Padding between label and axes for ylabel/yticks in pixels.
+            If None, uses cns.settings.panel_pad_left.
             This space accommodates matplotlib's ylabel which is drawn outside
             the axes bounding box.
         pad_top : int, optional
-            Padding between label and axes for title in pixels (default: 0).
+            Padding between label and axes for title in pixels.
+            If None, uses cns.settings.panel_pad_top.
             Set this if you have axes titles that need space.
         margin_top : int, optional
             Top margin in pixels. If None, uses cns.settings.panel_margin_top.

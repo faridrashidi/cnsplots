@@ -965,12 +965,19 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
     ):
         mp = cns.multipanel(title="Overview")
         ax = mp.panel()
+        panel = mp._panels[0]
 
         assert mp._max_width == 180
         assert mp.fig.dpi == 160
         assert mp._title_text is not None
         assert mp._title_text.get_ha() == "left"
         assert ax.get_position().width == pytest.approx(70 / 180)
+        assert panel["width"] == 70
+        assert panel["height"] == 50
+        assert panel["label_left"] == 11
+        assert panel["label_top"] == 13
+        assert panel["pad_left"] == 14
+        assert panel["pad_top"] == 5
         assert mp._label_texts["A"].get_fontproperties().get_name() == "DejaVu Sans"
         assert mp._label_texts["A"].get_fontweight() == "normal"
 
