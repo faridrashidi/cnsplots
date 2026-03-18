@@ -33,12 +33,22 @@ gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))
 
 
-def plot_palettes(cmap_list, height, width, title=""):
+def plot_palettes(cmap_list, height, width, title="", ncols=1):
     cns.figure(height, width)
     fig = plt.gcf()
-    nrows = len(cmap_list)
+    nrows = (len(cmap_list) + ncols - 1) // ncols
+    axes = fig.subplots(nrows=nrows, ncols=ncols, squeeze=False)
+    fig.subplots_adjust(
+        left=0.1, right=0.98, bottom=0.02, top=0.98, hspace=0.45, wspace=0.8
+    )
+
+    for ax in axes.flat:
+        ax.set_axis_off()
+
     for i, name in enumerate(cmap_list):
-        ax = fig.add_subplot(nrows, 1, i + 1)
+        row = i % nrows
+        col = i // nrows
+        ax = axes[row, col]
         ax.pcolormesh(gradient, cmap=plt.get_cmap(name))
         ax.text(
             -0.01,
@@ -92,9 +102,11 @@ plot_palettes(
         "OrBu_custom",
         "YlGnBu_custom",
     ],
-    2040,
-    600,
+    1020,
+    1200,
+    ncols=2,
 )
+cns.savefig("~/Desktop/salam.jpg")
 
 # %%
 # Using glasbey directly
