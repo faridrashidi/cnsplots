@@ -197,9 +197,9 @@ ax.set_title("Manual Setup")
 # Setup with custom parameters
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.setup_matplotlib(
-    fontsize_title=10,
+    title_fontsize=10,
     fontsize_legend=8,
-    linewidth_axes=0.8,
+    axes_linewidth=0.8,
 )
 fig, ax = plt.subplots(figsize=(2, 1.5))
 ax.bar(["A", "B", "C", "D"], [10, 15, 12, 18])

@@ -38,9 +38,9 @@ import cnsplots as cns
 # ~~~~~~~~
 # A comprehensive showcase of cnsplots capabilities for the README.
 
-cns.settings._fontweight_title = "normal"
+cns.settings.title_fontweight = "normal"
 mp = cns.multipanel(
-    max_width=540, title="Figure 1", fontweight_title="bold", loc="left"
+    max_width=540, title="Figure 1", title_fontweight="bold", loc="left"
 )
 
 # Panel A: boxplot
@@ -251,7 +251,7 @@ cns.savefig("~/Desktop/Figure1.jpg")
 # A multipanel image layout sized directly from the source image dimensions.
 
 mp = cns.multipanel(
-    max_width=540, title="Figure 2", fontweight_title="bold", loc="left"
+    max_width=540, title="Figure 2", title_fontweight="bold", loc="left"
 )
 
 # Panel A: load pathology image

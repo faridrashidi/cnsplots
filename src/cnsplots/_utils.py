@@ -257,8 +257,8 @@ def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
     - (1, 1) is the upper-right corner of the axes
     - Values outside [0, 1] place the label outside the axes area
 
-    The label uses Arial font (bold) at 8pt size (FONTSIZE_TITLE) for consistency
-    with publication standards.
+    The label uses Arial font (bold) at 8pt size (`title_fontsize`) for
+    consistency with publication standards.
 
     Examples
     --------
@@ -277,7 +277,7 @@ def add_panel_label(name="A", offset_x=-0.25, offset_y=1.1):
         offset_y,
         name,
         transform=plt.gca().transAxes,
-        fontsize=cns.settings.fontsize_title,
+        fontsize=cns.settings.title_fontsize,
         fontname="Arial",
         fontweight="bold",
     )

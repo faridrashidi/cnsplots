@@ -171,48 +171,71 @@ def test_settings_behavior() -> None:
     assert settings.palette_qual == "Ecotyper1"
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
-    settings.fontsize_title = 10
-    settings.fontweight_title = "normal"
+    settings.title_fontsize = 10
+    settings.title_fontweight = "normal"
     settings.fontsize_legend = 9
-    settings.linewidth_axes = 1.0
+    settings.axes_linewidth = 1.0
     settings.verbosity = 0
     assert "CNSSettings(" in repr(settings)
-    assert "fontweight_title='normal'" in repr(settings)
+    assert "title_fontweight='normal'" in repr(settings)
 
     with settings.context(
-        fontsize_title=12, fontweight_title=600, palette_qual="Dark2"
+        title_fontsize=12, title_fontweight=600, palette_qual="Dark2"
     ) as ctx:
-        assert ctx.fontsize_title == 12
-        assert ctx.fontweight_title == 600
+        assert ctx.title_fontsize == 12
+        assert ctx.title_fontweight == 600
         assert settings.palette_qual == "Dark2"
-    assert settings.fontsize_title == 10
-    assert settings.fontweight_title == "normal"
+    assert settings.title_fontsize == 10
+    assert settings.title_fontweight == "normal"
     assert settings.palette_qual == "Set2"
 
     with pytest.raises(AttributeError, match="not a valid setting"):
         with settings.context(unknown=1):
             pass
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        with settings.context(fontsize_title=12):
+            pass
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        with settings.context(fontweight_title="normal"):
+            pass
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        with settings.context(linewidth_axes=1.0):
+            pass
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        _ = settings.fontsize_title
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        _ = settings.fontweight_title
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        _ = settings.linewidth_axes
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        setattr(settings, "fontsize_title", 10)
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        setattr(settings, "fontweight_title", "normal")
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        setattr(settings, "linewidth_axes", 1.0)
+    with pytest.raises(AttributeError, match="has no attribute '_missing_setting'"):
+        _ = settings._missing_setting
 
     with pytest.raises(TypeError):
         settings.palette_qual = 1  # type: ignore[assignment]
     with pytest.raises(TypeError):
         settings.palette_seq = 1  # type: ignore[assignment]
     with pytest.raises(TypeError):
-        settings.fontsize_title = "1"  # type: ignore[assignment]
+        settings.title_fontsize = "1"  # type: ignore[assignment]
     with pytest.raises(ValueError):
-        settings.fontsize_title = 0
+        settings.title_fontsize = 0
     with pytest.raises(TypeError):
-        settings.fontweight_title = []  # type: ignore[assignment]
-    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
-        settings.fontweight_title = 1.5  # type: ignore[assignment]
+        settings.title_fontweight = []  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
+        settings.title_fontweight = 1.5  # type: ignore[assignment]
     with pytest.raises(TypeError):
         settings.fontsize_legend = "1"  # type: ignore[assignment]
     with pytest.raises(ValueError):
         settings.fontsize_legend = 0
     with pytest.raises(TypeError):
-        settings.linewidth_axes = "1"  # type: ignore[assignment]
+        settings.axes_linewidth = "1"  # type: ignore[assignment]
     with pytest.raises(ValueError):
-        settings.linewidth_axes = 0
+        settings.axes_linewidth = 0
     with pytest.raises(TypeError):
         settings.verbosity = 1.5  # type: ignore[assignment]
     with pytest.raises(ValueError):
@@ -220,7 +243,7 @@ def test_settings_behavior() -> None:
 
     settings.reset()
     assert settings.palette_qual == "Ecotyper1"
-    assert settings.fontweight_title == "bold"
+    assert settings.title_fontweight == "bold"
 
 
 def test_ensure_helvetica_bold_branches(
@@ -260,16 +283,24 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     _setup.setup_matplotlib(
         color_cycle="Set2",
         color_map="parula",
-        fontsize_title=9,
-        fontweight_title="normal",
+        title_fontsize=9,
+        title_fontweight="normal",
         fontsize_legend=8,
-        linewidth_axes=1.2,
+        axes_linewidth=1.2,
     )
     assert mpl.rcParams["axes.labelsize"] == 9
     assert mpl.rcParams["axes.titleweight"] == "normal"
     assert mpl.rcParams["image.cmap"] == "parula"
-    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
-        _setup.setup_matplotlib(fontweight_title=1.5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
+        _setup.setup_matplotlib(title_fontweight=1.5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="unexpected keyword argument 'fontsize_title'"):
+        _setup.setup_matplotlib(fontsize_title=9)  # type: ignore[call-arg]
+    with pytest.raises(
+        TypeError, match="unexpected keyword argument 'fontweight_title'"
+    ):
+        _setup.setup_matplotlib(fontweight_title="normal")  # type: ignore[call-arg]
+    with pytest.raises(TypeError, match="unexpected keyword argument 'linewidth_axes'"):
+        _setup.setup_matplotlib(linewidth_axes=1.2)  # type: ignore[call-arg]
 
     fig, ax = plt.subplots()
     heat = ax.pcolormesh(np.array([[1, 2], [3, 4]]))
@@ -279,17 +310,25 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
     ax.set_ylabel("Y")
     _setup.setup_ax(
         ax,
-        fontsize_title=10,
-        fontweight_title="normal",
+        title_fontsize=10,
+        title_fontweight="normal",
         fontsize_legend=9,
-        linewidth_axes=1.1,
+        axes_linewidth=1.1,
         colorbar_label="Custom",
     )
     assert ax.get_xlabel() == "X"
     assert ax.title.get_fontweight() == "normal"
     assert heat.colorbar.ax.get_ylabel() == "Custom"
-    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
-        _setup.setup_ax(ax, fontweight_title=1.5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
+        _setup.setup_ax(ax, title_fontweight=1.5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="unexpected keyword argument 'fontsize_title'"):
+        _setup.setup_ax(ax, fontsize_title=10)  # type: ignore[call-arg]
+    with pytest.raises(
+        TypeError, match="unexpected keyword argument 'fontweight_title'"
+    ):
+        _setup.setup_ax(ax, fontweight_title="normal")  # type: ignore[call-arg]
+    with pytest.raises(TypeError, match="unexpected keyword argument 'linewidth_axes'"):
+        _setup.setup_ax(ax, linewidth_axes=1.1)  # type: ignore[call-arg]
 
     fig2, ax2 = plt.subplots()
     ax2.plot([0, 1], [0, 1])
@@ -613,13 +652,13 @@ def test_multipanel_title_fontweight_and_height_reservation() -> None:
     mp_titled = cns.multipanel(
         max_width=200,
         title="Overview",
-        fontweight_title="normal",
+        title_fontweight="normal",
     )
     mp_titled.panel("A", width=60, height=40)
 
     plain_height_px = mp_plain.fig.get_size_inches()[1] * 72
     titled_height_px = mp_titled.fig.get_size_inches()[1] * 72
-    expected_delta = max(12, cns.settings.fontsize_title + 4)
+    expected_delta = max(12, cns.settings.title_fontsize + 4)
 
     assert mp_titled._title_text is not None
     assert mp_titled._title_text.get_fontweight() == "normal"
@@ -635,7 +674,7 @@ def test_multipanel_title_updates_existing_artist() -> None:
 
     mp._title = "Updated Overview"
     mp._title_loc = "right"
-    mp._fontweight_title = "normal"
+    mp._title_fontweight = "normal"
     mp._create_or_update_figure()
 
     assert mp._title_text is original_title_text
@@ -666,8 +705,12 @@ def test_multipanel_title_invalid_loc_raises() -> None:
 
 
 def test_multipanel_title_invalid_fontweight_raises() -> None:
-    with pytest.raises(TypeError, match="fontweight_title must be a string or integer"):
-        cns.multipanel(title="Overview", fontweight_title=1.5)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
+        cns.multipanel(title="Overview", title_fontweight=1.5)  # type: ignore[arg-type]
+    with pytest.raises(
+        TypeError, match="unexpected keyword argument 'fontweight_title'"
+    ):
+        cns.multipanel(title="Overview", fontweight_title="normal")  # type: ignore[call-arg]
 
 
 def test_multipanel_below_aligns_to_parent_column() -> None:

@@ -32,10 +32,10 @@ print(cns.settings)
 # Each setting can be accessed directly.
 print(f"palette_qual: {cns.settings.palette_qual}")
 print(f"palette_seq: {cns.settings.palette_seq}")
-print(f"fontsize_title: {cns.settings.fontsize_title}")
-print(f"fontweight_title: {cns.settings.fontweight_title}")
+print(f"title_fontsize: {cns.settings.title_fontsize}")
+print(f"title_fontweight: {cns.settings.title_fontweight}")
 print(f"fontsize_legend: {cns.settings.fontsize_legend}")
-print(f"linewidth_axes: {cns.settings.linewidth_axes}")
+print(f"axes_linewidth: {cns.settings.axes_linewidth}")
 print(f"verbosity: {cns.settings.verbosity}")
 
 
@@ -63,7 +63,7 @@ ax.set_title("palette_qual = 'Set2'")
 # Change font sizes
 # ~~~~~~~~~~~~~~~~~
 # Increase font sizes for larger figures or presentations.
-cns.settings.fontsize_title = 10
+cns.settings.title_fontsize = 10
 cns.settings.fontsize_legend = 9
 
 cns.figure(150, 150)
@@ -75,18 +75,18 @@ ax.set_title("Larger Font Sizes")
 # Change title weight
 # ~~~~~~~~~~~~~~~~~~~
 # Use a lighter title weight when you do not want bold titles.
-cns.settings.fontweight_title = "normal"
+cns.settings.title_fontweight = "normal"
 
 cns.figure(150, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("fontweight_title = 'normal'")
+ax.set_title("title_fontweight = 'normal'")
 
 
 # %%
 # Change axis line width
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Make axis lines thicker or thinner.
-cns.settings.linewidth_axes = 1.0
+cns.settings.axes_linewidth = 1.0
 
 cns.figure(150, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
@@ -126,10 +126,10 @@ cns.settings.verbosity = 1
 # Configure multiple settings for a custom style.
 cns.settings.palette_qual = "Dark2"
 cns.settings.palette_seq = "parula"
-cns.settings.fontsize_title = 9
-cns.settings.fontweight_title = "bold"
+cns.settings.title_fontsize = 9
+cns.settings.title_fontweight = "bold"
 cns.settings.fontsize_legend = 8
-cns.settings.linewidth_axes = 0.75
+cns.settings.axes_linewidth = 0.75
 
 cns.figure(150, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
@@ -153,15 +153,15 @@ ax.set_title("Same Custom Style")
 cns.settings.reset()
 
 with cns.settings.context(
-    fontsize_title=12, fontweight_title="normal", palette_qual="Set2"
+    title_fontsize=12, title_fontweight="normal", palette_qual="Set2"
 ):
     cns.figure(150, 150)
     ax = cns.boxplot(data=tips, x="day", y="total_bill")
     ax.set_title("Context Manager: Set2, fontsize=12, weight='normal'")
 
 # Settings are restored after the context block
-print(f"After context: fontsize_title={cns.settings.fontsize_title}")
-print(f"After context: fontweight_title={cns.settings.fontweight_title}")
+print(f"After context: title_fontsize={cns.settings.title_fontsize}")
+print(f"After context: title_fontweight={cns.settings.title_fontweight}")
 print(f"After context: palette_qual={cns.settings.palette_qual}")
 
 

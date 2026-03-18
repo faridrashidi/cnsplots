@@ -49,7 +49,7 @@ mp = cns.multipanel(
     max_width=540,
     title="Distribution Overview",
     loc="left",
-    fontweight_title="bold",
+    title_fontweight="bold",
 )
 
 mp.panel("A", 120, 120, pad_top=10)

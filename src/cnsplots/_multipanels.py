@@ -23,7 +23,7 @@ def _validate_title_loc(loc: str) -> str:
 def _validate_title_fontweight(value: str | int) -> str | int:
     """Validate figure title font weight values."""
     if value is None or isinstance(value, bool) or not isinstance(value, (str, int)):
-        raise TypeError("fontweight_title must be a string or integer")
+        raise TypeError("title_fontweight must be a string or integer")
     return value
 
 
@@ -49,7 +49,7 @@ class multipanel:
         Figure-level title shown above the panel grid (default: None).
     loc : {'left', 'center', 'right'}, optional
         Horizontal alignment for the figure title (default: 'center').
-    fontweight_title : str or int, optional
+    title_fontweight : str or int, optional
         Font weight for the figure title (default: 'bold').
 
     Attributes
@@ -111,12 +111,12 @@ class multipanel:
         max_width: int = 540,
         title: str | None = None,
         loc: str = "center",
-        fontweight_title: str | int = "bold",
+        title_fontweight: str | int = "bold",
     ) -> None:
         self._max_width = max_width
         self._title = title
         self._title_loc = _validate_title_loc(loc)
-        self._fontweight_title = _validate_title_fontweight(fontweight_title)
+        self._title_fontweight = _validate_title_fontweight(title_fontweight)
         self._panels = []  # List of panel info dicts
         self.fig = None
         self.axes = []
@@ -135,7 +135,7 @@ class multipanel:
         """Get the reserved height for the figure title band."""
         if self._title is None:
             return 0
-        return max(12, cns.settings.fontsize_title + 4)
+        return max(12, cns.settings.title_fontsize + 4)
 
     def _get_content_horizontal_bounds_px(self) -> tuple[float, float]:
         """Get the visible left/right bounds of the multipanel content."""
@@ -340,8 +340,8 @@ class multipanel:
                     x_positions[self._title_loc],
                     title_y_fig,
                     self._title,
-                    fontsize=cns.settings.fontsize_title,
-                    fontweight=self._fontweight_title,
+                    fontsize=cns.settings.title_fontsize,
+                    fontweight=self._title_fontweight,
                     va="center",
                     ha=self._title_loc,
                 )
@@ -352,8 +352,8 @@ class multipanel:
                 self._title_text.set_text(self._title)
                 self._title_text.set_ha(self._title_loc)
                 self._title_text.set_va("center")
-                self._title_text.set_fontsize(cns.settings.fontsize_title)
-                self._title_text.set_fontweight(self._fontweight_title)
+                self._title_text.set_fontsize(cns.settings.title_fontsize)
+                self._title_text.set_fontweight(self._title_fontweight)
 
         # Create or update axes for all panels
         for idx, panel in enumerate(self._panels):
@@ -395,7 +395,7 @@ class multipanel:
                     label_x_fig,
                     label_y_fig,
                     label,
-                    fontsize=cns.settings.fontsize_title,
+                    fontsize=cns.settings.title_fontsize,
                     fontweight="bold",
                     fontname="Arial",
                     va="center",

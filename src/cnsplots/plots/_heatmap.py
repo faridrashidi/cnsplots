@@ -292,7 +292,7 @@ def heatmapplot(
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
+        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
 
     for cbar in cmp.cbars:
         if isinstance(cbar, mpl.colorbar.Colorbar):
@@ -437,7 +437,7 @@ def dotplot(
             which="major",
             direction="out",
             length=1.5,
-            width=cns.settings.linewidth_axes,
+            width=cns.settings.axes_linewidth,
             bottom=True,
             left=True,
             top=False,
@@ -451,7 +451,7 @@ def dotplot(
     cmp.ax_heatmap.grid(False)
     sns.despine(ax=cmp.ax_heatmap, top=True, right=True, bottom=False, left=False)
     for s in ["bottom", "left"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.linewidth_axes)
+        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
 
     for cbar in cmp.cbars:
         if isinstance(cbar, mpl.colorbar.Colorbar):
