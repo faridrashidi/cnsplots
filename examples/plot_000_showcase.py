@@ -44,7 +44,17 @@ mp = cns.multipanel(
 )
 
 # Panel A: boxplot
-mp.panel("A", 100, 45, pad_top=5, margin=(0, 0, 0, 30), color_cycle=[cns.VIOLET])
+mp.panel(
+    "A",
+    100,
+    45,
+    pad_top=5,
+    margin_left=0,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=30,
+    color_cycle=[cns.VIOLET],
+)
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
@@ -84,7 +94,10 @@ mp.panel(
     100,
     50,
     pad_top=5,
-    margin=(10, 0, 35, 20),
+    margin_left=10,
+    margin_top=0,
+    margin_right=35,
+    margin_bottom=20,
     color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"),
 )
 ax = cns.stackplot(data=tips_df, x="day", y="sex", pairs=[("Thur", "Sun")])
@@ -92,7 +105,17 @@ ax.set_title("Stackplot")
 ax.get_legend().set_title(None)
 
 # Panel E: barplot
-mp.panel("E", 40, 80, pad_top=5, margin=(5, 0, 0, 15), color_cycle=[cns.VIOLET])
+mp.panel(
+    "E",
+    40,
+    80,
+    pad_top=5,
+    margin_left=5,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=15,
+    color_cycle=[cns.VIOLET],
+)
 ax = cns.barplot(
     data=tips_df,
     y="day",
@@ -110,7 +133,10 @@ mp.panel(
     40,
     40,
     pad_top=5,
-    margin=(5, 0, 0, 0),
+    margin_left=5,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=0,
     pad_left=0,
     below="E",
     color_cycle="Ecotyper3",
@@ -121,7 +147,16 @@ ax.get_legend().set_title(None)
 
 # Panel G: vennplot
 mp.panel(
-    "G", 40, 40, pad_top=5, margin=(0, 0, 40, 5), pad_left=10, color_cycle="Tableau"
+    "G",
+    40,
+    40,
+    pad_top=5,
+    margin_left=0,
+    margin_top=0,
+    margin_right=40,
+    margin_bottom=5,
+    pad_left=10,
+    color_cycle="Tableau",
 )
 cns.vennplot(gene_sets, labels=("Set A", "Set B", "Set C"))
 mp.get_axes("G").set_title("Vennplot")
@@ -132,7 +167,10 @@ mp.panel(
     50,
     50,
     pad_top=5,
-    margin=(0, 0, 0, 10),
+    margin_left=0,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
     pad_left=10,
     below="G",
     color_cycle="Ecotyper3",
@@ -168,7 +206,16 @@ ax.get_legend().set_title(None)
 ax.set_title("Kdeplot")
 
 # Panel L: volcanoplot
-mp.panel("L", 90, 90, pad_top=5, margin=(0, 0, 50, 0))
+mp.panel(
+    "L",
+    90,
+    90,
+    pad_top=5,
+    margin_left=0,
+    margin_top=0,
+    margin_right=50,
+    margin_bottom=0,
+)
 ax = cns.volcanoplot(volcano_df)
 ax.set_title("Volcanoplot")
 
@@ -183,7 +230,16 @@ ax.set_title("Rocplot")
 
 # Panel N: sankeyplot
 mp.panel(
-    "N", 100, 30, pad_top=5, pad_left=10, margin=(10, 0, 15, 0), color_cycle="Ecotyper4"
+    "N",
+    100,
+    30,
+    pad_top=5,
+    pad_left=10,
+    margin_left=10,
+    margin_top=0,
+    margin_right=15,
+    margin_bottom=0,
+    color_cycle="Ecotyper4",
 )
 ax = cns.sankeyplot(tips_df, x="day", y="sex")
 ax.set_title("Sankeyplot")
@@ -194,13 +250,33 @@ ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
 ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
-mp.panel("P", 65, 80, pad_top=3, margin=(10, 0, 0, 0), below="O")
+mp.panel(
+    "P",
+    65,
+    80,
+    pad_top=3,
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=0,
+    below="O",
+)
 ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
 ax.set_title("Slopeplot")
 
 # Panel Q: scatterplot
 mp.newline()
-mp.panel("Q", 90, 90, pad_top=5, margin=(0, 0, 40, 0), color_cycle="Set1")
+mp.panel(
+    "Q",
+    90,
+    90,
+    pad_top=5,
+    margin_left=0,
+    margin_top=0,
+    margin_right=40,
+    margin_bottom=0,
+    color_cycle="Set1",
+)
 ax = cns.scatterplot(
     data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
 )
@@ -263,7 +339,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(0, 0, 0, 10),
+    margin_left=0,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
 )
 ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
 ax.set_title("Pathology Image")
@@ -278,7 +357,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
 )
 ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_title("Immunofluorescence")
@@ -293,7 +375,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
 )
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
@@ -307,7 +392,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
 )
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
@@ -321,7 +409,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 0),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=0,
     below="B",
 )
 ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
@@ -329,7 +420,18 @@ ax.set_title("Western Blot")
 ax.set_axis_off()
 
 # Panel F: dotplot
-# mp.panel("F", 60, 60, pad_left=20, pad_top=3, margin=(10, 4, 0, 0), below="D")
+# mp.panel(
+#     "F",
+#     60,
+#     60,
+#     pad_left=20,
+#     pad_top=3,
+#     margin_left=10,
+#     margin_top=4,
+#     margin_right=0,
+#     margin_bottom=0,
+#     below="D",
+# )
 # tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 # tips_minmax.columns = ["min", "size"]
 # tips_minmax = tips_minmax.reset_index()
@@ -360,7 +462,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
     below="C",
 )
 ax = cns.lineplot(
@@ -385,7 +490,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=10,
     below="D",
 )
 ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
@@ -402,7 +510,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(0, 0, 0, 0),
+    margin_left=0,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=0,
 )
 ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
 ax.set_title("H&E Histology")
@@ -417,7 +528,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(0, 0, 0, 0),
+    margin_left=0,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=0,
 )
 cns.placeholderplot("This is a placeholder plot\n155 ⨯ 200")
 ax.set_title("Placeholder")
@@ -433,7 +547,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(0, 0, 5, 0),
+    margin_left=0,
+    margin_top=0,
+    margin_right=5,
+    margin_bottom=0,
     color_cycle="NEJM",
 )
 ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
@@ -451,7 +568,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=20,
     pad_top=5,
-    margin=(10, 0, 40, 0),
+    margin_left=10,
+    margin_top=0,
+    margin_right=40,
+    margin_bottom=0,
 )
 ax = cns.confusionplot(
     data=confusion_df,
@@ -474,7 +594,10 @@ ax = mp.panel(
     label_top=12,
     pad_left=5,
     pad_top=5,
-    margin=(10, 0, 0, 0),
+    margin_left=10,
+    margin_top=0,
+    margin_right=0,
+    margin_bottom=0,
 )
 cns.placeholderplot("Placeholder")
 ax.set_title("?")

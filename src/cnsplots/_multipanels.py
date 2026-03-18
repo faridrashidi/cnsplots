@@ -71,7 +71,10 @@ class multipanel:
     ...     label_left=10,
     ...     label_top=12,
     ...     pad_left=30,
-    ...     margin=(0, 0, 10, 10),
+    ...     margin_left=0,
+    ...     margin_top=0,
+    ...     margin_right=10,
+    ...     margin_bottom=10,
     ... )
     >>> cns.boxplot(...)
     >>> cns.savefig("figure.pdf")
@@ -442,7 +445,11 @@ class multipanel:
         label_top: int | float | None = None,
         pad_left: int | float | None = None,
         pad_top: int | float | None = None,
-        margin: tuple[int | float, int | float, int | float, int | float] | None = None,
+        *,
+        margin_top: int | float | None = None,
+        margin_bottom: int | float | None = None,
+        margin_left: int | float | None = None,
+        margin_right: int | float | None = None,
         color_cycle: str | None = None,
         color_map: str | None = None,
         below: str | None = None,
@@ -472,9 +479,14 @@ class multipanel:
         pad_top : int, optional
             Padding between label and axes for title in pixels (default: 0).
             Set this if you have axes titles that need space.
-        margin : tuple of 4 ints, optional
-            Margins as (left, top, right, bottom) in pixels (default: (10,0,0,20)).
-            These are additional space around the complete panel.
+        margin_top : int, optional
+            Top margin in pixels. If None, uses cns.settings.panel_margin[1].
+        margin_bottom : int, optional
+            Bottom margin in pixels. If None, uses cns.settings.panel_margin[3].
+        margin_left : int, optional
+            Left margin in pixels. If None, uses cns.settings.panel_margin[0].
+        margin_right : int, optional
+            Right margin in pixels. If None, uses cns.settings.panel_margin[2].
         color_cycle : str, optional
             Color palette name for this panel. If None, uses cns.settings.palette_qual.
         color_map : str, optional
@@ -500,7 +512,10 @@ class multipanel:
         ...     label_left=10,
         ...     label_top=12,
         ...     pad_left=35,
-        ...     margin=(0, 0, 10, 20),
+        ...     margin_left=0,
+        ...     margin_top=0,
+        ...     margin_right=10,
+        ...     margin_bottom=20,
         ... )
         >>> cns.boxplot(data=df, x="group", y="value")
         >>> plt.ylabel("Values")  # ylabel appears in pad_left space
@@ -513,7 +528,10 @@ class multipanel:
         ...     label_left=10,
         ...     label_top=12,
         ...     pad_left=5,
-        ...     margin=(0, 0, 10, 20),
+        ...     margin_left=0,
+        ...     margin_top=0,
+        ...     margin_right=10,
+        ...     margin_bottom=20,
         ... )
         >>> cns.barplot(data=df, x="category", y="count")
 
@@ -543,15 +561,24 @@ class multipanel:
             pad_left = cns.settings.panel_pad_left
         if pad_top is None:
             pad_top = cns.settings.panel_pad_top
-        if margin is None:
-            margin = cns.settings.panel_margin
+        (
+            default_margin_left,
+            default_margin_top,
+            default_margin_right,
+            default_margin_bottom,
+        ) = cns.settings.panel_margin
+        if margin_left is None:
+            margin_left = default_margin_left
+        if margin_top is None:
+            margin_top = default_margin_top
+        if margin_right is None:
+            margin_right = default_margin_right
+        if margin_bottom is None:
+            margin_bottom = default_margin_bottom
         cns.setup_matplotlib(color_cycle, color_map)
 
         if label is None:
             label = self._labels[self._panel_index]
-
-        # Parse margin tuple
-        margin_left, margin_top, margin_right, margin_bottom = margin
 
         # Store panel info
         panel_info = {

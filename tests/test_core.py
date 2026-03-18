@@ -893,8 +893,24 @@ def test_utils_helpers_and_showcase_data(
 
 def test_multipanel_layout() -> None:
     mp = cns.multipanel(max_width=150)
-    ax_a = mp.panel("A", width=60, height=40, margin=(0, 0, 10, 10))
-    ax_b = mp.panel("B", width=60, height=40, margin=(0, 0, 10, 10))
+    ax_a = mp.panel(
+        "A",
+        width=60,
+        height=40,
+        margin_left=0,
+        margin_top=0,
+        margin_right=10,
+        margin_bottom=10,
+    )
+    ax_b = mp.panel(
+        "B",
+        width=60,
+        height=40,
+        margin_left=0,
+        margin_top=0,
+        margin_right=10,
+        margin_bottom=10,
+    )
     mp.newline()
     ax_c = mp.panel("C", width=60, height=40, below="A")
     assert ax_a is mp.get_axes("A")
@@ -929,6 +945,31 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         assert ax.get_position().width == pytest.approx(70 / 180)
         assert mp._label_texts["A"].get_fontproperties().get_name() == "DejaVu Sans"
         assert mp._label_texts["A"].get_fontweight() == "normal"
+
+
+def test_multipanel_margin_args_inherit_settings_defaults() -> None:
+    with cns.settings.context(panel_margin=(6, 7, 8, 9)):
+        mp = cns.multipanel(max_width=180)
+        mp.panel(
+            "A",
+            width=60,
+            height=40,
+            margin_left=1,
+            margin_bottom=2,
+        )
+
+    panel = mp._panels[0]
+    assert panel["margin_left"] == 1
+    assert panel["margin_top"] == 7
+    assert panel["margin_right"] == 8
+    assert panel["margin_bottom"] == 2
+
+
+def test_multipanel_panel_rejects_margin_tuple_argument() -> None:
+    mp = cns.multipanel(max_width=150)
+
+    with pytest.raises(TypeError, match="unexpected keyword argument 'margin'"):
+        mp.panel("A", width=60, height=40, margin=(0, 0, 10, 10))  # type: ignore[call-arg]
 
 
 @pytest.mark.parametrize(
@@ -1034,7 +1075,10 @@ def test_multipanel_below_aligns_to_parent_column() -> None:
         label_top=12,
         pad_left=0,
         pad_top=0,
-        margin=(10, 0, 0, 10),
+        margin_left=10,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=10,
     )
     mp.panel(
         "C",
@@ -1044,7 +1088,10 @@ def test_multipanel_below_aligns_to_parent_column() -> None:
         label_top=12,
         pad_left=0,
         pad_top=0,
-        margin=(10, 0, 0, 0),
+        margin_left=10,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
         below="B",
     )
 

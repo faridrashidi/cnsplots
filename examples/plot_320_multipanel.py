@@ -105,7 +105,15 @@ cns.violinplot(data=tips, x="day", y="tip")
 mp.panel("C", 100, 100)
 cns.stripplot(data=tips, x="day", y="size")
 
-mp.panel("D", 80, 80, margin=(10, 0, 20, 20))
+mp.panel(
+    "D",
+    80,
+    80,
+    margin_left=10,
+    margin_top=0,
+    margin_right=20,
+    margin_bottom=20,
+)
 cns.barplot(data=iris, x="species", y="sepal_length")
 mp.get_axes("D").tick_params(axis="x", rotation=40)
 

@@ -239,7 +239,15 @@ de_b["-log10p"] = -np.log10(de_b["pvalue"])
 
 mp = cns.multipanel(max_width=500)
 
-mp.panel("A", 150, 150, margin=(10, 0, 50, 20))
+mp.panel(
+    "A",
+    150,
+    150,
+    margin_left=10,
+    margin_top=0,
+    margin_right=50,
+    margin_bottom=20,
+)
 cns.volcanoplot(
     de_a,
     x="log2FC",
@@ -281,11 +289,27 @@ for i, tp in enumerate(timepoints):
 
 mp = cns.multipanel(max_width=630)
 
-mp.panel("A", 130, 130, margin=(10, 0, 50, 20))
+mp.panel(
+    "A",
+    130,
+    130,
+    margin_left=10,
+    margin_top=0,
+    margin_right=50,
+    margin_bottom=20,
+)
 cns.volcanoplot(de_list[0], x="log2FC", y="-log10p", symbol="gene", show_list=[])
 mp.get_axes("A").set_title("Day 1")
 
-mp.panel("B", 130, 130, margin=(10, 0, 50, 20))
+mp.panel(
+    "B",
+    130,
+    130,
+    margin_left=10,
+    margin_top=0,
+    margin_right=50,
+    margin_bottom=20,
+)
 cns.volcanoplot(de_list[1], x="log2FC", y="-log10p", symbol="gene", show_list=[])
 mp.get_axes("B").set_title("Day 3")
 
