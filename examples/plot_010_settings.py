@@ -45,8 +45,8 @@ print(f"multipanel_max_width: {cns.settings.multipanel_max_width}")
 print(f"panel defaults: {cns.settings.panel_width} x {cns.settings.panel_height} px")
 print(f"legend_out_bbox_to_anchor: {cns.settings.legend_out_bbox_to_anchor}")
 print(
-    "panel_label_offsets: "
-    f"({cns.settings.panel_label_offset_x}, {cns.settings.panel_label_offset_y})"
+    "panel_label_padding: "
+    f"({cns.settings.panel_pad_left}, {cns.settings.panel_pad_top}) px"
 )
 
 
@@ -104,15 +104,15 @@ ax.set_title("Figure + Setup Defaults")
 # Change helper defaults
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Helper settings cover legend placement plus panel label typography
-# and offsets.
+# and padding.
 cns.settings.reset()
 cns.settings.legend_out_bbox_to_anchor = (1.05, 1.0)
 cns.settings.legend_out_loc = "upper left"
 cns.settings.legend_out_markerscale = 1.2
 cns.settings.panel_label_fontname = "DejaVu Sans"
 cns.settings.panel_label_fontweight = "normal"
-cns.settings.panel_label_offset_x = -0.18
-cns.settings.panel_label_offset_y = 1.04
+cns.settings.panel_pad_left = 18
+cns.settings.panel_pad_top = 4
 
 cns.figure()
 ax = cns.scatterplot(data=tips, x="total_bill", y="tip", hue="time", s=14)
@@ -134,6 +134,7 @@ cns.settings.panel_height = 120
 cns.settings.panel_label_left = 12
 cns.settings.panel_label_top = 14
 cns.settings.panel_pad_left = 24
+cns.settings.panel_pad_top = 2
 cns.settings.panel_margin_top = 0
 cns.settings.panel_margin_bottom = 16
 cns.settings.panel_margin_left = 8

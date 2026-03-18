@@ -7,6 +7,7 @@ import types
 from collections.abc import Iterable, Mapping, Sequence
 from importlib.metadata import version
 from pathlib import Path
+from typing import Any, cast
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -17,6 +18,14 @@ from lxml import etree
 
 import cnsplots as cns
 from cnsplots import _settings, _setup, _svg, _utils, _validation
+
+
+def _panel_label_padding(ax, text) -> tuple[float, float]:
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    axes_bbox = ax.get_window_extent(renderer=renderer)
+    text_bbox = text.get_window_extent(renderer=renderer)
+    return axes_bbox.x0 - text_bbox.x1, text_bbox.y0 - axes_bbox.y1
 
 
 def test_public_api_exports_resolve() -> None:
@@ -243,8 +252,6 @@ def test_settings_behavior() -> None:
     settings.panel_margin_right = 3
     settings.panel_label_fontname = "DejaVu Sans"
     settings.panel_label_fontweight = 500
-    settings.panel_label_offset_x = -0.3
-    settings.panel_label_offset_y = 1.2
     settings.legend_out_bbox_to_anchor = (1.1, 1.2)
     settings.legend_out_loc = "lower left"
     settings.legend_out_markerscale = 2
@@ -252,6 +259,13 @@ def test_settings_behavior() -> None:
     assert "title_fontweight='normal'" in repr(settings)
     assert "figure_width=180" in repr(settings)
     assert "font_sans_serif=('Arial', 'DejaVu Sans')" in repr(settings)
+    assert "panel_label_offset_x" not in repr(settings)
+
+    with pytest.raises(AttributeError, match="panel_label_offset_x"):
+        settings.panel_label_offset_x = -0.3
+    with pytest.raises(AttributeError, match="panel_label_offset_x"):
+        with settings.context(panel_label_offset_x=-0.3):
+            pass
 
     with settings.context(
         title_fontsize=12,
@@ -284,9 +298,9 @@ def test_settings_behavior() -> None:
     assert settings.panel_margin_right == 3
 
     with pytest.raises(AttributeError, match="not a valid setting"):
-        settings.panel_margin = (1, 2, 3, 4)  # type: ignore[attr-defined]
+        settings.panel_margin = (1, 2, 3, 4)
     with pytest.raises(AttributeError, match="not a valid setting"):
-        with settings.context(panel_margin=(5, 6, 7, 8)):  # type: ignore[call-arg]
+        with settings.context(panel_margin=(5, 6, 7, 8)):
             pass
 
     with pytest.raises(AttributeError, match="not a valid setting"):
@@ -317,27 +331,27 @@ def test_settings_behavior() -> None:
         _ = settings._missing_setting
 
     with pytest.raises(TypeError):
-        settings.palette_qual = 1  # type: ignore[assignment]
+        settings.palette_qual = 1
     with pytest.raises(TypeError):
-        settings.palette_seq = 1  # type: ignore[assignment]
+        settings.palette_seq = 1
     with pytest.raises(TypeError):
-        settings.title_fontsize = "1"  # type: ignore[assignment]
+        settings.title_fontsize = "1"
     with pytest.raises(ValueError):
         settings.title_fontsize = 0
     with pytest.raises(TypeError):
-        settings.title_fontweight = []  # type: ignore[assignment]
+        settings.title_fontweight = []
     with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
-        settings.title_fontweight = 1.5  # type: ignore[assignment]
+        settings.title_fontweight = 1.5
     with pytest.raises(TypeError):
-        settings.fontsize_legend = "1"  # type: ignore[assignment]
+        settings.fontsize_legend = "1"
     with pytest.raises(ValueError):
         settings.fontsize_legend = 0
     with pytest.raises(TypeError):
-        settings.axes_linewidth = "1"  # type: ignore[assignment]
+        settings.axes_linewidth = "1"
     with pytest.raises(ValueError):
         settings.axes_linewidth = 0
     with pytest.raises(TypeError):
-        settings.verbosity = 1.5  # type: ignore[assignment]
+        settings.verbosity = 1.5
     with pytest.raises(ValueError):
         settings.verbosity = -1
 
@@ -357,63 +371,63 @@ def test_settings_validation_errors() -> None:
     settings = _settings.CNSSettings()
 
     with pytest.raises(TypeError):
-        settings.palette_qual = 1  # type: ignore[assignment]
+        settings.palette_qual = 1
     with pytest.raises(TypeError):
-        settings.palette_seq = 1  # type: ignore[assignment]
+        settings.palette_seq = 1
     with pytest.raises(TypeError):
-        settings.title_fontsize = "1"  # type: ignore[assignment]
+        settings.title_fontsize = "1"
     with pytest.raises(TypeError):
-        settings.figure_width = None  # type: ignore[assignment]
+        settings.figure_width = None
     with pytest.raises(ValueError):
         settings.title_fontsize = 0
     with pytest.raises(TypeError):
-        settings.title_fontweight = []  # type: ignore[assignment]
+        settings.title_fontweight = []
     with pytest.raises(TypeError):
-        settings.panel_label_fontweight = None  # type: ignore[assignment]
+        settings.panel_label_fontweight = None
     with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
-        settings.title_fontweight = 1.5  # type: ignore[assignment]
+        settings.title_fontweight = 1.5
     with pytest.raises(TypeError):
-        settings.fontsize_legend = "1"  # type: ignore[assignment]
+        settings.fontsize_legend = "1"
     with pytest.raises(ValueError):
         settings.fontsize_legend = 0
     with pytest.raises(TypeError):
-        settings.axes_linewidth = "1"  # type: ignore[assignment]
+        settings.axes_linewidth = "1"
     with pytest.raises(ValueError):
         settings.axes_linewidth = 0
     with pytest.raises(TypeError):
-        settings.verbosity = 1.5  # type: ignore[assignment]
+        settings.verbosity = 1.5
     with pytest.raises(ValueError):
         settings.verbosity = -1
     with pytest.raises(TypeError):
-        settings.axes_grid = "yes"  # type: ignore[assignment]
+        settings.axes_grid = "yes"
     with pytest.raises(TypeError):
-        settings.axes_titlelocation = 1  # type: ignore[assignment]
+        settings.axes_titlelocation = 1
     with pytest.raises(ValueError, match="axes_titlelocation must be one of"):
         settings.axes_titlelocation = "top"
     with pytest.raises(TypeError):
-        settings.font_sans_serif = "Arial"  # type: ignore[assignment]
+        settings.font_sans_serif = "Arial"
     with pytest.raises(TypeError):
-        settings.font_sans_serif = ["Arial", 1]  # type: ignore[list-item]
+        settings.font_sans_serif = ["Arial", 1]
     with pytest.raises(ValueError):
-        settings.font_sans_serif = []  # type: ignore[assignment]
+        settings.font_sans_serif = []
     with pytest.raises(TypeError):
-        settings.scanpy_figsize = "big"  # type: ignore[assignment]
+        settings.scanpy_figsize = "big"
     with pytest.raises(ValueError):
-        settings.scanpy_figsize = (1.0,)  # type: ignore[assignment]
+        settings.scanpy_figsize = (1.0,)
     with pytest.raises(TypeError):
-        settings.legend_fontsize = "big"  # type: ignore[assignment]
+        settings.legend_fontsize = "big"
     with pytest.raises(ValueError):
         settings.legend_markerscale = -1
     with pytest.raises(TypeError):
-        settings.panel_margin_top = "big"  # type: ignore[assignment]
+        settings.panel_margin_top = "big"
     with pytest.raises(ValueError):
         settings.panel_margin_left = -1
     with pytest.raises(TypeError):
-        settings.pdf_fonttype = 1.5  # type: ignore[assignment]
+        settings.pdf_fonttype = 1.5
     with pytest.raises(ValueError):
         settings.pdf_fonttype = 0
     with pytest.raises(TypeError):
-        settings.legend_out_loc = 1  # type: ignore[assignment]
+        settings.legend_out_loc = 1
     with pytest.raises(ValueError, match="legend_out_loc must be one of"):
         settings.legend_out_loc = "corner"
 
@@ -737,8 +751,8 @@ def test_utils_helpers_and_showcase_data(
         legend_out_markerscale=2,
         panel_label_fontname="DejaVu Sans",
         panel_label_fontweight="normal",
-        panel_label_offset_x=-0.2,
-        panel_label_offset_y=1.05,
+        panel_pad_left=14,
+        panel_pad_top=5,
     ):
         cns.figure()
         assert plt.gcf().dpi == 180
@@ -761,10 +775,23 @@ def test_utils_helpers_and_showcase_data(
 
         _utils.add_panel_label("A")
         panel_text = plt.gca().texts[-1]
+        panel_pad_left, panel_pad_top = _panel_label_padding(ax, panel_text)
         assert panel_text.get_text() == "A"
-        assert panel_text.get_position() == (-0.2, 1.05)
+        assert panel_pad_left == pytest.approx(14, abs=0.5)
+        assert panel_pad_top == pytest.approx(5, abs=0.5)
         assert panel_text.get_fontproperties().get_name() == "DejaVu Sans"
         assert panel_text.get_fontweight() == "normal"
+        assert panel_text.get_ha() == "right"
+        assert panel_text.get_va() == "bottom"
+
+        _utils.add_panel_label("B", pad_left=9, pad_top=4)
+        override_text = plt.gca().texts[-1]
+        override_pad_left, override_pad_top = _panel_label_padding(ax, override_text)
+        assert override_pad_left == pytest.approx(9, abs=0.5)
+        assert override_pad_top == pytest.approx(4, abs=0.5)
+
+        with pytest.raises(TypeError, match="offset_x"):
+            cast(Any, _utils.add_panel_label)("C", offset_x=-0.2, offset_y=1.05)
 
     assert len(_utils.get_hexcolors_from_apalette([0, 1], "Set1")) == 2
     assert _utils.get_hexcolors_from_apalette([0, 1], ["#111111", "#222222"]) == [

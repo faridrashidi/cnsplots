@@ -523,12 +523,12 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
     "panel_pad_left": _spec(
         20,
         lambda value: _validate_number("panel_pad_left", value, non_negative=True),
-        "Default left padding in pixels for multipanel.panel().",
+        "Default left padding in pixels for multipanel.panel() and add_panel_label().",
     ),
     "panel_pad_top": _spec(
         0,
         lambda value: _validate_number("panel_pad_top", value, non_negative=True),
-        "Default top padding in pixels for multipanel.panel().",
+        "Default top padding in pixels for multipanel.panel() and add_panel_label().",
     ),
     "panel_margin_top": _spec(
         0,
@@ -559,16 +559,6 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "bold",
         lambda value: _validate_fontweight("panel_label_fontweight", value),
         "Font weight used for panel labels.",
-    ),
-    "panel_label_offset_x": _spec(
-        -0.25,
-        lambda value: _validate_number("panel_label_offset_x", value),
-        "Default x offset for add_panel_label(), in axes coordinates.",
-    ),
-    "panel_label_offset_y": _spec(
-        1.1,
-        lambda value: _validate_number("panel_label_offset_y", value),
-        "Default y offset for add_panel_label(), in axes coordinates.",
     ),
     "legend_out_bbox_to_anchor": _spec(
         (1, 1.02),

@@ -173,12 +173,12 @@ ax.set_title("With Panel Label")
 
 
 # %%
-# Panel label with custom position
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Panel label with custom padding
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(150, 100)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
-cns.add_panel_label("B", offset_x=-0.15, offset_y=1.05)
-ax.set_title("Custom Label Position")
+cns.add_panel_label("B", pad_left=14, pad_top=4)
+ax.set_title("Custom Label Padding")
 
 
 # %%

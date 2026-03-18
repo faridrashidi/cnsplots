@@ -14,6 +14,7 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
 import num2tex
 import palettable
 import pandas as pd
@@ -226,7 +227,7 @@ def take_legend_out(title=None):
     )
 
 
-def add_panel_label(name="A", offset_x=None, offset_y=None):
+def add_panel_label(name="A", pad_left=None, pad_top=None):
     """
     Add a panel label (e.g., 'A', 'B', 'C') to the current axes.
 
@@ -237,12 +238,12 @@ def add_panel_label(name="A", offset_x=None, offset_y=None):
     ----------
     name : str, default: 'A'
         The label text to display (typically a single letter).
-    offset_x : float, default: -0.25
-        Horizontal offset in axes coordinates. Negative values place the label
-        to the left of the axes.
-    offset_y : float, default: 1.1
-        Vertical offset in axes coordinates. Values > 1.0 place the label above
-        the axes.
+    pad_left : float, default: 20
+        Horizontal padding in pixels from the axes left edge to the label's
+        right edge. Positive values place the label to the left of the axes.
+    pad_top : float, default: 0
+        Vertical padding in pixels from the axes top edge to the label's
+        bottom edge. Positive values place the label above the axes.
 
     Returns
     -------
@@ -256,10 +257,9 @@ def add_panel_label(name="A", offset_x=None, offset_y=None):
 
     Notes
     -----
-    The label is positioned using axes coordinates where:
-    - (0, 0) is the lower-left corner of the axes
-    - (1, 1) is the upper-right corner of the axes
-    - Values outside [0, 1] place the label outside the axes area
+    The label is positioned relative to the axes' top-left corner using pixel
+    padding. The label's right edge sits ``pad_left`` pixels to the left of the
+    axes, and the label's bottom edge sits ``pad_top`` pixels above the axes.
 
     The label uses Arial font (bold) at 8pt size (`title_fontsize`) for
     consistency with publication standards.
@@ -274,21 +274,31 @@ def add_panel_label(name="A", offset_x=None, offset_y=None):
     >>> # Custom positioning
     >>> cns.figure()
     >>> cns.barplot(data=df, x="treatment", y="response")
-    >>> cns.add_panel_label("B", offset_x=-0.3, offset_y=1.15)
+    >>> cns.add_panel_label("B", pad_left=24, pad_top=6)
     """
-    if offset_x is None:
-        offset_x = cns.settings.panel_label_offset_x
-    if offset_y is None:
-        offset_y = cns.settings.panel_label_offset_y
+    if pad_left is None:
+        pad_left = cns.settings.panel_pad_left
+    if pad_top is None:
+        pad_top = cns.settings.panel_pad_top
 
-    plt.text(
-        offset_x,
-        offset_y,
+    ax = plt.gca()
+    fig = ax.figure
+    transform = ax.transAxes + mtransforms.ScaledTranslation(
+        -pad_left / fig.dpi,
+        pad_top / fig.dpi,
+        fig.dpi_scale_trans,
+    )
+
+    ax.text(
+        0,
+        1,
         name,
-        transform=plt.gca().transAxes,
+        transform=transform,
         fontsize=cns.settings.title_fontsize,
         fontname=cns.settings.panel_label_fontname,
         fontweight=cns.settings.panel_label_fontweight,
+        ha="right",
+        va="bottom",
     )
 
 
