@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import seaborn as sns
+from matplotlib.backend_bases import DrawEvent, Event
 from lxml import etree
 
 import cnsplots as cns
@@ -442,12 +443,12 @@ def test_settings_behavior() -> None:
     assert settings.title_fontweight == "bold"
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)
-    assert settings.panel_pad_left == 20
+    assert settings.panel_pad_left == 0
     assert settings.panel_pad_top == 0
     assert settings.panel_margin_top == 0
-    assert settings.panel_margin_bottom == 20
-    assert settings.panel_margin_left == 10
-    assert settings.panel_margin_right == 0
+    assert settings.panel_margin_bottom == 10
+    assert settings.panel_margin_left == 0
+    assert settings.panel_margin_right == 10
     assert settings.font_sans_serif[0] == "Helvetica"
 
 
@@ -1385,6 +1386,85 @@ def test_multipanel_margin_args_inherit_settings_defaults() -> None:
     assert panel["margin_bottom"] == 2
 
 
+def test_multipanel_artist_bbox_and_top_artist_helpers() -> None:
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=0,
+        pad_top=0,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    label_text = mp._label_texts["A"]
+    extra_text = ax.text(0.5, 1.15, "extra", transform=ax.transAxes)
+    unclipped_line = ax.plot(
+        [0, 1],
+        [1.05, 1.05],
+        transform=ax.transAxes,
+        clip_on=False,
+    )[0]
+
+    artists = list(mp._iter_top_decoration_artists(ax, label_text))
+    assert extra_text in artists
+    assert unclipped_line in artists
+    assert label_text not in artists
+
+    class WindowExtentOnlyArtist:
+        def get_window_extent(self) -> mpl.transforms.Bbox:
+            return mpl.transforms.Bbox.from_bounds(1, 2, 3, 4)
+
+    bbox = mp._get_artist_bbox(WindowExtentOnlyArtist(), cast(Any, None))
+    assert bbox is not None
+    assert bbox.bounds == pytest.approx((1, 2, 3, 4))
+    assert mp._get_artist_bbox(object(), cast(Any, None)) is None
+
+
+def test_multipanel_measure_top_decoration_skips_missing_bbox(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel("A", width=80, height=60)
+    label_text = mp._label_texts["A"]
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+
+    class DummyArtist:
+        def get_visible(self) -> bool:
+            return True
+
+    monkeypatch.setattr(
+        mp,
+        "_iter_top_decoration_artists",
+        lambda ax, label_text: iter([DummyArtist()]),
+    )
+    monkeypatch.setattr(mp, "_get_artist_bbox", lambda artist, renderer: None)
+
+    assert mp._measure_top_decoration_height_px(ax, label_text, renderer) == 0
+
+
+def test_multipanel_update_left_layout_metrics_skips_missing_entries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mp = cns.multipanel(max_width=240)
+    mp.panel("A", width=80, height=60)
+    mp._panels.append({"_is_spacer": True})
+    mp._panels.append({"label": "B"})
+    mp._label_texts.pop("A")
+
+    monkeypatch.setattr(
+        mp,
+        "_measure_left_decoration_width_px",
+        lambda ax, renderer: 5.0,
+    )
+
+    assert mp._update_left_layout_metrics(cast(Any, object())) is True
+    assert mp._panels[0]["left_decoration_width_px"] == pytest.approx(5.0)
+
+
 def test_multipanel_panel_rejects_margin_tuple_argument() -> None:
     mp = cns.multipanel(max_width=150)
 
@@ -1394,6 +1474,51 @@ def test_multipanel_panel_rejects_margin_tuple_argument() -> None:
         mp.panel("A", width=60, height=40, label_left=10)  # type: ignore[call-arg]
     with pytest.raises(TypeError, match="unexpected keyword argument 'label_top'"):
         mp.panel("A", width=60, height=40, label_top=12)  # type: ignore[call-arg]
+
+
+def test_multipanel_draw_helpers_handle_guard_paths(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel("A", width=80, height=60)
+    renderer = ax.figure.canvas.get_renderer()
+
+    assert mp._get_canvas_renderer(types.SimpleNamespace(get_renderer=None)) is None
+
+    mp._on_draw(Event("resize_event", mp.fig.canvas))
+
+    other_fig = plt.figure()
+    try:
+        other_renderer = other_fig.canvas.get_renderer()
+        mp._on_draw(DrawEvent("draw_event", other_fig.canvas, other_renderer))
+    finally:
+        plt.close(other_fig)
+
+    created = {"count": 0}
+    drawn = {"count": 0}
+
+    monkeypatch.setattr(
+        mp,
+        "_update_left_layout_metrics",
+        lambda renderer: True,
+    )
+    monkeypatch.setattr(
+        mp,
+        "_create_or_update_figure",
+        lambda: created.__setitem__("count", created["count"] + 1),
+    )
+    monkeypatch.setattr(
+        mp.fig.canvas,
+        "draw",
+        lambda: drawn.__setitem__("count", drawn["count"] + 1),
+    )
+    monkeypatch.setattr(mp, "_get_canvas_renderer", lambda canvas: None)
+
+    mp._on_draw(DrawEvent("draw_event", mp.fig.canvas, renderer))
+
+    assert created["count"] == 1
+    assert drawn["count"] == 1
+    assert mp._is_relayout_in_draw is False
 
 
 @pytest.mark.parametrize("loc", ["left", "center", "right"])

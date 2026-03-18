@@ -11,6 +11,8 @@ focused per-feature examples in the rest of the gallery.
 # %%
 # Load data
 # ~~~~~~~~~
+import matplotlib.image as mpimg
+from scipy import stats
 
 import cnsplots as cns
 
@@ -158,7 +160,7 @@ ax = cns.sankeyplot(tips_df, x="day", y="sex")
 ax.set_title("Sankeyplot")
 
 # Panel O: ridgeplot
-mp.panel("O", 35, 80, pad_left=100)
+mp.panel("O", 35, 80, pad_left=110)
 ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
 ax.set_title("Ridgeplot")
 
@@ -167,319 +169,184 @@ mp.panel("P", 65, 80, below="O")
 ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
 ax.set_title("Slopeplot")
 
-# # Panel Q: scatterplot
-# mp.newline()
-# mp.panel(
-#     "Q",
-#     90,
-#     90,
-#     pad_top=5,
-#     margin_left=0,
-#     margin_top=0,
-#     margin_right=40,
-#     margin_bottom=0,
-#     color_cycle="Set1",
-# )
-# ax = cns.scatterplot(
-#     data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
-# )
-# ax.set_title("Scatterplot")
-# ax.get_legend().set_title(None)
-# ax.axhline(
-#     y=iris_df["sepal_width"].mean(),
-#     color="gray",
-#     linestyle="--",
-#     dashes=(4, 3),
-#     linewidth=0.7,
-# )
-# ax.axvline(
-#     x=iris_df["sepal_length"].mean(),
-#     color="gray",
-#     linestyle="--",
-#     dashes=(4, 3),
-#     linewidth=0.7,
-# )
-# cns.take_legend_out()
+# Panel Q: scatterplot
+mp.panel("Q", 90, 90, margin_right=50, color_cycle="Set1")
+ax = cns.scatterplot(
+    data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
+)
+ax.set_title("Scatterplot")
+ax.get_legend().set_title(None)
+ax.axhline(
+    y=iris_df["sepal_width"].mean(),
+    color="gray",
+    linestyle="--",
+    dashes=(4, 3),
+    linewidth=0.7,
+)
+ax.axvline(
+    x=iris_df["sepal_length"].mean(),
+    color="gray",
+    linestyle="--",
+    dashes=(4, 3),
+    linewidth=0.7,
+)
+cns.take_legend_out()
 
-# # Panel R: heatmapplot
-# mp.panel("R", 100, 190, pad_top=3, pad_left=10)
-# cmp = cns.heatmapplot(
-#     blobs,
-#     label="Z-score",
-#     cmap="BuRd_custom",
-#     row_annotation=["Ensemble"],
-#     col_annotation=["blobs"],
-#     row_cluster=True,
-#     col_cluster=True,
-#     show_rownames=True,
-#     show_colnames=False,
-#     row_dendrogram=True,
-#     xlabel="Genes",
-#     ylabel="Patients",
-#     xticklabels_rotation=20,
-# )
-# cmp.ax.set_title("Heatmapplot")
+# Panel R: heatmapplot
+mp.panel("R", 100, 190)
+cmp = cns.heatmapplot(
+    blobs,
+    label="Z-score",
+    cmap="BuRd_custom",
+    row_annotation=["Ensemble"],
+    col_annotation=["blobs"],
+    row_cluster=True,
+    col_cluster=True,
+    show_rownames=True,
+    show_colnames=False,
+    row_dendrogram=True,
+    xlabel="Genes",
+    ylabel="Patients",
+    xticklabels_rotation=20,
+)
+cmp.ax.set_title("Heatmapplot")
 
 # Save final figure
 cns.savefig("~/Desktop/Figure1.jpg")
 
 
-# # %%
-# # Figure 2
-# # ~~~~~~~~
-# # A multipanel image layout sized directly from the source image dimensions.
+# %%
+# Figure 2
+# ~~~~~~~~
+# A multipanel image layout sized directly from the source image dimensions.
 
-# mp = cns.multipanel(
-#     max_width=540, title="Figure 2", title_fontweight="bold", loc="left"
-# )
+mp = cns.multipanel(
+    max_width=540, title="Figure 2", title_fontweight="bold", loc="left"
+)
 
-# # Panel A: load pathology image
-# ax = mp.panel(
-#     "A",
-#     237,
-#     149,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=0,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=10,
-# )
-# ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
-# ax.set_title("Pathology Image")
-# ax.set_axis_off()
+# Panel A: load pathology image
+ax = mp.panel("A", 237, 149, pad_top=10)
+ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
+ax.set_title("Pathology Image")
+ax.set_axis_off()
 
-# # Panel B: load immunofluorescence image
-# ax = mp.panel(
-#     "B",
-#     102,
-#     116,
-#     pad_left=10,
-#     pad_top=17,
+# Panel B: load immunofluorescence image
+ax = mp.panel("B", 102, 116)
+ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
+ax.set_title("Immunofluorescence")
+ax.set_axis_off()
+
+# Panel C: ?
+ax = mp.panel("C", 100, 100)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel D: ?
+ax = mp.panel("D", 100, 100)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel E: load western blot image
+ax = mp.panel("E", 102, 116, below="B")
+ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
+ax.set_title("Western Blot")
+ax.set_axis_off()
+
+# Panel F: dotplot
+# mp.panel(
+#     "F",
+#     60,
+#     60,
+#     pad_left=20,
+#     pad_top=3,
 #     margin_left=10,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=10,
-# )
-# ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
-# ax.set_title("Immunofluorescence")
-# ax.set_axis_off()
-
-# # Panel C: ?
-# ax = mp.panel(
-#     "C",
-#     100,
-#     100,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=10,
-# )
-# cns.placeholderplot("Placeholder")
-# ax.set_title("?")
-
-# # Panel D: ?
-# ax = mp.panel(
-#     "D",
-#     100,
-#     100,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=10,
-# )
-# cns.placeholderplot("Placeholder")
-# ax.set_title("?")
-
-# # Panel E: load western blot image
-# ax = mp.panel(
-#     "E",
-#     102,
-#     116,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
+#     margin_top=4,
 #     margin_right=0,
 #     margin_bottom=0,
-#     below="B",
-# )
-# ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
-# ax.set_title("Western Blot")
-# ax.set_axis_off()
-
-# # Panel F: dotplot
-# # mp.panel(
-# #     "F",
-# #     60,
-# #     60,
-# #     pad_left=20,
-# #     pad_top=3,
-# #     margin_left=10,
-# #     margin_top=4,
-# #     margin_right=0,
-# #     margin_bottom=0,
-# #     below="D",
-# # )
-# # tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
-# # tips_minmax.columns = ["min", "size"]
-# # tips_minmax = tips_minmax.reset_index()
-# # plt.sca(mp.get_axes("E"))
-# # dp = cns.dotplot(
-# #     tips_minmax,
-# #     x="sex",
-# #     y="day",
-# #     color="size",
-# #     size="min",
-# #     value="size",
-# #     legend=False,
-# #     xlabel="",
-# #     ylabel="",
-# #     xticklabels_rotation=60,
-# #     max_s=40,
-# # )
-# # for label in dp.heatmap_axes[-1, 0].get_xticklabels():
-# #     label.set_ha("center")
-# # dp.ax_heatmap.set_title("Dotplot")
-
-# # Panel F: lineplot
-# ax = mp.panel(
-#     "F",
-#     70,
-#     70,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=10,
-#     below="C",
-# )
-# ax = cns.lineplot(
-#     data=line_df,
-#     x="timepoint",
-#     y="signal",
-#     hue="condition",
-#     marker="o",
-#     errorbar=None,
-# )
-# legend = ax.get_legend()
-# if legend is not None:
-#     legend.remove()
-# ax.set_title("Lineplot")
-
-# # Panel G: qqplot
-# ax = mp.panel(
-#     "G",
-#     70,
-#     70,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=10,
 #     below="D",
 # )
-# ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
-# ax.set_title("Qqplot")
-
-# mp.newline()
-
-# # Panel H: h&e histology image
-# ax = mp.panel(
-#     "H",
-#     160,
-#     319,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=0,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=0,
+# tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
+# tips_minmax.columns = ["min", "size"]
+# tips_minmax = tips_minmax.reset_index()
+# plt.sca(mp.get_axes("E"))
+# dp = cns.dotplot(
+#     tips_minmax,
+#     x="sex",
+#     y="day",
+#     color="size",
+#     size="min",
+#     value="size",
+#     legend=False,
+#     xlabel="",
+#     ylabel="",
+#     xticklabels_rotation=60,
+#     max_s=40,
 # )
-# ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
-# ax.set_title("H&E Histology")
-# ax.set_axis_off()
+# for label in dp.heatmap_axes[-1, 0].get_xticklabels():
+#     label.set_ha("center")
+# dp.ax_heatmap.set_title("Dotplot")
 
-# # Panel I: placeholder plot
-# ax = mp.panel(
-#     "I",
-#     155,
-#     200,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=0,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=0,
-# )
-# cns.placeholderplot("This is a placeholder plot\n155 ⨯ 200")
-# ax.set_title("Placeholder")
+# Panel F: lineplot
+ax = mp.panel("F", 70, 70, below="C")
+ax = cns.lineplot(
+    data=line_df,
+    x="timepoint",
+    y="signal",
+    hue="condition",
+    marker="o",
+    errorbar=None,
+)
+legend = ax.get_legend()
+if legend is not None:
+    legend.remove()
+ax.set_title("Lineplot")
 
-# mp.newline()
+# Panel G: qqplot
+ax = mp.panel("G", 70, 70, below="D")
+ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
+ax.set_title("Qqplot")
 
-# # Panel J: lollipopplot
-# ax = mp.panel(
-#     "J",
-#     100,
-#     30,
-#     pad_left=10,
-#     pad_top=17,
-#     margin_left=0,
-#     margin_top=0,
-#     margin_right=5,
-#     margin_bottom=0,
-#     color_cycle="NEJM",
-# )
-# ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
-# ax.set_title("Lollipopplot")
-# ax.set_xticklabels(
-#     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
-# )
+mp.newline()
 
-# # Panel K: confusionplot
-# ax = mp.panel(
-#     "K",
-#     30,
-#     30,
-#     pad_left=30,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
-#     margin_right=40,
-#     margin_bottom=0,
-# )
-# ax = cns.confusionplot(
-#     data=confusion_df,
-#     x="pred",
-#     y="truth",
-#     add_pvalue=True,
-#     x_order=["Neg", "Pos"],
-#     y_order=["Neg", "Pos"],
-#     pvalue_y_pad=3.9,
-#     pvalue_x_pad=1.5,
-# )
-# ax.set_title("Confusionplot")
+# Panel H: h&e histology image
+ax = mp.panel("H", 160, 319)
+ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
+ax.set_title("H&E Histology")
+ax.set_axis_off()
 
-# # Panel L: ?
-# ax = mp.panel(
-#     "L",
-#     100,
-#     100,
-#     pad_left=15,
-#     pad_top=17,
-#     margin_left=10,
-#     margin_top=0,
-#     margin_right=0,
-#     margin_bottom=0,
-# )
-# cns.placeholderplot("Placeholder")
-# ax.set_title("?")
+# Panel I: placeholder plot
+ax = mp.panel("I", 155, 200)
+cns.placeholderplot("This is a placeholder plot\n155 ⨯ 200")
+ax.set_title("Placeholder")
 
-# # Save final figure
-# cns.savefig("~/Desktop/Figure2.jpg")
+mp.newline()
+
+# Panel J: lollipopplot
+ax = mp.panel("J", 100, 30, color_cycle="NEJM")
+ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
+ax.set_title("Lollipopplot")
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
+
+# Panel K: confusionplot
+ax = mp.panel("K", 30, 30)
+ax = cns.confusionplot(
+    data=confusion_df,
+    x="pred",
+    y="truth",
+    add_pvalue=True,
+    x_order=["Neg", "Pos"],
+    y_order=["Neg", "Pos"],
+    pvalue_y_pad=3.9,
+    pvalue_x_pad=1.5,
+)
+ax.set_title("Confusionplot")
+
+# Panel L: ?
+ax = mp.panel("L", 100, 100)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Save final figure
+cns.savefig("~/Desktop/Figure2.jpg")
