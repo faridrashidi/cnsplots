@@ -232,7 +232,10 @@ def test_sankey_helpers(
         right_labels,
         widths_right,
         np.float64(1.0),
+        label_rotation=45,
     )
+    assert len(ax_plot.texts) == len(left_labels) + len(right_labels)
+    assert all(text.get_rotation() == 45 for text in ax_plot.texts)
     _sankey.plot_strips(
         ax_plot,
         colors,
@@ -260,12 +263,15 @@ def test_sankey_helpers(
     result_ax = _sankey.sankeyplot(
         sankey_df["source"],
         sankey_df["target"],
+        label_rotation=90,
         figureName="figure",
         closePlot=True,
         figSize=(2, 2),
         ax=ax2,
     )
     assert result_ax is ax2
+    assert len(ax2.texts) == len(left_labels) + len(right_labels)
+    assert all(text.get_rotation() == 90 for text in ax2.texts)
 
 
 def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:

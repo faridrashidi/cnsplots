@@ -314,6 +314,16 @@ def test_sets_and_specialized_plots(
     cns.figure(120, 120)
     ax = cns.sankeyplot(sankey_df, x="source", y="target")
     assert ax is plt.gca()
+    assert (
+        len(ax.texts) == sankey_df["source"].nunique() + sankey_df["target"].nunique()
+    )
+    assert all(text.get_rotation() == 0 for text in ax.texts)
+
+    cns.figure(120, 120)
+    ax_rotated = cns.sankeyplot(sankey_df, x="source", y="target", label_rotation=90)
+    assert ax_rotated is plt.gca()
+    assert len(ax_rotated.texts) == len(ax.texts)
+    assert all(text.get_rotation() == 90 for text in ax_rotated.texts)
 
     cns.figure(120, 120)
     ax2 = cns.rocplot(roc_df, "truth", "model_a")

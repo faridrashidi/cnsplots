@@ -38,6 +38,36 @@ ax.set_title("Basic Sankey")
 
 
 # %%
+# Rotated labels for narrow layouts
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Rotate Sankey labels to improve readability in compact panels.
+rotated_label_data = pd.DataFrame(
+    {
+        "source": [
+            "Baseline visit",
+            "Baseline visit",
+            "Follow-up visit",
+            "Follow-up visit",
+            "Extended monitoring",
+            "Extended monitoring",
+        ],
+        "target": [
+            "Complete response",
+            "Stable disease",
+            "Stable disease",
+            "Progressive disease",
+            "Complete response",
+            "Progressive disease",
+        ],
+    }
+)
+
+cns.figure(90, 110)
+ax = cns.sankeyplot(data=rotated_label_data, x="source", y="target", label_rotation=90)
+ax.set_title("Rotated Labels")
+
+
+# %%
 # Treatment to outcome flow
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize patient flow from treatment to outcome.

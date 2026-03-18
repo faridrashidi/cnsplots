@@ -142,7 +142,7 @@ def placeholderplot(description: str) -> Axes:
     return ax
 
 
-def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
+def sankeyplot(data: pd.DataFrame, x: str, y: str, label_rotation: float = 0) -> Axes:
     """
     Create a Sankey diagram showing flows between two categorical variables.
 
@@ -157,6 +157,9 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
         Column name for the source (left-side) categorical variable.
     y : str
         Column name for the target (right-side) categorical variable.
+    label_rotation : float, default: 0
+        Rotation angle, in degrees, applied to both left and right Sankey
+        labels.
 
     Returns
     -------
@@ -175,7 +178,12 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
     >>> ax.set_title("Diagnosis Flow")
 
     >>> # Patient flow across treatment stages
-    >>> ax = cns.sankeyplot(data=df, x="stage_1_response", y="stage_2_response")
+    >>> ax = cns.sankeyplot(
+    ...     data=df,
+    ...     x="stage_1_response",
+    ...     y="stage_2_response",
+    ...     label_rotation=90,
+    ... )
     """
     # Validate inputs
     validate_dataframe(data, "data", "sankeyplot")
@@ -186,7 +194,14 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str) -> Axes:
     current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
     color_dict = dict(zip(keys, current_colors))
-    helper_sankey.sankeyplot(data[x], data[y], fontsize=6, colorDict=color_dict, ax=ax)
+    helper_sankey.sankeyplot(
+        data[x],
+        data[y],
+        fontsize=6,
+        colorDict=color_dict,
+        label_rotation=label_rotation,
+        ax=ax,
+    )
     return ax
 
 

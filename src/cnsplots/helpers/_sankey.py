@@ -49,6 +49,7 @@ def sankeyplot(
     aspect: int = 4,
     rightColor: bool = False,
     fontsize: int = 14,
+    label_rotation: float = 0,
     figureName: str | None = None,
     closePlot: bool = False,
     figSize: tuple[int, int] | None = None,
@@ -73,6 +74,7 @@ def sankeyplot(
         aspect = vertical extent of the diagram in units of horizontal extent
         rightColor = If true, each strip in the diagram will be be colored
                     according to its left label
+        label_rotation = rotation angle in degrees for left and right labels
         figSize = tuple setting the width and height of the sankey diagram.
             Defaults to current figure size
         ax = optional, matplotlib axes to plot on, otherwise uses current axes.
@@ -117,6 +119,7 @@ def sankeyplot(
         rightLabels,
         rightWidths,
         xMax,
+        label_rotation,
     )
     plot_strips(
         ax,
@@ -241,6 +244,7 @@ def draw_vertical_bars(
     rightLabels: list[str],
     rightWidths: dict,
     xMax: float64,
+    label_rotation: float = 0,
 ) -> None:
     # Draw vertical bars on left and right of each  label's section & print label
     for leftLabel in leftLabels:
@@ -257,6 +261,8 @@ def draw_vertical_bars(
             leftLabel,
             {"ha": "right", "va": "center"},
             fontsize=fontsize,
+            rotation=label_rotation,
+            rotation_mode="anchor",
         )
     for rightLabel in rightLabels:
         ax.fill_between(
@@ -272,6 +278,8 @@ def draw_vertical_bars(
             rightLabel,
             {"ha": "left", "va": "center"},
             fontsize=fontsize,
+            rotation=label_rotation,
+            rotation_mode="anchor",
         )
 
 
