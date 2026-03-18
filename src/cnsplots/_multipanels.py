@@ -42,6 +42,7 @@ class multipanel:
     left-to-right and wrap to new rows when they exceed max_width.
 
     Each panel consists of:
+
     - Padding (pad_left, pad_top): space for panel labels plus extra clearance
       around rendered axis decorations
     - Axes area (width, height): the plotting area
@@ -764,6 +765,7 @@ class multipanel:
         Notes
         -----
         Total panel dimensions are calculated as:
+
         - Total width = margin_left + label width + left decorations + pad_left
           + width + margin_right
         - Total height = margin_top + label height + top decorations + pad_top
