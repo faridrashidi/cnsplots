@@ -23,6 +23,8 @@ ShowcaseBundle = tuple[
     list[set[int]],
     pd.DataFrame,
     pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
 ]
 
 
@@ -270,6 +272,32 @@ def showcase_bundle(
             "label": ["healthy", "disease"] * 3,
         }
     )
+    confusion_df = pd.DataFrame(
+        {
+            "truth": ["Neg"] * 18 + ["Pos"] * 12,
+            "pred": ["Neg"] * 15 + ["Pos"] * 3 + ["Neg"] * 2 + ["Pos"] * 10,
+        }
+    )
+    line_df = pd.DataFrame(
+        {
+            "timepoint": list(range(6)) * 2,
+            "signal": [
+                0.15,
+                0.22,
+                0.38,
+                0.55,
+                0.64,
+                0.72,
+                0.12,
+                0.18,
+                0.29,
+                0.36,
+                0.43,
+                0.50,
+            ],
+            "condition": ["Control"] * 6 + ["Treatment"] * 6,
+        }
+    )
     return (
         categorical_df.rename(columns={"group": "species", "value": "sepal_length"})[
             ["species", "sepal_length"]
@@ -285,6 +313,8 @@ def showcase_bundle(
             columns={"truth": "label", "model_a": "Model A", "model_b": "Model B"}
         ),
         slope_df,
+        confusion_df,
+        line_df,
     )
 
 

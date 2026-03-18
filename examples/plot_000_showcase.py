@@ -12,6 +12,7 @@ focused per-feature examples in the rest of the gallery.
 # Load data
 # ~~~~~~~~~
 import matplotlib.image as mpimg
+from scipy import stats
 
 import cnsplots as cns
 
@@ -24,6 +25,8 @@ import cnsplots as cns
     gene_sets,
     roc_df,
     slope_df,
+    confusion_df,
+    line_df,
     showcase_images,
 ) = cns.get_showcase_data(
     include_showcase_images=True,
@@ -254,8 +257,8 @@ mp = cns.multipanel(
 # Panel A: load pathology image
 ax = mp.panel(
     "A",
-    198 * 1.2,
-    124 * 1.2,
+    237,
+    149,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -281,7 +284,7 @@ ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
-# Panel C: lollipopplot
+# Panel C: ?
 ax = mp.panel(
     "C",
     100,
@@ -295,7 +298,7 @@ ax = mp.panel(
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
-# Panel D: confusionplot
+# Panel D: ?
 ax = mp.panel(
     "D",
     100,
@@ -351,8 +354,8 @@ ax.set_axis_off()
 # Panel F: lineplot
 ax = mp.panel(
     "F",
-    100,
-    100,
+    70,
+    70,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -360,14 +363,24 @@ ax = mp.panel(
     margin=(10, 0, 0, 10),
     below="C",
 )
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+ax = cns.lineplot(
+    data=line_df,
+    x="timepoint",
+    y="signal",
+    hue="condition",
+    marker="o",
+    errorbar=None,
+)
+legend = ax.get_legend()
+if legend is not None:
+    legend.remove()
+ax.set_title("Lineplot")
 
 # Panel G: qqplot
 ax = mp.panel(
     "G",
-    100,
-    100,
+    70,
+    70,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -375,8 +388,8 @@ ax = mp.panel(
     margin=(10, 0, 0, 10),
     below="D",
 )
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
+ax.set_title("Qqplot")
 
 mp.newline()
 
@@ -411,33 +424,44 @@ ax.set_title("Placeholder")
 
 mp.newline()
 
-# Panel J: ?
+# Panel J: lollipopplot
 ax = mp.panel(
     "J",
     100,
-    100,
+    30,
     label_left=10,
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin=(10, 0, 5, 20),
 )
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
+ax.set_title("Lollipopplot")
+ax.set_xticklabels(
+    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+)
 
-# Panel K: ?
+# Panel K: confusionplot
 ax = mp.panel(
     "K",
-    100,
-    100,
+    30,
+    30,
     label_left=10,
     label_top=12,
-    pad_left=0,
+    pad_left=20,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin=(10, 0, 0, 20),
 )
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+ax = cns.confusionplot(
+    data=confusion_df,
+    x="pred",
+    y="truth",
+    add_pvalue=True,
+    x_order=["Neg", "Pos"],
+    y_order=["Neg", "Pos"],
+    pvalue_pad=5,
+)
+ax.set_title("Confusionplot")
 
 # Panel L: ?
 ax = mp.panel(

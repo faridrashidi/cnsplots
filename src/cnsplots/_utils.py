@@ -648,6 +648,37 @@ def get_showcase_data(
             + np.random.normal(0, 0.2, 200),
         }
     )
+
+    # Confusion matrix data
+    confusion_df = pd.DataFrame(
+        {
+            "truth": ["Neg"] * 18 + ["Pos"] * 12,
+            "pred": ["Neg"] * 15 + ["Pos"] * 3 + ["Neg"] * 2 + ["Pos"] * 10,
+        }
+    )
+
+    # Line plot data
+    line_df = pd.DataFrame(
+        {
+            "timepoint": list(range(6)) * 2,
+            "signal": [
+                0.15,
+                0.22,
+                0.38,
+                0.55,
+                0.64,
+                0.72,
+                0.12,
+                0.18,
+                0.29,
+                0.36,
+                0.43,
+                0.50,
+            ],
+            "condition": ["Control"] * 6 + ["Treatment"] * 6,
+        }
+    )
+
     data = (
         iris_df,
         tips_df,
@@ -657,6 +688,8 @@ def get_showcase_data(
         gene_sets,
         roc_df,
         slope_df,
+        confusion_df,
+        line_df,
     )
     if include_showcase_images:
         return (*data, _resolve_showcase_images())
