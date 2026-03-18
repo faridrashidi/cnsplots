@@ -255,8 +255,8 @@ mp = cns.multipanel(
 # Panel A: load pathology image
 ax = mp.panel(
     "A",
-    284,
-    178,
+    198 * 1.2,
+    124 * 1.2,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -270,8 +270,8 @@ ax.set_axis_off()
 # Panel B: load immunofluorescence image
 ax = mp.panel(
     "B",
-    128,
-    145,
+    102,
+    116,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -282,11 +282,39 @@ ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
-# Panel C: load western blot image
+# Panel C: lollipopplot
 ax = mp.panel(
     "C",
-    128,
-    145,
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel D: confusionplot
+ax = mp.panel(
+    "D",
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel E: load western blot image
+ax = mp.panel(
+    "E",
+    102,
+    116,
     label_left=10,
     label_top=12,
     pad_left=0,
@@ -298,45 +326,64 @@ ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
 ax.set_title("Western Blot")
 ax.set_axis_off()
 
-# Panel D: boxplot
-mp.panel("D", 100, 60, pad_top=5, margin=(10, 0, 0, 35), color_cycle=[cns.VIOLET])
-ax = cns.boxplot(
-    data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
-)
-ax.set_title("Boxplot")
-ax.set_xlabel("")
-ax.set_xticklabels(
-    ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
-)
+# Panel F: dotplot
+# mp.panel("F", 60, 60, pad_left=20, pad_top=3, margin=(10, 4, 0, 0), below="D")
+# tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
+# tips_minmax.columns = ["min", "size"]
+# tips_minmax = tips_minmax.reset_index()
+# plt.sca(mp.get_axes("E"))
+# dp = cns.dotplot(
+#     tips_minmax,
+#     x="sex",
+#     y="day",
+#     color="size",
+#     size="min",
+#     value="size",
+#     legend=False,
+#     xlabel="",
+#     ylabel="",
+#     xticklabels_rotation=60,
+#     max_s=40,
+# )
+# for label in dp.heatmap_axes[-1, 0].get_xticklabels():
+#     label.set_ha("center")
+# dp.ax_heatmap.set_title("Dotplot")
 
-# Panel E: dotplot
-mp.panel("E", 60, 60, pad_left=20, pad_top=3, margin=(10, 4, 0, 0), below="D")
-tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
-tips_minmax.columns = ["min", "size"]
-tips_minmax = tips_minmax.reset_index()
-plt.sca(mp.get_axes("E"))
-dp = cns.dotplot(
-    tips_minmax,
-    x="sex",
-    y="day",
-    color="size",
-    size="min",
-    value="size",
-    # legend=False,
-    xlabel="",
-    ylabel="",
-    xticklabels_rotation=60,
-    max_s=40,
+# Panel F: lineplot
+ax = mp.panel(
+    "F",
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+    below="C",
 )
-for label in dp.heatmap_axes[-1, 0].get_xticklabels():
-    label.set_ha("center")
-dp.ax_heatmap.set_title("Dotplot")
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel G: qqplot
+ax = mp.panel(
+    "G",
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+    below="D",
+)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
 
 mp.newline()
 
-# Panel F: h&e histology image
+# Panel H: h&e histology image
 ax = mp.panel(
-    "F",
+    "H",
     160,
     319,
     label_left=10,
@@ -349,8 +396,9 @@ ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
 ax.set_title("H&E Histology")
 ax.set_axis_off()
 
+# Panel I: placeholder plot
 ax = mp.panel(
-    "G",
+    "I",
     155,
     200,
     label_left=10,
@@ -361,6 +409,50 @@ ax = mp.panel(
 )
 cns.placeholderplot("This is a placeholder plot\n155 ⨯ 200")
 ax.set_title("Placeholder")
+
+mp.newline()
+
+# Panel J: ?
+ax = mp.panel(
+    "J",
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel K: ?
+ax = mp.panel(
+    "K",
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
+
+# Panel L: ?
+ax = mp.panel(
+    "L",
+    100,
+    100,
+    label_left=10,
+    label_top=12,
+    pad_left=0,
+    pad_top=5,
+    margin=(10, 0, 0, 10),
+)
+cns.placeholderplot("Placeholder")
+ax.set_title("?")
 
 # Save final figure
 cns.savefig("~/Desktop/Figure2.jpg")
