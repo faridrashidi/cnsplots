@@ -299,7 +299,7 @@ ax.set_title("Western Blot")
 ax.set_axis_off()
 
 # Panel D: boxplot
-mp.panel("D", 100, 60, pad_top=5, margin=(10, 0, 0, 10), color_cycle=[cns.VIOLET])
+mp.panel("D", 100, 60, pad_top=5, margin=(10, 0, 0, 35), color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
@@ -310,7 +310,7 @@ ax.set_xticklabels(
 )
 
 # Panel E: dotplot
-mp.panel("E", 62, 72, pad_left=20, pad_top=3, margin=(10, 4, 0, 0), below="D")
+mp.panel("E", 60, 60, pad_left=20, pad_top=3, margin=(10, 4, 0, 0), below="D")
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
@@ -322,12 +322,10 @@ dp = cns.dotplot(
     color="size",
     size="min",
     value="size",
-    legend=False,
+    # legend=False,
     xlabel="",
     ylabel="",
-    xticklabels_rotation=0,
-    xticklabels_fontsize=6,
-    yticklabels_fontsize=6,
+    xticklabels_rotation=60,
     max_s=40,
 )
 for label in dp.heatmap_axes[-1, 0].get_xticklabels():

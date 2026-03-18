@@ -205,6 +205,59 @@ def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:
         assert box.y1 <= host_box.y1 + eps
 
 
+def test_dotplot_tracks_multipanel_relayout(dotplot_df: pd.DataFrame) -> None:
+    mp = cns.multipanel(max_width=220)
+    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    initial_host_box = host_ax.get_position().frozen()
+
+    dp = cns.dotplot(
+        dotplot_df,
+        x="sample",
+        y="gene",
+        color="mean_expr",
+        size="pct_expr",
+        value="score",
+        legend=False,
+        xlabel="",
+        ylabel="",
+        xticklabels_rotation=0,
+    )
+
+    assert dp.ax_heatmap is not None
+
+    mp.newline()
+    mp.panel("B", height=200, width=100)
+
+    resized_host_box = host_ax.get_position().frozen()
+    heatmap_box = dp.ax_heatmap.get_position().frozen()
+
+    assert resized_host_box.y0 != pytest.approx(initial_host_box.y0)
+    assert heatmap_box.bounds == pytest.approx(resized_host_box.bounds)
+
+
+def test_heatmapplot_tracks_multipanel_relayout(heatmap_adata: ad.AnnData) -> None:
+    mp = cns.multipanel(max_width=220)
+    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    initial_host_box = host_ax.get_position().frozen()
+
+    cmp = cns.heatmapplot(
+        heatmap_adata[:, :5].copy(),
+        row_cluster=False,
+        col_cluster=False,
+    )
+
+    assert cmp.ax_heatmap is not None
+
+    mp.newline()
+    mp.panel("B", height=200, width=100)
+
+    resized_host_box = host_ax.get_position().frozen()
+    heatmap_box = cmp.ax_heatmap.get_position().frozen()
+
+    assert resized_host_box.y0 != pytest.approx(initial_host_box.y0)
+    assert heatmap_box.bounds == pytest.approx(resized_host_box.bounds)
+
+
 def test_genomics_plots(
     volcano_df: pd.DataFrame,
     gsea_plot_df: pd.DataFrame,

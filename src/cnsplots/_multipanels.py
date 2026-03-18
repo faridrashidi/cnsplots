@@ -405,6 +405,9 @@ class multipanel:
             else:
                 # Update existing axes position
                 ax.set_position([left, bottom, ax_width, ax_height])
+                sync_embedded_axes = getattr(ax, "_cnsplots_sync_embedded_axes", None)
+                if callable(sync_embedded_axes):
+                    sync_embedded_axes()
 
                 # Update label position
                 label_text = self._label_texts.get(label)

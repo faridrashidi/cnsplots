@@ -18,6 +18,15 @@ def _define_axes_within_current_bounds(
     if subplot_spec is not None:
         return False
 
+    def _sync_embedded_axes() -> None:
+        pos = plotter.ax.get_position()
+        plotter.gs.update(
+            left=pos.x0,
+            right=pos.x1,
+            top=pos.y1,
+            bottom=pos.y0,
+        )
+
     pos = plotter.ax.get_position()
     wspace = (
         plotter.subplot_gap
@@ -90,6 +99,7 @@ def _define_axes_within_current_bounds(
     )
     for side in ["left", "right", "top", "bottom"]:
         plotter.ax.spines[side].set_visible(False)
+    setattr(plotter.ax, "_cnsplots_sync_embedded_axes", _sync_embedded_axes)
 
     from matplotlib.figure import Figure
 
