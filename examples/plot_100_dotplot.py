@@ -12,7 +12,6 @@ of grouped categorical data.
 # %%
 # Load data
 # ~~~~~~~~~
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -82,7 +81,7 @@ for gene in genes:
 gene_df = pd.DataFrame(gene_expr)
 
 cns.figure(120, 100)
-cns.dotplot(
+dp = cns.dotplot(
     gene_df,
     x="gene",
     y="cell_type",
@@ -92,7 +91,7 @@ cns.dotplot(
     max_s=80,
     ylabel_kws={"labelpad": 50},
 )
-plt.title("Gene Expression by Cell Type")
+dp.ax_heatmap.set_title("Gene Expression by Cell Type")
 
 
 # %%
@@ -183,7 +182,7 @@ cox_summary = pd.DataFrame(
 )
 
 cns.figure(80, 100)
-cns.dotplot(
+dp = cns.dotplot(
     cox_summary,
     x="covariate",
     y="group",
@@ -194,7 +193,7 @@ cns.dotplot(
     xlabel_kws={"labelpad": 20},
     ylabel_kws={"labelpad": 20},
 )
-plt.title("Cox Regression Summary")
+dp.ax_heatmap.set_title("Cox Regression Summary")
 
 
 # %%
@@ -223,7 +222,7 @@ pathways = pd.DataFrame(
 )
 
 cns.figure(100, 100)
-cns.dotplot(
+dp = cns.dotplot(
     pathways,
     x="pathway",
     y="category",
@@ -235,7 +234,7 @@ cns.dotplot(
     xlabel_kws={"labelpad": 30},
     ylabel_kws={"labelpad": 25},
 )
-plt.title("Pathway Enrichment")
+dp.ax_heatmap.set_title("Pathway Enrichment")
 
 
 # %%
@@ -256,7 +255,7 @@ for tp in timepoints:
 time_df = pd.DataFrame(time_data)
 
 cns.figure(100, 80)
-cns.dotplot(
+dp = cns.dotplot(
     time_df,
     x="timepoint",
     y="marker",
@@ -266,4 +265,4 @@ cns.dotplot(
     max_s=80,
     ylabel_kws={"labelpad": 20},
 )
-plt.title("Marker Expression Over Time")
+dp.ax_heatmap.set_title("Marker Expression Over Time")

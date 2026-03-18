@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
@@ -150,7 +151,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         legend_kws: dict[str, Any] | None = None,
         plot: bool = True,
         plot_legend: bool = True,
-        legend_order: str = "auto",
+        legend_order: bool | str | Sequence[str] = "auto",
         legend_anchor: str = "auto",
         legend_gap: int = 7,
         legend_vgap: int | None = None,
@@ -323,7 +324,21 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 or self.legend_anchor == "ax_heatmap"
             ):
                 self.label_max_width = heatmap_label_max_width * 1.1
-            if len(self.legend_list) > 1:
+            if isinstance(self.legend_order, (list, tuple)):
+                ordered_titles = set()
+                legend_by_title = {item[1]: item for item in self.legend_list}
+                ordered_legends = []
+                for title in self.legend_order:
+                    legend = legend_by_title.get(title)
+                    if legend is None:
+                        continue
+                    ordered_legends.append(legend)
+                    ordered_titles.add(title)
+                ordered_legends.extend(
+                    item for item in self.legend_list if item[1] not in ordered_titles
+                )
+                self.legend_list = ordered_legends
+            elif len(self.legend_list) > 1 and self.legend_order in [True, "auto"]:
                 self.legend_list = sorted(self.legend_list, key=lambda x: x[3])
 
 

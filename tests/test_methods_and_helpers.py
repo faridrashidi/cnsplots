@@ -329,6 +329,8 @@ def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
 
 
 def test_cluster_map_plotter_new_collect_legends() -> None:
+    import PyComplexHeatmap as pch
+
     df = pd.DataFrame([[0, 1], [1, 0]], columns=pd.Index(["A", "B"]))
     cns.figure(120, 120)
     plotter = helper_heatmap.ClusterMapPlotterNew(
@@ -354,3 +356,33 @@ def test_cluster_map_plotter_new_collect_legends() -> None:
         verbose=0,
     )
     assert plotter_cont.legend_list
+
+    top_annotation = pch.HeatmapAnnotation(
+        axis=1,
+        blobs=pch.anno_simple(pd.Series(["0", "1"], index=df.columns), cmap="Set2"),
+    )
+    left_annotation = pch.HeatmapAnnotation(
+        axis=0,
+        Ensemble=pch.anno_simple(
+            pd.Series(["ens0", "ens1"], index=df.index), cmap="Set1"
+        ),
+    )
+    cns.figure(120, 120)
+    plotter_ordered = helper_heatmap.ClusterMapPlotterNew(
+        data=df,
+        cmap="viridis",
+        label="Z-score",
+        top_annotation=top_annotation,
+        left_annotation=left_annotation,
+        show_rownames=True,
+        show_colnames=True,
+        plot=True,
+        plot_legend=True,
+        legend_order=["missing", "Ensemble", "blobs", "Z-score"],
+        verbose=0,
+    )
+    assert [item[1] for item in plotter_ordered.legend_list] == [
+        "Ensemble",
+        "blobs",
+        "Z-score",
+    ]

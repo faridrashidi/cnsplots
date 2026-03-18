@@ -62,6 +62,7 @@ cmp = cns.heatmapplot(
     legend_hpad=-2,
     legend_vpad=6,
     legend_width=20,
+    xlabel_labelpad=-3,
 )
 cmp.ax.set_title("Basic Heatmapplot")
 print(f"Row clusters: {len(cmp.row_order)}, Col clusters: {len(cmp.col_order)}")
@@ -81,6 +82,8 @@ cmp = cns.heatmapplot(
     col_cluster=False,
     show_rownames=True,
     show_colnames=True,
+    yticklabels_fontsize=5,
+    legend_hpad=5,
 )
 
 

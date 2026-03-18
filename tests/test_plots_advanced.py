@@ -5,6 +5,7 @@ import types
 from typing import Any, cast
 
 import anndata as ad
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -194,6 +195,44 @@ def test_heatmap_and_dotplot(
             color="mean_expr",
             size="pct_expr",
         )
+
+    with cns.settings.context(fontsize_legend=13, ytick_color="#cc2233"):
+        cns.figure(180, 180)
+        cmp3 = cns.heatmapplot(
+            heatmap_adata,
+            layer="scaled",
+            row_annotation=["cluster"],
+            col_annotation=["pathway"],
+            cmap="parula",
+        )
+        heatmap_cbar = next(
+            cbar for cbar in cmp3.cbars if isinstance(cbar, mpl.colorbar.Colorbar)
+        )
+        assert {tick.get_fontsize() for tick in heatmap_cbar.ax.get_yticklabels()} == {
+            13
+        }
+        assert {tick.get_color() for tick in heatmap_cbar.ax.get_yticklabels()} == {
+            "#cc2233"
+        }
+
+        cns.figure(160, 160)
+        dp2 = cns.dotplot(
+            dotplot_df,
+            x="sample",
+            y="gene",
+            color="mean_expr",
+            size="pct_expr",
+            value="score",
+        )
+        dotplot_cbar = next(
+            cbar for cbar in dp2.cbars if isinstance(cbar, mpl.colorbar.Colorbar)
+        )
+        assert {tick.get_fontsize() for tick in dotplot_cbar.ax.get_yticklabels()} == {
+            13
+        }
+        assert {tick.get_color() for tick in dotplot_cbar.ax.get_yticklabels()} == {
+            "#cc2233"
+        }
 
 
 def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:

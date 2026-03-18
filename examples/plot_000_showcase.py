@@ -40,7 +40,7 @@ import cnsplots as cns
 
 cns.settings.title_fontweight = "normal"
 mp = cns.multipanel(
-    max_width=540, title="Figure 1", title_fontweight="bold", loc="left"
+    max_width=485, title="Figure 1", title_fontweight="bold", loc="left"
 )
 
 # Panel A: boxplot
@@ -85,7 +85,7 @@ ax.set_title("Stackplot")
 ax.get_legend().set_title(None)
 
 # Panel E: barplot
-mp.panel("E", 40, 80, margin_left=35, color_cycle=[cns.VIOLET])
+mp.panel("E", 40, 80, margin_left=35, margin_right=0, color_cycle=[cns.VIOLET])
 ax = cns.barplot(
     data=tips_df,
     y="day",
@@ -98,7 +98,16 @@ ax.set_title("Barplot")
 ax.set_ylabel("")
 
 # Panel F: pieplot (stacked below E)
-mp.panel("F", 40, 40, margin_left=35, margin_top=10, below="E", color_cycle="Ecotyper3")
+mp.panel(
+    "F",
+    40,
+    40,
+    margin_left=35,
+    margin_top=10,
+    margin_right=0,
+    below="E",
+    color_cycle="Ecotyper3",
+)
 ax = cns.pieplot(iris_df, "species", legend="right")
 ax.set_title("Pieplot")
 ax.get_legend().set_title(None)
@@ -135,7 +144,7 @@ ax.legend(loc="upper right", bbox_to_anchor=(1.03, 1.0), borderaxespad=0)
 ax.set_title("Survivalplot")
 
 # Panel K: kdeplot
-mp.panel("K", 90, 90, color_cycle="Ecotyper3")
+mp.panel("K", 90, 90, color_cycle="Ecotyper3", margin_right=0)
 ax = cns.kdeplot(data=iris_df, x="petal_length", hue="species")
 ax.get_legend().set_title(None)
 ax.set_title("Kdeplot")
@@ -160,12 +169,12 @@ ax = cns.sankeyplot(tips_df, x="day", y="sex", label_rotation=90)
 ax.set_title("Sankeyplot")
 
 # Panel O: ridgeplot
-mp.panel("O", 35, 80, pad_left=110)
+mp.panel("O", 35, 80, pad_left=110, margin_right=0)
 ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
 ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
-mp.panel("P", 65, 80, below="O", margin_top=10, pad_top=-5)
+mp.panel("P", 65, 80, below="O", margin_top=10, pad_top=-5, margin_right=0)
 ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
 ax.set_title("Slopeplot")
 
@@ -193,7 +202,7 @@ ax.axvline(
 cns.take_legend_out()
 
 # Panel R: heatmapplot
-mp.panel("R", 100, 190, margin_top=-10)
+mp.panel("R", 80, 190, margin_top=-10, margin_right=0)
 cmp = cns.heatmapplot(
     blobs,
     label="Z-score",
@@ -207,6 +216,11 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     xlabel="Genes",
     ylabel="Patients",
+    legend_hpad=2,
+    legend_vpad=4,
+    legend_hgap=4,
+    legend_vgap=0,
+    legend_order=["Ensemble", "blobs", "Z-score"],
     xticklabels_rotation=20,
 )
 cmp.ax.set_title("Heatmapplot")
@@ -242,7 +256,7 @@ cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
 # Panel D: ?
-ax = mp.panel("D", 85, 85)
+ax = mp.panel("D", 85, 85, margin_right=0)
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
@@ -276,7 +290,7 @@ ax.set_axis_off()
 # dp.ax_heatmap.set_title("Dotplot")
 
 # Panel F: lineplot
-ax = mp.panel("F", 85, 85, below="C", margin_top=10)
+ax = mp.panel("F", 85, 85, below="C", margin_top=15)
 ax = cns.lineplot(
     data=line_df,
     x="timepoint",
@@ -291,7 +305,7 @@ if legend is not None:
 ax.set_title("Lineplot")
 
 # Panel G: qqplot
-ax = mp.panel("G", 85, 85, below="D", margin_top=10)
+ax = mp.panel("G", 85, 85, below="D", margin_top=15, margin_right=0)
 ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
 ax.set_title("Qqplot")
 
@@ -304,7 +318,7 @@ ax.set_title("H&E Histology")
 ax.set_axis_off()
 
 # Panel I: placeholder plot
-ax = mp.panel("I", 155, 175)
+ax = mp.panel("I", 155, 175, margin_right=0)
 cns.placeholderplot("A placeholder plot (155⨯175)\nYou can use to fill it up later.")
 ax.set_title("Placeholder")
 

@@ -12,6 +12,7 @@ from typing import Any, cast
 
 import anndata as ad
 import matplotlib as mpl
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
@@ -1192,7 +1193,7 @@ def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
             clip_on=False,
             color="black",
         )[0]
-        figure_artist = mpl.lines.Line2D(
+        figure_artist = mlines.Line2D(
             [10, float(fig.bbox.width) + 40],
             [float(fig.bbox.height) - 8, float(fig.bbox.height) - 8],
             transform=mtransforms.IdentityTransform(),

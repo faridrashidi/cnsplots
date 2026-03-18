@@ -34,6 +34,26 @@ from cnsplots._validation import (
 )
 
 
+def _style_plotter_colorbars(cbars: list[Any]) -> None:
+    font_family = mpl.rcParams.get("font.family")
+    for cbar in cbars:
+        if not isinstance(cbar, mpl.colorbar.Colorbar):
+            continue
+        cbar.outline.set_linewidth(0.3)
+        cbar.ax.tick_params(
+            size=0,
+            labelsize=cns.settings.fontsize_legend,
+            colors=cns.settings.ytick_color,
+            pad=cns.settings.ytick_major_pad,
+        )
+        if font_family:
+            for tick_label in cbar.ax.get_yticklabels():
+                tick_label.set_fontfamily(font_family)
+        cbar.ax.yaxis.set_label_position("left")
+        pos = cbar.ax.get_position()
+        cbar.ax.set_position([pos.x0, pos.y0, pos.width * 0.4, pos.height])
+
+
 def heatmapplot(
     adata: AnnData,
     layer: str | None = None,
@@ -294,15 +314,7 @@ def heatmapplot(
     for s in ["top", "bottom", "left", "right"]:
         cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
 
-    for cbar in cmp.cbars:
-        if isinstance(cbar, mpl.colorbar.Colorbar):
-            cbar.outline.set_linewidth(0.3)
-            cbar.ax.tick_params(size=0)
-    for cbar in cmp.cbars:
-        if isinstance(cbar, mpl.colorbar.Colorbar):
-            cbar.ax.yaxis.set_label_position("left")
-            pos = cbar.ax.get_position()
-            cbar.ax.set_position([pos.x0, pos.y0, pos.width * 0.4, pos.height])
+    _style_plotter_colorbars(cmp.cbars)
     return cmp
 
 
@@ -453,15 +465,7 @@ def dotplot(
     for s in ["bottom", "left"]:
         cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
 
-    for cbar in cmp.cbars:
-        if isinstance(cbar, mpl.colorbar.Colorbar):
-            cbar.outline.set_linewidth(0.3)
-            cbar.ax.tick_params(size=0)
-    for cbar in cmp.cbars:
-        if isinstance(cbar, mpl.colorbar.Colorbar):
-            cbar.ax.yaxis.set_label_position("left")
-            pos = cbar.ax.get_position()
-            cbar.ax.set_position([pos.x0, pos.y0, pos.width * 0.4, pos.height])
+    _style_plotter_colorbars(cmp.cbars)
     return cmp
 
 
