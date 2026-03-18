@@ -237,7 +237,10 @@ def test_settings_behavior() -> None:
     settings.panel_label_top = 13
     settings.panel_pad_left = 21
     settings.panel_pad_top = 2
-    settings.panel_margin = (1, 2, 3, 4)
+    settings.panel_margin_top = 2
+    settings.panel_margin_bottom = 4
+    settings.panel_margin_left = 1
+    settings.panel_margin_right = 3
     settings.panel_label_fontname = "DejaVu Sans"
     settings.panel_label_fontweight = 500
     settings.panel_label_offset_x = -0.3
@@ -256,20 +259,35 @@ def test_settings_behavior() -> None:
         palette_qual="Dark2",
         legend_fontsize=None,
         scanpy_figsize=(5.0, 4.0),
-        panel_margin=(5, 6, 7, 8),
+        panel_margin_top=6,
+        panel_margin_bottom=8,
+        panel_margin_left=5,
+        panel_margin_right=7,
     ) as ctx:
         assert ctx.title_fontsize == 12
         assert ctx.title_fontweight == 600
         assert settings.palette_qual == "Dark2"
         assert ctx.legend_fontsize is None
         assert ctx.scanpy_figsize == (5.0, 4.0)
-        assert ctx.panel_margin == (5, 6, 7, 8)
+        assert ctx.panel_margin_top == 6
+        assert ctx.panel_margin_bottom == 8
+        assert ctx.panel_margin_left == 5
+        assert ctx.panel_margin_right == 7
     assert settings.title_fontsize == 10
     assert settings.title_fontweight == "normal"
     assert settings.palette_qual == "Set2"
     assert settings.legend_fontsize == 11
     assert settings.scanpy_figsize == (3.0, 4.0)
-    assert settings.panel_margin == (1, 2, 3, 4)
+    assert settings.panel_margin_top == 2
+    assert settings.panel_margin_bottom == 4
+    assert settings.panel_margin_left == 1
+    assert settings.panel_margin_right == 3
+
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        settings.panel_margin = (1, 2, 3, 4)  # type: ignore[attr-defined]
+    with pytest.raises(AttributeError, match="not a valid setting"):
+        with settings.context(panel_margin=(5, 6, 7, 8)):  # type: ignore[call-arg]
+            pass
 
     with pytest.raises(AttributeError, match="not a valid setting"):
         with settings.context(unknown=1):
@@ -328,7 +346,10 @@ def test_settings_behavior() -> None:
     assert settings.title_fontweight == "bold"
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)
-    assert settings.panel_margin == (10, 0, 0, 20)
+    assert settings.panel_margin_top == 0
+    assert settings.panel_margin_bottom == 20
+    assert settings.panel_margin_left == 10
+    assert settings.panel_margin_right == 0
     assert settings.font_sans_serif[0] == "Helvetica"
 
 
@@ -383,6 +404,10 @@ def test_settings_validation_errors() -> None:
         settings.legend_fontsize = "big"  # type: ignore[assignment]
     with pytest.raises(ValueError):
         settings.legend_markerscale = -1
+    with pytest.raises(TypeError):
+        settings.panel_margin_top = "big"  # type: ignore[assignment]
+    with pytest.raises(ValueError):
+        settings.panel_margin_left = -1
     with pytest.raises(TypeError):
         settings.pdf_fonttype = 1.5  # type: ignore[assignment]
     with pytest.raises(ValueError):
@@ -931,7 +956,10 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         panel_label_top=13,
         panel_pad_left=14,
         panel_pad_top=5,
-        panel_margin=(6, 7, 8, 9),
+        panel_margin_top=7,
+        panel_margin_bottom=9,
+        panel_margin_left=6,
+        panel_margin_right=8,
         panel_label_fontname="DejaVu Sans",
         panel_label_fontweight="normal",
     ):
@@ -948,7 +976,12 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
 
 
 def test_multipanel_margin_args_inherit_settings_defaults() -> None:
-    with cns.settings.context(panel_margin=(6, 7, 8, 9)):
+    with cns.settings.context(
+        panel_margin_top=7,
+        panel_margin_bottom=9,
+        panel_margin_left=6,
+        panel_margin_right=8,
+    ):
         mp = cns.multipanel(max_width=180)
         mp.panel(
             "A",

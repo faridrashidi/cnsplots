@@ -134,7 +134,10 @@ cns.settings.panel_height = 120
 cns.settings.panel_label_left = 12
 cns.settings.panel_label_top = 14
 cns.settings.panel_pad_left = 24
-cns.settings.panel_margin = (8, 0, 10, 16)
+cns.settings.panel_margin_top = 0
+cns.settings.panel_margin_bottom = 16
+cns.settings.panel_margin_left = 8
+cns.settings.panel_margin_right = 10
 cns.settings.panel_label_fontname = "DejaVu Sans"
 
 mp = cns.multipanel(title="Settings-driven Multipanel")

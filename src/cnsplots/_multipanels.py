@@ -83,27 +83,27 @@ class multipanel:
     -----
     Panel layout structure::
 
-        +--------------------------------------------------------+
-        |                      margin_top                        |
-        |  +--------------------------------------------------+  |
-        |  |    label_top                                     |  |
-        |  |  +--------------------------------------------+  |  |
-        |m |  |  pad_top (for title if any)                |  |m |
-        |a |l |  +--------------------------------------+  |  |a |
-        |r |a |  |                                      |  |  |r |
-        |g |b |p |                                      |  |  |g |
-        |i |e |a |         axes content area            |  |  |i |
-        |n |l |d |         (width x height)             |  |  |n |
-        |_ |_ |_ |                                      |  |  |_ |
-        |l |l |l |    (ylabel drawn here by mpl)        |  |  |r |
-        |e |e |e |                                      |  |  |i |
-        |f |f |f |                                      |  |  |g |
-        |t |t |t |                                      |  |  |h |
-        |  |  |  +--------------------------------------+  |  |t |
-        |  |  +--------------------------------------------+  |  |
-        |  +--------------------------------------------------+  |
-        |                      margin_bottom                     |
-        +--------------------------------------------------------+
+        +----------------------------------------------------------+
+        |                        margin_top                        |
+        |  +----------------------------------------------------+  |
+        |  |      label_top                                     |  |
+        |  |  +-------------------- title -------------------+  |  |
+        |m |  |    pad_top (for title if any)                |  |m |
+        |a |l |    +--------------------------------------+  |  |a |
+        |r |a |    |                                      |  |  |r |
+        |g |b y  p |                                      |  |  |g |
+        |i |e l  a |         axes content area            |  |  |i |
+        |n |l a  d |         (width x height)             |  |  |n |
+        |_ |_ b  _ |                                      |  |  |_ |
+        |l |l e  l |    (ylabel drawn here by mpl)        |  |  |r |
+        |e |e l  e |                                      |  |  |i |
+        |f |f |  f |                                      |  |  |g |
+        |t |t |  t |                                      |  |  |h |
+        |  |  |    +--------------------------------------+  |  |t |
+        |  |  +----------------------------------------------+  |  |
+        |  +----------------------------------------------------+  |
+        |                        margin_bottom                     |
+        +----------------------------------------------------------+
 
     The panel label ("A", "B", etc.) is positioned in the label_left space,
     ensuring it appears to the left of the ylabel and axes content.
@@ -480,13 +480,13 @@ class multipanel:
             Padding between label and axes for title in pixels (default: 0).
             Set this if you have axes titles that need space.
         margin_top : int, optional
-            Top margin in pixels. If None, uses cns.settings.panel_margin[1].
+            Top margin in pixels. If None, uses cns.settings.panel_margin_top.
         margin_bottom : int, optional
-            Bottom margin in pixels. If None, uses cns.settings.panel_margin[3].
+            Bottom margin in pixels. If None, uses cns.settings.panel_margin_bottom.
         margin_left : int, optional
-            Left margin in pixels. If None, uses cns.settings.panel_margin[0].
+            Left margin in pixels. If None, uses cns.settings.panel_margin_left.
         margin_right : int, optional
-            Right margin in pixels. If None, uses cns.settings.panel_margin[2].
+            Right margin in pixels. If None, uses cns.settings.panel_margin_right.
         color_cycle : str, optional
             Color palette name for this panel. If None, uses cns.settings.palette_qual.
         color_map : str, optional
@@ -561,20 +561,14 @@ class multipanel:
             pad_left = cns.settings.panel_pad_left
         if pad_top is None:
             pad_top = cns.settings.panel_pad_top
-        (
-            default_margin_left,
-            default_margin_top,
-            default_margin_right,
-            default_margin_bottom,
-        ) = cns.settings.panel_margin
         if margin_left is None:
-            margin_left = default_margin_left
+            margin_left = cns.settings.panel_margin_left
         if margin_top is None:
-            margin_top = default_margin_top
+            margin_top = cns.settings.panel_margin_top
         if margin_right is None:
-            margin_right = default_margin_right
+            margin_right = cns.settings.panel_margin_right
         if margin_bottom is None:
-            margin_bottom = default_margin_bottom
+            margin_bottom = cns.settings.panel_margin_bottom
         cns.setup_matplotlib(color_cycle, color_map)
 
         if label is None:
