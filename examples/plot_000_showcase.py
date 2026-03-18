@@ -433,7 +433,8 @@ ax = mp.panel(
     label_top=12,
     pad_left=0,
     pad_top=5,
-    margin=(10, 0, 5, 20),
+    margin=(0, 0, 5, 0),
+    color_cycle="NEJM",
 )
 ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
 ax.set_title("Lollipopplot")
@@ -450,7 +451,7 @@ ax = mp.panel(
     label_top=12,
     pad_left=20,
     pad_top=5,
-    margin=(10, 0, 0, 20),
+    margin=(10, 0, 40, 0),
 )
 ax = cns.confusionplot(
     data=confusion_df,
@@ -459,7 +460,8 @@ ax = cns.confusionplot(
     add_pvalue=True,
     x_order=["Neg", "Pos"],
     y_order=["Neg", "Pos"],
-    pvalue_y_pad=5,
+    pvalue_y_pad=3.9,
+    pvalue_x_pad=1.5,
 )
 ax.set_title("Confusionplot")
 
@@ -470,9 +472,9 @@ ax = mp.panel(
     100,
     label_left=10,
     label_top=12,
-    pad_left=0,
+    pad_left=5,
     pad_top=5,
-    margin=(10, 0, 0, 10),
+    margin=(10, 0, 0, 0),
 )
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
