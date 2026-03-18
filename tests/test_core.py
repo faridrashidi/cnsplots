@@ -769,11 +769,36 @@ def test_svg_helpers_and_export(
     assert text_el.get("font-weight") == "bold"
     assert text_el.get("clip-path") == "url(#c1)"
 
+    svg_image_in = output_dir / "input-image.svg"
+    svg_image_out = output_dir / "output-image.svg"
+    svg_image_in.write_text(
+        """<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g clip-path="url(#img-clip)" transform="translate(10 20) scale(4)">
+  <image width="12" height="8" xlink:href="data:image/png;base64,AA==" />
+</g>
+</svg>""",
+        encoding="utf-8",
+    )
+    _svg._correct_svg(str(svg_image_in), str(svg_image_out))
+    image_root = etree.parse(str(svg_image_out)).getroot()
+    image_el = image_root.xpath(".//svg:image", namespaces=ns)[0]
+    assert not image_root.xpath(".//svg:g", namespaces=ns)
+    assert image_el.get("clip-path") == "url(#img-clip)"
+    assert image_el.get("transform") == "translate(10 20) scale(4)"
+
     root2 = etree.fromstring(
         b'<svg xmlns="http://www.w3.org/2000/svg"><g><g><text>hello</text></g></g></svg>'
     )
     _svg._flatten_groups(root2, ns)
     assert not root2.xpath(".//svg:g", namespaces=ns)
+
+    root3 = etree.fromstring(
+        b'<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(1 2)"><g transform="scale(4)"><path transform="rotate(15)" d="M0 0L1 1"/></g></g></svg>'
+    )
+    _svg._flatten_groups(root3, ns)
+    path_el = root3.xpath(".//svg:path", namespaces=ns)[0]
+    assert not root3.xpath(".//svg:g", namespaces=ns)
+    assert path_el.get("transform") == "translate(1 2) scale(4) rotate(15)"
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])

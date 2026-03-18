@@ -183,12 +183,30 @@ def _restore_bold_fonts(
             text_el.set("font-weight", "bold")
 
 
+def _prepend_transform(
+    parent_transform: str | None, child_transform: str | None
+) -> str | None:
+    """Compose SVG transforms so parent group transforms remain in effect."""
+    parent_transform = (
+        None if parent_transform is None else parent_transform.strip() or None
+    )
+    child_transform = (
+        None if child_transform is None else child_transform.strip() or None
+    )
+
+    if parent_transform is None:
+        return child_transform
+    if child_transform is None:
+        return parent_transform
+    return f"{parent_transform} {child_transform}"
+
+
 def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
     """Flatten all group elements by moving their children to parent.
 
-    When a ``<g>`` carries a ``clip-path`` attribute the attribute is
-    propagated to each child element so that clipping (e.g. from
-    ``set_xlim`` / ``set_ylim``) is preserved after the group is removed.
+    When a ``<g>`` carries a ``clip-path`` or ``transform`` attribute the
+    attribute is propagated to each child element so that clipping and
+    positioning remain preserved after the group is removed.
     """
     # Iteratively flatten groups until no more flattening occurs
     while True:
@@ -205,6 +223,7 @@ def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
                 continue
 
             clip_path = g.get("clip-path")
+            transform = g.get("transform")
 
             # Get index of g in parent
             g_index = parent.index(g)
@@ -216,6 +235,9 @@ def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
                 # don't already have their own clip-path.
                 if clip_path is not None and child.get("clip-path") is None:
                     child.set("clip-path", clip_path)
+                child_transform = _prepend_transform(transform, child.get("transform"))
+                if child_transform is not None:
+                    child.set("transform", child_transform)
                 g.remove(child)
                 parent.insert(g_index, child)
                 g_index += 1
