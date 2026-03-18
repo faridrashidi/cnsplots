@@ -237,12 +237,12 @@ ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 # Panel C: ?
-ax = mp.panel("C", 90, 90)
+ax = mp.panel("C", 85, 85)
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
 # Panel D: ?
-ax = mp.panel("D", 90, 90)
+ax = mp.panel("D", 85, 85)
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
@@ -276,7 +276,7 @@ ax.set_axis_off()
 # dp.ax_heatmap.set_title("Dotplot")
 
 # Panel F: lineplot
-ax = mp.panel("F", 90, 90, below="C", margin_top=10)
+ax = mp.panel("F", 85, 85, below="C", margin_top=10)
 ax = cns.lineplot(
     data=line_df,
     x="timepoint",
@@ -291,7 +291,7 @@ if legend is not None:
 ax.set_title("Lineplot")
 
 # Panel G: qqplot
-ax = mp.panel("G", 90, 90, below="D", margin_top=10)
+ax = mp.panel("G", 85, 85, below="D", margin_top=10)
 ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
 ax.set_title("Qqplot")
 
@@ -304,8 +304,8 @@ ax.set_title("H&E Histology")
 ax.set_axis_off()
 
 # Panel I: placeholder plot
-ax = mp.panel("I", 155, 180)
-cns.placeholderplot("A placeholder plot (155 ⨯ 180)\nYou can use to fill it up later.")
+ax = mp.panel("I", 155, 175)
+cns.placeholderplot("A placeholder plot (155⨯175)\nYou can use to fill it up later.")
 ax.set_title("Placeholder")
 
 mp.newline()

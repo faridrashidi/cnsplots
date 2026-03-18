@@ -143,7 +143,6 @@ ax = cns.confusionplot(
     x="actual",
     y="predicted",
     add_pvalue=True,
-    pvalue_y_pad=1.2,
     positive_x="Positive",
     positive_y="Positive",
     x_order=["Negative", "Positive"],

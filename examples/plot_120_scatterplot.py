@@ -60,17 +60,17 @@ ax.set_title("Legend Inside Plot")
 # Scatter plot with varying point sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust point size with the ``s`` parameter.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=450)
 
-mp.panel("A", 90, 100)
+mp.panel("A", 90, 90)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=3)
 mp.get_axes("A").set_title("s=3 (small)")
 
-mp.panel("B", 90, 100)
+mp.panel("B", 90, 90)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=10)
 mp.get_axes("B").set_title("s=10 (medium)")
 
-mp.panel("C", 90, 100)
+mp.panel("C", 90, 90)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=25)
 mp.get_axes("C").set_title("s=25 (large)")
 

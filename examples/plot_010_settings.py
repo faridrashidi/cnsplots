@@ -56,9 +56,8 @@ print(
 # Start from the package defaults.
 cns.settings.reset()
 
-cns.figure(color_cycle=[cns.GRAY])
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("Default Settings")
+cns.figure()
+cns.placeholderplot("Settings")
 
 
 # %%

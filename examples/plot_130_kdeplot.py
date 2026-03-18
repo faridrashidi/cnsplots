@@ -102,17 +102,17 @@ cns.take_legend_out()
 # KDE with different bandwidth
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust smoothness with ``bw_adjust``.
-mp = cns.multipanel(max_width=450)
+mp = cns.multipanel(max_width=480)
 
-mp.panel("A", 80, 110)
+mp.panel("A", 80, 100)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=0.3)
 mp.get_axes("A").set_title("bw_adjust=0.3 (rough)")
 
-mp.panel("B", 80, 110)
+mp.panel("B", 80, 100)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=1.0)
 mp.get_axes("B").set_title("bw_adjust=1.0 (default)")
 
-mp.panel("C", 80, 110)
+mp.panel("C", 80, 100)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=2.0)
 mp.get_axes("C").set_title("bw_adjust=2.0 (smooth)")
 

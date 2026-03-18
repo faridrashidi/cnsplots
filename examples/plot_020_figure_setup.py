@@ -27,9 +27,8 @@ iris = sns.load_dataset("iris")
 # Create a figure with specified dimensions in pixels.
 # figure(height, width) uses height first, and with autofit enabled these
 # requested dimensions are the minimum canvas size.
-cns.figure(150, 150, [cns.GRAY])
-ax = cns.boxplot(data=tips, x="day", y="total_bill")
-ax.set_title("150x150 Figure")
+cns.figure(150, 150)
+cns.placeholderplot("150x150 Figure")
 
 
 # %%

@@ -63,11 +63,11 @@ ax.set_title("Petal Length by Species")
 # Side-by-side comparison.
 mp = cns.multipanel(max_width=400)
 
-mp.panel("A", 100, 150)
+mp.panel("A", 100, 150, pad_left=10)
 cns.ridgeplot(data=iris, x="sepal_length", y="species")
 mp.get_axes("A").set_title("Sepal Length")
 
-mp.panel("B", 100, 150)
+mp.panel("B", 100, 150, pad_left=10)
 cns.ridgeplot(data=iris, x="sepal_width", y="species")
 mp.get_axes("B").set_title("Sepal Width")
 
