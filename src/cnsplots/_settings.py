@@ -511,7 +511,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default panel height in pixels for multipanel.panel().",
     ),
     "panel_pad_left": _spec(
-        40,
+        30,
         lambda value: _validate_number("panel_pad_left", value, non_negative=True),
         "Default left padding in pixels for multipanel.panel() and add_panel_label().",
     ),
