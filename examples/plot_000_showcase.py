@@ -459,7 +459,7 @@ ax = cns.confusionplot(
     add_pvalue=True,
     x_order=["Neg", "Pos"],
     y_order=["Neg", "Pos"],
-    pvalue_pad=5,
+    pvalue_y_pad=5,
 )
 ax.set_title("Confusionplot")
 

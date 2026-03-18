@@ -476,7 +476,8 @@ def confusionplot(
     positive_y: str | None = None,
     annot: bool = True,
     cmap: Any = "Blues",
-    pvalue_pad: float = 1.5,
+    pvalue_x_pad: float = 0.25,
+    pvalue_y_pad: float = 1.5,
 ) -> Axes:
     """
     Create a confusion matrix heatmap with optional classification metrics.
@@ -508,8 +509,12 @@ def confusionplot(
         Whether to display count values in each cell of the matrix.
     cmap : matplotlib colormap, default: plt.cm.Blues
         Colormap for the heatmap.
-    pvalue_pad : float, default: 1.5
+    pvalue_x_pad : float, default: 0.25
+        Horizontal padding for positioning the statistics text to the left of
+        the plot. Larger values move the statistics block farther left.
+    pvalue_y_pad : float, default: 1.5
         Vertical padding for positioning the statistics text below the plot.
+        Larger values move the statistics block farther down.
 
     Returns
     -------
@@ -533,6 +538,8 @@ def confusionplot(
     ...     x="prediction",
     ...     y="actual",
     ...     add_pvalue=True,
+    ...     pvalue_x_pad=0.4,
+    ...     pvalue_y_pad=1.8,
     ...     x_order=["Negative", "Positive"],
     ...     y_order=["Negative", "Positive"],
     ...     positive_x="Positive",
@@ -687,6 +694,6 @@ def confusionplot(
         Odds ratio: {odds_ratio:.2f}
         """
         # place just below the plot area; tweak as needed
-        ax2.text(-0.25, -pvalue_pad, msg, ha="left", va="bottom")
+        ax2.text(-pvalue_x_pad, -pvalue_y_pad, msg, ha="left", va="bottom")
 
     return ax

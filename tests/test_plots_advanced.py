@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import types
+from typing import Any, cast
 
 import anndata as ad
 import matplotlib.pyplot as plt
@@ -74,10 +75,37 @@ def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
     )
     assert ax.get_xlabel() == "pred"
     assert len(plt.gcf().axes) == 2
+    stats_ax = plt.gcf().axes[1]
+    assert len(stats_ax.texts) == 1
+    assert stats_ax.texts[0].get_position() == pytest.approx((-0.25, -1.5))
+
+    cns.figure(120, 120)
+    cns.confusionplot(
+        confusion_df,
+        x="pred",
+        y="truth",
+        add_pvalue=True,
+        x_order=["neg", "pos"],
+        y_order=["neg", "pos"],
+        pvalue_x_pad=0.4,
+        pvalue_y_pad=2.2,
+    )
+    custom_stats_ax = plt.gcf().axes[1]
+    assert custom_stats_ax.texts[0].get_position() == pytest.approx((-0.4, -2.2))
 
     cns.figure(120, 120)
     ax2 = cns.confusionplot(confusion_df, x="pred", y="truth", annot=False)
     assert ax2 is plt.gca()
+
+    legacy_confusionplot = cast(Any, cns.confusionplot)
+    with pytest.raises(TypeError, match="pvalue_pad"):
+        legacy_confusionplot(
+            confusion_df,
+            x="pred",
+            y="truth",
+            add_pvalue=True,
+            pvalue_pad=1.5,
+        )
 
     with pytest.raises(ValueError, match="2x2 confusion matrix"):
         cns.confusionplot(
