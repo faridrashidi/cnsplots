@@ -156,11 +156,21 @@ def savefig(filepath):
     fig = plt.gcf()
     for ax in fig.get_axes():
         apply_unicode_font(ax)
+    target_dpi = float(cns.settings.savefig_dpi)
+    original_dpi = fig.dpi
     root, ext = os.path.splitext(filepath)
-    if ext.lower() == ".svg":
-        _save_svg(str(filepath), root)
-    else:
-        plt.savefig(filepath)
+    try:
+        if target_dpi != original_dpi:
+            fig.set_dpi(target_dpi)
+        fig.canvas.draw()
+        if ext.lower() == ".svg":
+            _save_svg(str(filepath), root)
+        else:
+            plt.savefig(filepath, dpi=target_dpi)
+    finally:
+        if fig.dpi != original_dpi:
+            fig.set_dpi(original_dpi)
+            fig.canvas.draw()
 
 
 def take_legend_out(title=None):
@@ -241,6 +251,8 @@ def add_panel_label(name="A", pad_left=None, pad_top=None):
     pad_left : float, default: 20
         Horizontal padding in pixels from the axes left edge to the label's
         right edge. Positive values place the label to the left of the axes.
+        This helper only offsets the label artist; it does not reserve extra
+        layout space for y-axis text.
     pad_top : float, default: 0
         Vertical padding in pixels from the axes top edge to the label's
         bottom edge. Positive values place the label above the axes.
@@ -260,6 +272,9 @@ def add_panel_label(name="A", pad_left=None, pad_top=None):
     The label is positioned relative to the axes' top-left corner using pixel
     padding. The label's right edge sits ``pad_left`` pixels to the left of the
     axes, and the label's bottom edge sits ``pad_top`` pixels above the axes.
+
+    Unlike ``multipanel.panel()``, this helper does not measure rendered axis
+    decorations or relayout the figure. It is purely an axes-relative offset.
 
     The label uses Arial font (bold) at 8pt size (`title_fontsize`) for
     consistency with publication standards.

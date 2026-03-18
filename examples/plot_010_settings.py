@@ -125,7 +125,8 @@ ax.set_title("Legend + Panel Label Defaults")
 # Change multipanel defaults
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ``multipanel()`` and ``panel()`` now read their omitted defaults from
-# ``cns.settings`` as well.
+# ``cns.settings`` as well. In multipanel layouts, ``panel_pad_left`` is the
+# extra gap between the panel label and the rendered left-side y-axis text.
 cns.settings.reset()
 cns.settings.multipanel_max_width = 320
 cns.settings.multipanel_title_loc = "left"

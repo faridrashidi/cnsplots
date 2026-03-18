@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, cast
+
+from matplotlib.backend_bases import DrawEvent, Event, RendererBase
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
+    from matplotlib.artist import Artist
     from matplotlib.text import Text
+    from matplotlib.transforms import Bbox
 
 import matplotlib.pyplot as plt
 from matplotlib import transforms as mtransforms
 
 import cnsplots as cns
+
+_LEFT_DECORATION_TOLERANCE_PX = 0.5
+_RELAYOUT_MAX_PASSES = 3
 
 
 def _validate_title_loc(loc: str) -> str:
@@ -36,8 +43,8 @@ class multipanel:
     left-to-right and wrap to new rows when they exceed max_width.
 
     Each panel consists of:
-    - Padding (pad_left, pad_top): space for panel labels, axis titles, labels,
-      and tick labels
+    - Padding (pad_left, pad_top): space for panel labels plus extra clearance
+      around rendered axis decorations
     - Axes area (width, height): the plotting area
     - Margins (left, top, right, bottom): space around the entire panel
 
@@ -103,9 +110,10 @@ class multipanel:
         |                  margin_bottom                 |
         +------------------------------------------------+
 
-    The panel label ("A", "B", etc.) uses the same pad-based contract as
-    add_panel_label(): its right edge sits pad_left pixels to the left of the
-    axes and its bottom edge sits pad_top pixels above the axes.
+    ``pad_left`` defines the extra horizontal gap between the panel label
+    ("A", "B", etc.) and the leftmost visible left-side axis decoration. The
+    multipanel layout measures the rendered y-axis decoration width on draw and
+    reserves that width plus ``pad_left``.
     """
 
     def __init__(
@@ -136,6 +144,8 @@ class multipanel:
         # Each row is a list of panel indices
         self._rows = []
         self._row_heights = []  # Max total height in each row
+        self._draw_event_cid: int | None = None
+        self._is_relayout_in_draw = False
 
     def _get_title_height_px(self) -> float:
         """Get the reserved height for the figure title band."""
@@ -144,6 +154,53 @@ class multipanel:
         return max(
             cns.settings.multipanel_title_height_min,
             cns.settings.title_fontsize + cns.settings.multipanel_title_height_pad,
+        )
+
+    def _get_left_decoration_width_px(self, panel: dict) -> float:
+        """Get the cached rendered width of left-side axis decorations."""
+        return float(panel.get("left_decoration_width_px", 0.0))
+
+    def _get_label_width_px(self, panel: dict) -> float:
+        """Get the cached rendered width of the panel label."""
+        return float(panel.get("label_width_px", 0.0))
+
+    def _get_label_height_px(self, panel: dict) -> float:
+        """Get the cached rendered height of the panel label."""
+        return float(panel.get("label_height_px", 0.0))
+
+    def _get_top_decoration_height_px(self, panel: dict) -> float:
+        """Get the cached rendered height of top-side axis decorations."""
+        return float(panel.get("top_decoration_height_px", 0.0))
+
+    def _get_layout_scale(self) -> float:
+        """Get the display-to-layout pixel scale used by multipanel geometry."""
+        dpi = self.fig.dpi if self.fig is not None else cns.settings.figure_dpi
+        return dpi / 72
+
+    def _display_px_to_layout_px(self, value: float) -> float:
+        """Convert rendered pixels into multipanel layout pixels."""
+        return value / self._get_layout_scale()
+
+    def _get_label_gap_px(self, panel: dict) -> float:
+        """Get the rendered-pixel gap between the label and left decorations."""
+        return self._get_left_decoration_width_px(panel) + panel.get("pad_left", 0)
+
+    def _get_left_reserve_px(self, panel: dict) -> float:
+        """Get total left reserve in layout pixels for panel geometry."""
+        return self._display_px_to_layout_px(
+            self._get_label_width_px(panel) + self._get_label_gap_px(panel)
+        )
+
+    def _get_top_label_offset_px(self, panel: dict) -> float:
+        """Get the rendered-pixel offset from axes top to label bottom."""
+        return self._get_top_decoration_height_px(panel) + float(
+            panel.get("pad_top", 0)
+        )
+
+    def _get_top_reserve_px(self, panel: dict) -> float:
+        """Get total top reserve in layout pixels for panel geometry."""
+        return self._display_px_to_layout_px(
+            self._get_label_height_px(panel) + self._get_top_label_offset_px(panel)
         )
 
     def _get_content_horizontal_bounds_px(self) -> tuple[float, float]:
@@ -159,7 +216,7 @@ class multipanel:
             x, _ = self._get_panel_position(idx)
             left_bound = min(
                 left_bound,
-                x - panel.get("pad_left", 0),
+                x - self._get_left_reserve_px(panel),
             )
             right_bound = max(right_bound, x + panel["width"])
             found_panel = True
@@ -172,26 +229,194 @@ class multipanel:
         """Get the total width and height of a panel including margins."""
         total_width = (
             panel["margin_left"]
-            + panel.get("pad_left", 0)
+            + self._get_left_reserve_px(panel)
             + panel["width"]
             + panel["margin_right"]
         )
         total_height = (
             panel["margin_top"]
-            + panel.get("pad_top", 0)
+            + self._get_top_reserve_px(panel)
             + panel["height"]
             + panel["margin_bottom"]
         )
         return total_width, total_height
 
-    def _get_label_transform(self, ax: Axes, pad_left: float, pad_top: float):
+    def _get_label_transform(
+        self,
+        ax: Axes,
+        label_left_offset: float,
+        label_top_offset: float,
+    ):
         """Build the padded axes-relative transform used for panel labels."""
         fig = ax.figure
         return ax.transAxes + mtransforms.ScaledTranslation(
-            -pad_left / fig.dpi,
-            pad_top / fig.dpi,
+            -label_left_offset / fig.dpi,
+            label_top_offset / fig.dpi,
             fig.dpi_scale_trans,
         )
+
+    def _connect_draw_handler(self) -> None:
+        """Connect a draw handler that can refine left reserves after rendering."""
+        if self.fig is None or self._draw_event_cid is not None:
+            return
+        self._draw_event_cid = self.fig.canvas.mpl_connect("draw_event", self._on_draw)
+
+    def _measure_left_decoration_width_px(
+        self, ax: Axes, renderer: RendererBase
+    ) -> float:
+        """Measure the rendered width of left-side y-axis decorations."""
+        tight_bbox = ax.yaxis.get_tightbbox(renderer)
+        if tight_bbox is None:
+            return 0.0
+        axes_bbox = ax.get_window_extent(renderer=renderer)
+        return max(0.0, float(axes_bbox.x0 - tight_bbox.x0))
+
+    def _measure_label_width_px(
+        self, label_text: Text, renderer: RendererBase
+    ) -> float:
+        """Measure the rendered width of a panel label."""
+        return float(label_text.get_window_extent(renderer=renderer).width)
+
+    def _measure_label_height_px(
+        self, label_text: Text, renderer: RendererBase
+    ) -> float:
+        """Measure the rendered height of a panel label."""
+        return float(label_text.get_window_extent(renderer=renderer).height)
+
+    def _get_artist_bbox(self, artist: Artist, renderer: RendererBase) -> Bbox | None:
+        """Get a rendered bbox for an artist when available."""
+        get_tightbbox = getattr(artist, "get_tightbbox", None)
+        if callable(get_tightbbox):
+            bbox = get_tightbbox(renderer=renderer)
+            if bbox is not None:
+                return bbox
+        get_window_extent = getattr(artist, "get_window_extent", None)
+        if callable(get_window_extent):
+            try:
+                return get_window_extent(renderer=renderer)
+            except TypeError:
+                return get_window_extent()
+        return None
+
+    def _iter_top_decoration_artists(self, ax: Axes, label_text: Text):
+        """Yield artists that can contribute to top-side panel content."""
+        yield ax.title
+        yield ax.xaxis.label
+        yield ax.xaxis.get_offset_text()
+        yield from ax.get_xticklabels()
+
+        legend = ax.get_legend()
+        if legend is not None:
+            yield legend
+
+        for text in ax.texts:
+            if text is not label_text:
+                yield text
+
+        for artist in (*ax.lines, *ax.collections, *ax.patches, *ax.artists):
+            if not artist.get_clip_on():
+                yield artist
+
+    def _measure_top_decoration_height_px(
+        self,
+        ax: Axes,
+        label_text: Text,
+        renderer: RendererBase,
+    ) -> float:
+        """Measure the rendered height of top-side axis decorations."""
+        axes_bbox = ax.get_window_extent(renderer=renderer)
+        top_edge = float(axes_bbox.y1)
+        topmost = top_edge
+
+        for artist in self._iter_top_decoration_artists(ax, label_text):
+            if not artist.get_visible():
+                continue
+            bbox = self._get_artist_bbox(artist, renderer)
+            if bbox is None:
+                continue
+            if bbox.width <= 0 and bbox.height <= 0:
+                continue
+            if bbox.y1 > top_edge:
+                topmost = max(topmost, float(bbox.y1))
+
+        return max(0.0, topmost - top_edge)
+
+    def _update_left_layout_metrics(self, renderer: RendererBase) -> bool:
+        """Update cached left-layout measurements and report if layout changed."""
+        changed = False
+        for panel in self._panels:
+            if panel.get("_is_spacer"):
+                continue
+            ax = self._created_axes.get(panel["label"])
+            if ax is None:
+                continue
+            measured_left = self._measure_left_decoration_width_px(ax, renderer)
+            current_left = self._get_left_decoration_width_px(panel)
+            if abs(measured_left - current_left) > _LEFT_DECORATION_TOLERANCE_PX:
+                panel["left_decoration_width_px"] = measured_left
+                changed = True
+
+            label_text = self._label_texts.get(panel["label"])
+            if label_text is None:
+                continue
+            measured_label = self._measure_label_width_px(label_text, renderer)
+            current_label = self._get_label_width_px(panel)
+            if abs(measured_label - current_label) > _LEFT_DECORATION_TOLERANCE_PX:
+                panel["label_width_px"] = measured_label
+                changed = True
+
+            measured_label_height = self._measure_label_height_px(label_text, renderer)
+            current_label_height = self._get_label_height_px(panel)
+            if (
+                abs(measured_label_height - current_label_height)
+                > _LEFT_DECORATION_TOLERANCE_PX
+            ):
+                panel["label_height_px"] = measured_label_height
+                changed = True
+
+            measured_top = self._measure_top_decoration_height_px(
+                ax,
+                label_text,
+                renderer,
+            )
+            current_top = self._get_top_decoration_height_px(panel)
+            if abs(measured_top - current_top) > _LEFT_DECORATION_TOLERANCE_PX:
+                panel["top_decoration_height_px"] = measured_top
+                changed = True
+        return changed
+
+    def _get_canvas_renderer(self, canvas: object) -> RendererBase | None:
+        """Return the canvas renderer when the backend exposes it."""
+        get_renderer = getattr(canvas, "get_renderer", None)
+        if not callable(get_renderer):
+            return None
+        return cast(Optional[RendererBase], get_renderer())
+
+    def _on_draw(self, event: Event) -> None:
+        """Relayout once after draw when left-side axis decorations change width."""
+        if self.fig is None or self._is_relayout_in_draw:
+            return
+        if not isinstance(event, DrawEvent):
+            return
+        canvas = event.canvas
+        if canvas is not self.fig.canvas:
+            return
+        renderer = event.renderer
+        if not self._update_left_layout_metrics(renderer):
+            return
+
+        self._is_relayout_in_draw = True
+        try:
+            for _ in range(_RELAYOUT_MAX_PASSES):
+                self._create_or_update_figure()
+                canvas.draw()
+                renderer = self._get_canvas_renderer(canvas)
+                if renderer is None:
+                    break
+                if not self._update_left_layout_metrics(renderer):
+                    break
+        finally:
+            self._is_relayout_in_draw = False
 
     def _get_stacked_height(self, panel_idx: int) -> float:
         """Get total height of a panel plus any panels stacked below it."""
@@ -265,9 +490,9 @@ class multipanel:
             x = (
                 parent_x
                 - parent["margin_left"]
-                - parent.get("pad_left", 0)
+                - self._get_left_reserve_px(parent)
                 + panel["margin_left"]
-                + panel.get("pad_left", 0)
+                + self._get_left_reserve_px(panel)
             )
 
             # y: below parent's total height
@@ -276,7 +501,7 @@ class multipanel:
                 + parent["height"]
                 + parent["margin_bottom"]
                 + panel["margin_top"]
-                + panel.get("pad_top", 0)
+                + self._get_top_reserve_px(panel)
             )
 
             return x, y
@@ -303,14 +528,14 @@ class multipanel:
             prev_panel = self._panels[prev_idx]
             x += (
                 prev_panel["margin_left"]
-                + prev_panel.get("pad_left", 0)
+                + self._get_left_reserve_px(prev_panel)
                 + prev_panel["width"]
                 + prev_panel["margin_right"]
             )
 
         # Add this panel's left margin and padding
-        x += panel["margin_left"] + panel.get("pad_left", 0)
-        y += panel["margin_top"] + panel.get("pad_top", 0)
+        x += panel["margin_left"] + self._get_left_reserve_px(panel)
+        y += panel["margin_top"] + self._get_top_reserve_px(panel)
 
         return x, y
 
@@ -333,7 +558,7 @@ class multipanel:
             )
         else:
             self.fig.set_size_inches(fig_width, fig_height)
-            self.fig.set_dpi(cns.settings.figure_dpi)
+        self._connect_draw_handler()
 
         if self._title is None:
             if self._title_text is not None:
@@ -378,8 +603,8 @@ class multipanel:
 
             x, y = self._get_panel_position(idx)
             label = panel["label"]
-            pad_left = panel.get("pad_left", 0)
-            pad_top = panel.get("pad_top", 0)
+            label_gap = self._get_label_gap_px(panel)
+            top_label_offset = self._get_top_label_offset_px(panel)
 
             # Convert to figure coordinates (0-1 range)
             # Note: matplotlib uses bottom-left as origin, we use top-left
@@ -402,7 +627,11 @@ class multipanel:
                     sync_embedded_axes()
 
             label_text = self._label_texts.get(label)
-            label_transform = self._get_label_transform(ax, pad_left, pad_top)
+            label_transform = self._get_label_transform(
+                ax,
+                label_gap,
+                top_label_offset,
+            )
             if label_text is None:
                 label_text = ax.text(
                     0,
@@ -455,14 +684,18 @@ class multipanel:
         width : int, optional
             Axes width in pixels. If None, uses cns.settings.panel_width.
         pad_left : int, optional
-            Padding between the axes and the panel label/ylabel/yticks in pixels.
-            If None, uses cns.settings.panel_pad_left.
-            The panel label's right edge sits pad_left pixels to the left of
-            the axes.
+            Extra horizontal gap in pixels between the panel label and the
+            leftmost visible left-side axis decoration. The layout reserves the
+            rendered width of y-axis decorations plus this gap. If no left-side
+            decorations are visible, the panel label sits ``pad_left`` pixels to
+            the left of the axes. If None, uses cns.settings.panel_pad_left.
         pad_top : int, optional
-            Padding between the axes and the panel label/title in pixels.
-            If None, uses cns.settings.panel_pad_top.
-            The panel label's bottom edge sits pad_top pixels above the axes.
+            Extra vertical gap in pixels between the panel label and the
+            topmost visible top-side axis decoration, such as the axes title.
+            The layout reserves the rendered height of those decorations plus
+            this gap. If no top-side decorations are visible, the panel label's
+            bottom edge sits ``pad_top`` pixels above the axes. If None, uses
+            cns.settings.panel_pad_top.
         margin_top : int, optional
             Top margin in pixels. If None, uses cns.settings.panel_margin_top.
         margin_bottom : int, optional
@@ -488,7 +721,7 @@ class multipanel:
         Examples
         --------
         >>> mp = cns.multipanel(max_width=400)
-        >>> # Panel with ylabel - use pad_left for ylabel space
+        >>> # Panel with ylabel - keep 45 px between label and left axis text
         >>> ax = mp.panel(
         ...     "A",
         ...     width=100,
@@ -501,9 +734,9 @@ class multipanel:
         ...     margin_bottom=20,
         ... )
         >>> cns.boxplot(data=df, x="group", y="value")
-        >>> plt.ylabel("Values")  # ylabel appears in pad_left space
+        >>> plt.ylabel("Values")
         >>>
-        >>> # Panel without ylabel - less padding needed
+        >>> # Panel without left-side decorations - less gap is enough
         >>> ax = mp.panel(
         ...     "B",
         ...     width=100,
@@ -520,11 +753,14 @@ class multipanel:
         Notes
         -----
         Total panel dimensions are calculated as:
-        - Total width = margin_left + pad_left + width + margin_right
-        - Total height = margin_top + pad_top + height + margin_bottom
+        - Total width = margin_left + label width + left decorations + pad_left
+          + width + margin_right
+        - Total height = margin_top + label height + top decorations + pad_top
+          + height + margin_bottom
 
-        The panel label ("A", "B", etc.) uses the pad_left/pad_top band rather
-        than a separate reserved label band.
+        Left decoration widths plus panel-label width/height and top decoration
+        heights are refined after draw using the rendered artists, so
+        multipanel may do one guarded relayout pass before display or save.
         """
         if color_cycle is None:
             color_cycle = cns.settings.palette_qual
@@ -557,6 +793,10 @@ class multipanel:
             "width": width,
             "height": height,
             "pad_left": pad_left,
+            "left_decoration_width_px": 0.0,
+            "label_width_px": 0.0,
+            "label_height_px": 0.0,
+            "top_decoration_height_px": 0.0,
             "pad_top": pad_top,
             "margin_left": margin_left,
             "margin_top": margin_top,
@@ -621,7 +861,7 @@ class multipanel:
                     p = self._panels[idx]
                     used_width += (
                         p["margin_left"]
-                        + p.get("pad_left", 0)
+                        + self._get_left_reserve_px(p)
                         + p["width"]
                         + p["margin_right"]
                     )

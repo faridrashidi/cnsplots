@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+import seaborn as sns
 from lxml import etree
 
 import cnsplots as cns
@@ -26,6 +27,77 @@ def _panel_label_padding(ax, text) -> tuple[float, float]:
     axes_bbox = ax.get_window_extent(renderer=renderer)
     text_bbox = text.get_window_extent(renderer=renderer)
     return axes_bbox.x0 - text_bbox.x1, text_bbox.y0 - axes_bbox.y1
+
+
+def _panel_label_left_gap(ax, text) -> float:
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    tight_bbox = ax.yaxis.get_tightbbox(renderer=renderer)
+    if tight_bbox is None:
+        return 0.0
+    text_bbox = text.get_window_extent(renderer=renderer)
+    return tight_bbox.x0 - text_bbox.x1
+
+
+def _panel_label_title_gap(ax, text) -> float:
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    text_bbox = text.get_window_extent(renderer=renderer)
+    title_bbox = ax.title.get_window_extent(renderer=renderer)
+    return text_bbox.y0 - title_bbox.y1
+
+
+def _panel_label_top_gap(ax, text) -> float:
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    text_bbox = text.get_window_extent(renderer=renderer)
+    axes_bbox = ax.get_window_extent(renderer=renderer)
+    top_edge = float(axes_bbox.y1)
+    topmost = top_edge
+
+    artists = [
+        ax.title,
+        ax.xaxis.label,
+        ax.xaxis.get_offset_text(),
+        *ax.get_xticklabels(),
+    ]
+    legend = ax.get_legend()
+    if legend is not None:
+        artists.append(legend)
+    artists.extend(artist for artist in ax.texts if artist is not text)
+    artists.extend(artist for artist in ax.lines if not artist.get_clip_on())
+    artists.extend(artist for artist in ax.collections if not artist.get_clip_on())
+    artists.extend(artist for artist in ax.patches if not artist.get_clip_on())
+    artists.extend(artist for artist in ax.artists if not artist.get_clip_on())
+
+    for artist in artists:
+        if not artist.get_visible():
+            continue
+        bbox = artist.get_window_extent(renderer=renderer)
+        if bbox.width <= 0 and bbox.height <= 0:
+            continue
+        if bbox.y1 > top_edge:
+            topmost = max(topmost, float(bbox.y1))
+
+    return text_bbox.y0 - topmost
+
+
+def _panel_column_origin(mp: cns.multipanel, panel_idx: int) -> float:
+    panel = mp._panels[panel_idx]
+    return (
+        mp._get_panel_position(panel_idx)[0]
+        - panel["margin_left"]
+        - mp._get_left_reserve_px(panel)
+    )
+
+
+def _bbox_is_within(fig_bbox, artist_bbox, *, pad: float = 0.8) -> bool:
+    return (
+        artist_bbox.x0 >= fig_bbox.x0 - pad
+        and artist_bbox.y0 >= fig_bbox.y0 - pad
+        and artist_bbox.x1 <= fig_bbox.x1 + pad
+        and artist_bbox.y1 <= fig_bbox.y1 + pad
+    )
 
 
 def test_public_api_exports_resolve() -> None:
@@ -696,6 +768,41 @@ def test_svg_helpers_and_export(
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
+    original_dpi = plt.gcf().dpi
+    original_plt_savefig = _utils.plt.savefig
+    saved_png_meta: dict[str, float] = {}
+
+    def fake_png_savefig(*args: object, **kwargs: object) -> None:
+        saved_png_meta["fig_dpi"] = plt.gcf().dpi
+        dpi = kwargs.get("dpi", plt.gcf().dpi)
+        assert isinstance(dpi, (int, float))
+        saved_png_meta["dpi_kwarg"] = float(dpi)
+
+    monkeypatch.setattr(_utils.plt, "savefig", fake_png_savefig)
+    with cns.settings.context(savefig_dpi=300):
+        cns.savefig(str(output_dir / "captured.png"))
+    assert saved_png_meta["fig_dpi"] == pytest.approx(300)
+    assert saved_png_meta["dpi_kwarg"] == pytest.approx(300)
+    assert plt.gcf().dpi == pytest.approx(original_dpi)
+    monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+    original_svg_dpi = plt.gcf().dpi
+    saved_svg_meta: dict[str, float] = {}
+
+    def fake_save_svg(filepath: str, root: str) -> None:
+        saved_svg_meta["fig_dpi"] = plt.gcf().dpi
+        Path(filepath).write_text("<svg xmlns='http://www.w3.org/2000/svg' />")
+
+    monkeypatch.setattr(_utils, "_save_svg", fake_save_svg)
+    with cns.settings.context(savefig_dpi=300):
+        cns.savefig(str(output_dir / "captured.svg"))
+    assert saved_svg_meta["fig_dpi"] == pytest.approx(300)
+    assert plt.gcf().dpi == pytest.approx(original_svg_dpi)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
     success_path = output_dir / "optimized.svg"
     corrected: dict[str, object] = {}
 
@@ -1009,6 +1116,7 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         assert mp._title_text is not None
         assert mp._title_text.get_ha() == "left"
         assert ax.get_position().width == pytest.approx(70 / 180)
+        ax.yaxis.set_visible(False)
         assert panel["width"] == 70
         assert panel["height"] == 50
         assert panel["pad_left"] == 14
@@ -1021,6 +1129,237 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         assert label_text.get_fontweight() == "normal"
         assert label_text.get_ha() == "right"
         assert label_text.get_va() == "bottom"
+
+
+def test_multipanel_pad_left_matches_rendered_left_gap() -> None:
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=18,
+        pad_top=4,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    ax.plot([0, 1], [0, 10])
+    ax.set_ylabel("Expression")
+    ax.set_yticks([0, 5, 10])
+
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    label_text = mp._label_texts["A"]
+    gap = _panel_label_left_gap(ax, label_text)
+    assert gap == pytest.approx(18, abs=0.6)
+    assert label_text.get_window_extent(renderer=renderer).x0 >= -0.8
+
+
+def test_multipanel_pad_left_delta_updates_rendered_gap() -> None:
+    mp = cns.multipanel(max_width=420)
+    ax_a = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=8,
+        pad_top=4,
+        margin_left=0,
+        margin_top=0,
+        margin_right=10,
+        margin_bottom=0,
+    )
+    ax_b = mp.panel(
+        "B",
+        width=80,
+        height=60,
+        pad_left=28,
+        pad_top=4,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    for ax in (ax_a, ax_b):
+        ax.plot([0, 1], [0, 10])
+        ax.set_ylabel("Expression")
+        ax.set_yticks([0, 5, 10])
+
+    gap_a = _panel_label_left_gap(ax_a, mp._label_texts["A"])
+    gap_b = _panel_label_left_gap(ax_b, mp._label_texts["B"])
+
+    assert gap_a == pytest.approx(8, abs=0.6)
+    assert gap_b == pytest.approx(28, abs=0.6)
+    assert gap_b - gap_a == pytest.approx(20, abs=0.8)
+
+
+def test_multipanel_pad_top_matches_rendered_title_gap() -> None:
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=0,
+        pad_top=12,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    ax.plot([0, 1], [0, 10])
+    ax.set_title("Barplot")
+
+    gap = _panel_label_title_gap(ax, mp._label_texts["A"])
+    assert gap == pytest.approx(12, abs=0.8)
+
+
+def test_multipanel_pad_top_delta_updates_rendered_title_gap() -> None:
+    mp = cns.multipanel(max_width=420)
+    ax_a = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=0,
+        pad_top=4,
+        margin_left=0,
+        margin_top=0,
+        margin_right=10,
+        margin_bottom=0,
+    )
+    ax_b = mp.panel(
+        "B",
+        width=80,
+        height=60,
+        pad_left=0,
+        pad_top=18,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    for ax in (ax_a, ax_b):
+        ax.plot([0, 1], [0, 10])
+        ax.set_title("Barplot")
+
+    gap_a = _panel_label_title_gap(ax_a, mp._label_texts["A"])
+    gap_b = _panel_label_title_gap(ax_b, mp._label_texts["B"])
+
+    assert gap_a == pytest.approx(4, abs=0.8)
+    assert gap_b == pytest.approx(18, abs=0.8)
+    assert gap_b - gap_a == pytest.approx(14, abs=1.0)
+
+
+def test_multipanel_pad_top_matches_topmost_panel_content_gap() -> None:
+    tips = sns.load_dataset("tips")
+    mp = cns.multipanel(max_width=240)
+    ax = mp.panel(
+        "A",
+        width=100,
+        height=70,
+        pad_left=0,
+        pad_top=10,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    cns.stripplot(data=tips, x="day", y="tip", hue="sex", ax=ax)
+    legend = ax.get_legend()
+    assert legend is not None
+    ax.legend(
+        handles=legend.legend_handles,
+        labels=[text.get_text() for text in legend.get_texts()],
+        title=legend.get_title().get_text(),
+        loc="upper left",
+        bbox_to_anchor=(-0.02, 1.0),
+        borderaxespad=0,
+        markerscale=1,
+    )
+    ax.set_title("Stripplot")
+
+    gap = _panel_label_top_gap(ax, mp._label_texts["A"])
+    assert gap == pytest.approx(10, abs=1.0)
+
+
+def test_multipanel_top_row_label_stays_visible() -> None:
+    mp = cns.multipanel(max_width=240, title="Figure 1")
+    ax = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=0,
+        pad_top=0,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    ax.plot([0, 1], [0, 10])
+    ax.set_ylabel("Expression")
+
+    ax.figure.canvas.draw()
+    renderer = ax.figure.canvas.get_renderer()
+    fig_bbox = ax.figure.bbox
+    label_bbox = mp._label_texts["A"].get_window_extent(renderer=renderer)
+
+    assert label_bbox.y1 <= fig_bbox.y1 + 0.8
+
+
+def test_multipanel_update_preserves_existing_figure_dpi() -> None:
+    mp = cns.multipanel(max_width=200, title="Figure 1")
+    ax = mp.panel("A", width=80, height=60)
+    ax.plot([0, 1], [0, 1])
+    ax.set_title("Plot")
+
+    mp.fig.set_dpi(300)
+    mp._create_or_update_figure()
+
+    assert mp.fig.dpi == pytest.approx(300)
+
+
+def test_multipanel_high_dpi_save_keeps_top_content_in_bounds(
+    output_dir: Path,
+) -> None:
+    output_dir.mkdir(parents=True)
+    output_path = output_dir / "multipanel_high_dpi.png"
+    mp = cns.multipanel(max_width=220, title="Figure 1", loc="left")
+    ax = mp.panel(
+        "A",
+        width=80,
+        height=60,
+        pad_left=12,
+        pad_top=10,
+        margin_left=0,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+    )
+    ax.plot([0, 1], [0, 1], color="black")
+    ax.set_title("Plot")
+
+    captures: list[tuple[object, object, object]] = []
+
+    def on_draw(event: object) -> None:
+        renderer = event.renderer
+        captures.append(
+            (
+                mp.fig.bbox.frozen(),
+                mp._label_texts["A"].get_window_extent(renderer=renderer).frozen(),
+                mp._title_text.get_window_extent(renderer=renderer).frozen(),
+            )
+        )
+
+    cid = mp.fig.canvas.mpl_connect("draw_event", on_draw)
+    try:
+        mp.fig.savefig(output_path, dpi=300)
+    finally:
+        mp.fig.canvas.mpl_disconnect(cid)
+
+    assert output_path.exists()
+    assert captures
+    fig_bbox, label_bbox, title_bbox = captures[-1]
+    assert _bbox_is_within(fig_bbox, label_bbox)
+    assert _bbox_is_within(fig_bbox, title_bbox)
 
 
 def test_multipanel_margin_args_inherit_settings_defaults() -> None:
@@ -1057,19 +1396,16 @@ def test_multipanel_panel_rejects_margin_tuple_argument() -> None:
         mp.panel("A", width=60, height=40, label_top=12)  # type: ignore[call-arg]
 
 
-@pytest.mark.parametrize(
-    ("loc", "expected_x"),
-    [
-        ("left", 10 / 200),
-        ("center", 50 / 200),
-        ("right", 90 / 200),
-    ],
-)
-def test_multipanel_title_alignment_and_default_fontweight(
-    loc: str, expected_x: float
-) -> None:
+@pytest.mark.parametrize("loc", ["left", "center", "right"])
+def test_multipanel_title_alignment_and_default_fontweight(loc: str) -> None:
     mp = cns.multipanel(max_width=200, title="Overview", loc=loc)
     mp.panel("A", width=60, height=40)
+    left_bound_px, right_bound_px = mp._get_content_horizontal_bounds_px()
+    expected_x = {
+        "left": left_bound_px / 200,
+        "center": (left_bound_px + right_bound_px) / 2 / 200,
+        "right": right_bound_px / 200,
+    }[loc]
 
     assert mp._title_text is not None
     assert mp._title_text.get_text() == "Overview"
@@ -1114,13 +1450,14 @@ def test_multipanel_title_updates_existing_artist() -> None:
     mp._title_loc = "right"
     mp._title_fontweight = "normal"
     mp._create_or_update_figure()
+    _, right_bound_px = mp._get_content_horizontal_bounds_px()
 
     assert mp._title_text is original_title_text
     assert mp._title_text.get_text() == "Updated Overview"
     assert mp._title_text.get_ha() == "right"
     assert mp._title_text.get_va() == "center"
     assert mp._title_text.get_fontweight() == "normal"
-    assert mp._title_text.get_position()[0] == pytest.approx(90 / 200)
+    assert mp._title_text.get_position()[0] == pytest.approx(right_bound_px / 200)
     assert mp._label_texts["A"].get_ha() == "right"
     assert mp._label_texts["A"].get_va() == "bottom"
 
@@ -1178,3 +1515,41 @@ def test_multipanel_below_aligns_to_parent_column() -> None:
     )
 
     assert mp._get_panel_position(0)[0] == mp._get_panel_position(1)[0]
+
+
+def test_multipanel_below_aligns_to_parent_column_after_left_relayout() -> None:
+    mp = cns.multipanel(max_width=540)
+    ax_b = mp.panel(
+        "B",
+        width=145,
+        height=128,
+        pad_left=12,
+        pad_top=0,
+        margin_left=10,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=10,
+    )
+    ax_c = mp.panel(
+        "C",
+        width=145,
+        height=128,
+        pad_left=18,
+        pad_top=0,
+        margin_left=10,
+        margin_top=0,
+        margin_right=0,
+        margin_bottom=0,
+        below="B",
+    )
+    ax_b.plot([0, 1], [0, 1000])
+    ax_c.plot([0, 1], [0, 10])
+    ax_b.set_ylabel("Parent")
+    ax_c.set_ylabel("Child")
+    ax_b.set_yticks([0, 500, 1000])
+    ax_c.set_yticks([0, 5, 10])
+
+    assert _panel_column_origin(mp, 0) == pytest.approx(
+        _panel_column_origin(mp, 1),
+        abs=0.8,
+    )
