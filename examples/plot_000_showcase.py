@@ -155,8 +155,8 @@ for text in ax.get_legend().get_texts():
 ax.set_title("Rocplot")
 
 # Panel N: sankeyplot
-mp.panel("N", 100, 30, color_cycle="Ecotyper4")
-ax = cns.sankeyplot(tips_df, x="day", y="sex")
+mp.panel("N", 100, 30, pad_left=-30, color_cycle="Ecotyper4")
+ax = cns.sankeyplot(tips_df, x="day", y="sex", label_rotation=90)
 ax.set_title("Sankeyplot")
 
 # Panel O: ridgeplot

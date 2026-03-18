@@ -247,6 +247,7 @@ def draw_vertical_bars(
     label_rotation: float = 0,
 ) -> None:
     # Draw vertical bars on left and right of each  label's section & print label
+    rotation_padding = fontsize * abs(np.sin(np.deg2rad(label_rotation)))
     for leftLabel in leftLabels:
         ax.fill_between(
             [-0.02 * xMax, 0],
@@ -255,11 +256,16 @@ def draw_vertical_bars(
             color=colorDict[leftLabel],
             alpha=1,
         )
-        ax.text(
-            -0.05 * xMax,
-            leftWidths[leftLabel]["bottom"] + 0.5 * leftWidths[leftLabel]["left"],
+        ax.annotate(
             leftLabel,
-            {"ha": "right", "va": "center"},
+            xy=(
+                -0.05 * xMax,
+                leftWidths[leftLabel]["bottom"] + 0.5 * leftWidths[leftLabel]["left"],
+            ),
+            xytext=(-rotation_padding, 0),
+            textcoords="offset points",
+            ha="right",
+            va="center",
             fontsize=fontsize,
             rotation=label_rotation,
             rotation_mode="anchor",
@@ -272,11 +278,17 @@ def draw_vertical_bars(
             color=colorDict[rightLabel],
             alpha=1,
         )
-        ax.text(
-            1.05 * xMax,
-            rightWidths[rightLabel]["bottom"] + 0.5 * rightWidths[rightLabel]["right"],
+        ax.annotate(
             rightLabel,
-            {"ha": "left", "va": "center"},
+            xy=(
+                1.05 * xMax,
+                rightWidths[rightLabel]["bottom"]
+                + 0.5 * rightWidths[rightLabel]["right"],
+            ),
+            xytext=(rotation_padding, 0),
+            textcoords="offset points",
+            ha="left",
+            va="center",
             fontsize=fontsize,
             rotation=label_rotation,
             rotation_mode="anchor",
