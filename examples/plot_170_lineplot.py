@@ -25,7 +25,7 @@ fmri = sns.load_dataset("fmri")
 # Basic line plot
 # ~~~~~~~~~~~~~~~
 # Plot signal over time with confidence intervals.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal")
 ax.set_title("Basic Line Plot")
 
@@ -34,7 +34,7 @@ ax.set_title("Basic Line Plot")
 # Line plot with error bars
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``err_style="bars"`` for discrete error bars.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", err_style="bars")
 ax.set_title("With Error Bars")
 
@@ -43,7 +43,7 @@ ax.set_title("With Error Bars")
 # Grouped line plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare trends across groups.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event")
 ax.set_title("Grouped by Event")
 cns.take_legend_out()
@@ -83,7 +83,7 @@ cns.take_legend_out()
 # Line plot without confidence interval
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``errorbar=None`` for clean lines.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", errorbar=None)
 ax.set_title("Without Confidence Interval")
 cns.take_legend_out()
@@ -121,7 +121,7 @@ cns.take_legend_out()
 # Line plot with markers
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Add markers at data points.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.lineplot(
     data=fmri, x="timepoint", y="signal", hue="event", marker="o", markersize=3
 )
@@ -133,7 +133,7 @@ cns.take_legend_out()
 # Line plot with custom palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 100, "Tableau")
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event")
 ax.set_title("Tableau Palette")
 cns.take_legend_out()
@@ -155,7 +155,7 @@ for dose in doses:
 
 dose_df = pd.DataFrame(dose_response)
 
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.lineplot(data=dose_df, x="dose", y="response", marker="o")
 ax.set_xscale("log")
 ax.set_xlabel("Dose (log scale)")

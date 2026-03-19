@@ -63,7 +63,7 @@ rotated_label_data = pd.DataFrame(
 )
 
 cns.figure(90, 110)
-ax = cns.sankeyplot(data=rotated_label_data, x="source", y="target", label_rotation=90)
+ax = cns.sankeyplot(data=rotated_label_data, x="source", y="target", label_rotation=45)
 ax.set_title("Rotated Labels")
 
 
