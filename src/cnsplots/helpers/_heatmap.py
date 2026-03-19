@@ -187,25 +187,23 @@ def _capture_detached_colorbar_layout(plotter: ClusterMapPlotter) -> None:
             float(width * fig_bbox.width),
             float(height * fig_bbox.height),
         )
-        if cbar_rect[2] <= 0 or cbar_rect[3] <= 0:
-            continue
-
-        parent_idx = min(
-            range(len(legend_rects)),
-            key=lambda idx: abs(cbar_rect[0] - legend_rects[idx][0]),
-        )
-        parent_rect = legend_rects[parent_idx]
-        layouts.append(
-            {
-                "cbar": cbar,
-                "legend_ax_idx": parent_idx,
-                "x_offset_px": cbar_rect[0] - parent_rect[0],
-                "top_offset_px": (parent_rect[1] + parent_rect[3])
-                - (cbar_rect[1] + cbar_rect[3]),
-                "width_px": cbar_rect[2],
-                "height_px": cbar_rect[3],
-            }
-        )
+        if cbar_rect[2] > 0 and cbar_rect[3] > 0:
+            parent_idx = min(
+                range(len(legend_rects)),
+                key=lambda idx: abs(cbar_rect[0] - legend_rects[idx][0]),
+            )
+            parent_rect = legend_rects[parent_idx]
+            layouts.append(
+                {
+                    "cbar": cbar,
+                    "legend_ax_idx": parent_idx,
+                    "x_offset_px": cbar_rect[0] - parent_rect[0],
+                    "top_offset_px": (parent_rect[1] + parent_rect[3])
+                    - (cbar_rect[1] + cbar_rect[3]),
+                    "width_px": cbar_rect[2],
+                    "height_px": cbar_rect[3],
+                }
+            )
 
     plotter._detached_colorbar_layout = layouts
 

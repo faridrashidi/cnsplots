@@ -666,9 +666,7 @@ def test_figure_autofit_sync_hooks_deduplicate_callbacks() -> None:
     assert calls == ["called"]
 
 
-def test_capture_detached_colorbar_layout_guard_branches(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_capture_detached_colorbar_layout_guard_branches() -> None:
     plotter = cast(Any, types.SimpleNamespace(legend_axes=[], cbars=[]))
     helper_heatmap._capture_detached_colorbar_layout(plotter)
     assert plotter._detached_colorbar_layout == []
@@ -690,21 +688,15 @@ def test_capture_detached_colorbar_layout_guard_branches(
     helper_heatmap._capture_detached_colorbar_layout(stub_plotter)
     assert not hasattr(stub_plotter, "_detached_colorbar_layout")
 
-    cns.figure(120, 120)
-    fig = plt.gcf()
-    legend_ax = fig.add_axes((0.6, 0.2, 0.1, 0.5))
-    cax1 = fig.add_axes((0.6, 0.6, 0.05, 0.2))
-    cax2 = fig.add_axes((0.6, 0.3, 0.05, 0.2))
-    sm = mpl.cm.ScalarMappable(norm=mpl.colors.Normalize(0, 1), cmap="viridis")
-    cbar1 = fig.colorbar(sm, cax=cax1)
-    cbar2 = fig.colorbar(sm, cax=cax2)
-    fig.canvas.draw()
-
-    monkeypatch.setattr(cbar1, "ax", None, raising=False)
-    monkeypatch.setattr(
-        cbar2.ax,
-        "get_position",
-        lambda: types.SimpleNamespace(bounds=(0.0, 0.0, 0.0, 0.2)),
+    legend_ax = types.SimpleNamespace(
+        figure=types.SimpleNamespace(bbox=Bbox.from_bounds(0, 0, 100, 100)),
+        get_position=lambda: types.SimpleNamespace(bounds=(0.6, 0.2, 0.1, 0.5)),
+    )
+    cbar1 = object.__new__(mpl.colorbar.Colorbar)
+    cbar1.ax = None
+    cbar2 = object.__new__(mpl.colorbar.Colorbar)
+    cbar2.ax = types.SimpleNamespace(
+        get_position=lambda: types.SimpleNamespace(bounds=(0.0, 0.0, 0.0, 0.2))
     )
     plotter2 = cast(
         Any,
