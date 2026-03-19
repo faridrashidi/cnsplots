@@ -26,7 +26,7 @@ iris = sns.load_dataset("iris")
 # Create a simple grid layout with different panel sizes.
 # Each panel has explicit size: ``mp.panel(label, height, width)``.
 # Labels (A, B, C, D) are automatically added in bold, 8pt font.
-mp = cns.multipanel(max_width=245)
+mp = cns.multipanel(max_width=265)
 
 mp.panel("A", 70, 70)
 cns.boxplot(data=tips, x="day", y="total_bill")
@@ -46,7 +46,7 @@ cns.stripplot(data=tips, x="day", y="tip", hue="sex")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create a row of panels, useful for comparing related analyses.
 mp = cns.multipanel(
-    max_width=540,
+    max_width=500,
     title="Distribution Overview",
     loc="left",
     title_fontweight="bold",
@@ -69,7 +69,7 @@ mp.get_axes("C").set_title("KDE Plot")
 # 3x2 grid with uniform panel sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Consistent panel sizes for organized appearance.
-mp = cns.multipanel(max_width=500)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 100, 100)
 cns.boxplot(data=iris, x="species", y="sepal_length")
@@ -94,7 +94,7 @@ cns.stripplot(data=iris, x="species", y="petal_width")
 # 2x3 layout with varying panel sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Different panel sizes for different plot types.
-mp = cns.multipanel(max_width=420)
+mp = cns.multipanel(max_width=440)
 
 mp.panel("A", 100, 100, margin_bottom=30)
 cns.boxplot(data=tips, x="day", y="total_bill", pairs="all")
@@ -129,7 +129,7 @@ cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=5)
 # Using get_axes() for customization
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Access individual axes for further customization.
-mp = cns.multipanel(max_width=500)
+mp = cns.multipanel(max_width=480)
 
 mp.panel("A", 120, 120)
 cns.boxplot(data=tips, x="day", y="total_bill")
@@ -143,7 +143,7 @@ ax_b = mp.get_axes("B")
 ax_b.set_ylabel("Tip ($)")
 ax_b.set_xlabel("")
 
-mp.panel("C", 120, 120)
+mp.panel("C", 120, 120, margin_right=0)
 cns.boxplot(data=tips, x="day", y="size")
 ax_c = mp.get_axes("C")
 ax_c.set_ylabel("Party Size")
@@ -154,7 +154,7 @@ ax_c.set_xlabel("Day of Week")
 # Using custom color palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Apply different palettes to the multi-panel figure.
-mp = cns.multipanel(max_width=480)
+mp = cns.multipanel(max_width=460)
 
 mp.panel("A", 100, 100, pad_top=5, color_cycle="Tableau")
 cns.barplot(data=tips, x="day", y="total_bill")
@@ -164,6 +164,6 @@ mp.panel("B", 100, 100, pad_top=5, color_cycle="Ecotyper1")
 cns.barplot(data=tips, x="day", y="tip")
 mp.get_axes("A").set_title("Ecotyper1")
 
-mp.panel("C", 100, 100, pad_top=5, color_cycle="Ecotyper2")
+mp.panel("C", 100, 100, pad_top=5, color_cycle="Ecotyper2", margin_right=0)
 cns.barplot(data=tips, x="day", y="size")
 mp.get_axes("A").set_title("Ecotyper2")
