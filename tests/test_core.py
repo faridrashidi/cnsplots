@@ -933,6 +933,34 @@ def test_savefig_default_bounds_match_jpg_and_pdf(
         cns.settings.reset()
 
 
+def test_savefig_heatmap_multipanel_exports_without_pdf_renderer(
+    output_dir: Path,
+    heatmap_adata: ad.AnnData,
+) -> None:
+    pdf_path = output_dir / "heatmap.pdf"
+    svg_path = output_dir / "heatmap.svg"
+
+    mp = cns.multipanel(max_width=240, title="Figure 1", loc="left")
+    mp.panel("A", 120, 120)
+    cmp = cns.heatmapplot(
+        heatmap_adata,
+        label="Z-score",
+        row_annotation=["cluster"],
+        col_annotation=["pathway"],
+        row_cluster=True,
+        col_cluster=True,
+        show_rownames=True,
+        show_colnames=True,
+    )
+    cmp.ax.set_title("Heatmap")
+
+    cns.savefig(str(pdf_path))
+    cns.savefig(str(svg_path))
+
+    assert pdf_path.exists()
+    assert svg_path.exists()
+
+
 def test_utils_helpers_and_showcase_data(
     monkeypatch: pytest.MonkeyPatch,
     categorical_df: pd.DataFrame,

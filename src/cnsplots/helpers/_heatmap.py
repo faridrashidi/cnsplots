@@ -14,6 +14,14 @@ from PyComplexHeatmap.clustermap import mm2inch
 import cnsplots as cns
 
 
+def _get_canvas_renderer(canvas: Any) -> Any | None:
+    """Return the canvas renderer when the backend exposes it."""
+    get_renderer = getattr(canvas, "get_renderer", None)
+    if not callable(get_renderer):
+        return None
+    return get_renderer()
+
+
 def _define_axes_within_current_bounds(
     plotter: ClusterMapPlotter,
     subplot_spec: Any = None,
@@ -127,7 +135,7 @@ def _stabilize_detached_legends(cbars: Sequence[Any]) -> None:
         ax = cbar.axes
         if ax is None:
             continue
-        renderer = ax.figure.canvas.get_renderer()
+        renderer = _get_canvas_renderer(ax.figure.canvas)
         if renderer is None:
             continue
         legend_bbox = cbar.get_window_extent(renderer=renderer)
@@ -209,7 +217,7 @@ def _sync_detached_legend_axes(plotter: ClusterMapPlotter) -> None:
     if anchor_ax is None or not legend_axes:
         return
 
-    renderer = anchor_ax.figure.canvas.get_renderer()
+    renderer = _get_canvas_renderer(anchor_ax.figure.canvas)
     if renderer is None:
         return
 

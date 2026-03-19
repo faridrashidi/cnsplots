@@ -460,6 +460,39 @@ def test_stabilize_detached_legends_skips_zero_sized_stub_axes() -> None:
     assert legend.anchor_kwargs is None
 
 
+def test_stabilize_detached_legends_skips_canvas_without_renderer_method() -> None:
+    class StubFigure:
+        def __init__(self) -> None:
+            self.canvas = object()
+
+    class StubAxes:
+        def __init__(self) -> None:
+            self.figure = StubFigure()
+            self.transAxes = object()
+
+        def get_window_extent(self, renderer: object | None = None) -> Bbox:
+            return Bbox.from_bounds(0, 0, 10, 10)
+
+    class StubLegend(mlegend.Legend):
+        def __init__(self, axes: object) -> None:
+            self._axes = axes
+            self.anchor_args: tuple[object, ...] | None = None
+            self.anchor_kwargs: dict[str, object] | None = None
+
+        def get_window_extent(self, renderer: object | None = None) -> Bbox:
+            return Bbox.from_bounds(0, 0, 10, 10)
+
+        def set_bbox_to_anchor(self, *args: object, **kwargs: object) -> None:
+            self.anchor_args = args
+            self.anchor_kwargs = kwargs
+
+    legend = StubLegend(StubAxes())
+    helper_heatmap._stabilize_detached_legends([legend])
+
+    assert legend.anchor_args is None
+    assert legend.anchor_kwargs is None
+
+
 def test_sync_detached_legend_axes_guard_branches(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -518,6 +551,37 @@ def test_sync_detached_legend_axes_guard_branches(
     )
     helper_heatmap._sync_detached_legend_axes(plotter2)
     assert legend_ax2.get_position().bounds == pytest.approx(initial_bounds2)
+
+
+def test_sync_detached_legend_axes_skips_canvas_without_renderer_method() -> None:
+    class StubLegendAxes:
+        def __init__(self) -> None:
+            self.position_updates: list[list[float]] = []
+
+        def set_position(self, bounds: list[float]) -> None:
+            self.position_updates.append(bounds)
+
+    plotter = cast(
+        Any,
+        types.SimpleNamespace(
+            _legend_anchor_ax=types.SimpleNamespace(
+                figure=types.SimpleNamespace(canvas=object())
+            ),
+            legend_axes=[StubLegendAxes()],
+            legend_delta_x=None,
+            legend_side="right",
+            right_annotation=None,
+            label_max_width=0.0,
+            show_rownames=False,
+            row_names_side="left",
+            legend_hpad=2,
+            cbars=[],
+        ),
+    )
+
+    helper_heatmap._sync_detached_legend_axes(plotter)
+
+    assert plotter.legend_axes[0].position_updates == []
 
 
 def test_sync_detached_legend_axes_uses_label_width_for_right_annotation() -> None:
