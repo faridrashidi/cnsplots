@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     import numpy as np
@@ -23,10 +23,10 @@ def phyloplot(adata: AnnData) -> None:
     import Bio.Phylo
 
     tree = Bio.Phylo.read(io.StringIO(adata.uns["tree"]), "newick")
-    cell_ids = []
-    for a in tree.get_terminals():
-        cell_ids.append(a.name)
-    adata = adata[cell_ids].copy()
+    cell_ids: list[str] = [
+        cast(str, terminal.name) for terminal in tree.get_terminals()
+    ]
+    adata = cast(Any, adata)[cell_ids].copy()
 
     fig = plt.gcf()
     axes = fig.subplots(
@@ -53,18 +53,18 @@ def phyloplot(adata: AnnData) -> None:
     cbar.locator = plt.MaxNLocator(nbins=2)
     cbar.ax.set_rasterized(True)
     cbar.ax.set_aspect(0.5)
-    obs_group: pd.DataFrame = adata.obs[["group"]]  # type: ignore[assignment]
+    obs_group = adata.obs[["group"]]
     _heatmap(
         obs_group,
-        ax=axes[2],  # type: ignore[arg-type]  # numpy indexing returns Axes at runtime
-        leg_ax=axes[4],  # type: ignore[arg-type]
+        ax=axes[2],  # numpy indexing returns Axes at runtime
+        leg_ax=axes[4],
         rasterized=True,
         palette="Set1",
     )
     _heatmap(
         obs_group,
-        ax=axes[3],  # type: ignore[arg-type]
-        leg_ax=axes[4],  # type: ignore[arg-type]
+        ax=axes[3],
+        leg_ax=axes[4],
         rasterized=True,
         palette="Set2",
     )

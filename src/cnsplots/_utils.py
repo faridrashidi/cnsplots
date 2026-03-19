@@ -1100,7 +1100,9 @@ def get_showcase_data(
     blobs.obs["TP53"] = np.random.random(blobs.shape[0])
     blobs.obs["KRAS"] = np.random.random(blobs.shape[0])
     blobs.var["Ensemble"] = [f"ens{x}" for x in np.random.randint(0, 3, blobs.shape[1])]
-    blobs.obs["Selected"] = np.where(blobs.obs["TP53"] > 0.95, "o", None)
+    selected = pd.Series(pd.NA, index=blobs.obs_names, dtype="string")
+    selected[blobs.obs["TP53"] > 0.95] = "o"
+    blobs.obs["Selected"] = selected
     blobs.obs["Cluster"] = pd.Categorical(
         [f"C{x}" for x in np.random.randint(0, 4, blobs.shape[0])]
     )
@@ -1127,21 +1129,21 @@ def get_showcase_data(
     ]
 
     # Slop data
-    slope_df = np.concatenate(
-        [
-            [np.random.normal(loc=1, size=15), 15 * ["site1"], 15 * ["healthy"]],
-            [np.random.normal(loc=3, size=15), 15 * ["site2"], 15 * ["healthy"]],
-            [np.random.normal(loc=0, size=15), 15 * ["site3"], 15 * ["healthy"]],
-            [np.random.normal(loc=1, size=15), 15 * ["site1"], 15 * ["disease"]],
-            [np.random.normal(loc=1, size=15), 15 * ["site2"], 15 * ["disease"]],
-            [np.random.normal(loc=3, size=15), 15 * ["site3"], 15 * ["disease"]],
-        ],
-        axis=1,
-    )
+    slope_rows = []
+    for mean, site, label in [
+        (1, "site1", "healthy"),
+        (3, "site2", "healthy"),
+        (0, "site3", "healthy"),
+        (1, "site1", "disease"),
+        (1, "site2", "disease"),
+        (3, "site3", "disease"),
+    ]:
+        for value in np.random.normal(loc=mean, size=15):
+            slope_rows.append({"value": float(value), "site": site, "label": label})
     slope_df = pd.DataFrame(
-        columns=pd.Index(["value", "site", "label"]), data=slope_df.T
+        slope_rows,
+        columns=pd.Index(["value", "site", "label"]),
     )
-    slope_df["value"] = slope_df["value"].astype(float)
 
     # ROC data
     y_true = np.random.binomial(1, 0.4, 200)

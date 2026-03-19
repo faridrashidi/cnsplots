@@ -380,12 +380,13 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
     else:
         if add_mode and ax.get_lines():
             kde_data = ax.get_lines()[-1].get_data()
-            x_vals, y_vals = kde_data[0], kde_data[1]
-            mode_idx = np.argmax(y_vals)
-            mode = x_vals[mode_idx]
+            x_vals = np.asarray(kde_data[0], dtype=float)
+            y_vals = np.asarray(kde_data[1], dtype=float)
+            mode_idx = int(np.argmax(y_vals))
+            mode = float(x_vals[mode_idx])
             modes.append(mode)
             kde_color = ax.get_lines()[-1].get_color()
-            y_mode = y_vals[mode_idx]
+            y_mode = float(y_vals[mode_idx])
             y_lim = ax.get_ylim()
             ymax = (y_mode - y_lim[0]) / (y_lim[1] - y_lim[0])
             ax.axvline(

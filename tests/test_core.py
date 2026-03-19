@@ -1328,11 +1328,9 @@ def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> No
     adata = ad.AnnData(matrix)
     adata.obs_names = [str(i) for i in range(n_rows)]
     adata.var_names = [str(i) for i in range(n_cols)]
-    adata.obs["selected"] = np.where(
-        np.linspace(0.0, 1.0, n_rows) > 0.96,
-        "o",
-        None,
-    )
+    selected = pd.Series(pd.NA, index=adata.obs_names, dtype="string")
+    selected[np.linspace(0.0, 1.0, n_rows) > 0.96] = "o"
+    adata.obs["selected"] = selected
     adata.obs["mitf"] = np.linspace(0.0, 1.0, n_rows)
     adata.obs["blobs"] = pd.Categorical([f"C{group}" for group in row_groups])
     adata.var["ensemble"] = pd.Categorical([f"ens{i % 3}" for i in range(n_cols)])
@@ -2146,7 +2144,7 @@ def test_multipanel_linked_helper_discovery_guard_branches() -> None:
     mp = cns.multipanel(max_width=240)
     host_ax = mp.panel("A", width=80, height=60)
     panel = mp._panels[0]
-    artist = host_ax.scatter([1.0], [1.0], c=[0.1])
+    artist = cast(Any, host_ax.scatter([1.0], [1.0], c=[0.1]))
 
     artist.colorbar = types.SimpleNamespace(ax=host_ax)
     assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
@@ -2163,6 +2161,24 @@ def test_multipanel_linked_helper_discovery_guard_branches() -> None:
     setattr(helper_ax, "_colorbar_info", {"parents": []})
     artist.colorbar = types.SimpleNamespace(ax=helper_ax)
     assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
+
+
+def test_multipanel_linked_helper_discovery_skips_known_and_duplicate_axes() -> None:
+    mp = cns.multipanel(max_width=240)
+    host_ax = mp.panel("A", width=80, height=60)
+    panel = mp._panels[0]
+    artist_a = cast(Any, host_ax.scatter([1.0], [1.0], c=[0.1]))
+    artist_b = cast(Any, host_ax.scatter([2.0], [2.0], c=[0.2]))
+    helper_ax = mp.fig.add_axes((0.8, 0.2, 0.05, 0.5))
+    setattr(helper_ax, "_colorbar_info", {"parents": [host_ax]})
+
+    artist_a.colorbar = types.SimpleNamespace(ax=helper_ax)
+    panel["known_figure_axes_ids"] = {id(host_ax), id(helper_ax)}
+    assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
+
+    artist_b.colorbar = types.SimpleNamespace(ax=helper_ax)
+    panel["known_figure_axes_ids"] = {id(host_ax)}
+    assert list(mp._iter_linked_helper_axes(host_ax, panel)) == [helper_ax]
 
 
 def test_multipanel_helper_snapshot_skips_foreign_axes() -> None:
