@@ -245,7 +245,6 @@ mp.get_axes("A").set_title("Overall Survival")
 
 mp.panel("B", 130, 130)
 cns.rocplot(resp_data, "event", ["model_A", "model_B"])
-cns.take_legend_out()
 mp.get_axes("B").set_title("Response")
 
 
@@ -316,7 +315,7 @@ multiclass["class2_prob"] = np.clip(
     multiclass["class2_label"] * 0.5 + np.random.normal(0.3, 0.25, n), 0, 1
 )
 
-mp = cns.multipanel(max_width=480)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 110, 110)
 cns.rocplot(multiclass, "class0_label", ["class0_prob"])
@@ -326,6 +325,6 @@ mp.panel("B", 110, 110)
 cns.rocplot(multiclass, "class1_label", ["class1_prob"])
 mp.get_axes("B").set_title("Class 1 vs Rest")
 
-mp.panel("C", 110, 110)
+mp.panel("C", 110, 110, margin_right=0)
 cns.rocplot(multiclass, "class2_label", ["class2_prob"])
 mp.get_axes("C").set_title("Class 2 vs Rest")
