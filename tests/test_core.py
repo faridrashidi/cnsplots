@@ -1311,6 +1311,12 @@ def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> No
                 fig.bbox,
                 legend.get_window_extent(renderer=renderer),
             )
+        heatmap_bbox = cmp.ax_heatmap.get_window_extent(renderer=renderer)
+        for legend_ax in cmp.legend_axes:
+            assert (
+                legend_ax.get_window_extent(renderer=renderer).x0
+                >= heatmap_bbox.x1 - 1.0
+            )
         assert len(cmp.ax_col_dendrogram_axes) == 1
         assert _bbox_is_within(
             fig.bbox,

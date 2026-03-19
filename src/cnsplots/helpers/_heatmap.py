@@ -28,6 +28,7 @@ def _define_axes_within_current_bounds(
             top=pos.y1,
             bottom=pos.y0,
         )
+        _sync_detached_legend_axes(plotter)
 
     pos = plotter.ax.get_position()
     wspace = (
@@ -102,6 +103,11 @@ def _define_axes_within_current_bounds(
     for side in ["left", "right", "top", "bottom"]:
         plotter.ax.spines[side].set_visible(False)
     setattr(plotter.ax, "_cnsplots_sync_embedded_axes", _sync_embedded_axes)
+    setattr(
+        plotter.ax,
+        "_cnsplots_sync_detached_legends",
+        lambda: _sync_detached_legend_axes(plotter),
+    )
 
     from matplotlib.figure import Figure
 
@@ -132,6 +138,69 @@ def _stabilize_detached_legends(cbars: Sequence[Any]) -> None:
                 ),
                 transform=ax.transAxes,
             )
+
+
+def _sync_detached_legend_axes(plotter: ClusterMapPlotter) -> None:
+    """Re-anchor detached legend columns to the current legend anchor axes."""
+    anchor_ax = getattr(plotter, "_legend_anchor_ax", None)
+    legend_axes = list(getattr(plotter, "legend_axes", []) or [])
+    if anchor_ax is None or not legend_axes:
+        return
+
+    renderer = anchor_ax.figure.canvas.get_renderer()
+    if renderer is None:
+        return
+
+    fig_bbox = anchor_ax.figure.bbox.frozen()
+    anchor_bbox = anchor_ax.get_window_extent(renderer=renderer)
+    if (
+        fig_bbox.width <= 0
+        or fig_bbox.height <= 0
+        or anchor_bbox.width <= 0
+        or anchor_bbox.height <= 0
+    ):
+        return
+
+    legend_bboxes = [
+        legend_ax.get_window_extent(renderer=renderer).frozen()
+        for legend_ax in legend_axes
+    ]
+
+    first_legend_x0 = float(legend_bboxes[0].x0)
+    legend_delta_x = getattr(plotter, "legend_delta_x", None)
+    if legend_delta_x is None:
+        space = 0.0
+        if plotter.legend_side == "right" and plotter.right_annotation is not None:
+            space = float(plotter.label_max_width)
+        elif (
+            plotter.legend_side == "right"
+            and plotter.show_rownames
+            and plotter.row_names_side == "right"
+        ):
+            space = float(plotter.label_max_width)
+        base_x0 = (
+            float(anchor_bbox.x1)
+            + space
+            + float(plotter.legend_hpad) * mm2inch * anchor_ax.figure.dpi
+            + anchor_ax.yaxis.labelpad * 1.2 * anchor_ax.figure.dpi / 72
+        )
+    else:
+        base_x0 = (anchor_ax.get_position().x1 + float(legend_delta_x)) * float(
+            fig_bbox.width
+        )
+
+    for legend_ax, legend_bbox in zip(legend_axes, legend_bboxes):
+        x0_px = base_x0 + float(legend_bbox.x0 - first_legend_x0)
+        legend_ax.set_position(
+            [
+                x0_px / float(fig_bbox.width),
+                float(anchor_bbox.y0) / float(fig_bbox.height),
+                float(legend_bbox.width) / float(fig_bbox.width),
+                float(anchor_bbox.height) / float(fig_bbox.height),
+            ]
+        )
+
+    _stabilize_detached_legends(getattr(plotter, "cbars", []))
 
 
 class ClusterMapPlotterNew(ClusterMapPlotter):
@@ -287,7 +356,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
 
     def plot_legends(self, ax: Any = None) -> None:
         super().plot_legends(ax=ax)
-        _stabilize_detached_legends(getattr(self, "cbars", []))
+        self._legend_anchor_ax = self.ax if ax is None else ax
+        _sync_detached_legend_axes(self)
 
     def collect_legends(self) -> None:
         if self.verbose >= 1:
@@ -377,4 +447,5 @@ class DotClustermapPlotterNew(DotClustermapPlotter):
 
     def plot_legends(self, ax: Any = None) -> None:
         super().plot_legends(ax=ax)
-        _stabilize_detached_legends(getattr(self, "cbars", []))
+        self._legend_anchor_ax = self.ax if ax is None else ax
+        _sync_detached_legend_axes(self)

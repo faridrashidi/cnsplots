@@ -4,6 +4,7 @@ import builtins
 from collections.abc import Mapping, Sequence
 import sys
 import types
+from typing import Any, cast
 
 import anndata as ad
 import matplotlib.legend as mlegend
@@ -456,3 +457,145 @@ def test_stabilize_detached_legends_skips_zero_sized_stub_axes() -> None:
 
     assert legend.anchor_args is None
     assert legend.anchor_kwargs is None
+
+
+def test_sync_detached_legend_axes_guard_branches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cns.figure(120, 120)
+    ax = plt.gca()
+    fig = plt.gcf()
+    legend_ax = fig.add_axes((0.6, 0.2, 0.1, 0.5))
+    fig.canvas.draw()
+    plotter = cast(
+        Any,
+        types.SimpleNamespace(
+            _legend_anchor_ax=ax,
+            legend_axes=[legend_ax],
+            legend_delta_x=None,
+            legend_side="right",
+            right_annotation=None,
+            label_max_width=0.0,
+            show_rownames=False,
+            row_names_side="left",
+            legend_hpad=2,
+            cbars=[],
+        ),
+    )
+
+    initial_bounds = legend_ax.get_position().bounds
+    monkeypatch.setattr(fig.canvas, "get_renderer", lambda: None)
+    helper_heatmap._sync_detached_legend_axes(plotter)
+    assert legend_ax.get_position().bounds == pytest.approx(initial_bounds)
+
+    cns.figure(120, 120)
+    ax2 = plt.gca()
+    fig2 = plt.gcf()
+    legend_ax2 = fig2.add_axes((0.6, 0.2, 0.1, 0.5))
+    fig2.canvas.draw()
+    plotter2 = cast(
+        Any,
+        types.SimpleNamespace(
+            _legend_anchor_ax=ax2,
+            legend_axes=[legend_ax2],
+            legend_delta_x=None,
+            legend_side="right",
+            right_annotation=None,
+            label_max_width=0.0,
+            show_rownames=False,
+            row_names_side="left",
+            legend_hpad=2,
+            cbars=[],
+        ),
+    )
+
+    initial_bounds2 = legend_ax2.get_position().bounds
+    monkeypatch.setattr(
+        ax2,
+        "get_window_extent",
+        lambda renderer=None: Bbox.from_bounds(0, 0, 0, 10),
+    )
+    helper_heatmap._sync_detached_legend_axes(plotter2)
+    assert legend_ax2.get_position().bounds == pytest.approx(initial_bounds2)
+
+
+def test_sync_detached_legend_axes_uses_label_width_for_right_annotation() -> None:
+    cns.figure(120, 120)
+    ax = plt.gca()
+    fig = plt.gcf()
+    legend_ax = fig.add_axes((0.6, 0.2, 0.1, 0.5))
+    fig.canvas.draw()
+    plotter = cast(
+        Any,
+        types.SimpleNamespace(
+            _legend_anchor_ax=ax,
+            legend_axes=[legend_ax],
+            legend_delta_x=None,
+            legend_side="right",
+            right_annotation=object(),
+            label_max_width=12.0,
+            show_rownames=False,
+            row_names_side="left",
+            legend_hpad=2,
+            cbars=[],
+        ),
+    )
+
+    helper_heatmap._sync_detached_legend_axes(plotter)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    anchor_bbox = ax.get_window_extent(renderer=renderer)
+    expected_x0 = (
+        anchor_bbox.x1
+        + plotter.label_max_width
+        + plotter.legend_hpad * helper_heatmap.mm2inch * fig.dpi
+        + ax.yaxis.labelpad * 1.2 * fig.dpi / 72
+    )
+    assert legend_ax.get_window_extent(renderer=renderer).x0 == pytest.approx(
+        expected_x0
+    )
+
+
+def test_sync_detached_legend_axes_respects_explicit_delta_x() -> None:
+    cns.figure(120, 120)
+    ax = plt.gca()
+    fig = plt.gcf()
+    legend_ax = fig.add_axes((0.6, 0.2, 0.1, 0.5))
+    fig.canvas.draw()
+    plotter = cast(
+        Any,
+        types.SimpleNamespace(
+            _legend_anchor_ax=ax,
+            legend_axes=[legend_ax],
+            legend_delta_x=0.15,
+            legend_side="right",
+            right_annotation=None,
+            label_max_width=0.0,
+            show_rownames=False,
+            row_names_side="left",
+            legend_hpad=2,
+            cbars=[],
+        ),
+    )
+
+    helper_heatmap._sync_detached_legend_axes(plotter)
+    assert legend_ax.get_position().x0 == pytest.approx(ax.get_position().x1 + 0.15)
+
+
+def test_figure_autofit_sync_hooks_deduplicate_callbacks() -> None:
+    cns.figure(120, 120)
+    fig = plt.gcf()
+    manager = getattr(fig, "_cnsplots_autofit_manager")
+    ax1 = plt.gca()
+    ax2 = fig.add_axes((0.6, 0.2, 0.2, 0.2))
+    calls: list[str] = []
+
+    def sync() -> None:
+        calls.append("called")
+
+    setattr(ax1, "_sync_test", sync)
+    setattr(ax2, "_sync_test", sync)
+
+    manager._run_axes_sync_hooks("_sync_test")
+
+    assert calls == ["called"]

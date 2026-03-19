@@ -199,6 +199,23 @@ class _FigureAutofitManager:
             )
         )
 
+    def _run_axes_sync_hooks(self, attr_name):
+        """Run unique axes resize hooks exposed under the given attribute name."""
+        syncers = []
+        seen = set()
+        for ax in self.fig.get_axes():
+            sync = getattr(ax, attr_name, None)
+            if not callable(sync):
+                continue
+            sync_id = id(sync)
+            if sync_id in seen:
+                continue
+            seen.add(sync_id)
+            syncers.append(sync)
+
+        for sync in syncers:
+            sync()
+
     def _resize_canvas(self, left, right, bottom, top):
         """Resize the canvas and keep existing axes at their current pixel size."""
         fig_bbox = self.fig.bbox.frozen()
@@ -239,6 +256,7 @@ class _FigureAutofitManager:
                     height_px / new_height_px,
                 ]
             )
+        self._run_axes_sync_hooks("_cnsplots_sync_detached_legends")
         return True
 
     def _grow_canvas(self, left, right, bottom, top):
@@ -296,6 +314,7 @@ class _FigureAutofitManager:
                 position[3],
             ]
         )
+        self._run_axes_sync_hooks("_cnsplots_sync_detached_legends")
 
         updated_axes_bbox = ax.get_window_extent(renderer=renderer)
         updated_axes_width_px = float(updated_axes_bbox.width)
