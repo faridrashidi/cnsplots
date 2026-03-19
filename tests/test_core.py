@@ -19,9 +19,9 @@ import numpy as np
 import pandas as pd
 import pytest
 import seaborn as sns
+from lxml import etree
 from matplotlib.backend_bases import DrawEvent, Event
 from matplotlib.legend import Legend
-from lxml import etree
 
 import cnsplots as cns
 from cnsplots import _settings, _setup, _svg, _utils, _validation
@@ -268,7 +268,7 @@ def test_settings_behavior() -> None:
     settings = _settings.CNSSettings()
     assert settings.palette_qual == "Ecotyper1"
     assert settings.savefig_bbox == "standard"
-    assert settings.savefig_transparent is False
+    assert settings.savefig_transparent is True
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
     settings.title_fontsize = 10
@@ -460,7 +460,7 @@ def test_settings_behavior() -> None:
     assert settings.palette_qual == "Ecotyper1"
     assert settings.title_fontweight == "bold"
     assert settings.savefig_bbox == "standard"
-    assert settings.savefig_transparent is False
+    assert settings.savefig_transparent is True
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)
     assert settings.panel_pad_left == 0

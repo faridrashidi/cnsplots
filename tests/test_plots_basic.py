@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 from matplotlib.colors import to_hex
-from matplotlib.patches import Circle, FancyBboxPatch, Polygon
+from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Wedge
 
 import cnsplots as cns
 
@@ -176,6 +176,9 @@ def test_stack_strip_pie_and_donut_plots(
     )
     assert ax5.get_legend() is not None
     assert any(text.get_text() == "group" for text in ax5.texts)
+    donut_wedges = [patch for patch in ax5.patches if isinstance(patch, Wedge)]
+    assert donut_wedges
+    assert all(patch.width == pytest.approx(0.4) for patch in donut_wedges)
     assert calls
 
 

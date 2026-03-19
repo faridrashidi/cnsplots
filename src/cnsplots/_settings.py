@@ -246,7 +246,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default savefig DPI.",
     ),
     "savefig_transparent": _spec(
-        False,
+        True,
         lambda value: _validate_bool("savefig_transparent", value),
         "Whether saved figures are transparent by default.",
     ),

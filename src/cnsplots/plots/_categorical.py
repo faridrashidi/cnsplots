@@ -935,12 +935,7 @@ def donutplot(
         ax=ax,
         ylabel="",
         legend=True,
-        wedgeprops={"edgecolor": "black", "linewidth": 0.3},
-    )
-    ax.add_patch(
-        plt.Circle(
-            (0, 0), radius=0.6, facecolor="white", edgecolor="black", linewidth=0.3
-        )
+        wedgeprops={"edgecolor": "black", "linewidth": 0.3, "width": 0.4},
     )
     plt.annotate(x, (0, 0), size=7, ha="center", va="center")
     cns.utils._remove_edge_from_legend_items(ax)
