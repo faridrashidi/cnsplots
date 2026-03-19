@@ -186,7 +186,7 @@ ax.set_title("Treatment vs Response")
 # Comparing two confusion matrices
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side comparison of different models.
-mp = cns.multipanel(max_width=235)
+mp = cns.multipanel(max_width=255)
 
 # Model 1: Lower accuracy
 model1_data = pd.DataFrame(

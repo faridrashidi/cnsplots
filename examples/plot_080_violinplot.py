@@ -65,13 +65,13 @@ ax.set_title("Violin Plot without Box")
 # Violin plot with custom width
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust violin body width with the ``width`` parameter.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=330)
 
 mp.panel("A", 80, 120)
 cns.violinplot(data=tips, x="day", y="total_bill", width=0.4)
 mp.get_axes("A").set_title("width=0.4 (narrow)")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 80, 120, margin_right=0)
 cns.violinplot(data=tips, x="day", y="total_bill", width=0.9)
 mp.get_axes("B").set_title("width=0.9 (wide)")
 
@@ -80,7 +80,7 @@ mp.get_axes("B").set_title("width=0.9 (wide)")
 # Grouped violin plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``hue`` for side-by-side violins within each category.
-cns.figure(180, 120)
+cns.figure(120, 180)
 ax = cns.violinplot(
     data=tips,
     x="day",
@@ -164,7 +164,7 @@ iris_melted = iris.melt(
     value_name="value",
 )
 
-cns.figure(200, 120, "Set2")
+cns.figure(120, 120, "Set2")
 ax = cns.violinplot(
     data=iris_melted[iris_melted["species"] == "setosa"],
     x="measurement",
@@ -180,7 +180,7 @@ ax.set_title("Setosa Measurements Distribution")
 # Violin plot with grouped comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Statistical testing across hue groups.
-cns.figure(180, 120)
+cns.figure(120, 150)
 ax = cns.violinplot(
     data=tips,
     x="day",

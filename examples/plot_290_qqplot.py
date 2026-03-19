@@ -157,9 +157,9 @@ ax.set_title("Bimodal Q-Q Plot")
 # Comparing distributions with multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side Q-Q plots for different variables.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=300)
 
-mp.panel("A", 100, 100)
+mp.panel("A", 100, 100, margin_bottom=20)
 cns.qqplot(iris, x="sepal_length", dist=stats.norm, fit=True, line="45")
 mp.get_axes("A").set_title("Sepal Length")
 
@@ -180,7 +180,7 @@ mp.get_axes("D").set_title("Petal Width")
 # Comparing by species
 # ~~~~~~~~~~~~~~~~~~~~
 # Q-Q plots for each species subset.
-mp = cns.multipanel(max_width=450)
+mp = cns.multipanel(max_width=430)
 
 setosa = iris[iris["species"] == "setosa"]
 versicolor = iris[iris["species"] == "versicolor"]
@@ -194,7 +194,7 @@ mp.panel("B", 100, 100)
 cns.qqplot(versicolor, x="sepal_length", dist=stats.norm, fit=True, line="45")
 mp.get_axes("B").set_title("Versicolor")
 
-mp.panel("C", 100, 100)
+mp.panel("C", 100, 100, margin_right=0)
 cns.qqplot(virginica, x="sepal_length", dist=stats.norm, fit=True, line="45")
 mp.get_axes("C").set_title("Virginica")
 
@@ -211,12 +211,12 @@ gene_expr = pd.DataFrame(
     }
 )
 
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=330)
 
 mp.panel("A", 120, 120)
 cns.qqplot(gene_expr, x="raw_counts", dist=stats.norm, fit=True, line="45")
 mp.get_axes("A").set_title("Raw Counts")
 
-mp.panel("B", 120, 120)
+mp.panel("B", 120, 120, margin_right=0)
 cns.qqplot(gene_expr, x="log_counts", dist=stats.norm, fit=True, line="45")
 mp.get_axes("B").set_title("Log Counts")
