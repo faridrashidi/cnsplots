@@ -25,7 +25,7 @@ iris = sns.load_dataset("iris")
 # Basic KDE plot
 # ~~~~~~~~~~~~~~
 # Simple density estimation with mode line.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", add_mode=True)
 ax.set_title("Basic KDE with Mode Line")
 
@@ -34,7 +34,7 @@ ax.set_title("Basic KDE with Mode Line")
 # KDE plot without mode line
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Density curve only.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", add_mode=False)
 ax.set_title("KDE without Mode")
 
@@ -43,7 +43,7 @@ ax.set_title("KDE without Mode")
 # Grouped KDE plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across groups.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", hue="sex")
 ax.set_title("KDE by Sex")
 cns.take_legend_out()
@@ -53,7 +53,7 @@ cns.take_legend_out()
 # KDE plot with multiple groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare more than two groups.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", hue="day")
 ax.set_title("KDE by Day")
 cns.take_legend_out()
@@ -63,7 +63,7 @@ cns.take_legend_out()
 # Filled KDE plot
 # ~~~~~~~~~~~~~~~
 # Fill the area under the curve with ``fill=True``.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", fill=True, alpha=0.5)
 ax.set_title("Filled KDE")
 
@@ -72,7 +72,7 @@ ax.set_title("Filled KDE")
 # Filled grouped KDE plot
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Filled density curves for multiple groups.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", hue="sex", fill=True, alpha=0.3)
 ax.set_title("Filled Grouped KDE")
 cns.take_legend_out()
@@ -82,7 +82,7 @@ cns.take_legend_out()
 # Cumulative KDE plot
 # ~~~~~~~~~~~~~~~~~~~
 # Show cumulative distribution with ``cumulative=True``.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", cumulative=True)
 ax.set_title("Cumulative KDE (CDF)")
 ax.set_ylabel("Cumulative Probability")
@@ -92,7 +92,7 @@ ax.set_ylabel("Cumulative Probability")
 # Cumulative grouped KDE
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Compare cumulative distributions.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill", hue="sex", cumulative=True)
 ax.set_title("Cumulative KDE by Sex")
 cns.take_legend_out()
@@ -136,7 +136,7 @@ mp.get_axes("B").set_title("Thick line")
 # KDE plot with custom palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 100, "Tableau")
 ax = cns.kdeplot(data=tips, x="total_bill", hue="day", fill=True, alpha=0.3)
 ax.set_title("Tableau Palette")
 cns.take_legend_out()
@@ -205,7 +205,7 @@ comparison_data = pd.DataFrame(
     }
 )
 
-cns.figure(150, 100, "Bold")
+cns.figure(100, 100, "Bold")
 ax = cns.kdeplot(data=comparison_data, x="value", hue="group", fill=True, alpha=0.3)
 ax.set_title("Group Distribution Comparison")
 cns.take_legend_out()
@@ -215,7 +215,7 @@ cns.take_legend_out()
 # KDE with vertical reference lines
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add mean/median reference lines.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.kdeplot(data=tips, x="total_bill")
 
 mean_val = tips["total_bill"].mean()

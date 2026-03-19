@@ -50,7 +50,7 @@ cns.take_legend_out()
 # Scatter plot with legend inside
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Keep the legend inside the plot area.
-cns.figure(150, 120)
+cns.figure(120, 120)
 ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
 ax.legend(loc="upper left")
 ax.set_title("Legend Inside Plot")
@@ -60,7 +60,7 @@ ax.set_title("Legend Inside Plot")
 # Scatter plot with varying point sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust point size with the ``s`` parameter.
-mp = cns.multipanel(max_width=450)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 90, 90)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=3)

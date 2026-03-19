@@ -177,7 +177,7 @@ iris_melted = iris.melt(
     value_name="value",
 )
 
-cns.figure(200, 120)
+cns.figure(120, 200)
 ax = cns.stripplot(
     data=iris_melted,
     x="measurement",
