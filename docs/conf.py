@@ -10,6 +10,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import cnsplots as cns
+from cnsplots._docs_fonts import apply_docs_font_override
 
 # -- Project information -----------------------------------------------------
 
@@ -99,39 +100,7 @@ sphinx_gallery_conf = {
     },
 }
 
-
-def _dedupe_font_names(font_names: list[str]) -> tuple[str, ...]:
-    """Return font names in order, skipping blanks and duplicates."""
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for font_name in font_names:
-        normalized = font_name.strip()
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        ordered.append(normalized)
-    return tuple(ordered)
-
-
-def _apply_docs_font_override() -> None:
-    """Apply docs-only font preferences without changing package defaults."""
-    docs_font = os.getenv("CNSPLOTS_DOCS_FONT", "").strip()
-    if not docs_font:
-        return
-
-    cns.settings.font_sans_serif = _dedupe_font_names(
-        [
-            "Helvetica",
-            "Helvetica Neue",
-            "Arial",
-            docs_font,
-            *cns.settings.font_sans_serif,
-        ]
-    )
-    cns.settings.panel_label_fontname = docs_font
-
-
-_apply_docs_font_override()
+apply_docs_font_override(os.getenv("CNSPLOTS_DOCS_FONT"))
 
 
 def _build_repo_stats_context(repo_url: str) -> dict[str, str]:

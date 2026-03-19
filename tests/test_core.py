@@ -25,7 +25,7 @@ from matplotlib.backend_bases import DrawEvent, Event
 from matplotlib.legend import Legend
 
 import cnsplots as cns
-from cnsplots import _settings, _setup, _svg, _utils, _validation
+from cnsplots import _docs_fonts, _settings, _setup, _svg, _utils, _validation
 
 
 def _panel_label_padding(ax, text) -> tuple[float, float]:
@@ -536,6 +536,47 @@ def test_settings_validation_errors() -> None:
         settings.legend_out_loc = 1
     with pytest.raises(ValueError, match="legend_out_loc must be one of"):
         settings.legend_out_loc = "corner"
+
+
+def test_apply_docs_font_override_pins_requested_font_first() -> None:
+    with cns.settings.context(
+        font_sans_serif=("Arial", "Liberation Sans", "DejaVu Sans", "Arial"),
+        panel_label_fontname="Arial",
+    ):
+        _docs_fonts.apply_docs_font_override("Liberation Sans")
+
+        assert cns.settings.font_sans_serif == (
+            "Liberation Sans",
+            "Helvetica",
+            "Helvetica Neue",
+            "Arial",
+            "DejaVu Sans",
+        )
+        assert cns.settings.panel_label_fontname == "Liberation Sans"
+
+
+def test_apply_docs_font_override_ignores_blank_input() -> None:
+    with cns.settings.context(
+        font_sans_serif=("DejaVu Sans",),
+        panel_label_fontname="Arial",
+    ):
+        _docs_fonts.apply_docs_font_override("  ")
+
+        assert cns.settings.font_sans_serif == ("DejaVu Sans",)
+        assert cns.settings.panel_label_fontname == "Arial"
+
+
+def test_apply_docs_font_override_does_not_change_title_weight() -> None:
+    with cns.settings.context(
+        title_fontweight="bold",
+        font_sans_serif=("DejaVu Sans",),
+        panel_label_fontname="Arial",
+    ):
+        _docs_fonts.apply_docs_font_override("Liberation Sans")
+        _setup.setup_matplotlib()
+
+        assert cns.settings.title_fontweight == "bold"
+        assert mpl.rcParams["axes.titleweight"] == "bold"
 
 
 def test_ensure_helvetica_bold_branches(
