@@ -46,7 +46,8 @@ data["value"] = data["value"].astype(float)
 # ~~~~~~~~~~~~~~~
 # Visualize changes between healthy and disease states.
 cns.figure(150, 150)
-cns.slopeplot(data=data, x="site", y="value", hue="label")
+ax = cns.slopeplot(data=data, x="site", y="value", hue="label")
+ax.set_title("Basic Slope Plot", pad=15)
 
 
 # %%
@@ -102,7 +103,7 @@ treatment_data = pd.DataFrame(
 
 cns.figure(120, 150)
 ax = cns.slopeplot(data=treatment_data, x="patient", y="value", hue="timepoint")
-ax.set_title("Treatment Response")
+ax.set_title("Treatment Response", pad=12)
 
 
 # %%
@@ -128,7 +129,7 @@ gene_df_tp53 = gene_df[gene_df["gene"] == "TP53"]
 
 cns.figure(120, 150)
 ax = cns.slopeplot(data=gene_df_tp53, x="sample", y="expression", hue="condition")
-ax.set_title("TP53 Expression")
+ax.set_title("TP53 Expression", pad=12)
 
 
 # %%
@@ -165,7 +166,7 @@ time_df = pd.DataFrame(time_data)
 
 cns.figure(180, 150)
 ax = cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
-ax.set_title("Time Course")
+ax.set_title("Time Course", pad=20)
 
 
 # %%
@@ -173,7 +174,7 @@ ax.set_title("Time Course")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(220, 150)
 ax = cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
-ax.set_title("Time Course (Wide)")
+ax.set_title("Time Course (Wide)", pad=20)
 
 
 # %%
@@ -198,14 +199,14 @@ paired_data = pd.DataFrame(
 
 cns.figure(120, 150)
 ax = cns.slopeplot(data=paired_data, x="patient", y="expression", hue="tissue")
-ax.set_title("Tumor vs Normal")
+ax.set_title("Tumor vs Normal", pad=12)
 
 
 # %%
 # Comparing conditions with multipanel
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side slope plots for different analyses.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=260)
 
 # Early stage
 early = paired_data[paired_data["stage"] == "Early"]
@@ -216,7 +217,7 @@ mp.get_axes("A").set_title("Early Stage")
 
 # Late stage
 late = paired_data[paired_data["stage"] == "Late"]
-mp.panel("B", 120, 100)
+mp.panel("B", 120, 100, margin_right=0)
 cns.slopeplot(data=late, x="patient", y="expression", hue="tissue")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Late Stage")
@@ -261,7 +262,7 @@ cns.take_legend_out()
 # %%
 # Slopeplot with different palettes comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mp = cns.multipanel(max_width=450)
+mp = cns.multipanel(max_width=410)
 
 mp.panel("A", 120, 100, color_cycle="Set1")
 cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
@@ -273,7 +274,7 @@ cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Tableau")
 
-mp.panel("C", 120, 100, color_cycle="Bold")
+mp.panel("C", 120, 100, color_cycle="Bold", margin_right=0)
 cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
 mp.get_axes("C").legend().remove()
 mp.get_axes("C").set_title("Bold")
