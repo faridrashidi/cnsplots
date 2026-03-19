@@ -191,7 +191,7 @@ cns.take_legend_out()
 # Histogram comparison across species
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across multiple groups.
-cns.figure(200, 100)
+cns.figure(100, 100)
 ax = cns.histplot(
     data=iris, x="sepal_length", hue="species", multiple="layer", alpha=0.5
 )
