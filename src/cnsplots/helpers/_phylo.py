@@ -37,16 +37,21 @@ def phyloplot(adata: AnnData) -> None:
         squeeze=False,
         gridspec_kw=dict(hspace=0, wspace=0.1),
     )[0]
+    tree_ax = cast(matplotlib.axes.Axes, axes[0])
+    heatmap_ax = cast(matplotlib.axes.Axes, axes[1])
+    group_ax_1 = cast(matplotlib.axes.Axes, axes[2])
+    group_ax_2 = cast(matplotlib.axes.Axes, axes[3])
+    legend_ax = cast(matplotlib.axes.Axes, axes[4])
     for ax in axes:
         ax.set_axis_off()
     with plt.rc_context({"lines.linewidth": 0.5}):
-        Bio.Phylo.draw(tree, label_func=lambda _: "", axes=axes[0], do_show=False)
+        Bio.Phylo.draw(tree, label_func=lambda _: "", axes=tree_ax, do_show=False)
     ax = sns.heatmap(
         adata.layers["trisicell_output"],
-        ax=axes[1],
+        ax=heatmap_ax,
         rasterized=True,
         # cbar_kws={"aspect": 0.5},
-        cbar_ax=axes[4],
+        cbar_ax=legend_ax,
         cmap="parula",
     )
     cbar = ax.collections[0].colorbar
@@ -56,15 +61,15 @@ def phyloplot(adata: AnnData) -> None:
     obs_group = adata.obs[["group"]]
     _heatmap(
         obs_group,
-        ax=axes[2],  # numpy indexing returns Axes at runtime
-        leg_ax=axes[4],
+        ax=group_ax_1,
+        leg_ax=legend_ax,
         rasterized=True,
         palette="Set1",
     )
     _heatmap(
         obs_group,
-        ax=axes[3],
-        leg_ax=axes[4],
+        ax=group_ax_2,
+        leg_ax=legend_ax,
         rasterized=True,
         palette="Set2",
     )
