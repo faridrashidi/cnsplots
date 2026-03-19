@@ -25,7 +25,7 @@ iris = sns.load_dataset("iris")
 # Basic distribution plot
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Histogram with KDE overlay.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.distplot(data=tips, x="total_bill")
 ax.set_title("Basic Distribution Plot")
 
@@ -34,7 +34,7 @@ ax.set_title("Basic Distribution Plot")
 # Grouped distribution plot
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare distributions across groups using ``hue``.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.distplot(data=tips, x="total_bill", hue="sex")
 ax.set_title("Distribution by Sex")
 cns.take_legend_out()
@@ -44,7 +44,7 @@ cns.take_legend_out()
 # Distribution plot with multiple groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare more than two groups.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 100, "Tableau")
 ax = cns.distplot(data=tips, x="total_bill", hue="day")
 ax.set_title("Distribution by Day")
 cns.take_legend_out()
@@ -54,7 +54,7 @@ cns.take_legend_out()
 # Distribution comparison for iris dataset
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare species distributions.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.distplot(data=iris, x="sepal_length", hue="species")
 ax.set_title("Sepal Length Distribution")
 cns.take_legend_out()
@@ -98,7 +98,7 @@ mp.get_axes("B").set_title("Bold Palette")
 # Distribution of tips by time
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare lunch vs dinner distributions.
-cns.figure(150, 100)
+cns.figure(100, 100)
 ax = cns.distplot(data=tips, x="tip", hue="time")
 ax.set_title("Tip Distribution by Time")
 cns.take_legend_out()

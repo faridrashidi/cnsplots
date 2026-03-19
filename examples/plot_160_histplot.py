@@ -164,13 +164,13 @@ ax.set_title("2D Histogram (parula)")
 # 2D histogram with different colormaps
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare colormap options.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=380)
 
-mp.panel("A", 120, 140)
+mp.panel("A", 120, 120, margin_right=30)
 cns.histplot(data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="hot")
 mp.get_axes("A").set_title("hot colormap")
 
-mp.panel("B", 120, 140)
+mp.panel("B", 120, 120)
 cns.histplot(
     data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="BuRd_custom"
 )
