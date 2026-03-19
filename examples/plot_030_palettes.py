@@ -316,9 +316,9 @@ ax.set_title("Using Color Constants")
 # Comparing palettes side by side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use multipanel to compare different palettes.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=315)
 
-mp.panel("A", 80, 120, color_cycle="Set1")
+mp.panel("A", 80, 120, color_cycle="Set1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Set1")
 
@@ -339,19 +339,19 @@ mp.get_axes("D").set_title("Set2")
 # Palettes for hue grouping
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Different palettes affect grouped plots.
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(max_width=440)
 
-mp.panel("A", 100, 150, color_cycle="Set1")
+mp.panel("A", 100, 100, color_cycle="Set1")
 cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Set1")
 
-mp.panel("B", 100, 150, color_cycle="Tableau")
+mp.panel("B", 100, 100, color_cycle="Tableau")
 cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Tableau")
 
-mp.panel("C", 100, 150, color_cycle="Bold")
+mp.panel("C", 100, 100, color_cycle="Bold", margin_right=0)
 cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
 mp.get_axes("C").set_title("Bold")
@@ -361,19 +361,19 @@ mp.get_axes("C").set_title("Bold")
 # Palette for scatter plots
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Colors distinguish groups in scatter plots.
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(max_width=520)
 
-mp.panel("A", 120, 140, color_cycle="Set1")
+mp.panel("A", 120, 120, color_cycle="Set1")
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Set1")
 
-mp.panel("B", 120, 140, color_cycle="Tableau")
+mp.panel("B", 120, 120, color_cycle="Tableau")
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Tableau")
 
-mp.panel("C", 120, 140, color_cycle="Dark2")
+mp.panel("C", 120, 120, color_cycle="Dark2", margin_right=0)
 cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", hue="species", s=10)
 cns.take_legend_out()
 mp.get_axes("C").set_title("Dark2")
@@ -383,29 +383,31 @@ mp.get_axes("C").set_title("Dark2")
 # Ecotyper palettes for biological data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Specialized palettes for cell type visualization.
-mp = cns.multipanel(max_width=500)
+mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 80, 100, color_cycle="Ecotyper1")
+mp.panel("A", 80, 80, color_cycle="Ecotyper1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Ecotyper1")
 
-mp.panel("B", 80, 100, color_cycle="Ecotyper2")
+mp.panel("B", 80, 80, color_cycle="Ecotyper2")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("Ecotyper2")
 
-mp.panel("C", 80, 100, color_cycle="Ecotyper3")
+mp.panel("C", 80, 80, color_cycle="Ecotyper3")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Ecotyper3")
 
-mp.panel("D", 80, 100, color_cycle="Ecotyper4")
+mp.newline()
+
+mp.panel("D", 80, 80, color_cycle="Ecotyper4")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Ecotyper4")
 
-mp.panel("E", 80, 100, color_cycle="Ecotyper5")
+mp.panel("E", 80, 80, color_cycle="Ecotyper5")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("E").set_title("Ecotyper5")
 
-mp.panel("F", 80, 100, color_cycle="Ecotyper6")
+mp.panel("F", 80, 80, color_cycle="Ecotyper6")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("F").set_title("Ecotyper6")
 
@@ -414,35 +416,35 @@ mp.get_axes("F").set_title("Ecotyper6")
 # Journal palettes for publication-ready figures
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Cell is a custom cnsplots palette; the others match familiar journal-inspired styles.
-mp = cns.multipanel(max_width=600)
+mp = cns.multipanel(max_width=470)
 
-mp.panel("A", 80, 100, color_cycle="Cell")
+mp.panel("A", 80, 80, color_cycle="Cell", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Cell")
 
-mp.panel("B", 80, 100, color_cycle="Nature")
+mp.panel("B", 80, 80, color_cycle="Nature")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("Nature")
 
-mp.panel("C", 80, 100, color_cycle="Science")
+mp.panel("C", 80, 80, color_cycle="Science")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Science")
 
-mp.panel("D", 80, 100, color_cycle="Lancet")
+mp.panel("D", 80, 80, color_cycle="Lancet")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Lancet")
 
 mp.newline()
 
-mp.panel("E", 80, 100, color_cycle="NEJM")
+mp.panel("E", 80, 80, color_cycle="NEJM")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("E").set_title("NEJM")
 
-mp.panel("F", 80, 100, color_cycle="JAMA")
+mp.panel("F", 80, 80, color_cycle="JAMA")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("F").set_title("JAMA")
 
-mp.panel("G", 80, 100, color_cycle="JCO")
+mp.panel("G", 80, 80, color_cycle="JCO")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("G").set_title("JCO")
 
@@ -451,16 +453,16 @@ mp.get_axes("G").set_title("JCO")
 # Colorblind-safe palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Okabe-Ito and Paul Tol palettes — recommended by Nature for accessibility.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 80, 100, color_cycle="OkabeIto")
+mp.panel("A", 80, 80, color_cycle="OkabeIto")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("OkabeIto")
 
-mp.panel("B", 80, 100, color_cycle="TolBright")
+mp.panel("B", 80, 80, color_cycle="TolBright")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("TolBright")
 
-mp.panel("C", 80, 100, color_cycle="TolMuted")
+mp.panel("C", 80, 80, color_cycle="TolMuted")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("TolMuted")
