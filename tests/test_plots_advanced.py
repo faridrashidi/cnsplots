@@ -16,6 +16,15 @@ from matplotlib.legend import Legend
 import cnsplots as cns
 
 
+def _bivariate_hist_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "x": [4.5, 4.7, 4.9, 5.1, 5.3, 5.7, 5.9, 6.1, 6.3, 6.8, 7.1, 7.4],
+            "y": [2.2, 2.4, 3.1, 3.3, 3.6, 4.0, 4.2, 2.9, 2.7, 3.0, 3.5, 2.8],
+        }
+    )
+
+
 def test_survival_plots(
     survival_df: pd.DataFrame,
     survival_three_group_df: pd.DataFrame,
@@ -327,6 +336,93 @@ def test_heatmapplot_tracks_multipanel_relayout(heatmap_adata: ad.AnnData) -> No
 
     assert resized_host_box.y0 != pytest.approx(initial_host_box.y0)
     assert heatmap_box.bounds == pytest.approx(resized_host_box.bounds)
+
+
+def test_histplot_colorbars_align_in_multipanel() -> None:
+    data = _bivariate_hist_df()
+    mp = cns.multipanel(max_width=400)
+
+    ax_a = mp.panel("A", 120, 140)
+    cns.histplot(data=data, x="x", y="y", cbar=True, cmap="hot")
+    ax_a.set_title("hot colormap")
+
+    ax_b = mp.panel("B", 120, 140)
+    cns.histplot(data=data, x="x", y="y", cbar=True, cmap="BuRd_custom")
+    ax_b.set_title("BuRd_custom colormap")
+
+    fig = mp.fig
+    assert fig is not None
+    fig.canvas.draw()
+
+    for host_ax in (ax_a, ax_b):
+        colorbar = host_ax.collections[0].colorbar
+        assert colorbar is not None
+
+        host_box = host_ax.get_position().frozen()
+        cbar_box = colorbar.ax.get_position().frozen()
+
+        assert cbar_box.y0 == pytest.approx(host_box.y0)
+        assert cbar_box.height == pytest.approx(host_box.height)
+        assert cbar_box.x0 >= host_box.x1 - 1e-9
+
+
+def test_histplot_colorbar_tracks_multipanel_relayout() -> None:
+    data = _bivariate_hist_df()
+    mp = cns.multipanel(max_width=220)
+    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    cns.histplot(data=data, x="x", y="y", cbar=True, cmap="hot")
+
+    colorbar = host_ax.collections[0].colorbar
+    assert colorbar is not None
+
+    fig = mp.fig
+    assert fig is not None
+    fig.canvas.draw()
+
+    initial_host_box = host_ax.get_position().frozen()
+    initial_cbar_box = colorbar.ax.get_position().frozen()
+
+    mp.newline()
+    mp.panel("B", height=200, width=100)
+    fig.canvas.draw()
+
+    resized_host_box = host_ax.get_position().frozen()
+    resized_cbar_box = colorbar.ax.get_position().frozen()
+
+    assert resized_host_box.y0 != pytest.approx(initial_host_box.y0)
+    assert resized_cbar_box.y0 != pytest.approx(initial_cbar_box.y0)
+    assert resized_cbar_box.y0 == pytest.approx(resized_host_box.y0)
+    assert resized_cbar_box.height == pytest.approx(resized_host_box.height)
+    assert resized_cbar_box.x0 >= resized_host_box.x1 - 1e-9
+
+
+def test_histplot_with_explicit_cbar_ax_leaves_it_untouched() -> None:
+    data = _bivariate_hist_df()
+    mp = cns.multipanel(max_width=220)
+    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    fig = mp.fig
+    assert fig is not None
+    cbar_ax = fig.add_axes((0.8, 0.2, 0.05, 0.5))
+    initial_cbar_box = cbar_ax.get_position().frozen()
+
+    cns.histplot(
+        data=data,
+        x="x",
+        y="y",
+        ax=host_ax,
+        cbar=True,
+        cbar_ax=cbar_ax,
+        cmap="hot",
+    )
+
+    mp.newline()
+    mp.panel("B", height=200, width=100)
+    fig.canvas.draw()
+
+    assert host_ax.collections[0].colorbar is not None
+    assert host_ax.collections[0].colorbar.ax is cbar_ax
+    assert cbar_ax.get_position().bounds == pytest.approx(initial_cbar_box.bounds)
+    assert not hasattr(host_ax, "_cnsplots_detached_axes_layout")
 
 
 def test_genomics_plots(

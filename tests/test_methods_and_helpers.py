@@ -8,6 +8,7 @@ from typing import Any, cast
 
 import anndata as ad
 import matplotlib as mpl
+import matplotlib.colorbar  # noqa: F401  # ensure submodule is importable
 import matplotlib.legend as mlegend
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +17,7 @@ import pytest
 from matplotlib.transforms import Bbox
 
 import cnsplots as cns
-from cnsplots import _methods
+from cnsplots import _methods, _utils
 from cnsplots.helpers import _cmprsk, _heatmap as helper_heatmap, _phylo, _sankey
 
 
@@ -664,6 +665,49 @@ def test_figure_autofit_sync_hooks_deduplicate_callbacks() -> None:
     manager._run_axes_sync_hooks("_sync_test")
 
     assert calls == ["called"]
+
+
+def test_capture_detached_axes_layout_returns_empty_without_new_axes() -> None:
+    cns.figure(120, 120)
+    host_ax = plt.gca()
+
+    layouts = _utils._capture_detached_axes_layout(host_ax, [host_ax])
+
+    assert layouts == []
+    assert not hasattr(host_ax, "_cnsplots_detached_axes_layout")
+    assert not hasattr(host_ax, "_cnsplots_sync_embedded_axes")
+
+
+def test_capture_detached_axes_layout_chains_existing_sync_hook() -> None:
+    cns.figure(120, 120)
+    host_ax = plt.gca()
+    detached_ax = plt.gcf().add_axes((0.75, 0.2, 0.1, 0.4))
+    initial_detached_box = detached_ax.get_position().frozen()
+    calls: list[str] = []
+
+    setattr(host_ax, "_cnsplots_sync_embedded_axes", lambda: calls.append("existing"))
+    layouts = _utils._capture_detached_axes_layout(host_ax, [host_ax])
+
+    assert len(layouts) == 1
+
+    host_ax.set_position((0.2, 0.3, 0.4, 0.5))
+    sync = getattr(host_ax, "_cnsplots_sync_embedded_axes")
+    assert callable(sync)
+    sync()
+
+    host_box = host_ax.get_position().frozen()
+    detached_box = detached_ax.get_position().frozen()
+
+    assert calls == ["existing"]
+    assert detached_box.bounds != pytest.approx(initial_detached_box.bounds)
+    assert detached_box.x0 == pytest.approx(
+        host_box.x0 + host_box.width * layouts[0]["x0"]
+    )
+    assert detached_box.y0 == pytest.approx(
+        host_box.y0 + host_box.height * layouts[0]["y0"]
+    )
+    assert detached_box.width == pytest.approx(host_box.width * layouts[0]["width"])
+    assert detached_box.height == pytest.approx(host_box.height * layouts[0]["height"])
 
 
 def test_capture_detached_colorbar_layout_guard_branches() -> None:

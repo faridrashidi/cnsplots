@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import pandas as pd
+    from matplotlib.axes import Axes
 
 import itertools
 import operator
@@ -416,6 +418,68 @@ def _preflight_autofit_for_export(fig):
         manager._on_draw(DrawEvent("draw_event", agg_canvas, agg_canvas.get_renderer()))
     finally:
         fig.set_canvas(original_canvas)
+
+
+def _chain_axes_sync_hook(
+    ax: Axes,
+    sync: Callable[[], None],
+    attr_name: str = "_cnsplots_sync_embedded_axes",
+) -> Callable[[], None]:
+    """Append a host-axes sync hook without replacing an existing one."""
+    existing_sync = getattr(ax, attr_name, None)
+    if callable(existing_sync):
+
+        def _chained_sync() -> None:
+            existing_sync()
+            sync()
+
+        setattr(ax, attr_name, _chained_sync)
+        return _chained_sync
+
+    setattr(ax, attr_name, sync)
+    return sync
+
+
+def _capture_detached_axes_layout(host_ax: Axes, existing_axes: Sequence[Axes]):
+    """Record new helper axes relative to a host axes and sync them on relayout."""
+    host_pos = host_ax.get_position().frozen()
+    existing_ids = {id(host_ax)} | {id(ax) for ax in existing_axes}
+    layouts = []
+
+    for detached_ax in host_ax.figure.axes:
+        if id(detached_ax) in existing_ids:
+            continue
+        detached_pos = detached_ax.get_position().frozen()
+        layouts.append(
+            {
+                "ax": detached_ax,
+                "x0": float((detached_pos.x0 - host_pos.x0) / host_pos.width),
+                "y0": float((detached_pos.y0 - host_pos.y0) / host_pos.height),
+                "width": float(detached_pos.width / host_pos.width),
+                "height": float(detached_pos.height / host_pos.height),
+            }
+        )
+
+    if not layouts:
+        return []
+
+    setattr(host_ax, "_cnsplots_detached_axes_layout", layouts)
+
+    def _sync_detached_axes() -> None:
+        current_host_pos = host_ax.get_position().frozen()
+        for layout in getattr(host_ax, "_cnsplots_detached_axes_layout", []):
+            detached_ax = layout["ax"]
+            detached_ax.set_position(
+                [
+                    current_host_pos.x0 + current_host_pos.width * layout["x0"],
+                    current_host_pos.y0 + current_host_pos.height * layout["y0"],
+                    current_host_pos.width * layout["width"],
+                    current_host_pos.height * layout["height"],
+                ]
+            )
+
+    _chain_axes_sync_hook(host_ax, _sync_detached_axes)
+    return layouts
 
 
 def figure(height=None, width=None, color_cycle=None, color_map=None):

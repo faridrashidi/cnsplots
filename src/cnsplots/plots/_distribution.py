@@ -462,8 +462,14 @@ def histplot(**kwargs: Any) -> Axes:
         if columns_to_check:
             validate_columns_exist(data, columns_to_check, "histplot")
 
+    track_detached_axes = bool(kwargs.get("cbar")) and kwargs.get("cbar_ax") is None
+    host_ax = kwargs.get("ax", plt.gca())
+    existing_axes = list(host_ax.figure.axes) if track_detached_axes else []
+
     kwargs.setdefault("edgecolor", None)
     ax = sns.histplot(**kwargs)
+    if track_detached_axes:
+        cns.utils._capture_detached_axes_layout(ax, existing_axes)
     return ax
 
 
