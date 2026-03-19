@@ -25,6 +25,39 @@ def _bivariate_hist_df() -> pd.DataFrame:
     )
 
 
+def _linked_colorbar(ax: Axes) -> Colorbar | None:
+    for artist in (*ax.collections, *ax.images):
+        colorbar = getattr(artist, "colorbar", None)
+        if isinstance(colorbar, Colorbar):
+            return colorbar
+    return None
+
+
+def _relative_axes_bounds(
+    host_ax: Axes, helper_ax: Axes
+) -> tuple[float, float, float, float]:
+    host_box = host_ax.get_position().frozen()
+    helper_box = helper_ax.get_position().frozen()
+    return (
+        float((helper_box.x0 - host_box.x0) / host_box.width),
+        float((helper_box.y0 - host_box.y0) / host_box.height),
+        float(helper_box.width / host_box.width),
+        float(helper_box.height / host_box.height),
+    )
+
+
+@pytest.fixture(scope="module")
+def scanpy_blobs() -> tuple[Any, ad.AnnData]:
+    sc = pytest.importorskip("scanpy")
+    blobs = sc.datasets.blobs()
+    rng = np.random.default_rng(0)
+    blobs.obs["mitf"] = rng.random(blobs.shape[0])
+    blobs.obs["axl"] = rng.random(blobs.shape[0])
+    sc.pp.neighbors(blobs)
+    sc.tl.umap(blobs, random_state=0)
+    return sc, blobs
+
+
 def test_survival_plots(
     survival_df: pd.DataFrame,
     survival_three_group_df: pd.DataFrame,
@@ -422,6 +455,150 @@ def test_histplot_with_explicit_cbar_ax_leaves_it_untouched() -> None:
     assert host_ax.collections[0].colorbar is not None
     assert host_ax.collections[0].colorbar.ax is cbar_ax
     assert cbar_ax.get_position().bounds == pytest.approx(initial_cbar_box.bounds)
+    assert not hasattr(host_ax, "_cnsplots_detached_axes_layout")
+
+
+def test_scanpy_umap_colorbars_preserve_linked_geometry_in_multipanel(
+    scanpy_blobs: tuple[Any, ad.AnnData],
+) -> None:
+    sc, blobs = scanpy_blobs
+    mp = cns.multipanel(max_width=350)
+    cns.setup_scanpy()
+
+    ax_a = mp.panel("A", 120, 120)
+    sc.pl.umap(blobs, color="mitf", size=8, ax=ax_a, show=False, cmap="gnuplot")
+    ax_a.set_xlabel("UMAP-1")
+    ax_a.set_ylabel("UMAP-2")
+    ax_a.set_title("MITF")
+    colorbar_a = _linked_colorbar(ax_a)
+    assert colorbar_a is not None
+
+    ax_b = mp.panel("B", 120, 120)
+    sc.pl.umap(blobs, color="axl", size=8, ax=ax_b, show=False, cmap="gnuplot")
+    ax_b.set_xlabel("UMAP-1")
+    ax_b.set_ylabel("UMAP-2")
+    ax_b.set_title("AXL")
+    colorbar_b = _linked_colorbar(ax_b)
+    assert colorbar_b is not None
+
+    fig = mp.fig
+    assert fig is not None
+    fig.canvas.draw()
+
+    rendered_a = _relative_axes_bounds(ax_a, colorbar_a.ax)
+    rendered_b = _relative_axes_bounds(ax_b, colorbar_b.ax)
+    for host_ax, colorbar in ((ax_a, colorbar_a), (ax_b, colorbar_b)):
+        host_box = host_ax.get_position().frozen()
+        cbar_box = colorbar.ax.get_position().frozen()
+        assert cbar_box.y0 == pytest.approx(host_box.y0)
+        assert cbar_box.height == pytest.approx(host_box.height)
+        assert cbar_box.x0 >= host_box.x1 - 1e-9
+
+    mp.newline()
+    mp.panel("C", 120, 120)
+    fig.canvas.draw()
+
+    assert _relative_axes_bounds(ax_a, colorbar_a.ax) == pytest.approx(rendered_a)
+    assert _relative_axes_bounds(ax_b, colorbar_b.ax) == pytest.approx(rendered_b)
+    assert hasattr(ax_a, "_cnsplots_detached_axes_layout")
+    assert hasattr(ax_b, "_cnsplots_detached_axes_layout")
+
+
+def test_scanpy_umap_colorbar_tracks_multipanel_relayout(
+    scanpy_blobs: tuple[Any, ad.AnnData],
+) -> None:
+    sc, blobs = scanpy_blobs
+    mp = cns.multipanel(max_width=220)
+    cns.setup_scanpy()
+    host_ax = mp.panel("A", height=90, width=90, pad_left=5, pad_top=5)
+    sc.pl.umap(blobs, color="mitf", size=8, ax=host_ax, show=False, cmap="gnuplot")
+
+    colorbar = _linked_colorbar(host_ax)
+    assert colorbar is not None
+
+    fig = mp.fig
+    assert fig is not None
+    fig.canvas.draw()
+    rendered_relative_box = _relative_axes_bounds(host_ax, colorbar.ax)
+
+    host_box = host_ax.get_position().frozen()
+    cbar_box = colorbar.ax.get_position().frozen()
+    assert cbar_box.y0 == pytest.approx(host_box.y0)
+    assert cbar_box.height == pytest.approx(host_box.height)
+    assert cbar_box.x0 >= host_box.x1 - 1e-9
+
+    mp.newline()
+    mp.panel("B", height=160, width=100)
+    fig.canvas.draw()
+
+    assert _relative_axes_bounds(host_ax, colorbar.ax) == pytest.approx(
+        rendered_relative_box
+    )
+
+
+def test_scanpy_categorical_umap_does_not_capture_detached_axes(
+    scanpy_blobs: tuple[Any, ad.AnnData],
+) -> None:
+    sc, blobs = scanpy_blobs
+    mp = cns.multipanel(max_width=220)
+    cns.setup_scanpy()
+    host_ax = mp.panel("A", height=90, width=90)
+    sc.pl.umap(blobs, color="blobs", size=8, ax=host_ax, show=False)
+
+    fig = mp.fig
+    assert fig is not None
+    fig.canvas.draw()
+
+    assert _linked_colorbar(host_ax) is None
+    assert not hasattr(host_ax, "_cnsplots_detached_axes_layout")
+
+
+def test_multipanel_linked_colorbar_tracks_relayout() -> None:
+    mp = cns.multipanel(max_width=220)
+    host_ax = mp.panel("A", height=90, width=90)
+    fig = mp.fig
+    assert fig is not None
+
+    scatter = host_ax.scatter([1, 2, 3], [1, 2, 3], c=[0.1, 0.2, 0.3])
+    colorbar = fig.colorbar(scatter, ax=host_ax)
+
+    mp.newline()
+    mp.panel("B", height=160, width=100)
+    fig.canvas.draw()
+    rendered_relative_box = _relative_axes_bounds(host_ax, colorbar.ax)
+
+    host_box = host_ax.get_position().frozen()
+    cbar_box = colorbar.ax.get_position().frozen()
+    assert cbar_box.y0 == pytest.approx(host_box.y0)
+    assert cbar_box.height == pytest.approx(host_box.height)
+    assert cbar_box.x0 >= host_box.x1 - 1e-9
+
+    mp.newline()
+    mp.panel("C", height=120, width=80)
+    fig.canvas.draw()
+
+    assert _relative_axes_bounds(host_ax, colorbar.ax) == pytest.approx(
+        rendered_relative_box
+    )
+    assert hasattr(host_ax, "_cnsplots_detached_axes_layout")
+
+
+def test_multipanel_linked_colorbar_ignores_explicit_cbar_axes() -> None:
+    mp = cns.multipanel(max_width=220)
+    host_ax = mp.panel("A", height=90, width=90)
+    fig = mp.fig
+    assert fig is not None
+
+    cbar_ax = fig.add_axes((0.8, 0.2, 0.05, 0.5))
+    scatter = host_ax.scatter([1, 2, 3], [1, 2, 3], c=[0.1, 0.2, 0.3])
+    colorbar = fig.colorbar(scatter, cax=cbar_ax)
+    initial_cbar_box = colorbar.ax.get_position().frozen()
+
+    mp.newline()
+    mp.panel("B", height=160, width=100)
+    fig.canvas.draw()
+
+    assert colorbar.ax.get_position().bounds == pytest.approx(initial_cbar_box.bounds)
     assert not hasattr(host_ax, "_cnsplots_detached_axes_layout")
 
 

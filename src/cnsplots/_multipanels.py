@@ -396,6 +396,69 @@ class multipanel:
                 changed = True
         return changed
 
+    def _refresh_known_figure_axes_ids(self) -> None:
+        """Update each panel's figure-axes snapshot for future helper capture."""
+        if self.fig is None:
+            return
+        figure_axes_ids = {id(ax) for ax in self.fig.axes}
+        for panel in self._panels:
+            if panel.get("_is_spacer"):
+                continue
+            ax = self._created_axes.get(panel["label"])
+            if ax is None or ax.figure is not self.fig:
+                continue
+            panel["known_figure_axes_ids"] = set(figure_axes_ids)
+
+    def _iter_linked_helper_axes(self, ax: Axes, panel: dict):
+        """Yield new helper axes that are directly linked to a host axes."""
+        known_axes_ids = set(panel.get("known_figure_axes_ids", {id(ax)}))
+        seen_ids = set()
+
+        for artist in (*ax.collections, *ax.images):
+            colorbar = getattr(artist, "colorbar", None)
+            if colorbar is None:
+                continue
+            helper_ax = getattr(colorbar, "ax", None)
+            if helper_ax is None or helper_ax is ax:
+                continue
+            if getattr(helper_ax, "figure", None) is not ax.figure:
+                continue
+            if id(helper_ax) in known_axes_ids or id(helper_ax) in seen_ids:
+                continue
+
+            colorbar_info = getattr(helper_ax, "_colorbar_info", None)
+            if not isinstance(colorbar_info, dict):
+                continue
+            parents = colorbar_info.get("parents")
+            if parents is None or ax not in parents:
+                continue
+
+            seen_ids.add(id(helper_ax))
+            yield helper_ax
+
+    def _capture_linked_helper_axes(self) -> bool:
+        """Attach new directly linked helper axes to existing multipanel hosts."""
+        if self.fig is None:
+            return False
+
+        captured = False
+        for panel in self._panels:
+            if panel.get("_is_spacer"):
+                continue
+            ax = self._created_axes.get(panel["label"])
+            if ax is None or ax.figure is not self.fig:
+                continue
+
+            linked_axes = list(self._iter_linked_helper_axes(ax, panel))
+            if not linked_axes:
+                continue
+            if cns.utils._capture_detached_axes_layout(ax, detached_axes=linked_axes):
+                captured = True
+
+        if captured:
+            self._refresh_known_figure_axes_ids()
+        return captured
+
     def _get_canvas_renderer(self, canvas: object) -> RendererBase | None:
         """Return the canvas renderer when the backend exposes it."""
         get_renderer = getattr(canvas, "get_renderer", None)
@@ -413,7 +476,8 @@ class multipanel:
         if canvas is not self.fig.canvas:
             return
         renderer = event.renderer
-        if not self._update_left_layout_metrics(renderer):
+        captured_linked_axes = self._capture_linked_helper_axes()
+        if not (captured_linked_axes or self._update_left_layout_metrics(renderer)):
             return
 
         self._is_relayout_in_draw = True
@@ -424,7 +488,10 @@ class multipanel:
                 renderer = self._get_canvas_renderer(canvas)
                 if renderer is None:
                     break
-                if not self._update_left_layout_metrics(renderer):
+                captured_linked_axes = self._capture_linked_helper_axes()
+                if not (
+                    captured_linked_axes or self._update_left_layout_metrics(renderer)
+                ):
                     break
         finally:
             self._is_relayout_in_draw = False
@@ -666,6 +733,8 @@ class multipanel:
                 label_text.set_ha("right")
                 label_text.set_va("bottom")
 
+        self._refresh_known_figure_axes_ids()
+
     def panel(
         self,
         label: str | None = None,
@@ -799,6 +868,8 @@ class multipanel:
 
         if label is None:
             label = self._labels[self._panel_index]
+
+        self._capture_linked_helper_axes()
 
         # Store panel info
         panel_info = {

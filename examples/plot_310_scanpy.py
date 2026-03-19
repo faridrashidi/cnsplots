@@ -208,7 +208,7 @@ sc.pl.scatter(blobs, x="mitf", y="axl", color="blobs", size=10, ax=ax, show=Fals
 mp = cns.multipanel(max_width=350)
 cns.setup_scanpy()
 
-mp.panel("A", 120, 120)
+mp.panel("A", 120, 120, margin_right=30)
 ax_a = mp.get_axes("A")
 sc.pl.umap(blobs, color="mitf", size=8, ax=ax_a, show=False, cmap="gnuplot")
 ax_a.set_xlabel("UMAP-1")

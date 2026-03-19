@@ -710,6 +710,56 @@ def test_capture_detached_axes_layout_chains_existing_sync_hook() -> None:
     assert detached_box.height == pytest.approx(host_box.height * layouts[0]["height"])
 
 
+def test_capture_detached_axes_layout_appends_specific_axes_without_duplicates() -> (
+    None
+):
+    cns.figure(120, 120)
+    host_ax = plt.gca()
+    fig = plt.gcf()
+    detached_ax1 = fig.add_axes((0.75, 0.2, 0.1, 0.4))
+
+    first_layouts = _utils._capture_detached_axes_layout(
+        host_ax,
+        detached_axes=[detached_ax1],
+    )
+    assert len(first_layouts) == 1
+
+    detached_ax2 = fig.add_axes((0.82, 0.2, 0.05, 0.3))
+    second_layouts = _utils._capture_detached_axes_layout(
+        host_ax,
+        detached_axes=[detached_ax1, detached_ax2],
+    )
+
+    assert len(second_layouts) == 1
+    tracked_layouts = getattr(host_ax, "_cnsplots_detached_axes_layout")
+    assert len(tracked_layouts) == 2
+    assert tracked_layouts[0]["ax"] is detached_ax1
+    assert tracked_layouts[1]["ax"] is detached_ax2
+
+
+def test_capture_detached_axes_layout_skips_foreign_axes_and_sync_guard() -> None:
+    cns.figure(120, 120)
+    host_ax = plt.gca()
+    other_fig = plt.figure()
+    try:
+        other_ax = other_fig.add_axes((0.1, 0.2, 0.2, 0.3))
+        assert (
+            _utils._capture_detached_axes_layout(host_ax, detached_axes=[other_ax])
+            == []
+        )
+
+        detached_ax = host_ax.figure.add_axes((0.75, 0.2, 0.1, 0.4))
+        _utils._capture_detached_axes_layout(host_ax, detached_axes=[detached_ax])
+        layouts = getattr(host_ax, "_cnsplots_detached_axes_layout")
+        layouts[0]["ax"] = other_ax
+
+        sync = getattr(host_ax, "_cnsplots_sync_embedded_axes")
+        assert callable(sync)
+        sync()
+    finally:
+        plt.close(other_fig)
+
+
 def test_capture_detached_colorbar_layout_guard_branches() -> None:
     plotter = cast(Any, types.SimpleNamespace(legend_axes=[], cbars=[]))
     helper_heatmap._capture_detached_colorbar_layout(plotter)

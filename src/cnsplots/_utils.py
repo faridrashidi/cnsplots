@@ -440,17 +440,32 @@ def _chain_axes_sync_hook(
     return sync
 
 
-def _capture_detached_axes_layout(host_ax: Axes, existing_axes: Sequence[Axes]):
-    """Record new helper axes relative to a host axes and sync them on relayout."""
-    host_pos = host_ax.get_position().frozen()
-    existing_ids = {id(host_ax)} | {id(ax) for ax in existing_axes}
-    layouts = []
+def _capture_detached_axes_layout(
+    host_ax: Axes,
+    existing_axes: Sequence[Axes] | None = None,
+    *,
+    detached_axes: Sequence[Axes] | None = None,
+):
+    """Record helper axes relative to a host axes and sync them on relayout."""
+    if detached_axes is None:
+        existing_ids = {id(host_ax)} | {
+            id(ax) for ax in ([] if existing_axes is None else existing_axes)
+        }
+        detached_axes = [ax for ax in host_ax.figure.axes if id(ax) not in existing_ids]
 
-    for detached_ax in host_ax.figure.axes:
-        if id(detached_ax) in existing_ids:
+    host_pos = host_ax.get_position().frozen()
+    had_layouts = hasattr(host_ax, "_cnsplots_detached_axes_layout")
+    layouts = getattr(host_ax, "_cnsplots_detached_axes_layout", [])
+    tracked_ids = {id(host_ax)} | {id(layout["ax"]) for layout in layouts}
+    new_layouts = []
+
+    for detached_ax in detached_axes:
+        if getattr(detached_ax, "figure", None) is not host_ax.figure:
+            continue
+        if id(detached_ax) in tracked_ids:
             continue
         detached_pos = detached_ax.get_position().frozen()
-        layouts.append(
+        new_layouts.append(
             {
                 "ax": detached_ax,
                 "x0": float((detached_pos.x0 - host_pos.x0) / host_pos.width),
@@ -459,27 +474,36 @@ def _capture_detached_axes_layout(host_ax: Axes, existing_axes: Sequence[Axes]):
                 "height": float(detached_pos.height / host_pos.height),
             }
         )
+        set_axes_locator = getattr(detached_ax, "set_axes_locator", None)
+        if callable(set_axes_locator):
+            set_axes_locator(None)
+        tracked_ids.add(id(detached_ax))
 
-    if not layouts:
+    if not new_layouts:
         return []
 
+    layouts.extend(new_layouts)
     setattr(host_ax, "_cnsplots_detached_axes_layout", layouts)
 
-    def _sync_detached_axes() -> None:
-        current_host_pos = host_ax.get_position().frozen()
-        for layout in getattr(host_ax, "_cnsplots_detached_axes_layout", []):
-            detached_ax = layout["ax"]
-            detached_ax.set_position(
-                [
-                    current_host_pos.x0 + current_host_pos.width * layout["x0"],
-                    current_host_pos.y0 + current_host_pos.height * layout["y0"],
-                    current_host_pos.width * layout["width"],
-                    current_host_pos.height * layout["height"],
-                ]
-            )
+    if not had_layouts:
 
-    _chain_axes_sync_hook(host_ax, _sync_detached_axes)
-    return layouts
+        def _sync_detached_axes() -> None:
+            current_host_pos = host_ax.get_position().frozen()
+            for layout in getattr(host_ax, "_cnsplots_detached_axes_layout", []):
+                detached_ax = layout["ax"]
+                if getattr(detached_ax, "figure", None) is not host_ax.figure:
+                    continue
+                detached_ax.set_position(
+                    [
+                        current_host_pos.x0 + current_host_pos.width * layout["x0"],
+                        current_host_pos.y0 + current_host_pos.height * layout["y0"],
+                        current_host_pos.width * layout["width"],
+                        current_host_pos.height * layout["height"],
+                    ]
+                )
+
+        _chain_axes_sync_hook(host_ax, _sync_detached_axes)
+    return new_layouts
 
 
 def figure(height=None, width=None, color_cycle=None, color_map=None):

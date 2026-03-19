@@ -2134,6 +2134,58 @@ def test_multipanel_panel_rejects_margin_tuple_argument() -> None:
         mp.panel("A", width=60, height=40, label_top=12)  # type: ignore[call-arg]
 
 
+def test_multipanel_linked_helper_capture_guard_without_figure() -> None:
+    mp = cns.multipanel(max_width=240)
+
+    mp._refresh_known_figure_axes_ids()
+
+    assert mp._capture_linked_helper_axes() is False
+
+
+def test_multipanel_linked_helper_discovery_guard_branches() -> None:
+    mp = cns.multipanel(max_width=240)
+    host_ax = mp.panel("A", width=80, height=60)
+    panel = mp._panels[0]
+    artist = host_ax.scatter([1.0], [1.0], c=[0.1])
+
+    artist.colorbar = types.SimpleNamespace(ax=host_ax)
+    assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
+
+    other_fig = plt.figure()
+    try:
+        other_ax = other_fig.add_axes((0.1, 0.2, 0.2, 0.3))
+        artist.colorbar = types.SimpleNamespace(ax=other_ax)
+        assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
+    finally:
+        plt.close(other_fig)
+
+    helper_ax = mp.fig.add_axes((0.8, 0.2, 0.05, 0.5))
+    setattr(helper_ax, "_colorbar_info", {"parents": []})
+    artist.colorbar = types.SimpleNamespace(ax=helper_ax)
+    assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
+
+
+def test_multipanel_helper_snapshot_skips_foreign_axes() -> None:
+    mp = cns.multipanel(max_width=240)
+    mp.panel("A", width=80, height=60)
+    panel = mp._panels[0]
+    panel.pop("known_figure_axes_ids", None)
+    original_ax = mp._created_axes["A"]
+
+    other_fig = plt.figure()
+    try:
+        foreign_ax = other_fig.add_axes((0.1, 0.2, 0.2, 0.3))
+        mp._created_axes["A"] = foreign_ax
+
+        mp._refresh_known_figure_axes_ids()
+
+        assert "known_figure_axes_ids" not in panel
+        assert mp._capture_linked_helper_axes() is False
+    finally:
+        mp._created_axes["A"] = original_ax
+        plt.close(other_fig)
+
+
 def test_multipanel_draw_helpers_handle_guard_paths(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
