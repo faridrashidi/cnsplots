@@ -7,6 +7,7 @@ import types
 from typing import Any, cast
 
 import anndata as ad
+import matplotlib as mpl
 import matplotlib.legend as mlegend
 import matplotlib.pyplot as plt
 import numpy as np
@@ -599,3 +600,94 @@ def test_figure_autofit_sync_hooks_deduplicate_callbacks() -> None:
     manager._run_axes_sync_hooks("_sync_test")
 
     assert calls == ["called"]
+
+
+def test_capture_detached_colorbar_layout_guard_branches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    plotter = cast(Any, types.SimpleNamespace(legend_axes=[], cbars=[]))
+    helper_heatmap._capture_detached_colorbar_layout(plotter)
+    assert plotter._detached_colorbar_layout == []
+
+    stub_plotter = cast(
+        Any,
+        types.SimpleNamespace(
+            legend_axes=[
+                types.SimpleNamespace(
+                    figure=types.SimpleNamespace(bbox=Bbox.from_bounds(0, 0, 0, 1)),
+                    get_position=lambda: types.SimpleNamespace(
+                        bounds=(0.0, 0.0, 0.1, 0.5)
+                    ),
+                )
+            ],
+            cbars=[],
+        ),
+    )
+    helper_heatmap._capture_detached_colorbar_layout(stub_plotter)
+    assert not hasattr(stub_plotter, "_detached_colorbar_layout")
+
+    cns.figure(120, 120)
+    fig = plt.gcf()
+    legend_ax = fig.add_axes((0.6, 0.2, 0.1, 0.5))
+    cax1 = fig.add_axes((0.6, 0.6, 0.05, 0.2))
+    cax2 = fig.add_axes((0.6, 0.3, 0.05, 0.2))
+    sm = mpl.cm.ScalarMappable(norm=mpl.colors.Normalize(0, 1), cmap="viridis")
+    cbar1 = fig.colorbar(sm, cax=cax1)
+    cbar2 = fig.colorbar(sm, cax=cax2)
+    fig.canvas.draw()
+
+    monkeypatch.setattr(cbar1, "ax", None, raising=False)
+    monkeypatch.setattr(
+        cbar2.ax,
+        "get_position",
+        lambda: types.SimpleNamespace(bounds=(0.0, 0.0, 0.0, 0.2)),
+    )
+    plotter2 = cast(
+        Any,
+        types.SimpleNamespace(legend_axes=[legend_ax], cbars=[cbar1, cbar2]),
+    )
+    helper_heatmap._capture_detached_colorbar_layout(plotter2)
+    assert plotter2._detached_colorbar_layout == []
+
+
+def test_sync_detached_legend_axes_skips_invalid_colorbar_layout_entries() -> None:
+    cns.figure(120, 120)
+    ax = plt.gca()
+    fig = plt.gcf()
+    legend_ax = fig.add_axes((0.6, 0.2, 0.1, 0.5))
+    fig.canvas.draw()
+    plotter = cast(
+        Any,
+        types.SimpleNamespace(
+            _legend_anchor_ax=ax,
+            legend_axes=[legend_ax],
+            legend_delta_x=None,
+            legend_side="right",
+            right_annotation=None,
+            label_max_width=0.0,
+            show_rownames=False,
+            row_names_side="left",
+            legend_hpad=2,
+            cbars=[],
+            _detached_colorbar_layout=[
+                {
+                    "legend_ax_idx": 5,
+                    "cbar": types.SimpleNamespace(ax=legend_ax),
+                    "x_offset_px": 0.0,
+                    "top_offset_px": 0.0,
+                    "width_px": 10.0,
+                    "height_px": 20.0,
+                },
+                {
+                    "legend_ax_idx": 0,
+                    "cbar": types.SimpleNamespace(ax=None),
+                    "x_offset_px": 0.0,
+                    "top_offset_px": 0.0,
+                    "width_px": 10.0,
+                    "height_px": 20.0,
+                },
+            ],
+        ),
+    )
+
+    helper_heatmap._sync_detached_legend_axes(plotter)

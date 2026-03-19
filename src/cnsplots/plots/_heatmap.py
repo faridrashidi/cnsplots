@@ -316,6 +316,7 @@ def heatmapplot(
         cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
 
     _style_plotter_colorbars(cmp.cbars)
+    helper_heatmap._capture_detached_colorbar_layout(cmp)
     return cmp
 
 

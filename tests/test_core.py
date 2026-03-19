@@ -15,6 +15,7 @@ import matplotlib as mpl
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
+import matplotlib.colorbar
 import numpy as np
 import pandas as pd
 import pytest
@@ -1316,6 +1317,16 @@ def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> No
             assert (
                 legend_ax.get_window_extent(renderer=renderer).x0
                 >= heatmap_bbox.x1 - 1.0
+            )
+        colorbars = [obj for obj in cmp.cbars if isinstance(obj, mpl.colorbar.Colorbar)]
+        assert colorbars
+        for cbar in colorbars:
+            assert _bbox_is_within(
+                fig.bbox,
+                cbar.ax.get_window_extent(renderer=renderer),
+            )
+            assert (
+                cbar.ax.get_window_extent(renderer=renderer).x0 >= heatmap_bbox.x1 - 1.0
             )
         assert len(cmp.ax_col_dendrogram_axes) == 1
         assert _bbox_is_within(

@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+import matplotlib as mpl
+import matplotlib.colorbar  # noqa: F401  # ensure submodule is importable
 import matplotlib.legend as mlegend
 import numpy as np
 import pandas as pd
@@ -140,6 +142,66 @@ def _stabilize_detached_legends(cbars: Sequence[Any]) -> None:
             )
 
 
+def _capture_detached_colorbar_layout(plotter: ClusterMapPlotter) -> None:
+    """Record detached colorbar positions relative to their legend columns."""
+    legend_axes = list(getattr(plotter, "legend_axes", []) or [])
+    if not legend_axes:
+        plotter._detached_colorbar_layout = []
+        return
+
+    fig_bbox = legend_axes[0].figure.bbox.frozen()
+    if fig_bbox.width <= 0 or fig_bbox.height <= 0:
+        return
+
+    legend_rects = []
+    for legend_ax in legend_axes:
+        x0, y0, width, height = legend_ax.get_position().bounds
+        legend_rects.append(
+            (
+                float(x0 * fig_bbox.width),
+                float(y0 * fig_bbox.height),
+                float(width * fig_bbox.width),
+                float(height * fig_bbox.height),
+            )
+        )
+
+    layouts = []
+    for cbar in getattr(plotter, "cbars", []):
+        if not isinstance(cbar, mpl.colorbar.Colorbar):
+            continue
+        cax = getattr(cbar, "ax", None)
+        if cax is None:
+            continue
+        x0, y0, width, height = cax.get_position().bounds
+        cbar_rect = (
+            float(x0 * fig_bbox.width),
+            float(y0 * fig_bbox.height),
+            float(width * fig_bbox.width),
+            float(height * fig_bbox.height),
+        )
+        if cbar_rect[2] <= 0 or cbar_rect[3] <= 0:
+            continue
+
+        parent_idx = min(
+            range(len(legend_rects)),
+            key=lambda idx: abs(cbar_rect[0] - legend_rects[idx][0]),
+        )
+        parent_rect = legend_rects[parent_idx]
+        layouts.append(
+            {
+                "cbar": cbar,
+                "legend_ax_idx": parent_idx,
+                "x_offset_px": cbar_rect[0] - parent_rect[0],
+                "top_offset_px": (parent_rect[1] + parent_rect[3])
+                - (cbar_rect[1] + cbar_rect[3]),
+                "width_px": cbar_rect[2],
+                "height_px": cbar_rect[3],
+            }
+        )
+
+    plotter._detached_colorbar_layout = layouts
+
+
 def _sync_detached_legend_axes(plotter: ClusterMapPlotter) -> None:
     """Re-anchor detached legend columns to the current legend anchor axes."""
     anchor_ax = getattr(plotter, "_legend_anchor_ax", None)
@@ -197,6 +259,31 @@ def _sync_detached_legend_axes(plotter: ClusterMapPlotter) -> None:
                 float(anchor_bbox.y0) / float(fig_bbox.height),
                 float(legend_bbox.width) / float(fig_bbox.width),
                 float(anchor_bbox.height) / float(fig_bbox.height),
+            ]
+        )
+
+    for layout in getattr(plotter, "_detached_colorbar_layout", []):
+        legend_ax_idx = int(layout["legend_ax_idx"])
+        if legend_ax_idx >= len(legend_axes):
+            continue
+        cbar = layout["cbar"]
+        cax = getattr(cbar, "ax", None)
+        if cax is None:
+            continue
+        legend_pos = legend_axes[legend_ax_idx].get_position().bounds
+        legend_x0_px = float(legend_pos[0] * fig_bbox.width)
+        legend_y0_px = float(legend_pos[1] * fig_bbox.height)
+        legend_y1_px = legend_y0_px + float(legend_pos[3] * fig_bbox.height)
+        x0_px = legend_x0_px + float(layout["x_offset_px"])
+        width_px = float(layout["width_px"])
+        height_px = float(layout["height_px"])
+        y0_px = legend_y1_px - float(layout["top_offset_px"]) - height_px
+        cax.set_position(
+            [
+                x0_px / float(fig_bbox.width),
+                y0_px / float(fig_bbox.height),
+                width_px / float(fig_bbox.width),
+                height_px / float(fig_bbox.height),
             ]
         )
 
@@ -357,6 +444,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
     def plot_legends(self, ax: Any = None) -> None:
         super().plot_legends(ax=ax)
         self._legend_anchor_ax = self.ax if ax is None else ax
+        _capture_detached_colorbar_layout(self)
         _sync_detached_legend_axes(self)
 
     def collect_legends(self) -> None:
@@ -448,4 +536,5 @@ class DotClustermapPlotterNew(DotClustermapPlotter):
     def plot_legends(self, ax: Any = None) -> None:
         super().plot_legends(ax=ax)
         self._legend_anchor_ax = self.ax if ax is None else ax
+        _capture_detached_colorbar_layout(self)
         _sync_detached_legend_axes(self)
