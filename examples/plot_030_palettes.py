@@ -316,7 +316,7 @@ ax.set_title("Using Color Constants")
 # Comparing palettes side by side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use multipanel to compare different palettes.
-mp = cns.multipanel(max_width=315)
+mp = cns.multipanel(max_width=330)
 
 mp.panel("A", 80, 120, color_cycle="Set1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
@@ -383,7 +383,7 @@ mp.get_axes("C").set_title("Dark2")
 # Ecotyper palettes for biological data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Specialized palettes for cell type visualization.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=370)
 
 mp.panel("A", 80, 80, color_cycle="Ecotyper1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
@@ -416,7 +416,7 @@ mp.get_axes("F").set_title("Ecotyper6")
 # Journal palettes for publication-ready figures
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Cell is a custom cnsplots palette; the others match familiar journal-inspired styles.
-mp = cns.multipanel(max_width=470)
+mp = cns.multipanel(max_width=490)
 
 mp.panel("A", 80, 80, color_cycle="Cell", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
@@ -453,7 +453,7 @@ mp.get_axes("G").set_title("JCO")
 # Colorblind-safe palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Okabe-Ito and Paul Tol palettes — recommended by Nature for accessibility.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=370)
 
 mp.panel("A", 80, 80, color_cycle="OkabeIto")
 cns.barplot(data=tips, x="day", y="total_bill")
