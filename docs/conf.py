@@ -89,6 +89,8 @@ sphinx_gallery_conf = {
     "ignore_pattern": "/todo_",
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "examples",  # path to where to save gallery generated output
+    # Re-render cached gallery examples when the docs build pins a CI font.
+    "run_stale_examples": bool(os.getenv("CNSPLOTS_DOCS_FONT")),
     "within_subsection_order": "sphinx_gallery.sorting.FileNameSortKey",
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
@@ -96,6 +98,40 @@ sphinx_gallery_conf = {
         "cnsplots": None,  # Module to create cross-references for
     },
 }
+
+
+def _dedupe_font_names(font_names: list[str]) -> tuple[str, ...]:
+    """Return font names in order, skipping blanks and duplicates."""
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for font_name in font_names:
+        normalized = font_name.strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return tuple(ordered)
+
+
+def _apply_docs_font_override() -> None:
+    """Apply docs-only font preferences without changing package defaults."""
+    docs_font = os.getenv("CNSPLOTS_DOCS_FONT", "").strip()
+    if not docs_font:
+        return
+
+    cns.settings.font_sans_serif = _dedupe_font_names(
+        [
+            "Helvetica",
+            "Helvetica Neue",
+            "Arial",
+            docs_font,
+            *cns.settings.font_sans_serif,
+        ]
+    )
+    cns.settings.panel_label_fontname = docs_font
+
+
+_apply_docs_font_override()
 
 
 def _build_repo_stats_context(repo_url: str) -> dict[str, str]:

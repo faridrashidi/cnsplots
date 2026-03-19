@@ -20,6 +20,8 @@ jobs:
   build:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
+    env:
+      CNSPLOTS_DOCS_FONT: Liberation Sans
     steps:
       - uses: actions/checkout@v5
         with:
@@ -32,8 +34,23 @@ jobs:
           python-version: "3.11"
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
+      - name: Install docs fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-liberation
       - name: Sync docs dependencies
         run: uv sync --extra doc
+      - name: Verify docs font
+        run: |
+          fc-match "${CNSPLOTS_DOCS_FONT}"
+          uv run python - <<'PY'
+          import os
+          from matplotlib import font_manager as fm
+
+          docs_font = os.environ["CNSPLOTS_DOCS_FONT"]
+          font_path = fm.findfont(docs_font, fallback_to_default=False)
+          print(f"{docs_font}: {font_path}")
+          PY
       - name: Build documentation
         run: uv run sphinx-build -b html docs docs/build/html
       # Keep the custom domain in GitHub Pages settings, not as a committed CNAME file.
