@@ -399,7 +399,18 @@ def test_utils_gap_coverage(
             caller_file=missing_assets_root / "plot.py",
         )
 
-    for name in ["Set3", "Pastel1", "Pastel2", "Paired", "Dark2", "Accent", "Bold"]:
+    for name in [
+        "Set3",
+        "Pastel1",
+        "Pastel2",
+        "Paired",
+        "Dark2",
+        "Accent",
+        "Bold",
+        "Cell",
+        "Nature",
+        "Science",
+    ]:
         assert _utils.palettes(name)
 
 

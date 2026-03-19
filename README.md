@@ -70,7 +70,7 @@ Create visually stunning, journal-quality figures with minimal code. Built on ma
 
 Multiple curated palettes including:
 
-- **Qualitative**: Ecotyper1-6, Set1-3, Tableau, Bold
+- **Qualitative**: Cell, Nature, Science, Ecotyper1-6, Set1-3, Tableau, Bold
 - **Sequential**: Parula, gnuplot, custom gradients
 - **Diverging**: BlueRed, BuRd_custom, OrBu_custom
 
@@ -199,6 +199,9 @@ Access curated color palettes:
 ```python
 # Qualitative palettes (for categorical data)
 cns.figure(color_cycle="Ecotyper1")  # Default, optimized for journals
+cns.figure(color_cycle="Cell")  # Custom Cell-inspired journal palette
+cns.figure(color_cycle="Nature")  # Nature-inspired journal palette
+cns.figure(color_cycle="Science")  # Science-inspired journal palette
 cns.figure(color_cycle="Set1")  # ColorBrewer Set1
 
 # Sequential palettes (for continuous data)

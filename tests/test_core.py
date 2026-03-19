@@ -621,6 +621,11 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         assert mpl.rcParams["xtick.color"] == "red"
         assert mpl.rcParams["ytick.left"] is False
         assert mpl.rcParams["ytick.color"] == "blue"
+        assert "Cell" in mpl.colormaps
+        assert "Nature" in mpl.colormaps
+        assert "Science" in mpl.colormaps
+        assert "NPG" not in mpl.colormaps
+        assert "AAAS" not in mpl.colormaps
 
     _setup.setup_matplotlib(
         color_cycle="Set2",
@@ -1133,7 +1138,12 @@ def test_utils_helpers_and_showcase_data(
 
     assert len(_utils.palettes(["#111111", "#222222"])) == 2
     assert _utils.palettes("Set1")
+    assert len(_utils.palettes("Cell")) == 10
+    assert len(_utils.palettes("Nature")) == 10
+    assert len(_utils.palettes("Science")) == 10
     assert _utils.palettes("BuRd_custom").name == "BuRd_custom"
+    assert isinstance(_utils.palettes("NPG"), RuntimeError)
+    assert isinstance(_utils.palettes("AAAS"), RuntimeError)
     assert isinstance(_utils.palettes("Wrong Choice!"), RuntimeError)
 
     fake_sns = types.SimpleNamespace(

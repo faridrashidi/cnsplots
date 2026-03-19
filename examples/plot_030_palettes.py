@@ -85,8 +85,9 @@ plot_palettes(
         "Ecotyper4",
         "Ecotyper5",
         "Ecotyper6",
-        "NPG",
-        "AAAS",
+        "Cell",
+        "Nature",
+        "Science",
         "Lancet",
         "NEJM",
         "JAMA",
@@ -149,8 +150,9 @@ plot_palettes(
         "Bold",
         "Paired",
         "Dark2",
-        "NPG",
-        "AAAS",
+        "Cell",
+        "Nature",
+        "Science",
         "JAMA",
     ],
     540,
@@ -411,32 +413,38 @@ mp.get_axes("F").set_title("Ecotyper6")
 # %%
 # Journal palettes for publication-ready figures
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Palettes from ggsci — matching Nature, Science, Lancet, NEJM, JAMA, JCO house styles.
+# Cell is a custom cnsplots palette; the others match familiar journal-inspired styles.
 mp = cns.multipanel(max_width=600)
 
-mp.panel("A", 80, 100, color_cycle="NPG")
+mp.panel("A", 80, 100, color_cycle="Cell")
 cns.barplot(data=tips, x="day", y="total_bill")
-mp.get_axes("A").set_title("NPG")
+mp.get_axes("A").set_title("Cell")
 
-mp.panel("B", 80, 100, color_cycle="AAAS")
+mp.panel("B", 80, 100, color_cycle="Nature")
 cns.barplot(data=tips, x="day", y="total_bill")
-mp.get_axes("B").set_title("AAAS")
+mp.get_axes("B").set_title("Nature")
 
-mp.panel("C", 80, 100, color_cycle="Lancet")
+mp.panel("C", 80, 100, color_cycle="Science")
 cns.barplot(data=tips, x="day", y="total_bill")
-mp.get_axes("C").set_title("Lancet")
+mp.get_axes("C").set_title("Science")
 
-mp.panel("D", 80, 100, color_cycle="NEJM")
+mp.panel("D", 80, 100, color_cycle="Lancet")
 cns.barplot(data=tips, x="day", y="total_bill")
-mp.get_axes("D").set_title("NEJM")
+mp.get_axes("D").set_title("Lancet")
 
-mp.panel("E", 80, 100, color_cycle="JAMA")
-cns.barplot(data=tips, x="day", y="total_bill")
-mp.get_axes("E").set_title("JAMA")
+mp.newline()
 
-mp.panel("F", 80, 100, color_cycle="JCO")
+mp.panel("E", 80, 100, color_cycle="NEJM")
 cns.barplot(data=tips, x="day", y="total_bill")
-mp.get_axes("F").set_title("JCO")
+mp.get_axes("E").set_title("NEJM")
+
+mp.panel("F", 80, 100, color_cycle="JAMA")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("F").set_title("JAMA")
+
+mp.panel("G", 80, 100, color_cycle="JCO")
+cns.barplot(data=tips, x="day", y="total_bill")
+mp.get_axes("G").set_title("JCO")
 
 
 # %%

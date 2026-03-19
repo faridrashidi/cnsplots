@@ -1140,6 +1140,9 @@ def palettes(color):
         - 'Accent'
 
         **Other Qualitative:**
+        - 'Cell': Custom Cell-inspired journal palette
+        - 'Nature': Nature Reviews Cancer-inspired palette
+        - 'Science': Science-inspired journal palette
         - 'Tableau': Tableau 10 colors
         - 'Bold': Cartographic bold colors
         - 'BlueRed': Tableau blue-red diverging palette
@@ -1217,7 +1220,21 @@ def palettes(color):
             return palettable.cartocolors.qualitative.Bold_10.mpl_colors
         elif color == "BlueRed":
             return palettable.tableau.BlueRed_6.mpl_colors
-        elif color == "NPG":
+        elif color == "Cell":
+            colors = [
+                "#C84C3A",
+                "#2F7E8F",
+                "#E1A22E",
+                "#4E5A8A",
+                "#5F9862",
+                "#D07A6A",
+                "#8B6FA8",
+                "#7B8C9E",
+                "#B85F7A",
+                "#6B6B6B",
+            ]
+            return sns.color_palette(colors)
+        elif color == "Nature":
             colors = [
                 "#E64B35",
                 "#4DBBD5",
@@ -1231,7 +1248,7 @@ def palettes(color):
                 "#B09C85",
             ]
             return sns.color_palette(colors)
-        elif color == "AAAS":
+        elif color == "Science":
             colors = [
                 "#3B4992",
                 "#EE0000",
