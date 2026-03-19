@@ -67,7 +67,6 @@ def heatmapplot(
     label: str = "value",
     xlabel: str = "xlabel",
     ylabel: str = "ylabel",
-    legend_width: int = 20,
     legend_hpad: int = 2,
     legend_vpad: int = 0,
     linewidth: float = 0,
@@ -114,8 +113,6 @@ def heatmapplot(
         Label for the x-axis.
     ylabel : str, default: 'ylabel'
         Label for the y-axis.
-    legend_width : int, default: 20
-        Width of the legend area.
     legend_hpad : int, default: 10
         Horizontal padding for the legend.
     legend_vpad : int, default: 0
@@ -290,7 +287,6 @@ def heatmapplot(
         label=label,
         xlabel=xlabel,
         ylabel=ylabel,
-        legend_width=legend_width,
         legend_hpad=legend_hpad,
         legend_vpad=legend_vpad,
         row_dendrogram_size=10,

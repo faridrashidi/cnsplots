@@ -104,6 +104,7 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     legend_hpad=5,
     xlabel_labelpad=-20,
+    yticklabels_fontsize=5,
 )
 
 
