@@ -6,10 +6,12 @@ import sys
 import types
 
 import anndata as ad
+import matplotlib.legend as mlegend
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.axes import Axes
 from matplotlib.transforms import Bbox
 
 import cnsplots as cns
@@ -418,3 +420,33 @@ def test_stabilize_detached_legends_guard_branches(
         lambda renderer=None: Bbox.from_bounds(0, 0, 0, 1),
     )
     helper_heatmap._stabilize_detached_legends([zero_size_legend])
+
+
+def test_stabilize_detached_legends_skips_zero_sized_stub_axes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class StubLegend(mlegend.Legend):
+        def __init__(self, axes: Axes) -> None:
+            self._axes = axes
+            self.anchor_args: tuple[object, ...] | None = None
+            self.anchor_kwargs: dict[str, object] | None = None
+
+        def get_window_extent(self, renderer: object | None = None) -> Bbox:
+            return Bbox.from_bounds(0, 0, 10, 10)
+
+        def set_bbox_to_anchor(self, *args: object, **kwargs: object) -> None:
+            self.anchor_args = args
+            self.anchor_kwargs = kwargs
+
+    cns.figure(120, 120)
+    ax = plt.gca()
+    monkeypatch.setattr(
+        ax,
+        "get_window_extent",
+        lambda renderer=None: Bbox.from_bounds(0, 0, 0, 1),
+    )
+    legend = StubLegend(ax)
+    helper_heatmap._stabilize_detached_legends([legend])
+
+    assert legend.anchor_args is None
+    assert legend.anchor_kwargs is None

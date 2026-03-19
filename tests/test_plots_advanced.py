@@ -5,12 +5,12 @@ import types
 from typing import Any, cast
 
 import anndata as ad
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.axes import Axes
+from matplotlib.colorbar import Colorbar
 from matplotlib.legend import Legend
 
 import cnsplots as cns
@@ -165,9 +165,7 @@ def test_heatmap_and_dotplot(
         cmap="parula",
     )
     assert cmp.ax_heatmap is not None
-    heatmap_colorbars = [
-        cbar for cbar in cmp.cbars if isinstance(cbar, mpl.colorbar.Colorbar)
-    ]
+    heatmap_colorbars = [cbar for cbar in cmp.cbars if isinstance(cbar, Colorbar)]
     heatmap_legends = [obj for obj in cmp.cbars if isinstance(obj, Legend)]
     assert len(heatmap_colorbars) == 3
     assert {legend.get_title().get_text() for legend in heatmap_legends} == {
@@ -215,9 +213,7 @@ def test_heatmap_and_dotplot(
             col_annotation=["pathway"],
             cmap="parula",
         )
-        heatmap_cbar = next(
-            cbar for cbar in cmp3.cbars if isinstance(cbar, mpl.colorbar.Colorbar)
-        )
+        heatmap_cbar = next(cbar for cbar in cmp3.cbars if isinstance(cbar, Colorbar))
         assert {tick.get_fontsize() for tick in heatmap_cbar.ax.get_yticklabels()} == {
             13
         }
@@ -234,9 +230,7 @@ def test_heatmap_and_dotplot(
             size="pct_expr",
             value="score",
         )
-        dotplot_cbar = next(
-            cbar for cbar in dp2.cbars if isinstance(cbar, mpl.colorbar.Colorbar)
-        )
+        dotplot_cbar = next(cbar for cbar in dp2.cbars if isinstance(cbar, Colorbar))
         assert {tick.get_fontsize() for tick in dotplot_cbar.ax.get_yticklabels()} == {
             13
         }
