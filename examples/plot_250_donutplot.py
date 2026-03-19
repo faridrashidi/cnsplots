@@ -87,13 +87,13 @@ ax.set_title("Set2 Palette")
 # Comparing donut charts
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Compare composition across conditions.
-mp = cns.multipanel(max_width=300)
+mp = cns.multipanel(max_width=235)
 
 mp.panel("A", 100, 100)
 cns.donutplot(tips[tips["sex"] == "Male"], "day")
 mp.get_axes("A").set_title("Male Customers")
 
-mp.panel("B", 100, 100)
+mp.panel("B", 100, 100, margin_right=0)
 cns.donutplot(tips[tips["sex"] == "Female"], "day")
 mp.get_axes("B").set_title("Female Customers")
 
@@ -154,12 +154,12 @@ ax.set_title("TP53 Mutation Status")
 # Pie vs Donut comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Compare the two visualization styles.
-mp = cns.multipanel(max_width=300)
+mp = cns.multipanel(max_width=235)
 
 mp.panel("A", 100, 100)
 cns.pieplot(iris, "species")
 mp.get_axes("A").set_title("Pie Chart")
 
-mp.panel("B", 100, 100)
+mp.panel("B", 100, 100, margin_right=0)
 cns.donutplot(iris, "species")
 mp.get_axes("B").set_title("Donut Chart")

@@ -25,21 +25,21 @@ labels = ["Set1", "Set2", "Set3"]
 
 
 # %%
-# Basic three-set Venn diagram
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Visualize overlap between three sets.
-cns.figure(100, 100)
-cns.vennplot([set1, set2, set3], labels)
-plt.title("Three-Set Venn Diagram")
-
-
-# %%
 # Two-set Venn diagram
 # ~~~~~~~~~~~~~~~~~~~~
 # Simpler diagram for comparing two sets.
 cns.figure(100, 100)
 cns.vennplot([set1, set3], ["Set1", "Set3"])
 plt.title("Two-Set Venn Diagram")
+
+
+# %%
+# Basic three-set Venn diagram
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Visualize overlap between three sets.
+cns.figure(100, 100)
+cns.vennplot([set1, set2, set3], labels)
+plt.title("Three-Set Venn Diagram")
 
 
 # %%
@@ -132,7 +132,7 @@ plt.title("Pathway Gene Overlap")
 # Side-by-side Venn comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different analyses.
-mp = cns.multipanel(max_width=280)
+mp = cns.multipanel(max_width=225)
 
 mp.panel("A", 100, 100)
 setA = set(range(1, 51))
@@ -140,7 +140,7 @@ setB = set(range(30, 80))
 cns.vennplot([setA, setB], ["Set A", "Set B"])
 mp.get_axes("A").set_title("Analysis 1")
 
-mp.panel("B", 100, 100)
+mp.panel("B", 100, 100, margin_right=0)
 setC = set(range(1, 41))
 setD = set(range(35, 75))
 cns.vennplot([setC, setD], ["Set C", "Set D"])

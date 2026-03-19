@@ -186,7 +186,7 @@ ax.set_title("Treatment vs Response")
 # Comparing two confusion matrices
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side comparison of different models.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=235)
 
 # Model 1: Lower accuracy
 model1_data = pd.DataFrame(
@@ -225,7 +225,7 @@ model2_data = pd.DataFrame(
     }
 )
 
-mp.panel("B", 80, 80)
+mp.panel("B", 80, 80, margin_right=0)
 cns.confusionplot(
     data=model2_data,
     x="true",
