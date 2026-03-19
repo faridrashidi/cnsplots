@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.axes import Axes
+from matplotlib.legend import Legend
 
 import cnsplots as cns
 
@@ -164,6 +165,15 @@ def test_heatmap_and_dotplot(
         cmap="parula",
     )
     assert cmp.ax_heatmap is not None
+    heatmap_colorbars = [
+        cbar for cbar in cmp.cbars if isinstance(cbar, mpl.colorbar.Colorbar)
+    ]
+    heatmap_legends = [obj for obj in cmp.cbars if isinstance(obj, Legend)]
+    assert len(heatmap_colorbars) == 3
+    assert {legend.get_title().get_text() for legend in heatmap_legends} == {
+        "cluster",
+        "pathway",
+    }
 
     cns.figure(180, 180)
     cmp2 = cns.heatmapplot(

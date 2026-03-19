@@ -200,10 +200,15 @@ def heatmapplot(
         rc_dict = {}
         nonlocal cat_counter, cont_counter
         for annot in rc_annotation:
-            if isinstance(df.dtypes[annot], object):
-                if df[annot].isna().any():
+            series = df[annot]
+            is_numeric_annotation = pd.api.types.is_numeric_dtype(
+                series
+            ) and not pd.api.types.is_bool_dtype(series)
+
+            if not is_numeric_annotation:
+                if series.isna().any():
                     rc_dict[annot] = pch.anno_label(
-                        df[annot],
+                        series,
                         colors="black",
                         va="top",
                         ha="right",
@@ -214,12 +219,12 @@ def heatmapplot(
                     # Only use custom colors if they cover all unique values
                     # Compare using string representation to handle int/str mismatches
                     if annot_colors is not None:
-                        unique_vals_str = {str(v) for v in df[annot].dropna().unique()}
+                        unique_vals_str = {str(v) for v in series.dropna().unique()}
                         color_keys_str = {str(k) for k in annot_colors}
                         if not unique_vals_str.issubset(color_keys_str):
                             annot_colors = None
                     rc_dict[annot] = pch.anno_simple(
-                        df[annot].sort_values(key=natsort_keygen()),
+                        series.sort_values(key=natsort_keygen()),
                         cmap=cat_palettes[cat_counter % len(cat_palettes)],
                         legend_kws={
                             "frameon": False,
@@ -235,7 +240,7 @@ def heatmapplot(
                     cat_counter += 1
             else:
                 rc_dict[annot] = pch.anno_simple(
-                    df[annot],
+                    series,
                     cmap=cont_palettes[cont_counter],
                     height=3,
                     rasterized=True,

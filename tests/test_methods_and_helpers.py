@@ -386,3 +386,30 @@ def test_cluster_map_plotter_new_collect_legends() -> None:
         "blobs",
         "Z-score",
     ]
+
+
+def test_stabilize_detached_legends_guard_branches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cns.figure(120, 120)
+    ax = plt.gca()
+    ax.plot([0, 1], [0, 1], label="A")
+    removed_legend = ax.legend()
+    removed_legend.remove()
+    assert removed_legend.axes is None
+    helper_heatmap._stabilize_detached_legends([removed_legend])
+
+    cns.figure(120, 120)
+    ax2 = plt.gca()
+    ax2.plot([0, 1], [0, 1], label="B")
+    legend_no_renderer = ax2.legend()
+    monkeypatch.setattr(ax2.figure.canvas, "get_renderer", lambda: None)
+    helper_heatmap._stabilize_detached_legends([legend_no_renderer])
+
+    cns.figure(120, 120)
+    ax3 = plt.gca()
+    ax3.plot([0, 1], [0, 1], label="C")
+    zero_size_legend = ax3.legend()
+    ax3.set_position([0.1, 0.1, 0, 0])
+    ax3.figure.canvas.draw()
+    helper_heatmap._stabilize_detached_legends([zero_size_legend])

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+import matplotlib.legend as mlegend
 import numpy as np
 import pandas as pd
 from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
@@ -108,6 +109,30 @@ def _define_axes_within_current_bounds(
     if isinstance(fig, Figure):
         fig.set_layout_engine("none")
     return True
+
+
+def _stabilize_detached_legends(cbars: Sequence[Any]) -> None:
+    """Keep PyComplexHeatmap legends anchored to their helper axes on resize."""
+    for cbar in cbars:
+        if not isinstance(cbar, mlegend.Legend):
+            continue
+        ax = cbar.axes
+        if ax is None:
+            continue
+        renderer = ax.figure.canvas.get_renderer()
+        if renderer is None:
+            continue
+        legend_bbox = cbar.get_window_extent(renderer=renderer)
+        ax_bbox = ax.get_window_extent(renderer=renderer)
+        if ax_bbox.width <= 0 or ax_bbox.height <= 0:
+            continue
+        cbar.set_bbox_to_anchor(
+            (
+                0,
+                min(max((legend_bbox.y1 - ax_bbox.y0) / ax_bbox.height, 0), 1),
+            ),
+            transform=ax.transAxes,
+        )
 
 
 class ClusterMapPlotterNew(ClusterMapPlotter):
@@ -261,6 +286,10 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         if not _define_axes_within_current_bounds(self, subplot_spec):
             super()._define_axes(subplot_spec)
 
+    def plot_legends(self, ax: Any = None) -> None:
+        super().plot_legends(ax=ax)
+        _stabilize_detached_legends(getattr(self, "cbars", []))
+
     def collect_legends(self) -> None:
         if self.verbose >= 1:
             print("Collecting legends..")
@@ -346,3 +375,7 @@ class DotClustermapPlotterNew(DotClustermapPlotter):
     def _define_axes(self, subplot_spec: Any = None) -> None:
         if not _define_axes_within_current_bounds(self, subplot_spec):
             super()._define_axes(subplot_spec)
+
+    def plot_legends(self, ax: Any = None) -> None:
+        super().plot_legends(ax=ax)
+        _stabilize_detached_legends(getattr(self, "cbars", []))

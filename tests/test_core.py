@@ -20,6 +20,7 @@ import pandas as pd
 import pytest
 import seaborn as sns
 from matplotlib.backend_bases import DrawEvent, Event
+from matplotlib.legend import Legend
 from lxml import etree
 
 import cnsplots as cns
@@ -1295,6 +1296,7 @@ def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> No
         renderer = fig.canvas.get_renderer()
         fig.canvas.draw()
         second_bbox = fig.bbox.frozen()
+        legends = [obj for obj in cmp.cbars if isinstance(obj, Legend)]
 
         assert float(first_bbox.width) < float(initial_bbox.width) * 2.0
         assert float(first_bbox.height) < float(initial_bbox.height) * 2.0
@@ -1302,6 +1304,17 @@ def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> No
         assert _bbox_is_within(
             fig.bbox,
             cmp.ax.title.get_window_extent(renderer=renderer),
+        )
+        assert len(legends) == 2
+        for legend in legends:
+            assert _bbox_is_within(
+                fig.bbox,
+                legend.get_window_extent(renderer=renderer),
+            )
+        assert len(cmp.ax_col_dendrogram_axes) == 1
+        assert _bbox_is_within(
+            fig.bbox,
+            cmp.ax_col_dendrogram_axes[0].get_window_extent(renderer=renderer),
         )
 
 
@@ -1550,6 +1563,17 @@ def test_figure_autofit_tighten_single_axes_helper_branches() -> None:
     assert manager._tighten_single_axes_horizontal_layout(renderer) is True
     assert titled_ax._left_title.get_position()[0] > 0.5
     assert titled_ax._right_title.get_position()[0] > 0.5
+
+
+def test_figure_autofit_iter_axes_non_title_artists_counts_axis_off_patch() -> None:
+    cns.figure(120, 120)
+    fig = plt.gcf()
+    ax = plt.gca()
+    ax.set_axis_off()
+
+    artists = list(fig._cnsplots_autofit_manager._iter_axes_non_title_artists(ax))
+
+    assert ax.patch in artists
 
 
 def test_multipanel_layout() -> None:

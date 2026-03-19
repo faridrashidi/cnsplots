@@ -109,14 +109,20 @@ class _FigureAutofitManager:
             yield from ax.get_xticklabels()
             yield from ax.get_yticklabels()
 
-            legend = ax.get_legend()
-            if legend is not None:
-                yield legend
+        legend = ax.get_legend()
+        if legend is not None:
+            yield legend
+
+        if not axis_is_visible:
+            # Axis-off helper axes can still contain important clipped content
+            # such as dendrograms or detached legends; count their panel bounds.
+            yield ax.patch
 
         yield from ax.texts
 
         for artist in (*ax.lines, *ax.collections, *ax.patches, *ax.artists):
-            if not axis_is_visible and isinstance(artist, mpl.legend.Legend):
+            if not axis_is_visible:
+                yield artist
                 continue
             get_clip_on = getattr(artist, "get_clip_on", None)
             if callable(get_clip_on) and not get_clip_on():
@@ -134,6 +140,9 @@ class _FigureAutofitManager:
         legend = ax.get_legend()
         if legend is not None:
             yield legend
+
+        if not getattr(ax, "axison", True):
+            yield ax.patch
 
         yield from ax.texts
 
