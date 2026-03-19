@@ -235,6 +235,8 @@ cmp = cns.heatmapplot(
     show_rownames=False,
     show_colnames=True,
     colors=custom_colors,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -275,6 +277,8 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     linewidth=0.5,
     legend_vpad=4,
+    legend_hpad=5,
+    xlabel_labelpad=-10,
 )
 
 

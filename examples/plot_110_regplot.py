@@ -165,7 +165,7 @@ ax.set_title("Tipping by Smoking Status")
 # Side-by-side regression comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare regressions in separate panels.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=305)
 
 male_tips = tips[tips["sex"] == "Male"]
 female_tips = tips[tips["sex"] == "Female"]
@@ -175,7 +175,7 @@ cns.regplot(data=male_tips, x="total_bill", y="tip", s=5)
 r, p = stats.pearsonr(male_tips["total_bill"], male_tips["tip"])
 mp.get_axes("A").set_title(f"Male (r={r:.2f})")
 
-mp.panel("B", 100, 120)
+mp.panel("B", 100, 120, margin_right=0)
 cns.regplot(data=female_tips, x="total_bill", y="tip", s=5)
 r, p = stats.pearsonr(female_tips["total_bill"], female_tips["tip"])
 mp.get_axes("B").set_title(f"Female (r={r:.2f})")

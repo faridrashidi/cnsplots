@@ -219,14 +219,16 @@ ax.set_title("Horizontal with Labels")
 # Stacked bar plot with counts vs proportions comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare the same data shown as counts vs proportions.
-mp = cns.multipanel(max_width=260)
+mp = cns.multipanel(max_width=160)
 
 mp.panel("A", 80, 130)
 cns.stackplot(data=tips, x="day", y="sex", normalize=False)
 mp.get_axes("A").set_title("Absolute Counts")
 mp.get_axes("A").set_ylabel("Count")
 
-mp.panel("B", 80, 130)
+mp.newline()
+
+mp.panel("B", 80, 130, margin_top=10)
 cns.stackplot(data=tips, x="day", y="sex", normalize=True, addtip=True)
 mp.get_axes("B").set_title("Normalized Proportions")
 mp.get_axes("B").set_ylabel("Proportion")

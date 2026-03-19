@@ -225,12 +225,12 @@ ax.set_xlabel("Party Size")
 np.random.seed(42)
 log_data = pd.DataFrame({"value": np.random.lognormal(3, 1, 1000)})
 
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=320)
 
 mp.panel("A", 80, 120)
 cns.histplot(data=log_data, x="value", bins=30)
 mp.get_axes("A").set_title("Linear Scale")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 80, 120, margin_right=0)
 cns.histplot(data=log_data, x="value", bins=30, log_scale=True)
 mp.get_axes("B").set_title("Log Scale")

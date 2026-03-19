@@ -247,7 +247,7 @@ mp.get_axes("D").set_title("Petal Width")
 # Error bar comparison
 # ~~~~~~~~~~~~~~~~~~~~
 # Compare different error bar types side by side.
-mp = cns.multipanel(max_width=480)
+mp = cns.multipanel(max_width=400)
 
 mp.panel("A", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
@@ -257,7 +257,7 @@ mp.panel("B", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="sd")
 mp.get_axes("B").set_title("Std Deviation")
 
-mp.panel("C", 100, 100)
+mp.panel("C", 100, 100, margin_right=0)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="ci")
 mp.get_axes("C").set_title("95% CI")
 
@@ -266,7 +266,7 @@ mp.get_axes("C").set_title("95% CI")
 # Grouped analysis by time
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare groups across different time periods.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=410)
 
 lunch = tips[tips["time"] == "Lunch"]
 dinner = tips[tips["time"] == "Dinner"]
@@ -276,7 +276,7 @@ cns.barplot(data=lunch, x="day", y="total_bill", hue="sex")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Lunch")
 
-mp.panel("B", 100, 150)
+mp.panel("B", 100, 150, margin_right=0)
 cns.barplot(data=dinner, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
 mp.get_axes("B").set_title("Dinner")
@@ -341,20 +341,22 @@ cns.take_legend_out()
 # Palette comparison with bars
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Different palettes for the same data.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=310)
 
 mp.panel("A", 80, 120, color_cycle="Set1")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Set1")
 
-mp.panel("B", 80, 120, color_cycle="Tableau")
+mp.panel("B", 80, 120, color_cycle="Tableau", margin_right=0)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("Tableau")
+
+mp.newline()
 
 mp.panel("C", 80, 120, color_cycle="Bold", margin_top=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Bold")
 
-mp.panel("D", 80, 120, color_cycle="Pastel1", margin_top=20)
+mp.panel("D", 80, 120, color_cycle="Pastel1", margin_top=20, margin_right=0)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Pastel1")

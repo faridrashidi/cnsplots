@@ -167,7 +167,7 @@ ax.set_title("Dose-Response Curve")
 # Comparing multiple conditions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side line plot comparison.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=360)
 
 mp.panel("A", 80, 140)
 cns.lineplot(
@@ -176,7 +176,7 @@ cns.lineplot(
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Parietal Region")
 
-mp.panel("B", 80, 140)
+mp.panel("B", 80, 140, margin_right=0)
 cns.lineplot(
     data=fmri[fmri["region"] == "frontal"], x="timepoint", y="signal", hue="event"
 )
