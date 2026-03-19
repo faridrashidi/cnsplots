@@ -140,7 +140,7 @@ mp.get_axes("B").set_title("jitter=0.4 (spread)")
 # Strip plot with custom alpha
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust transparency for overlapping points.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=315)
 
 mp.panel("A", 80, 120)
 cns.stripplot(data=tips, x="day", y="total_bill", size=4, alpha=1.0)

@@ -101,7 +101,7 @@ ax = cns.boxplot(
     pairs="all",
     addcount=True,
 )
-ax.set_title("All Pairwise Comparisons with Sample Counts")
+ax.set_title("All Pairwise Comparisons\nwith Sample Counts")
 
 
 # %%
@@ -132,7 +132,7 @@ ax = cns.boxplot(
     pairs=[(("Thur", "Male"), ("Fri", "Male"))],
 )
 cns.take_legend_out()
-ax.set_title("Grouped Boxplot with Cross-Group Comparison")
+ax.set_title("Grouped Boxplot with\nCross-Group Comparison")
 
 
 # %%
@@ -170,13 +170,13 @@ ax.set_title("Boxplot with Outliers")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The ``whis`` parameter controls whisker extent.
 # Default is 1.5 (1.5×IQR). Use larger values for fewer outliers.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=310)
 
 mp.panel("A", 80, 120)
 cns.boxplot(data=tips, x="day", y="total_bill", whis=1.0, showoutliers=True)
 mp.get_axes("A").set_title("whis=1.0 (more outliers)")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 80, 120, margin_right=0)
 cns.boxplot(data=tips, x="day", y="total_bill", whis=3.0, showoutliers=True)
 mp.get_axes("B").set_title("whis=3.0 (fewer outliers)")
 
