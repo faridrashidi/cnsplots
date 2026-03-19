@@ -106,7 +106,7 @@ plot_palettes(
     1200,
     ncols=2,
 )
-cns.savefig("~/Desktop/salam.jpg")
+
 
 # %%
 # Using glasbey directly

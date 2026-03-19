@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.transforms import Bbox
 
 import cnsplots as cns
 from cnsplots import _methods
@@ -410,6 +411,10 @@ def test_stabilize_detached_legends_guard_branches(
     ax3 = plt.gca()
     ax3.plot([0, 1], [0, 1], label="C")
     zero_size_legend = ax3.legend()
-    ax3.set_position([0.1, 0.1, 0, 0])
     ax3.figure.canvas.draw()
+    monkeypatch.setattr(
+        ax3,
+        "get_window_extent",
+        lambda renderer=None: Bbox.from_bounds(0, 0, 0, 1),
+    )
     helper_heatmap._stabilize_detached_legends([zero_size_legend])
