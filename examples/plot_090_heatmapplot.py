@@ -84,6 +84,8 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     yticklabels_fontsize=5,
     legend_hpad=5,
+    xlabel_labelpad=-20,
+    ylabel_labelpad=10,
 )
 
 
@@ -100,6 +102,8 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     show_rownames=True,
     show_colnames=True,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -119,6 +123,8 @@ cmp = cns.heatmapplot(
     col_dendrogram=True,
     show_rownames=False,
     show_colnames=True,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -157,6 +163,8 @@ cmp = cns.heatmapplot(
     col_cluster=True,
     show_rownames=False,
     show_colnames=True,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -177,6 +185,8 @@ cmp = cns.heatmapplot(
     col_cluster=True,
     show_rownames=False,
     show_colnames=True,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -241,6 +251,8 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     vmin=-2,
     vmax=2,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -279,6 +291,8 @@ cmp = cns.heatmapplot(
     show_rownames=False,
     show_colnames=True,
     rasterized=True,  # Reduces SVG file size
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
 
 
@@ -300,4 +314,6 @@ cmp = cns.heatmapplot(
     col_dendrogram=True,
     show_rownames=False,
     show_colnames=True,
+    legend_hpad=5,
+    xlabel_labelpad=-20,
 )
