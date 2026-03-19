@@ -124,15 +124,14 @@ def _stabilize_detached_legends(cbars: Sequence[Any]) -> None:
             continue
         legend_bbox = cbar.get_window_extent(renderer=renderer)
         ax_bbox = ax.get_window_extent(renderer=renderer)
-        if ax_bbox.width <= 0 or ax_bbox.height <= 0:
-            continue
-        cbar.set_bbox_to_anchor(
-            (
-                0,
-                min(max((legend_bbox.y1 - ax_bbox.y0) / ax_bbox.height, 0), 1),
-            ),
-            transform=ax.transAxes,
-        )
+        if ax_bbox.width > 0 and ax_bbox.height > 0:
+            cbar.set_bbox_to_anchor(
+                (
+                    0,
+                    min(max((legend_bbox.y1 - ax_bbox.y0) / ax_bbox.height, 0), 1),
+                ),
+                transform=ax.transAxes,
+            )
 
 
 class ClusterMapPlotterNew(ClusterMapPlotter):
