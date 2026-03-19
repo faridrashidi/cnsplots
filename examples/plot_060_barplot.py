@@ -216,7 +216,7 @@ ax.set_xticklabels(
 # Barplot with sample counts
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Display number of samples above bars.
-cns.figure(150, 100)
+cns.figure(150, 150)
 cns.barplot(data=iris, x="species", y="sepal_length", addtip=True)
 
 
@@ -226,7 +226,7 @@ cns.barplot(data=iris, x="species", y="sepal_length", addtip=True)
 # Compare different measurements using multipanel.
 mp = cns.multipanel(max_width=400)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 80, 120, margin_bottom=20)
 cns.barplot(data=iris, x="species", y="sepal_length")
 mp.get_axes("A").set_title("Sepal Length")
 
