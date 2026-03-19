@@ -247,7 +247,7 @@ mp.get_axes("D").set_title("Petal Width")
 # Error bar comparison
 # ~~~~~~~~~~~~~~~~~~~~
 # Compare different error bar types side by side.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=420)
 
 mp.panel("A", 100, 100)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
