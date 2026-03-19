@@ -130,19 +130,13 @@ ax.set_title("Smaller Dots")
 # Side-by-side comparison of different databases.
 mp = cns.multipanel(max_width=700)
 
-mp.panel(
-    "A",
-    100,
-    220,
-    margin_left=10,
-    margin_top=0,
-    margin_right=150,
-    margin_bottom=20,
-)
+mp.panel("A", 100, 220, margin_right=0, margin_bottom=20)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=10, size=1.5)
 mp.get_axes("A").set_title("GO Biological Process")
 
-mp.panel("B", 100, 220)
+mp.newline()
+
+mp.panel("B", 100, 220, margin_right=0)
 cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=10, size=1.5)
 mp.get_axes("B").set_title("KEGG")
 

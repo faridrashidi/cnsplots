@@ -41,7 +41,8 @@ de.head()
 # ~~~~~~~~~~~~~~~~~~
 # Display DE results.
 cns.figure(200, 200)
-cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol")
+ax = cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol")
+ax.set_title("Volcano Plot")
 
 
 # %%
@@ -287,32 +288,16 @@ for i, tp in enumerate(timepoints):
     de_tp["-log10p"] = -np.log10(de_tp["pvalue"])
     de_list.append(de_tp)
 
-mp = cns.multipanel(max_width=630)
+mp = cns.multipanel(max_width=670)
 
-mp.panel(
-    "A",
-    130,
-    130,
-    margin_left=10,
-    margin_top=0,
-    margin_right=50,
-    margin_bottom=20,
-)
+mp.panel("A", 130, 130, margin_right=65)
 cns.volcanoplot(de_list[0], x="log2FC", y="-log10p", symbol="gene", show_list=[])
 mp.get_axes("A").set_title("Day 1")
 
-mp.panel(
-    "B",
-    130,
-    130,
-    margin_left=10,
-    margin_top=0,
-    margin_right=50,
-    margin_bottom=20,
-)
+mp.panel("B", 130, 130, margin_right=65)
 cns.volcanoplot(de_list[1], x="log2FC", y="-log10p", symbol="gene", show_list=[])
 mp.get_axes("B").set_title("Day 3")
 
-mp.panel("C", 130, 130)
+mp.panel("C", 130, 130, margin_right=0)
 cns.volcanoplot(de_list[2], x="log2FC", y="-log10p", symbol="gene", show_list=[])
 mp.get_axes("C").set_title("Day 7")
