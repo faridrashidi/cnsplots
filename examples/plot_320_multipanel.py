@@ -69,7 +69,7 @@ mp.get_axes("C").set_title("KDE Plot")
 # 3x2 grid with uniform panel sizes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Consistent panel sizes for organized appearance.
-mp = cns.multipanel(max_width=450)
+mp = cns.multipanel(max_width=440)
 
 mp.panel("A", 100, 100, margin_bottom=20)
 cns.boxplot(data=iris, x="species", y="sepal_length")
@@ -154,7 +154,7 @@ ax_c.set_xlabel("Day of Week")
 # Using custom color palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Apply different palettes to the multi-panel figure.
-mp = cns.multipanel(max_width=460)
+mp = cns.multipanel(max_width=450)
 
 mp.panel("A", 100, 100, pad_top=5, color_cycle="Tableau")
 cns.barplot(data=tips, x="day", y="total_bill")
