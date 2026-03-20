@@ -263,7 +263,7 @@ ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 # Panel C: dotplot
-host_c = mp.panel("C", 60, 116, pad_top=30, pad_left=4)
+host_c = mp.panel("C", 60, 120, pad_top=30, pad_left=0)
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
@@ -279,7 +279,7 @@ dp = cns.dotplot(
     legend_hpad=0,
     xlabel="",
     ylabel="",
-    xticklabels_rotation=30,
+    xticklabels_rotation=25,
     xticklabels_fontsize=6,
     yticklabels_fontsize=6,
     max_s=40,
@@ -298,7 +298,8 @@ size_legend.get_title().set_fontsize(6)
 for text in size_legend.get_texts():
     text.set_fontsize(6)
 cbar_ax.tick_params(labelsize=6, length=0)
-cbar_ax.yaxis.label.set_size(6)
+cbar_ax.set_title("size", fontsize=6, pad=1)
+cbar_ax.set_ylabel("")
 
 original_embedded_sync = getattr(host_c, "_cnsplots_sync_embedded_axes", None)
 original_detached_sync = getattr(host_c, "_cnsplots_sync_detached_legends", None)
@@ -316,14 +317,14 @@ def _sync_panel_c_dotplot() -> None:
         [
             host_box.x0,
             host_box.y0,
-            host_box.width * 0.49,
+            host_box.width * 0.34,
             host_box.height,
         ]
     )
     legend_box = [
-        host_box.x0 + host_box.width * 0.70,
+        host_box.x0 + host_box.width * 0.80,
         host_box.y0,
-        host_box.width * 0.30,
+        host_box.width * 0.20,
         host_box.height,
     ]
     legend_ax.set_position(legend_box)
@@ -331,11 +332,11 @@ def _sync_panel_c_dotplot() -> None:
         [
             legend_box[0],
             host_box.y0 + host_box.height * 0.20,
-            host_box.width * 0.048,
+            host_box.width * 0.03,
             host_box.height * 0.78,
         ]
     )
-    size_legend.set_bbox_to_anchor((0.28, 0.58), transform=legend_ax.transAxes)
+    size_legend.set_bbox_to_anchor((0.05, 0.58), transform=legend_ax.transAxes)
     legend_ax.set_axis_off()
 
 
