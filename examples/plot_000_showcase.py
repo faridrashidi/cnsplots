@@ -408,11 +408,31 @@ ax = cns.confusionplot(
     data=confusion_df,
     x="pred",
     y="truth",
-    add_pvalue=True,
+    add_pvalue=False,
     x_order=["Neg", "Pos"],
     y_order=["Neg", "Pos"],
-    pvalue_y_pad=3.9,
-    pvalue_x_pad=-0.2,
+)
+confusion_counts = (
+    confusion_df.groupby(["truth", "pred"])
+    .size()
+    .unstack(fill_value=0)
+    .reindex(index=["Neg", "Pos"], columns=["Neg", "Pos"], fill_value=0)
+)
+_, confusion_pvalue = stats.fisher_exact(
+    [
+        [confusion_counts.loc["Pos", "Pos"], confusion_counts.loc["Neg", "Pos"]],
+        [confusion_counts.loc["Pos", "Neg"], confusion_counts.loc["Neg", "Neg"]],
+    ]
+)
+ax.text(
+    0.7,
+    -0.3,
+    f"P = {confusion_pvalue:.2g}",
+    transform=ax.transAxes,
+    ha="center",
+    va="top",
+    fontsize=6,
+    clip_on=False,
 )
 ax.set_title("Confusionplot")
 
