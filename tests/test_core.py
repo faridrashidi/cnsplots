@@ -776,8 +776,10 @@ def test_svg_helpers_and_export(
     svg_in.write_text(
         """<svg xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#c1)">
-<text x="1" y="1"><tspan x="1" y="1">Panel Bold</tspan></text>
-<text x="2" y="2"><tspan x="2" y="2">Figure Bold</tspan></text>
+<text x="1" y="1" font-family="EDQXKT+Helvetica-Bold"><tspan x="1" y="1">Panel Bold</tspan></text>
+<text x="2" y="2" font-family="EDQXKT+Helvetica-Bold"><tspan x="2" y="2">Figure Bold</tspan></text>
+<text x="3" y="3" font-family="EDQXKT+Helvetica-Oblique">Italic</text>
+<text x="4" y="4">No Font</text>
 </g>
 </svg>""",
         encoding="utf-8",
@@ -786,8 +788,14 @@ def test_svg_helpers_and_export(
     root = etree.parse(str(svg_out)).getroot()
     ns = {"svg": "http://www.w3.org/2000/svg"}
     text_els = root.xpath(".//svg:text", namespaces=ns)
-    assert len(text_els) == 2
-    assert all(text_el.get("font-weight") == "bold" for text_el in text_els)
+    assert len(text_els) == 4
+    assert text_els[0].get("font-family") == "Helvetica"
+    assert text_els[0].get("font-weight") == "bold"
+    assert text_els[1].get("font-family") == "Helvetica"
+    assert text_els[1].get("font-weight") == "bold"
+    assert text_els[2].get("font-family") == "Helvetica"
+    assert text_els[2].get("font-style") == "italic"
+    assert text_els[3].get("font-family") is None
     assert all(text_el.get("clip-path") == "url(#c1)" for text_el in text_els)
 
     svg_image_in = output_dir / "input-image.svg"
