@@ -172,7 +172,7 @@ Explore our comprehensive [examples gallery](https://cnsplots.farid.one/examples
 
 ## Documentation
 
-Full documentation is available at [farid.one/cnsplots](https://cnsplots.farid.one/)
+Full documentation is available at [cnsplots.farid.one](https://cnsplots.farid.one/)
 
 - [Installation Guide](https://cnsplots.farid.one/installation.html)
 - [API Reference](https://cnsplots.farid.one/api.html)
