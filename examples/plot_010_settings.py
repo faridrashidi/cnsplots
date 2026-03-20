@@ -57,7 +57,8 @@ print(
 cns.settings.reset()
 
 cns.figure()
-cns.placeholderplot("Settings")
+ax = cns.placeholderplot("Settings")
+ax.set_title("Settings")
 
 
 # %%

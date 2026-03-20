@@ -40,12 +40,13 @@ iris["model3_prob"] = np.random.uniform(0, 1, n_samples)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ROC curves for three models with different performance.
 cns.figure(150, 150)
-cns.rocplot(
+ax = cns.rocplot(
     iris,
     "true_labels",
     ["model1_prob", "model2_prob", "model3_prob"],
 )
 cns.take_legend_out()
+ax.set_title("Basic ROC Plot")
 
 
 # %%
