@@ -28,7 +28,7 @@ tips = sns.load_dataset("tips")
 # Use ``addtip=True`` to display percentage labels.
 cns.figure(120, 100)
 ax = cns.stackplot(data=tips, x="sex", y="day", width=0.4, normalize=True, addtip=True)
-ax.set_title("Normalized Stacked Bar (with labels)")
+ax.set_title("Basic Stacked Plot")
 
 
 # %%

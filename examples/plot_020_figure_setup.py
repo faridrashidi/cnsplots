@@ -28,7 +28,8 @@ iris = sns.load_dataset("iris")
 # figure(height, width) uses height first, and with autofit enabled these
 # requested dimensions are the minimum canvas size.
 cns.figure(150, 150)
-cns.placeholderplot("150x150 Figure")
+ax = cns.placeholderplot("150x150 Figure")
+ax.set_title("Figure Setup")
 
 
 # %%

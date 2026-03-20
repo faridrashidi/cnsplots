@@ -37,7 +37,8 @@ de.head()
 # Run prerank analysis and visualize top enriched terms.
 gsea_res = cns.methods.prerank(de, "GO_Biological_Process_2021", "symbol", "rank")
 cns.figure(250, 130)
-cns.gseaplot(gsea_res, y="Clean_Term", top_term=20, size=1.8)
+ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=20, size=1.8)
+ax.set_title("GSEA Plot")
 
 
 # %%

@@ -64,7 +64,8 @@ model = cns.methods.CoxModel(
 )
 model.fit()
 cns.figure(150, 210)
-cns.forestplot(model)
+ax = cns.forestplot(model)
+ax.set_title("Forest Plot")
 model.results.head()
 
 

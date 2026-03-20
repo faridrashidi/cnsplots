@@ -31,35 +31,40 @@ sets = {
 # Basic UpSet plot
 # ~~~~~~~~~~~~~~~~
 # Show all set intersections.
-cns.upsetplot(sets, subset_size="count")
+axes = cns.upsetplot(sets, subset_size="count")
+axes["intersections"].set_title("Basic UpSet Plot")
 
 
 # %%
 # UpSet plot without totals
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Hide the set totals bar on the left.
-cns.upsetplot(sets, totals_plot_elements=0, facecolor=cns.VIOLET)
+axes = cns.upsetplot(sets, totals_plot_elements=0, facecolor=cns.VIOLET)
+axes["intersections"].set_title("UpSet Plot Without Totals")
 
 
 # %%
 # UpSet plot with custom color
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Change the bar color.
-cns.upsetplot(sets, facecolor=cns.BLUE)
+axes = cns.upsetplot(sets, facecolor=cns.BLUE)
+axes["intersections"].set_title("UpSet Plot with Custom Color")
 
 
 # %%
 # Sort by cardinality
 # ~~~~~~~~~~~~~~~~~~~
 # Sort intersections by size (largest first).
-cns.upsetplot(sets, sort_by="cardinality")
+axes = cns.upsetplot(sets, sort_by="cardinality")
+axes["intersections"].set_title("Sorted by Cardinality")
 
 
 # %%
 # Sort by degree
 # ~~~~~~~~~~~~~~
 # Sort by number of sets in intersection.
-cns.upsetplot(sets, sort_by="degree")
+axes = cns.upsetplot(sets, sort_by="degree")
+axes["intersections"].set_title("Sorted by Degree")
 
 
 # %%
@@ -73,7 +78,8 @@ gene_sets = {
     "Control": ["TP53", "MYC", "KRAS", "APC", "RB1"],
 }
 
-cns.upsetplot(gene_sets, sort_by="cardinality", facecolor=cns.GREEN)
+axes = cns.upsetplot(gene_sets, sort_by="cardinality", facecolor=cns.GREEN)
+axes["intersections"].set_title("Gene Set Intersections")
 
 
 # %%
@@ -91,21 +97,24 @@ large_sets = {
     "Set_5": random.sample(all_items, 38),
 }
 
-cns.upsetplot(large_sets, sort_by="cardinality")
+axes = cns.upsetplot(large_sets, sort_by="cardinality")
+axes["intersections"].set_title("Larger Dataset Example")
 
 
 # %%
 # Filter by minimum size
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Show only intersections with at least N elements.
-cns.upsetplot(large_sets, min_subset_size=3, sort_by="cardinality")
+axes = cns.upsetplot(large_sets, min_subset_size=3, sort_by="cardinality")
+axes["intersections"].set_title("Filtered by Minimum Size")
 
 
 # %%
 # Limit number of intersections shown
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show only top N intersections.
-cns.upsetplot(large_sets, max_subset_rank=10, sort_by="cardinality")
+axes = cns.upsetplot(large_sets, max_subset_rank=10, sort_by="cardinality")
+axes["intersections"].set_title("Top 10 Intersections")
 
 
 # %%
@@ -119,7 +128,8 @@ sample_filters = {
     "Clean_Data": [f"S{i}" for i in [1, 2, 5, 8, 9, 10, 11, 15]],
 }
 
-cns.upsetplot(sample_filters, sort_by="cardinality", facecolor=cns.ORANGE)
+axes = cns.upsetplot(sample_filters, sort_by="cardinality", facecolor=cns.ORANGE)
+axes["intersections"].set_title("Sample Filter Overlap")
 
 
 # %%
@@ -134,7 +144,8 @@ pathways = {
     "MAPK_Signaling": ["KRAS", "BRAF", "MEK1", "ERK1", "RAF1"],
 }
 
-cns.upsetplot(pathways, sort_by="cardinality", facecolor=cns.PURPLE)
+axes = cns.upsetplot(pathways, sort_by="cardinality", facecolor=cns.PURPLE)
+axes["intersections"].set_title("Pathway Membership")
 
 
 # %%
@@ -147,11 +158,13 @@ clinical_cohorts = {
     "Trial_3": [f"P{i}" for i in range(60, 100)],
 }
 
-cns.upsetplot(clinical_cohorts, sort_by="cardinality", facecolor=cns.RED)
+axes = cns.upsetplot(clinical_cohorts, sort_by="cardinality", facecolor=cns.RED)
+axes["intersections"].set_title("Clinical Trial Cohorts")
 
 
 # %%
 # UpSet with different colors
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Showcase color options.
-cns.upsetplot(sets, facecolor=cns.CHOCOLATE)
+axes = cns.upsetplot(sets, facecolor=cns.CHOCOLATE)
+axes["intersections"].set_title("UpSet Plot with Different Colors")
