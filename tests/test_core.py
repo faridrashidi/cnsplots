@@ -763,11 +763,13 @@ def test_svg_helpers_and_export(
 ) -> None:
     output_dir.mkdir(parents=True)
     cns.figure(120, 120)
+    plt.gcf().text(0.5, 0.9, "Figure Bold", fontweight="bold")
     ax = plt.gca()
     ax.text(0.5, 0.5, "Bold", fontweight="bold")
     ax.text(0.5, 0.3, "Plain")
     bold_texts = _svg._collect_bold_texts()
     assert "Bold" in bold_texts
+    assert "Figure Bold" in bold_texts
 
     svg_in = output_dir / "input.svg"
     svg_out = output_dir / "output.svg"

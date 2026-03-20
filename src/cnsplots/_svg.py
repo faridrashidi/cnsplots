@@ -19,22 +19,19 @@ def _collect_bold_texts() -> set[str]:
     """Collect text strings that are bold in the current matplotlib figure."""
     bold_texts: set[str] = set()
     fig = plt.gcf()
-    for ax in fig.get_axes():
-        for artist in ax.get_children():
-            if not isinstance(artist, Text):
-                continue
-            txt = artist.get_text().strip()
-            if not txt:
-                continue
-            weight = artist.get_fontweight()
-            if weight in ("bold", "heavy", "extra bold", "semibold", "demibold") or (
-                isinstance(weight, (int, float)) and weight >= 600
-            ):
-                bold_texts.add(txt)
-                for line in txt.split("\n"):
-                    line = line.strip()
-                    if line:
-                        bold_texts.add(line)
+    for artist in fig.findobj(match=lambda obj: isinstance(obj, Text)):
+        txt = artist.get_text().strip()
+        if not txt:
+            continue
+        weight = artist.get_fontweight()
+        if weight in ("bold", "heavy", "extra bold", "semibold", "demibold") or (
+            isinstance(weight, (int, float)) and weight >= 600
+        ):
+            bold_texts.add(txt)
+            for line in txt.split("\n"):
+                line = line.strip()
+                if line:
+                    bold_texts.add(line)
     return bold_texts
 
 
