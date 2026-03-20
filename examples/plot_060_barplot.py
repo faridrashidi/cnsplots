@@ -224,22 +224,24 @@ cns.barplot(data=iris, x="species", y="sepal_length", addtip=True)
 # Multiple metrics comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different measurements using multipanel.
-mp = cns.multipanel(max_width=400)
+mp = cns.multipanel(max_width=310)
 
 mp.panel("A", 80, 120, margin_bottom=20)
 cns.barplot(data=iris, x="species", y="sepal_length")
 mp.get_axes("A").set_title("Sepal Length")
 
 mp.panel("B", 80, 120)
-cns.barplot(data=iris, x="species", y="sepal_width")
+cns.barplot(data=iris, x="species", y="sepal_width", margin_right=0)
 mp.get_axes("B").set_title("Sepal Width")
+
+mp.newline()
 
 mp.panel("C", 80, 120)
 cns.barplot(data=iris, x="species", y="petal_length")
 mp.get_axes("C").set_title("Petal Length")
 
 mp.panel("D", 80, 120)
-cns.barplot(data=iris, x="species", y="petal_width")
+cns.barplot(data=iris, x="species", y="petal_width", margin_right=0)
 mp.get_axes("D").set_title("Petal Width")
 
 
@@ -343,7 +345,7 @@ cns.take_legend_out()
 # Different palettes for the same data.
 mp = cns.multipanel(max_width=310)
 
-mp.panel("A", 80, 120, color_cycle="Set1")
+mp.panel("A", 80, 120, color_cycle="Set1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Set1")
 
@@ -353,10 +355,10 @@ mp.get_axes("B").set_title("Tableau")
 
 mp.newline()
 
-mp.panel("C", 80, 120, color_cycle="Bold", margin_top=20)
+mp.panel("C", 80, 120, color_cycle="Bold")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Bold")
 
-mp.panel("D", 80, 120, color_cycle="Pastel1", margin_top=20, margin_right=0)
+mp.panel("D", 80, 120, color_cycle="Pastel1", margin_right=0)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Pastel1")

@@ -234,7 +234,7 @@ genes = ["mitf", "axl", "sox10", "ngfr"]
 labels = ["A", "B", "C", "D"]
 
 for gene, label in zip(genes, labels):
-    mp.panel(label, 100, 100)
+    mp.panel(label, 100, 100, margin_right=30)
     ax = mp.get_axes(label)
     sc.pl.umap(blobs, color=gene, size=6, ax=ax, show=False, cmap="gnuplot")
     ax.set_xlabel("")
@@ -249,21 +249,21 @@ for gene, label in zip(genes, labels):
 mp = cns.multipanel(max_width=480)
 cns.setup_scanpy()
 
-mp.panel("A", 110, 110)
+mp.panel("A", 110, 110, margin_right=30)
 ax_a = mp.get_axes("A")
 sc.pl.umap(blobs, color="blobs", size=8, ax=ax_a, show=False)
 ax_a.set_xlabel("UMAP-1")
 ax_a.set_ylabel("UMAP-2")
 ax_a.set_title("Clusters")
 
-mp.panel("B", 110, 110)
+mp.panel("B", 110, 110, margin_right=30)
 ax_b = mp.get_axes("B")
 sc.pl.umap(blobs, color="mitf", size=8, ax=ax_b, show=False, cmap="gnuplot")
 ax_b.set_xlabel("UMAP-1")
 ax_b.set_ylabel("UMAP-2")
 ax_b.set_title("MITF")
 
-mp.panel("C", 110, 110)
+mp.panel("C", 110, 110, margin_right=0)
 ax_c = mp.get_axes("C")
 sc.pl.umap(blobs, color="axl", size=8, ax=ax_c, show=False, cmap="gnuplot")
 ax_c.set_xlabel("UMAP-1")

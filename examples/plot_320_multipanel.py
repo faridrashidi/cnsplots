@@ -71,7 +71,7 @@ mp.get_axes("C").set_title("KDE Plot")
 # Consistent panel sizes for organized appearance.
 mp = cns.multipanel(max_width=450)
 
-mp.panel("A", 100, 100)
+mp.panel("A", 100, 100, margin_bottom=20)
 cns.boxplot(data=iris, x="species", y="sepal_length")
 
 mp.panel("B", 100, 100)
