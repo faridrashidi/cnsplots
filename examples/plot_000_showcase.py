@@ -226,8 +226,9 @@ cmp = cns.heatmapplot(
     ylabel="Patients",
     legend_hpad=0,
     legend_vpad=0,
-    legend_hgap=0,
+    legend_hgap=2,
     legend_vgap=0,
+    legend_width=3.0,
     legend_order=["Ensemble", "blobs", "Z-score"],
     xticklabels_rotation=20,
 )
