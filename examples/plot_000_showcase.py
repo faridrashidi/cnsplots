@@ -295,6 +295,40 @@ dp.cbar_ax.tick_params(labelsize=6, length=0)
 dp.cbar_ax.set_title("size", fontsize=6, pad=1)
 dp.cbar_ax.set_ylabel("")
 
+
+def _finalize_panel_c() -> None:
+    if mp.fig is not None:
+        mp.fig.canvas.draw()
+    setattr(host_c, "_cnsplots_sync_embedded_axes", None)
+    setattr(host_c, "_cnsplots_sync_detached_legends", None)
+    host_box = host_c.get_position().frozen()
+    heatmap_box = [
+        host_box.x0 + host_box.width * 0.06,
+        host_box.y0,
+        host_box.width * 0.40,
+        host_box.height * 0.90,
+    ]
+    legend_box = [
+        host_box.x0 + host_box.width * 0.63,
+        host_box.y0,
+        host_box.width * 0.33,
+        host_box.height * 0.90,
+    ]
+    dp.ax_heatmap.set_position(heatmap_box)
+    hm_ax.set_position(heatmap_box)
+    dp.legend_ax.set_position(legend_box)
+    dp.cbar_ax.set_position(
+        [
+            legend_box[0],
+            legend_box[1] + legend_box[3] * 0.16,
+            host_box.width * 0.018,
+            legend_box[3] * 0.70,
+        ]
+    )
+    dp.dot_legend.set_bbox_to_anchor((0.66, 1.02), transform=dp.legend_ax.transAxes)
+    dp.legend_ax.set_axis_off()
+
+
 # Panel D: ?
 ax = mp.panel("D", 85, 85, margin_right=0)
 cns.placeholderplot("Placeholder")
@@ -368,37 +402,7 @@ ax = mp.panel("L", 100, 100)
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
-# Finalize panel C after the multipanel layout settles.
-if mp.fig is not None:
-    mp.fig.canvas.draw()
-setattr(host_c, "_cnsplots_sync_embedded_axes", None)
-setattr(host_c, "_cnsplots_sync_detached_legends", None)
-host_box = host_c.get_position().frozen()
-heatmap_box = [
-    host_box.x0 + host_box.width * 0.06,
-    host_box.y0,
-    host_box.width * 0.40,
-    host_box.height * 0.90,
-]
-legend_box = [
-    host_box.x0 + host_box.width * 0.63,
-    host_box.y0,
-    host_box.width * 0.33,
-    host_box.height * 0.90,
-]
-dp.ax_heatmap.set_position(heatmap_box)
-hm_ax.set_position(heatmap_box)
-dp.legend_ax.set_position(legend_box)
-dp.cbar_ax.set_position(
-    [
-        legend_box[0],
-        legend_box[1] + legend_box[3] * 0.16,
-        host_box.width * 0.018,
-        legend_box[3] * 0.70,
-    ]
-)
-dp.dot_legend.set_bbox_to_anchor((0.66, 1.02), transform=dp.legend_ax.transAxes)
-dp.legend_ax.set_axis_off()
+_finalize_panel_c()
 
 # Save final figure
 cns.savefig("~/Desktop/Figure2.jpg")
