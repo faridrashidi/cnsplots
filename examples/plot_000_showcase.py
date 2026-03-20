@@ -284,10 +284,12 @@ dp = cns.dotplot(
     yticklabels_fontsize=6,
     max_s=40,
 )
-for label in dp.heatmap_axes[-1, 0].get_xticklabels():
+hm_ax = dp.heatmap_axes[-1, 0]
+for label in hm_ax.get_xticklabels():
     label.set_ha("right")
     label.set_rotation_mode("anchor")
-dp.ax_heatmap.set_title("Dotplot")
+dp.ax_heatmap.set_title("")
+hm_ax.set_title("Dotplot")
 
 cbar = next(obj for obj in dp.cbars if isinstance(obj, Colorbar))
 size_legend = next(obj for obj in dp.cbars if isinstance(obj, Legend))
@@ -313,18 +315,18 @@ def _sync_panel_c_dotplot() -> None:
         original_detached_sync()
 
     host_box = host_c.get_position().frozen()
-    dp.ax_heatmap.set_position(
-        [
-            host_box.x0,
-            host_box.y0,
-            host_box.width * 0.34,
-            host_box.height,
-        ]
-    )
-    legend_box = [
-        host_box.x0 + host_box.width * 0.80,
+    heatmap_box = [
+        host_box.x0,
         host_box.y0,
-        host_box.width * 0.20,
+        host_box.width * 0.55,
+        host_box.height,
+    ]
+    dp.ax_heatmap.set_position(heatmap_box)
+    hm_ax.set_position(heatmap_box)
+    legend_box = [
+        host_box.x0 + host_box.width * 0.72,
+        host_box.y0,
+        host_box.width * 0.28,
         host_box.height,
     ]
     legend_ax.set_position(legend_box)
