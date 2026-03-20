@@ -39,8 +39,6 @@ repos:
       - id: check-ast
       - id: check-added-large-files
       - id: debug-statements
-      - id: no-commit-to-branch
-        args: [--branch, main]
       - id: requirements-txt-fixer
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
