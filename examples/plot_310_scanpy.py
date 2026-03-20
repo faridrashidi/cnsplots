@@ -227,7 +227,7 @@ ax_b.set_title("AXL")
 # Four gene comparison
 # ~~~~~~~~~~~~~~~~~~~~
 # Grid of UMAP plots for multiple markers.
-mp = cns.multipanel(max_width=350)
+mp = cns.multipanel(max_width=310)
 cns.setup_scanpy()
 
 genes = ["mitf", "axl", "sox10", "ngfr"]
