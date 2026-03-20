@@ -10,7 +10,6 @@ from typing import Any
 from urllib.parse import urlparse
 
 import cnsplots as cns
-from cnsplots._docs_fonts import apply_docs_font_override
 
 # -- Project information -----------------------------------------------------
 
@@ -90,8 +89,6 @@ sphinx_gallery_conf = {
     "ignore_pattern": "/todo_",
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "examples",  # path to where to save gallery generated output
-    # Re-render cached gallery examples when the docs build pins a CI font.
-    "run_stale_examples": bool(os.getenv("CNSPLOTS_DOCS_FONT")),
     "within_subsection_order": "sphinx_gallery.sorting.FileNameSortKey",
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
@@ -99,8 +96,6 @@ sphinx_gallery_conf = {
         "cnsplots": None,  # Module to create cross-references for
     },
 }
-
-apply_docs_font_override(os.getenv("CNSPLOTS_DOCS_FONT"))
 
 
 def _build_repo_stats_context(repo_url: str) -> dict[str, str]:
