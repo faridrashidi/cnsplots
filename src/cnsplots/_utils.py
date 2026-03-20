@@ -98,6 +98,10 @@ class _FigureAutofitManager:
         """Yield axes-level artists that can overflow the canvas."""
         axis_is_visible = getattr(ax, "axison", True)
 
+        # Keep the rendered panel bounds in the content bbox so later cropping
+        # does not trim away canvas that a visible axes still occupies.
+        yield ax.patch
+
         for title_name in ("title", "_left_title", "_right_title"):
             title = getattr(ax, title_name, None)
             if title is not None:
@@ -114,11 +118,6 @@ class _FigureAutofitManager:
         legend = ax.get_legend()
         if legend is not None:
             yield legend
-
-        if not axis_is_visible:
-            # Axis-off helper axes can still contain important clipped content
-            # such as dendrograms or detached legends; count their panel bounds.
-            yield ax.patch
 
         yield from ax.texts
 
