@@ -260,10 +260,40 @@ ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
-# Panel C: ?
-ax = mp.panel("C", 85, 85)
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+# Panel C: dotplot
+host_c = mp.panel("C", 90, 80, pad_top=20, pad_left=40, margin_right=20)
+tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
+tips_minmax.columns = ["min", "size"]
+tips_minmax = tips_minmax.reset_index()
+dp = cns.dotplot(
+    tips_minmax,
+    x="sex",
+    y="day",
+    color="size",
+    size="min",
+    value="size",
+    legend=True,
+    legend_width=10,
+    legend_hpad=0,
+    xlabel="",
+    ylabel="",
+    xticklabels_rotation=25,
+    xticklabels_fontsize=6,
+    yticklabels_fontsize=6,
+    max_s=40,
+)
+hm_ax = dp.hm_ax
+for label in hm_ax.get_xticklabels():
+    label.set_ha("right")
+    label.set_rotation_mode("anchor")
+dp.ax_heatmap.set_title("")
+hm_ax.set_title("Dotplot")
+dp.dot_legend.get_title().set_fontsize(6)
+for text in dp.dot_legend.get_texts():
+    text.set_fontsize(6)
+dp.cbar_ax.tick_params(labelsize=6, length=0)
+dp.cbar_ax.set_title("size", fontsize=6, pad=1)
+dp.cbar_ax.set_ylabel("")
 
 # Panel D: ?
 ax = mp.panel("D", 85, 85, margin_right=0)
@@ -276,31 +306,8 @@ ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
 ax.set_title("Western Blot")
 ax.set_axis_off()
 
-# Panel F: dotplot
-# mp.panel("F", 60, 60, below="D")
-# tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
-# tips_minmax.columns = ["min", "size"]
-# tips_minmax = tips_minmax.reset_index()
-# plt.sca(mp.get_axes("E"))
-# dp = cns.dotplot(
-#     tips_minmax,
-#     x="sex",
-#     y="day",
-#     color="size",
-#     size="min",
-#     value="size",
-#     legend=False,
-#     xlabel="",
-#     ylabel="",
-#     xticklabels_rotation=60,
-#     max_s=40,
-# )
-# for label in dp.heatmap_axes[-1, 0].get_xticklabels():
-#     label.set_ha("center")
-# dp.ax_heatmap.set_title("Dotplot")
-
 # Panel F: lineplot
-ax = mp.panel("F", 85, 85, below="C", margin_top=15)
+ax = mp.panel("F", 80, 80, below="C", margin_top=15)
 ax = cns.lineplot(
     data=line_df,
     x="timepoint",
@@ -315,7 +322,7 @@ if legend is not None:
 ax.set_title("Lineplot")
 
 # Panel G: qqplot
-ax = mp.panel("G", 85, 85, below="D", margin_top=15, margin_right=0)
+ax = mp.panel("G", 80, 80, below="D", margin_top=15, margin_right=0)
 ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
 ax.set_title("Qqplot")
 
@@ -361,5 +368,37 @@ ax = mp.panel("L", 100, 100)
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
+# Finalize panel C after the multipanel layout settles.
+if mp.fig is not None:
+    mp.fig.canvas.draw()
+setattr(host_c, "_cnsplots_sync_embedded_axes", None)
+setattr(host_c, "_cnsplots_sync_detached_legends", None)
+host_box = host_c.get_position().frozen()
+heatmap_box = [
+    host_box.x0 + host_box.width * 0.06,
+    host_box.y0,
+    host_box.width * 0.40,
+    host_box.height * 0.90,
+]
+legend_box = [
+    host_box.x0 + host_box.width * 0.63,
+    host_box.y0,
+    host_box.width * 0.33,
+    host_box.height * 0.90,
+]
+dp.ax_heatmap.set_position(heatmap_box)
+hm_ax.set_position(heatmap_box)
+dp.legend_ax.set_position(legend_box)
+dp.cbar_ax.set_position(
+    [
+        legend_box[0],
+        legend_box[1] + legend_box[3] * 0.16,
+        host_box.width * 0.018,
+        legend_box[3] * 0.70,
+    ]
+)
+dp.dot_legend.set_bbox_to_anchor((0.66, 1.02), transform=dp.legend_ax.transAxes)
+dp.legend_ax.set_axis_off()
+
 # Save final figure
-cns.savefig("~/Desktop/Figure2.svg")
+cns.savefig("~/Desktop/Figure2.jpg")
