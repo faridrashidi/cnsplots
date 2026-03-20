@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     pass
 
-from collections.abc import Mapping, Set as AbstractSet
+from collections.abc import Mapping
+from collections.abc import Set as AbstractSet
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -90,6 +91,7 @@ def upsetplot(sets: Mapping[str, AbstractSet[Any] | list[Any]], **kwargs: Any) -
     ax_tot = axes.get("totals")
     cns.setup_ax(axes["matrix"])
     cns.setup_ax(axes["shading"])
+    axes["shading"].tick_params(axis="y", which="both", length=0, left=False)
     cns.setup_ax(axes["intersections"])
     axes["matrix"].tick_params(axis="both", which="both", length=0)
     for txt in axes["intersections"].texts:

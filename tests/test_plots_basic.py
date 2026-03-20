@@ -309,6 +309,10 @@ def test_sets_and_specialized_plots(
     cns.figure(120, 120)
     axes = cns.upsetplot(sets_fixture, min_subset_size=1)
     assert set(axes) >= {"matrix", "intersections"}
+    assert all(
+        not tick.tick1line.get_visible()
+        for tick in axes["shading"].yaxis.get_major_ticks()
+    )
 
     cns.figure(120, 120)
     venn = cns.vennplot(list(sets_fixture.values())[:2], labels=["A", "B"])
