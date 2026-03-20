@@ -762,29 +762,33 @@ def test_svg_helpers_and_export(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     output_dir.mkdir(parents=True)
-    cns.figure(120, 120)
-    plt.gcf().text(0.5, 0.9, "Figure Bold", fontweight="bold")
-    ax = plt.gca()
-    ax.text(0.5, 0.5, "Bold", fontweight="bold")
+    mp = cns.multipanel(max_width=220, title="Figure Bold")
+    ax = mp.panel("A", width=80, height=60)
+    ax.set_title("Panel Bold")
     ax.text(0.5, 0.3, "Plain")
     bold_texts = _svg._collect_bold_texts()
-    assert "Bold" in bold_texts
     assert "Figure Bold" in bold_texts
+    assert "Panel Bold" in bold_texts
+    assert "A" in bold_texts
 
     svg_in = output_dir / "input.svg"
     svg_out = output_dir / "output.svg"
     svg_in.write_text(
         """<svg xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#c1)"><text x="1" y="1"><tspan x="1" y="1">Bold</tspan></text></g>
+<g clip-path="url(#c1)">
+<text x="1" y="1"><tspan x="1" y="1">Panel Bold</tspan></text>
+<text x="2" y="2"><tspan x="2" y="2">Figure Bold</tspan></text>
+</g>
 </svg>""",
         encoding="utf-8",
     )
-    _svg._correct_svg(str(svg_in), str(svg_out), {"Bold"})
+    _svg._correct_svg(str(svg_in), str(svg_out), {"Panel Bold", "Figure Bold"})
     root = etree.parse(str(svg_out)).getroot()
     ns = {"svg": "http://www.w3.org/2000/svg"}
-    text_el = root.xpath(".//svg:text", namespaces=ns)[0]
-    assert text_el.get("font-weight") == "bold"
-    assert text_el.get("clip-path") == "url(#c1)"
+    text_els = root.xpath(".//svg:text", namespaces=ns)
+    assert len(text_els) == 2
+    assert all(text_el.get("font-weight") == "bold" for text_el in text_els)
+    assert all(text_el.get("clip-path") == "url(#c1)" for text_el in text_els)
 
     svg_image_in = output_dir / "input-image.svg"
     svg_image_out = output_dir / "output-image.svg"

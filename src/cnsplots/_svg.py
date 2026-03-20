@@ -19,7 +19,13 @@ def _collect_bold_texts() -> set[str]:
     """Collect text strings that are bold in the current matplotlib figure."""
     bold_texts: set[str] = set()
     fig = plt.gcf()
-    for artist in fig.findobj(match=lambda obj: isinstance(obj, Text)):
+    text_artists = list(fig.texts)
+    for ax in fig.get_axes():
+        for artist in ax.get_children():
+            if isinstance(artist, Text):
+                text_artists.append(artist)
+
+    for artist in text_artists:
         txt = artist.get_text().strip()
         if not txt:
             continue
