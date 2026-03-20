@@ -444,6 +444,18 @@ def dotplot(
     cmp.cbars = getattr(cmp, "cbars", [])
 
     hm_ax = cmp.heatmap_axes[-1, 0]
+    cmp.hm_ax = hm_ax
+    cmp.colorbar = next(
+        (cbar for cbar in cmp.cbars if isinstance(cbar, mpl.colorbar.Colorbar)),
+        None,
+    )
+    cmp.dot_legend = next(
+        (legend for legend in cmp.cbars if isinstance(legend, mpl.legend.Legend)),
+        None,
+    )
+    cmp.cbar_ax = None if cmp.colorbar is None else cmp.colorbar.ax
+    cmp.legend_ax = None if cmp.dot_legend is None else cmp.dot_legend.axes
+
     for ax in [cmp.ax_heatmap, hm_ax]:
         ax.minorticks_off()
         ax.tick_params(

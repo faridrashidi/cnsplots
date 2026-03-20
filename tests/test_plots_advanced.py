@@ -296,6 +296,9 @@ def test_heatmap_and_dotplot(
         value="score",
     )
     assert dp.ax_heatmap is not None
+    assert dp.hm_ax is dp.heatmap_axes[-1, 0]
+    assert dp.legend_ax is not None
+    assert dp.cbar_ax is not None
 
     cns.figure(160, 160)
     with pytest.raises(ValueError, match="Length mismatch"):
@@ -362,6 +365,8 @@ def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:
 
     assert dp.ax_heatmap is not None
     assert len(dp.cbars) == 0
+    assert dp.legend_ax is None
+    assert dp.cbar_ax is None
 
     eps = 1e-9
     for ax in dp.heatmap_axes.flat:

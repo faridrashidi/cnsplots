@@ -12,8 +12,6 @@ focused per-feature examples in the rest of the gallery.
 # Load data
 # ~~~~~~~~~
 import matplotlib.image as mpimg
-from matplotlib.colorbar import Colorbar
-from matplotlib.legend import Legend
 from scipy import stats
 
 import cnsplots as cns
@@ -284,17 +282,18 @@ dp = cns.dotplot(
     yticklabels_fontsize=6,
     max_s=40,
 )
-hm_ax = dp.heatmap_axes[-1, 0]
+hm_ax = dp.hm_ax
 for label in hm_ax.get_xticklabels():
     label.set_ha("right")
     label.set_rotation_mode("anchor")
 dp.ax_heatmap.set_title("")
 hm_ax.set_title("Dotplot")
 
-cbar = next(obj for obj in dp.cbars if isinstance(obj, Colorbar))
-size_legend = next(obj for obj in dp.cbars if isinstance(obj, Legend))
-legend_ax = size_legend.axes
-cbar_ax = cbar.ax
+size_legend = dp.dot_legend
+legend_ax = dp.legend_ax
+cbar_ax = dp.cbar_ax
+if size_legend is None or legend_ax is None or cbar_ax is None:
+    raise RuntimeError("Dotplot legends were not created")
 
 size_legend.get_title().set_fontsize(6)
 for text in size_legend.get_texts():
@@ -302,53 +301,6 @@ for text in size_legend.get_texts():
 cbar_ax.tick_params(labelsize=6, length=0)
 cbar_ax.set_title("size", fontsize=6, pad=1)
 cbar_ax.set_ylabel("")
-
-original_embedded_sync = getattr(host_c, "_cnsplots_sync_embedded_axes", None)
-original_detached_sync = getattr(host_c, "_cnsplots_sync_detached_legends", None)
-
-
-def _sync_panel_c_dotplot() -> None:
-    """Keep the dotplot and both legends inside panel C during relayout."""
-    if callable(original_embedded_sync):
-        original_embedded_sync()
-    if callable(original_detached_sync):
-        original_detached_sync()
-
-    host_box = host_c.get_position().frozen()
-    left_pad = host_box.width * 0.07
-    top_pad = host_box.height * 0.10
-    content_height = host_box.height - top_pad
-    heatmap_box = [
-        host_box.x0 + left_pad,
-        host_box.y0,
-        host_box.width * 0.44,
-        content_height,
-    ]
-    dp.ax_heatmap.set_position(heatmap_box)
-    hm_ax.set_position(heatmap_box)
-    legend_box = [
-        host_box.x0 + host_box.width * 0.68,
-        host_box.y0,
-        host_box.width * 0.30,
-        content_height,
-    ]
-    legend_ax.set_position(legend_box)
-    cbar_width = host_box.width * 0.022
-    cbar_ax.set_position(
-        [
-            legend_box[0],
-            legend_box[1] + legend_box[3] * 0.18,
-            cbar_width,
-            legend_box[3] * 0.72,
-        ]
-    )
-    size_legend.set_bbox_to_anchor((0.42, 1.1), transform=legend_ax.transAxes)
-    legend_ax.set_axis_off()
-
-
-host_c._cnsplots_sync_embedded_axes = _sync_panel_c_dotplot
-host_c._cnsplots_sync_detached_legends = _sync_panel_c_dotplot
-_sync_panel_c_dotplot()
 
 # Panel D: ?
 ax = mp.panel("D", 85, 85, margin_right=0)
@@ -422,6 +374,38 @@ ax.set_title("Confusionplot")
 ax = mp.panel("L", 100, 100)
 cns.placeholderplot("Placeholder")
 ax.set_title("?")
+
+# Finalize panel C after the multipanel layout settles.
+if mp.fig is not None:
+    mp.fig.canvas.draw()
+setattr(host_c, "_cnsplots_sync_embedded_axes", None)
+setattr(host_c, "_cnsplots_sync_detached_legends", None)
+host_box = host_c.get_position().frozen()
+heatmap_box = [
+    host_box.x0 + host_box.width * 0.07,
+    host_box.y0,
+    host_box.width * 0.44,
+    host_box.height * 0.90,
+]
+legend_box = [
+    host_box.x0 + host_box.width * 0.68,
+    host_box.y0,
+    host_box.width * 0.30,
+    host_box.height * 0.90,
+]
+dp.ax_heatmap.set_position(heatmap_box)
+hm_ax.set_position(heatmap_box)
+legend_ax.set_position(legend_box)
+cbar_ax.set_position(
+    [
+        legend_box[0],
+        legend_box[1] + legend_box[3] * 0.18,
+        host_box.width * 0.022,
+        legend_box[3] * 0.72,
+    ]
+)
+size_legend.set_bbox_to_anchor((0.42, 1.1), transform=legend_ax.transAxes)
+legend_ax.set_axis_off()
 
 # Save final figure
 cns.savefig("~/Desktop/Figure2.jpg")
