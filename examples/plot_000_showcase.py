@@ -342,7 +342,7 @@ def _sync_panel_c_dotplot() -> None:
             legend_box[3] * 0.72,
         ]
     )
-    size_legend.set_bbox_to_anchor((0.42, 0.56), transform=legend_ax.transAxes)
+    size_legend.set_bbox_to_anchor((0.42, 0.72), transform=legend_ax.transAxes)
     legend_ax.set_axis_off()
 
 
