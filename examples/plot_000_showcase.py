@@ -210,7 +210,7 @@ ax.axvline(
 cns.take_legend_out()
 
 # Panel R: heatmapplot
-mp.panel("R", 80, 210, margin_top=-10, margin_right=0)
+mp.panel("R", 90, 190, margin_top=-10, margin_right=0)
 cmp = cns.heatmapplot(
     blobs,
     label="Z-score",
@@ -224,13 +224,14 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     xlabel="Genes",
     ylabel="Patients",
-    legend_hpad=0,
+    legend_hpad=-4,
     legend_vpad=0,
-    legend_hgap=2,
+    legend_hgap=5,
     legend_vgap=0,
     legend_width=3.0,
     legend_order=["Ensemble", "blobs", "Z-score"],
     xticklabels_rotation=20,
+    xlabel_labelpad=0,
 )
 cmp.ax.set_title("Heatmapplot")
 
