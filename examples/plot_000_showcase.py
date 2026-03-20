@@ -315,30 +315,34 @@ def _sync_panel_c_dotplot() -> None:
         original_detached_sync()
 
     host_box = host_c.get_position().frozen()
+    left_pad = host_box.width * 0.07
+    top_pad = host_box.height * 0.10
+    content_height = host_box.height - top_pad
     heatmap_box = [
-        host_box.x0,
+        host_box.x0 + left_pad,
         host_box.y0,
-        host_box.width * 0.55,
-        host_box.height,
+        host_box.width * 0.44,
+        content_height,
     ]
     dp.ax_heatmap.set_position(heatmap_box)
     hm_ax.set_position(heatmap_box)
     legend_box = [
-        host_box.x0 + host_box.width * 0.72,
+        host_box.x0 + host_box.width * 0.68,
         host_box.y0,
-        host_box.width * 0.28,
-        host_box.height,
+        host_box.width * 0.30,
+        content_height,
     ]
     legend_ax.set_position(legend_box)
+    cbar_width = host_box.width * 0.022
     cbar_ax.set_position(
         [
             legend_box[0],
-            host_box.y0 + host_box.height * 0.20,
-            host_box.width * 0.03,
-            host_box.height * 0.78,
+            legend_box[1] + legend_box[3] * 0.18,
+            cbar_width,
+            legend_box[3] * 0.72,
         ]
     )
-    size_legend.set_bbox_to_anchor((0.05, 0.58), transform=legend_ax.transAxes)
+    size_legend.set_bbox_to_anchor((0.42, 0.56), transform=legend_ax.transAxes)
     legend_ax.set_axis_off()
 
 
