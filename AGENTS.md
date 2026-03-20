@@ -3,8 +3,8 @@
 ## Working branch rules
 
 - Never work directly on `main`.
-- If starting new work, create and switch to a new branch from `main` named `feature/<short-name>`.
-- If already on the intended feature branch, continue there unless explicitly told to create a new branch.
+- If starting new work, create and switch to a new branch from `main` named `<type>/<short-name>` such as `feature/<short-name>`, `bugfix/<short-name>`, `docs/<short-name>`, `refactor/<short-name>`, or `chore/<short-name>`.
+- If already on the intended work branch, continue there unless explicitly told to create a new branch.
 - Do not rename or delete branches unless explicitly asked.
 - Do not use `gh` to create branches; use `git`.
 
@@ -82,11 +82,11 @@
 - Base branch must be `main`.
 - Open the first pull request as a draft unless explicitly told otherwise.
 - Push the branch before creating the pull request.
-- PR title must use the format `<emoji> <subject>`.
+- PR title must use the format `<emoji> <descriptive subject>`.
 - Use a Unicode Gitmoji, not a shortcode.
 - Do not add a scope, colon, body, or trailing period.
 - Base the PR title on the overall diff against `main`, not only the staged diff.
-- Prefer the smallest accurate claim and describe only the dominant change in the pull request.
+- Prefer the smallest accurate claim and make the PR title more specific than the commit subject by naming the dominant change and affected area or behavior in a single phrase.
 - Write in imperative mood.
 - Capitalize the first word unless syntax or style requires otherwise.
 - Keep the title under 72 characters.
