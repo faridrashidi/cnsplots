@@ -128,7 +128,7 @@ ax.set_title("Smaller Dots")
 # Comparing pathway databases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side comparison of different databases.
-mp = cns.multipanel(max_width=700)
+mp = cns.multipanel(max_width=540)
 
 mp.panel("A", 100, 220, margin_right=0, margin_bottom=20)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=10, size=1.5)
@@ -145,32 +145,20 @@ mp.get_axes("B").set_title("KEGG")
 # GO categories comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different Gene Ontology categories.
-mp = cns.multipanel(max_width=940)
+mp = cns.multipanel(max_width=500)
 
-mp.panel(
-    "A",
-    100,
-    180,
-    margin_left=10,
-    margin_top=0,
-    margin_right=150,
-    margin_bottom=20,
-)
+mp.panel("A", 100, 180, margin_right=0, margin_bottom=30)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1.4)
 mp.get_axes("A").set_title("Biological Process")
 
-mp.panel(
-    "B",
-    100,
-    180,
-    margin_left=10,
-    margin_top=0,
-    margin_right=150,
-    margin_bottom=20,
-)
+mp.newline()
+
+mp.panel("B", 100, 180, margin_right=0, margin_bottom=30)
 cns.gseaplot(gsea_mf, y="Clean_Term", top_term=8, size=1.4)
 mp.get_axes("B").set_title("Molecular Function")
 
-mp.panel("C", 100, 180)
+mp.newline()
+
+mp.panel("C", 100, 180, margin_right=0)
 cns.gseaplot(gsea_cc, y="Clean_Term", top_term=8, size=1.4)
 mp.get_axes("C").set_title("Cellular Component")

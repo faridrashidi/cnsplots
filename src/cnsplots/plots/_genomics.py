@@ -250,8 +250,6 @@ def gseaplot(
     )
     fig = plt.gcf()
     cbar_ax = fig.axes[-1]
-    pos = cbar_ax.get_position()
-    cbar_ax.set_position((pos.x0 + 0.1, pos.y0 - 0.1, pos.width, pos.height))
     cbar_ax.yaxis.set_label_position("left")
     cbar_ax.yaxis.labelpad = 1
     cbar_ax.set_ylabel("")
