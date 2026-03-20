@@ -211,7 +211,7 @@ iris_melted = iris.melt(
     value_name="value",
 )
 
-cns.figure(200, 120)
+cns.figure(120, 200)
 ax = cns.boxplot(
     data=iris_melted,
     x="measurement",
@@ -230,7 +230,7 @@ plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
 # Boxplot with grouped hue and all comparisons within groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # When using hue, you can compare all subgroups within a category.
-cns.figure(180, 120)
+cns.figure(120, 180)
 ax = cns.boxplot(
     data=tips,
     x="day",

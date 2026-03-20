@@ -119,13 +119,13 @@ ax.set_title("Custom Bar Order")
 # Stacked bar plot with custom width
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Adjust bar width with the ``width`` parameter.
-mp = cns.multipanel(max_width=260)
+mp = cns.multipanel(max_width=250)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 80, 100)
 cns.stackplot(data=tips, x="day", y="sex", normalize=True, width=0.3)
 mp.get_axes("A").set_title("width=0.3 (narrow)")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 80, 100, margin_right=0)
 cns.stackplot(data=tips, x="day", y="sex", normalize=True, width=0.8)
 mp.get_axes("B").set_title("width=0.8 (wide)")
 
@@ -143,13 +143,13 @@ ax.set_title("Set2 Palette")
 # Stacked bar plot with different palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Showcase multiple palette options.
-mp = cns.multipanel(max_width=260)
+mp = cns.multipanel(max_width=250)
 
-mp.panel("A", 80, 120, color_cycle="Bold")
+mp.panel("A", 80, 100, color_cycle="Bold")
 cns.stackplot(data=tips, x="day", y="sex", normalize=True)
 mp.get_axes("A").set_title("Bold")
 
-mp.panel("B", 80, 120, color_cycle="BlueRed")
+mp.panel("B", 80, 100, color_cycle="BlueRed", margin_right=0)
 cns.stackplot(data=tips, x="day", y="sex", normalize=True)
 mp.get_axes("B").set_title("BlueRed")
 
