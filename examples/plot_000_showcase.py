@@ -179,7 +179,15 @@ ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
 ax.set_title("Slopeplot")
 
 # Panel Q: scatterplot
-mp.panel("Q", 90, 90, margin_right=50, margin_top=-10, color_cycle="Set1")
+mp.panel(
+    "Q",
+    90,
+    90,
+    margin_right=50,
+    margin_top=-10,
+    margin_bottom=20,
+    color_cycle="Set1",
+)
 ax = cns.scatterplot(
     data=iris_df, x="sepal_length", y="sepal_width", hue="species", s=5
 )
@@ -202,7 +210,7 @@ ax.axvline(
 cns.take_legend_out()
 
 # Panel R: heatmapplot
-mp.panel("R", 80, 190, margin_top=-10, margin_right=0)
+mp.panel("R", 90, 190, margin_top=-10, margin_right=0)
 cmp = cns.heatmapplot(
     blobs,
     label="Z-score",
@@ -216,12 +224,14 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     xlabel="Genes",
     ylabel="Patients",
-    legend_hpad=2,
-    legend_vpad=4,
-    legend_hgap=4,
+    legend_hpad=-4,
+    legend_vpad=0,
+    legend_hgap=5,
     legend_vgap=0,
+    legend_width=3.0,
     legend_order=["Ensemble", "blobs", "Z-score"],
     xticklabels_rotation=20,
+    xlabel_labelpad=0,
 )
 cmp.ax.set_title("Heatmapplot")
 
