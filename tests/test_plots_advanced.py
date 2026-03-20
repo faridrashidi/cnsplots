@@ -689,6 +689,63 @@ def test_multipanel_linked_colorbar_ignores_explicit_cbar_axes() -> None:
     assert not hasattr(host_ax, "_cnsplots_detached_axes_layout")
 
 
+def test_gseaplot_colorbar_aligns_with_host_axes_in_multipanel(
+    gsea_plot_df: pd.DataFrame,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_dotplot(
+        data: pd.DataFrame,
+        cmap: str,
+        y: str,
+        x: str,
+        cutoff: float,
+        column: str,
+        ax: Axes,
+        top_term: int,
+        size: float,
+    ) -> None:
+        scatter = ax.scatter(data[x], np.arange(len(data)), c=data[column], s=20)
+        fig = plt.gcf()
+        cbar = fig.colorbar(scatter, ax=ax)
+        cbar.set_label(column)
+        handles = [plt.Line2D([], [], marker="o", linestyle="none", color="black")]
+        ax.legend(handles, ["20"], title="size")
+
+    monkeypatch.setitem(
+        sys.modules, "gseapy", types.SimpleNamespace(dotplot=fake_dotplot)
+    )
+
+    mp = cns.multipanel(max_width=240)
+    host_ax = mp.panel("A", height=90, width=100)
+    plt.sca(host_ax)
+    cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=2)
+
+    colorbar = _linked_colorbar(host_ax)
+    assert colorbar is not None
+
+    fig = mp.fig
+    assert fig is not None
+    fig.canvas.draw()
+
+    rendered_relative_box = _relative_axes_bounds(host_ax, colorbar.ax)
+    host_box = host_ax.get_position().frozen()
+    cbar_box = colorbar.ax.get_position().frozen()
+
+    assert cbar_box.y0 == pytest.approx(host_box.y0)
+    assert cbar_box.height == pytest.approx(host_box.height)
+    assert cbar_box.x0 >= host_box.x1 - 1e-9
+    assert cbar_box.x0 - host_box.x1 < host_box.width * 0.2
+
+    mp.newline()
+    mp.panel("B", height=120, width=100)
+    fig.canvas.draw()
+
+    assert _relative_axes_bounds(host_ax, colorbar.ax) == pytest.approx(
+        rendered_relative_box
+    )
+    assert hasattr(host_ax, "_cnsplots_detached_axes_layout")
+
+
 def test_genomics_plots(
     volcano_df: pd.DataFrame,
     gsea_plot_df: pd.DataFrame,
