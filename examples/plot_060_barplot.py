@@ -230,8 +230,8 @@ mp.panel("A", 80, 120, margin_bottom=20)
 cns.barplot(data=iris, x="species", y="sepal_length")
 mp.get_axes("A").set_title("Sepal Length")
 
-mp.panel("B", 80, 120)
-cns.barplot(data=iris, x="species", y="sepal_width", margin_right=0)
+mp.panel("B", 80, 120, margin_right=0)
+cns.barplot(data=iris, x="species", y="sepal_width")
 mp.get_axes("B").set_title("Sepal Width")
 
 mp.newline()
@@ -240,8 +240,8 @@ mp.panel("C", 80, 120)
 cns.barplot(data=iris, x="species", y="petal_length")
 mp.get_axes("C").set_title("Petal Length")
 
-mp.panel("D", 80, 120)
-cns.barplot(data=iris, x="species", y="petal_width", margin_right=0)
+mp.panel("D", 80, 120, margin_right=0)
+cns.barplot(data=iris, x="species", y="petal_width")
 mp.get_axes("D").set_title("Petal Width")
 
 
