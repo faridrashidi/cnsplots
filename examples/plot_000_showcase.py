@@ -340,10 +340,11 @@ ax = cns.cumulativeincidenceplot(
     event="event",
     hue="group",
     hue_order=["Control", "Treatment"],
-    pvalue_position=(float(cumulative_incidence_df["time"].max()) * 0.06, 0.15),
+    pvalue_position=(0, 0.9),
     show_risk_table=False,
 )
 legend = ax.get_legend()
+legend.set_loc("lower right")
 if legend is not None:
     legend.set_title(None)
     for text in legend.get_texts():
@@ -394,7 +395,7 @@ ax.set_title("Placeholder")
 mp.newline()
 
 # Panel J: lollipopplot
-ax = mp.panel("J", 100, 30, color_cycle="NEJM", margin_right=15)
+ax = mp.panel("J", 80, 30, color_cycle="NEJM", margin_right=15, margin_bottom=20)
 ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
 ax.set_title("Lollipopplot")
 ax.set_xticklabels(
@@ -416,7 +417,7 @@ ax = cns.confusionplot(
 ax.set_title("Confusionplot")
 
 # Panel L: forestplot
-host_l = mp.panel("L", 100, 100, color_cycle=[cns.CHOCOLATE], margin_right=15)
+host_l = mp.panel("L", 90, 90, color_cycle=[cns.CHOCOLATE], pad_left=15, pad_top=10)
 forest_model = cns.methods.CoxModel(
     data=forest_df,
     duration="time",
@@ -434,15 +435,14 @@ forest_ax.set_title("Forestplot")
 detached_panel_layouts.append((host_l, [forest_ax], 0.03, 0.04))
 
 # Panel M: upsetplot
-host_m = mp.panel("M", 145, 100, margin_right=0)
+host_m = mp.panel("M", 110, 200, margin_right=0, pad_left=-100, pad_top=10)
 upset_axes = cns.upsetplot(
     upset_sets,
     fig=mp.fig,
     sort_by="cardinality",
     totals_plot_elements=0,
-    facecolor=cns.GREEN,
+    facecolor="black",
     show_counts=False,
-    element_size=14,
 )
 upset_axes["intersections"].set_title("UpSetplot")
 detached_panel_layouts.append((host_m, list(upset_axes.values()), 0.03, 0.04))
