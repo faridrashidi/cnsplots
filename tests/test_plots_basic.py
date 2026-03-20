@@ -314,6 +314,10 @@ def test_sets_and_specialized_plots(
         for tick in axes["shading"].yaxis.get_major_ticks()
     )
 
+    fig = plt.figure()
+    embedded_axes = cns.upsetplot(sets_fixture, fig=fig, min_subset_size=1)
+    assert all(ax is None or ax.figure is fig for ax in embedded_axes.values())
+
     cns.figure(120, 120)
     venn = cns.vennplot(list(sets_fixture.values())[:2], labels=["A", "B"])
     assert venn is not None
