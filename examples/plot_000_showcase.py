@@ -12,6 +12,8 @@ focused per-feature examples in the rest of the gallery.
 # Load data
 # ~~~~~~~~~
 import matplotlib.image as mpimg
+from matplotlib.colorbar import Colorbar
+from matplotlib.legend import Legend
 from scipy import stats
 
 import cnsplots as cns
@@ -261,7 +263,7 @@ ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 # Panel C: dotplot
-mp.panel("C", 60, 100, pad_top=30, pad_left=20)
+host_c = mp.panel("C", 60, 116, pad_top=30, pad_left=4)
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
@@ -277,12 +279,69 @@ dp = cns.dotplot(
     legend_hpad=0,
     xlabel="",
     ylabel="",
-    xticklabels_rotation=60,
+    xticklabels_rotation=30,
+    xticklabels_fontsize=6,
+    yticklabels_fontsize=6,
     max_s=40,
 )
 for label in dp.heatmap_axes[-1, 0].get_xticklabels():
-    label.set_ha("center")
+    label.set_ha("right")
+    label.set_rotation_mode("anchor")
 dp.ax_heatmap.set_title("Dotplot")
+
+cbar = next(obj for obj in dp.cbars if isinstance(obj, Colorbar))
+size_legend = next(obj for obj in dp.cbars if isinstance(obj, Legend))
+legend_ax = size_legend.axes
+cbar_ax = cbar.ax
+
+size_legend.get_title().set_fontsize(6)
+for text in size_legend.get_texts():
+    text.set_fontsize(6)
+cbar_ax.tick_params(labelsize=6, length=0)
+cbar_ax.yaxis.label.set_size(6)
+
+original_embedded_sync = getattr(host_c, "_cnsplots_sync_embedded_axes", None)
+original_detached_sync = getattr(host_c, "_cnsplots_sync_detached_legends", None)
+
+
+def _sync_panel_c_dotplot() -> None:
+    """Keep the dotplot and both legends inside panel C during relayout."""
+    if callable(original_embedded_sync):
+        original_embedded_sync()
+    if callable(original_detached_sync):
+        original_detached_sync()
+
+    host_box = host_c.get_position().frozen()
+    dp.ax_heatmap.set_position(
+        [
+            host_box.x0,
+            host_box.y0,
+            host_box.width * 0.49,
+            host_box.height,
+        ]
+    )
+    legend_box = [
+        host_box.x0 + host_box.width * 0.70,
+        host_box.y0,
+        host_box.width * 0.30,
+        host_box.height,
+    ]
+    legend_ax.set_position(legend_box)
+    cbar_ax.set_position(
+        [
+            legend_box[0],
+            host_box.y0 + host_box.height * 0.20,
+            host_box.width * 0.048,
+            host_box.height * 0.78,
+        ]
+    )
+    size_legend.set_bbox_to_anchor((0.28, 0.58), transform=legend_ax.transAxes)
+    legend_ax.set_axis_off()
+
+
+host_c._cnsplots_sync_embedded_axes = _sync_panel_c_dotplot
+host_c._cnsplots_sync_detached_legends = _sync_panel_c_dotplot
+_sync_panel_c_dotplot()
 
 # Panel D: ?
 ax = mp.panel("D", 85, 85, margin_right=0)
@@ -296,7 +355,7 @@ ax.set_title("Western Blot")
 ax.set_axis_off()
 
 # Panel F: lineplot
-ax = mp.panel("F", 85, 85, below="C", margin_top=15)
+ax = mp.panel("F", 85, 85, below="C", margin_top=48)
 ax = cns.lineplot(
     data=line_df,
     x="timepoint",
