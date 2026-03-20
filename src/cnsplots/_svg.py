@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from tempfile import TemporaryDirectory
 import warnings
 from typing import TYPE_CHECKING
@@ -14,27 +15,32 @@ import matplotlib.pyplot as plt
 from lxml import etree
 from matplotlib.text import Text
 
+_PDF_SUBSET_FONT_PREFIX = re.compile(r"^[A-Z]{6}\+")
+
 
 def _collect_bold_texts() -> set[str]:
     """Collect text strings that are bold in the current matplotlib figure."""
     bold_texts: set[str] = set()
     fig = plt.gcf()
+    text_artists = list(fig.texts)
     for ax in fig.get_axes():
         for artist in ax.get_children():
-            if not isinstance(artist, Text):
-                continue
-            txt = artist.get_text().strip()
-            if not txt:
-                continue
-            weight = artist.get_fontweight()
-            if weight in ("bold", "heavy", "extra bold", "semibold", "demibold") or (
-                isinstance(weight, (int, float)) and weight >= 600
-            ):
-                bold_texts.add(txt)
-                for line in txt.split("\n"):
-                    line = line.strip()
-                    if line:
-                        bold_texts.add(line)
+            if isinstance(artist, Text):
+                text_artists.append(artist)
+
+    for artist in text_artists:
+        txt = artist.get_text().strip()
+        if not txt:
+            continue
+        weight = artist.get_fontweight()
+        if weight in ("bold", "heavy", "extra bold", "semibold", "demibold") or (
+            isinstance(weight, (int, float)) and weight >= 600
+        ):
+            bold_texts.add(txt)
+            for line in txt.split("\n"):
+                line = line.strip()
+                if line:
+                    bold_texts.add(line)
     return bold_texts
 
 
@@ -122,6 +128,9 @@ def _correct_svg(
     # Restore bold font-weight lost during PDF→SVG conversion
     _restore_bold_fonts(root, ns, bold_texts or set())
 
+    # Normalize PDF subset font names for better SVG editor compatibility
+    _normalize_text_fonts(root, ns)
+
     # Flatten any remaining g elements
     _flatten_groups(root, ns)
 
@@ -181,6 +190,47 @@ def _restore_bold_fonts(
         content = (text_el.text or "").strip()
         if content in bold_texts:
             text_el.set("font-weight", "bold")
+
+
+def _normalize_pdf_font_family(
+    font_family: str,
+) -> tuple[str, str | None, str | None]:
+    """Convert PDF subset font names into SVG-friendly family/style attributes."""
+    normalized_family = _PDF_SUBSET_FONT_PREFIX.sub("", font_family).strip()
+    font_weight = None
+    font_style = None
+
+    for suffix, weight, style in (
+        ("-BoldOblique", "bold", "italic"),
+        ("-BoldItalic", "bold", "italic"),
+        ("-Bold", "bold", None),
+        ("-Oblique", None, "italic"),
+        ("-Italic", None, "italic"),
+    ):
+        if normalized_family.endswith(suffix):
+            normalized_family = normalized_family[: -len(suffix)] or normalized_family
+            font_weight = weight
+            font_style = style
+            break
+
+    return normalized_family, font_weight, font_style
+
+
+def _normalize_text_fonts(root: _Element, ns: dict[str, str]) -> None:
+    """Normalize subsetted PDF font names for broader SVG editor compatibility."""
+    for text_el in root.xpath(".//svg:text", namespaces=ns):
+        font_family = text_el.get("font-family")
+        if not font_family:
+            continue
+
+        normalized_family, font_weight, font_style = _normalize_pdf_font_family(
+            font_family
+        )
+        text_el.set("font-family", normalized_family)
+        if font_weight is not None:
+            text_el.set("font-weight", font_weight)
+        if font_style is not None:
+            text_el.set("font-style", font_style)
 
 
 def _prepend_transform(
