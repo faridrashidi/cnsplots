@@ -263,7 +263,7 @@ ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 # Panel C: dotplot
-host_c = mp.panel("C", 60, 120, pad_top=30, pad_left=0)
+host_c = mp.panel("C", 60, 80, pad_top=20, pad_left=40, margin_right=20)
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
