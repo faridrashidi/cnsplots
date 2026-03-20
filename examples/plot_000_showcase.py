@@ -263,7 +263,7 @@ ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 # Panel C: dotplot
-host_c = mp.panel("C", 60, 80, pad_top=20, pad_left=40, margin_right=20)
+host_c = mp.panel("C", 90, 80, pad_top=20, pad_left=40, margin_right=20)
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
@@ -342,7 +342,7 @@ def _sync_panel_c_dotplot() -> None:
             legend_box[3] * 0.72,
         ]
     )
-    size_legend.set_bbox_to_anchor((0.42, 0.72), transform=legend_ax.transAxes)
+    size_legend.set_bbox_to_anchor((0.42, 1.1), transform=legend_ax.transAxes)
     legend_ax.set_axis_off()
 
 
@@ -362,7 +362,7 @@ ax.set_title("Western Blot")
 ax.set_axis_off()
 
 # Panel F: lineplot
-ax = mp.panel("F", 85, 85, below="C", margin_top=48)
+ax = mp.panel("F", 80, 80, below="C", margin_top=15)
 ax = cns.lineplot(
     data=line_df,
     x="timepoint",
@@ -377,7 +377,7 @@ if legend is not None:
 ax.set_title("Lineplot")
 
 # Panel G: qqplot
-ax = mp.panel("G", 85, 85, below="D", margin_top=15, margin_right=0)
+ax = mp.panel("G", 80, 80, below="D", margin_top=15, margin_right=0)
 ax = cns.qqplot(iris_df, x="sepal_length", dist=stats.norm, fit=True, line="45")
 ax.set_title("Qqplot")
 
