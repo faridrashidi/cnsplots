@@ -260,10 +260,29 @@ ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
-# Panel C: ?
-ax = mp.panel("C", 85, 85)
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+# Panel C: dotplot
+mp.panel("C", 60, 100, pad_top=30, pad_left=20)
+tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
+tips_minmax.columns = ["min", "size"]
+tips_minmax = tips_minmax.reset_index()
+dp = cns.dotplot(
+    tips_minmax,
+    x="sex",
+    y="day",
+    color="size",
+    size="min",
+    value="size",
+    legend=True,
+    legend_width=10,
+    legend_hpad=0,
+    xlabel="",
+    ylabel="",
+    xticklabels_rotation=60,
+    max_s=40,
+)
+for label in dp.heatmap_axes[-1, 0].get_xticklabels():
+    label.set_ha("center")
+dp.ax_heatmap.set_title("Dotplot")
 
 # Panel D: ?
 ax = mp.panel("D", 85, 85, margin_right=0)
@@ -275,29 +294,6 @@ ax = mp.panel("E", 102, 116, below="B", pad_left=-50)
 ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
 ax.set_title("Western Blot")
 ax.set_axis_off()
-
-# Panel F: dotplot
-# mp.panel("F", 60, 60, below="D")
-# tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
-# tips_minmax.columns = ["min", "size"]
-# tips_minmax = tips_minmax.reset_index()
-# plt.sca(mp.get_axes("E"))
-# dp = cns.dotplot(
-#     tips_minmax,
-#     x="sex",
-#     y="day",
-#     color="size",
-#     size="min",
-#     value="size",
-#     legend=False,
-#     xlabel="",
-#     ylabel="",
-#     xticklabels_rotation=60,
-#     max_s=40,
-# )
-# for label in dp.heatmap_axes[-1, 0].get_xticklabels():
-#     label.set_ha("center")
-# dp.ax_heatmap.set_title("Dotplot")
 
 # Panel F: lineplot
 ax = mp.panel("F", 85, 85, below="C", margin_top=15)
@@ -362,4 +358,4 @@ cns.placeholderplot("Placeholder")
 ax.set_title("?")
 
 # Save final figure
-cns.savefig("~/Desktop/Figure2.svg")
+cns.savefig("~/Desktop/Figure2.jpg")
