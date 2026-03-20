@@ -225,7 +225,6 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
             "Helvetica Neue",
             "Arial",
             "DejaVu Sans",
-            "Liberation Sans",
         ),
         lambda value: _validate_string_sequence("font_sans_serif", value),
         "Preferred sans-serif font family fallbacks.",
@@ -546,7 +545,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default right margin in pixels for multipanel.panel().",
     ),
     "panel_label_fontname": _spec(
-        "Arial",
+        "Helvetica",
         lambda value: _validate_string("panel_label_fontname", value),
         "Font name used for panel labels.",
     ),

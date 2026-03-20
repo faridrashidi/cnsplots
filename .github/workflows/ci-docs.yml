@@ -19,9 +19,7 @@ concurrency:
 jobs:
   build:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
-    runs-on: ubuntu-latest
-    env:
-      CNSPLOTS_DOCS_FONT: Liberation Sans
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
         with:
@@ -34,26 +32,25 @@ jobs:
           python-version: "3.11"
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
-      - name: Install docs fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends fonts-liberation
       - name: Sync docs dependencies
         run: uv sync --extra doc
       - name: Verify docs font
         run: |
-          fc-match "${CNSPLOTS_DOCS_FONT}"
           uv run python - <<'PY'
-          import os
           import matplotlib as mpl
 
           import cnsplots as cns
           from matplotlib import font_manager as fm
-          from cnsplots._docs_fonts import apply_docs_font_override
 
-          docs_font = os.environ["CNSPLOTS_DOCS_FONT"]
-          apply_docs_font_override(docs_font)
+          cns.settings.reset()
           cns.setup_matplotlib()
+          assert cns.settings.font_sans_serif == (
+              "Helvetica",
+              "Helvetica Neue",
+              "Arial",
+              "DejaVu Sans",
+          )
+          assert cns.settings.panel_label_fontname == "Helvetica"
           font_props = fm.FontProperties(
               family=mpl.rcParams["font.family"],
               style="normal",
@@ -61,8 +58,8 @@ jobs:
           )
           font_path = fm.findfont(font_props, fallback_to_default=False)
           resolved_name = fm.FontProperties(fname=font_path).get_name()
-          print(f"{docs_font}: {resolved_name} -> {font_path}")
-          assert resolved_name == docs_font
+          print(f"{resolved_name} -> {font_path}")
+          assert resolved_name == "Helvetica"
           PY
       - name: Build documentation
         run: uv run sphinx-build -b html docs docs/build/html
