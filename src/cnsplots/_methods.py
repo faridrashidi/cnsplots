@@ -551,8 +551,11 @@ def prerank(
     """
     try:
         import gseapy as gp
-    except ImportError:
-        print("pip install gseapy")
+    except ImportError as exc:
+        raise ImportError(
+            "[prerank] gseapy is required but not installed. "
+            "Install with: pip install gseapy"
+        ) from exc
 
     rnk = data.copy()
     rnk = rnk[[name_gene, name_rank]]
