@@ -17,7 +17,7 @@ Examples
 >>> cns.settings.title_fontsize = 10
 >>> cns.settings.figure_width = 180
 
->>> # Suppress print statements
+>>> # Suppress informational log messages
 >>> cns.settings.verbosity = 0
 
 >>> # Reset to defaults
@@ -36,7 +36,10 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
+import logging
 from typing import Any, Callable
+
+_CNSPLOTS_LOGGER_NAME = "cnsplots"
 
 _TITLE_LOCS = ("left", "center", "right")
 _LEGEND_LOCS = (
@@ -173,6 +176,12 @@ def _spec(default: Any, validator: Callable[[Any], Any], doc: str) -> _SettingSp
     return _SettingSpec(default=default, validator=validator, doc=doc)
 
 
+def _apply_verbosity_to_logging(verbosity: int) -> None:
+    """Synchronize the public verbosity setting with cnsplots logging."""
+    package_logger = logging.getLogger(_CNSPLOTS_LOGGER_NAME)
+    package_logger.setLevel(logging.INFO if verbosity >= 1 else logging.WARNING)
+
+
 _SETTING_SPECS: dict[str, _SettingSpec] = {
     "palette_qual": _spec(
         "Ecotyper1",
@@ -207,7 +216,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
     "verbosity": _spec(
         1,
         lambda value: _validate_integer("verbosity", value, non_negative=True),
-        "Verbosity level. 0 = silent, 1 = normal.",
+        "Verbosity level. 0 suppresses cnsplots info logs, 1 enables them.",
     ),
     "mathtext_fontset": _spec(
         "custom",
@@ -583,6 +592,8 @@ def _make_setting_property(name: str, doc: str) -> property:
     def setter(self: CNSSettings, value: Any) -> None:
         validated = type(self)._setting_specs[name].validator(value)
         object.__setattr__(self, f"_{name}", validated)
+        if name == "verbosity":
+            _apply_verbosity_to_logging(validated)
 
     return property(getter, setter, doc=doc)
 

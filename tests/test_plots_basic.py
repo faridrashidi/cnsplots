@@ -218,6 +218,26 @@ def test_distribution_wrappers(
     assert ax6 is plt.gca()
 
 
+def test_distribution_logging_respects_settings_verbosity(
+    categorical_df: pd.DataFrame,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    data = categorical_df.rename(columns={"value": "score"})
+
+    caplog.set_level(logging.INFO)
+    with cns.settings.context(verbosity=0):
+        caplog.clear()
+        cns.figure(120, 120)
+        cns.kdeplot(data, x="score", hue="hue")
+        assert "Anderson-Darling test" not in caplog.text
+
+    with cns.settings.context(verbosity=1):
+        caplog.clear()
+        cns.figure(120, 120)
+        cns.kdeplot(data, x="score", hue="hue")
+        assert "Anderson-Darling test" in caplog.text
+
+
 def test_line_scatter_reg_and_slope_plots(
     numeric_df: pd.DataFrame,
     line_df: pd.DataFrame,
