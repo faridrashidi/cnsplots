@@ -145,9 +145,7 @@ def test_prerank_with_mocked_gseapy(
     ]
 
 
-def test_prerank_import_error_prints(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_prerank_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
     real_import = builtins.__import__
 
     def fake_import(
@@ -162,11 +160,10 @@ def test_prerank_import_error_prints(
         return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
-    with pytest.raises(UnboundLocalError):
+    with pytest.raises(ImportError, match="Install with: pip install gseapy"):
         _methods.prerank(
             pd.DataFrame({"gene": ["a"], "rank": [1]}), {"set": ["A"]}, "gene", "rank"
         )
-    assert "pip install gseapy" in capsys.readouterr().out
 
 
 def test_competing_risk_helper(competing_risk_df: pd.DataFrame) -> None:
