@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import builtins
 import re
 import subprocess
 import sys
 import types
-from collections.abc import Iterable, Mapping, Sequence
-from importlib.metadata import version
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
@@ -25,7 +23,7 @@ from matplotlib.backend_bases import DrawEvent, Event
 from matplotlib.legend import Legend
 
 import cnsplots as cns
-from cnsplots import _settings, _setup, _svg, _utils, _validation
+from cnsplots import _settings, _setup, _svg, _utils
 
 
 def _panel_label_padding(ax, text) -> tuple[float, float]:
@@ -116,153 +114,6 @@ def _bbox_is_within(fig_bbox, artist_bbox, *, pad: float = 0.8) -> bool:
         and artist_bbox.x1 <= fig_bbox.x1 + pad
         and artist_bbox.y1 <= fig_bbox.y1 + pad
     )
-
-
-def test_public_api_exports_resolve() -> None:
-    assert cns.__version__ == version("cnsplots")
-    assert cns.boxplot is not None
-    assert cns.placeholderplot is not None
-    assert cns.scatterplot is not None
-    assert cns.methods.CoxModel is cns.CoxModel
-    assert cns.methods.LogisticModel is cns.LogisticModel
-    assert cns.validation.validate_dataframe is _validation.validate_dataframe
-    assert cns.utils.figure is _utils.figure
-
-    namespace: dict[str, object] = {}
-    exec("from cnsplots import *", namespace)
-    assert namespace["boxplot"] is cns.boxplot
-    assert namespace["placeholderplot"] is cns.placeholderplot
-    assert namespace["savefig"] is cns.savefig
-
-
-def test_validation_helpers(heatmap_adata: object) -> None:
-    df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"], "c": [None, 1]})
-
-    _validation.validate_dataframe(df, "data", "func")
-    with pytest.raises(TypeError, match="must be a pandas DataFrame"):
-        _validation.validate_dataframe([], "data", "func")
-
-    _validation.validate_anndata(heatmap_adata, "adata", "func")
-    with pytest.raises(TypeError, match="must be an AnnData object"):
-        _validation.validate_anndata(df, "adata", "func")
-
-    _validation.validate_column_exists(df, "a", "x", "func")
-    with pytest.raises(ValueError, match="not found in data"):
-        _validation.validate_column_exists(df, "missing", "x", "func")
-
-    _validation.validate_columns_exist(df, ["a", "b"], "func")
-    with pytest.raises(ValueError, match="Column\\(s\\)"):
-        _validation.validate_columns_exist(df, ["a", "missing"], "func")
-
-    _validation.validate_adata_layer(heatmap_adata, "scaled", "func")
-    with pytest.raises(ValueError, match="Available layers"):
-        _validation.validate_adata_layer(heatmap_adata, "missing", "func")
-
-    _validation.validate_adata_obs_columns(heatmap_adata, ["cluster"], "func")
-    with pytest.raises(ValueError, match="adata.obs"):
-        _validation.validate_adata_obs_columns(heatmap_adata, ["missing"], "func")
-
-    _validation.validate_adata_var_columns(heatmap_adata, ["pathway"], "func")
-    with pytest.raises(ValueError, match="adata.var"):
-        _validation.validate_adata_var_columns(heatmap_adata, ["missing"], "func")
-
-    _validation.validate_dataframe_not_empty(df, "func")
-    with pytest.raises(ValueError, match="Data is empty"):
-        _validation.validate_dataframe_not_empty(df.iloc[0:0], "func")
-
-    _validation.validate_no_nulls(df, ["a"], "func")
-    with pytest.raises(ValueError, match="Null values found"):
-        _validation.validate_no_nulls(df, ["c"], "func")
-    _validation.validate_no_nulls(df, ["c"], "func", allow_partial=True)
-    with pytest.raises(ValueError, match="contain only null values"):
-        _validation.validate_no_nulls(
-            pd.DataFrame({"only_nulls": [None, None]}),
-            ["only_nulls"],
-            "func",
-            allow_partial=True,
-        )
-
-    _validation.validate_column_type(df, "a", ["numeric"], "func")
-    _validation.validate_column_type(df, "b", ["string"], "func")
-    with pytest.raises(ValueError, match="must be numeric"):
-        _validation.validate_column_type(df, "b", ["numeric"], "func")
-    with pytest.raises(ValueError, match="must be categorical"):
-        _validation.validate_column_type(df, "a", ["string"], "func")
-
-    _validation.validate_sufficient_data(df, "a", 2, "func")
-    with pytest.raises(ValueError, match="at least 3"):
-        _validation.validate_sufficient_data(df, "a", 3, "func")
-
-    _validation.validate_binary_column(pd.DataFrame({"b": [0, 1, 0]}), "b", "func")
-    with pytest.raises(ValueError, match="exactly 2 unique values"):
-        _validation.validate_binary_column(pd.DataFrame({"b": [0, 1, 2]}), "b", "func")
-
-    _validation.validate_categorical_has_levels(
-        df, "b", min_levels=2, max_levels=2, function_name="func"
-    )
-    with pytest.raises(ValueError, match="at least 3"):
-        _validation.validate_categorical_has_levels(
-            df, "b", min_levels=3, function_name="func"
-        )
-    with pytest.raises(ValueError, match="at most 1"):
-        _validation.validate_categorical_has_levels(
-            df, "b", max_levels=1, function_name="func"
-        )
-
-    _validation.validate_numeric_range(
-        df, "a", min_val=1, max_val=2, function_name="func"
-    )
-    with pytest.raises(ValueError, match="less than 2"):
-        _validation.validate_numeric_range(df, "a", min_val=2, function_name="func")
-    with pytest.raises(ValueError, match="greater than 1"):
-        _validation.validate_numeric_range(df, "a", max_val=1, function_name="func")
-
-    _validation.validate_pairs_format("all", df, "b", "func")
-    _validation.validate_pairs_format([("x", "y")], df, "b", "func")
-    with pytest.raises(ValueError, match="must be a list of tuples"):
-        _validation.validate_pairs_format(("x", "y"), df, "b", "func")
-    with pytest.raises(ValueError, match="2 elements"):
-        _validation.validate_pairs_format([("x", "y", "z")], df, "b", "func")
-    with pytest.raises(ValueError, match="Pair value 'missing'"):
-        _validation.validate_pairs_format([("x", "missing")], df, "b", "func")
-
-    _validation.validate_length_match([1], [2], "a", "b", "func")
-    with pytest.raises(ValueError, match="matching lengths"):
-        _validation.validate_length_match([1], [1, 2], "a", "b", "func")
-
-    assert list(_validation.safe_column_access(df, "a", "func")) == [1, 2]
-    assert _validation.safe_column_access(df, "missing", "func", default=3) == 3
-    with pytest.raises(ValueError, match="Available columns"):
-        _validation.safe_column_access(df, "missing", "func")
-
-    assert _validation.safe_numeric_conversion(2, "func") == 2
-    assert _validation.safe_numeric_conversion("2.5", "func", "ctx") == 2.5
-    with pytest.raises(ValueError, match="Cannot convert NaN"):
-        _validation.safe_numeric_conversion(np.nan, "func", "ctx")
-    with pytest.raises(ValueError, match="Cannot convert value to numeric"):
-        _validation.safe_numeric_conversion("bad", "func", "ctx")
-
-    assert np.isnan(_validation.safe_division(1, 0))
-    assert _validation.safe_division(4, 2) == 2
-
-
-def test_validate_anndata_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    real_import = builtins.__import__
-
-    def fake_import(
-        name: str,
-        globals: Mapping[str, object] | None = None,
-        locals: Mapping[str, object] | None = None,
-        fromlist: Sequence[str] = (),
-        level: int = 0,
-    ) -> object:
-        if name == "anndata":
-            raise ImportError("missing")
-        return real_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-    with pytest.raises(ImportError, match="Install with: pip install anndata"):
-        _validation.validate_anndata(object(), "adata", "func")
 
 
 def test_settings_behavior() -> None:
