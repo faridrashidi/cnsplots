@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    pass
+    from matplotlib.figure import Figure
 
 from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
@@ -27,7 +27,12 @@ def _normalize_text_position(text: Any) -> None:
     text.set_position((_to_scalar(x), _to_scalar(y)))
 
 
-def upsetplot(sets: Mapping[str, AbstractSet[Any] | list[Any]], **kwargs: Any) -> dict:
+def upsetplot(
+    sets: Mapping[str, AbstractSet[Any] | list[Any]],
+    *,
+    fig: Figure | None = None,
+    **kwargs: Any,
+) -> dict:
     """
     Create an UpSet plot for visualizing set intersections.
 
@@ -38,6 +43,8 @@ def upsetplot(sets: Mapping[str, AbstractSet[Any] | list[Any]], **kwargs: Any) -
     ----------
     sets : dict
         Dictionary mapping set names (str) to sets or array-like collections.
+    fig : matplotlib.figure.Figure or None, optional
+        Figure to draw the UpSet plot into. Defaults to a new figure.
     **kwargs
         Additional keyword arguments passed to `upsetplot.UpSet`.
 
@@ -83,10 +90,13 @@ def upsetplot(sets: Mapping[str, AbstractSet[Any] | list[Any]], **kwargs: Any) -
         membership = [name for name, s in normalized_sets.items() if item in s]
         memberships.append(membership)
     data = usp.from_memberships(memberships)
-    # Set default subset_size to "count" to handle non-unique groups
+    # Set defaults for compact, publication-style UpSet plots while allowing
+    # callers to override them when a different layout is needed.
     kwargs.setdefault("subset_size", "count")
-    upset = usp.UpSet(data, element_size=17, show_counts="{:,}", **kwargs)
-    axes = upset.plot()
+    kwargs.setdefault("element_size", 17)
+    kwargs.setdefault("show_counts", "{:,}")
+    upset = usp.UpSet(data, **kwargs)
+    axes = upset.plot(fig=fig)
     plt.grid(False)
     ax_tot = axes.get("totals")
     cns.setup_ax(axes["matrix"])

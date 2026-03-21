@@ -1188,6 +1188,57 @@ def get_showcase_data(
         }
     )
 
+    # Competing-risks showcase data
+    cumulative_incidence_rows = []
+    for group, scale, event_probs in [
+        ("Control", 18, [0.22, 0.56, 0.22]),
+        ("Treatment", 26, [0.30, 0.40, 0.30]),
+    ]:
+        times = np.random.exponential(scale=scale, size=60)
+        events = np.random.choice([0, 1, 2], size=60, p=event_probs)
+        for time, event in zip(times, events):
+            cumulative_incidence_rows.append(
+                {"time": float(time), "event": int(event), "group": group}
+            )
+    cumulative_incidence_df = pd.DataFrame(cumulative_incidence_rows)
+
+    # Forest plot data
+    n_patients = 240
+    risk = np.random.choice(["Low", "High"], size=n_patients, p=[0.58, 0.42])
+    stage = np.random.choice(["I", "II"], size=n_patients, p=[0.55, 0.45])
+    age = np.random.normal(61, 9, size=n_patients)
+    marker = np.random.lognormal(mean=1.2, sigma=0.35, size=n_patients)
+    hazard_scale = np.where(risk == "High", 1.35, 0.85) * np.where(
+        stage == "II", 1.2, 0.95
+    )
+    forest_df = pd.DataFrame(
+        {
+            "time": np.random.exponential(scale=30 / hazard_scale, size=n_patients),
+            "event": np.random.binomial(
+                1,
+                np.where(risk == "High", 0.72, 0.48)
+                + np.where(stage == "II", 0.06, -0.02),
+                size=n_patients,
+            ),
+            "risk": risk,
+            "stage": stage,
+            "age": age,
+            "marker": marker,
+        }
+    )
+
+    # UpSet plot data
+    genes = np.array([f"Gene{x}" for x in range(1, 61)])
+    upset_sets = {
+        "RNA": set(genes[:18]) | set(genes[24:30]) | set(genes[40:44]),
+        "ATAC": set(genes[8:28]) | set(genes[34:40]),
+        "WES": set(genes[4:16]) | set(genes[22:34]) | set(genes[48:54]),
+        "CRISPR": set(genes[:6])
+        | set(genes[14:24])
+        | set(genes[30:33])
+        | set(genes[44:52]),
+    }
+
     data = (
         iris_df,
         tips_df,
@@ -1199,6 +1250,9 @@ def get_showcase_data(
         slope_df,
         confusion_df,
         line_df,
+        cumulative_incidence_df,
+        forest_df,
+        upset_sets,
     )
     if include_showcase_images:
         return (*data, _resolve_showcase_images())

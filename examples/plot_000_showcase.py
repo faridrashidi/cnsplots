@@ -27,10 +27,46 @@ import cnsplots as cns
     slope_df,
     confusion_df,
     line_df,
+    cumulative_incidence_df,
+    forest_df,
+    upset_sets,
     showcase_images,
 ) = cns.get_showcase_data(
     include_showcase_images=True,
 )
+
+
+def _embed_detached_axes(host_ax, detached_axes, *, xpad=0.0, ypad=0.0):
+    detached_axes = [ax for ax in detached_axes if ax is not None]
+    if not detached_axes:
+        return
+
+    host_ax.set_axis_off()
+    host_box = host_ax.get_position().frozen()
+    detached_boxes = [ax.get_position().frozen() for ax in detached_axes]
+    left = min(box.x0 for box in detached_boxes)
+    right = max(box.x1 for box in detached_boxes)
+    bottom = min(box.y0 for box in detached_boxes)
+    top = max(box.y1 for box in detached_boxes)
+    width = max(right - left, 1e-9)
+    height = max(top - bottom, 1e-9)
+
+    inner_x0 = host_box.x0 + host_box.width * xpad
+    inner_y0 = host_box.y0 + host_box.height * ypad
+    inner_width = host_box.width * (1 - 2 * xpad)
+    inner_height = host_box.height * (1 - 2 * ypad)
+
+    for ax, box in zip(detached_axes, detached_boxes):
+        ax.set_position(
+            [
+                inner_x0 + inner_width * ((box.x0 - left) / width),
+                inner_y0 + inner_height * ((box.y0 - bottom) / height),
+                inner_width * (box.width / width),
+                inner_height * (box.height / height),
+            ]
+        )
+
+    cns.utils._capture_detached_axes_layout(host_ax, detached_axes=detached_axes)
 
 
 # %%
@@ -247,6 +283,7 @@ cns.savefig("~/Desktop/Figure1.svg")
 mp = cns.multipanel(
     max_width=540, title="Figure 2", title_fontweight="bold", loc="left"
 )
+detached_panel_layouts = []
 
 # Panel A: load pathology image
 ax = mp.panel("A", 237, 149, pad_left=-70)
@@ -295,10 +332,26 @@ dp.cbar_ax.tick_params(labelsize=6, length=0)
 dp.cbar_ax.set_title("size", fontsize=6, pad=1)
 dp.cbar_ax.set_ylabel("")
 
-# Panel D: ?
-ax = mp.panel("D", 85, 85, margin_right=0)
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+# Panel D: cumulativeincidenceplot
+ax = mp.panel("D", 85, 85, margin_right=0, color_cycle="BlueRed")
+ax = cns.cumulativeincidenceplot(
+    data=cumulative_incidence_df,
+    duration="time",
+    event="event",
+    hue="group",
+    hue_order=["Control", "Treatment"],
+    pvalue_position=(0, 0.9),
+    show_risk_table=False,
+)
+legend = ax.get_legend()
+legend.set_loc("lower right")
+if legend is not None:
+    legend.set_title(None)
+    for text in legend.get_texts():
+        text.set_text(text.get_text().split(" (", 1)[0])
+ax.set_xlabel("Time")
+ax.set_ylabel("Incidence")
+ax.set_title("Cumulative Incidence")
 
 # Panel E: load western blot image
 ax = mp.panel("E", 102, 116, below="B", pad_left=-50)
@@ -342,7 +395,7 @@ ax.set_title("Placeholder")
 mp.newline()
 
 # Panel J: lollipopplot
-ax = mp.panel("J", 100, 30, color_cycle="NEJM", margin_right=15)
+ax = mp.panel("J", 100, 40, color_cycle="NEJM", margin_right=15, margin_bottom=20)
 ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
 ax.set_title("Lollipopplot")
 ax.set_xticklabels(
@@ -350,7 +403,7 @@ ax.set_xticklabels(
 )
 
 # Panel K: confusionplot
-ax = mp.panel("K", 30, 30, margin_right=30)
+ax = mp.panel("K", 30, 30, margin_right=60)
 ax = cns.confusionplot(
     data=confusion_df,
     x="pred",
@@ -358,15 +411,41 @@ ax = cns.confusionplot(
     add_pvalue=True,
     x_order=["Neg", "Pos"],
     y_order=["Neg", "Pos"],
-    pvalue_y_pad=3.9,
-    pvalue_x_pad=-0.2,
+    pvalue_x_pad=-0.3,
+    pvalue_y_pad=3.8,
 )
 ax.set_title("Confusionplot")
 
-# Panel L: ?
-ax = mp.panel("L", 100, 100)
-cns.placeholderplot("Placeholder")
-ax.set_title("?")
+# Panel L: forestplot
+host_l = mp.panel("L", 100, 100, color_cycle=[cns.CHOCOLATE], pad_left=15, pad_top=10)
+forest_model = cns.methods.CoxModel(
+    data=forest_df,
+    duration="time",
+    event="event",
+    variates=[
+        "age",
+        "C(risk, levels=['Low', 'High'])",
+        "C(stage, levels=['I', 'II'])",
+        "np.log(marker)",
+    ],
+)
+forest_model.fit()
+forest_ax = cns.forestplot(forest_model, add_pvalue=False)
+forest_ax.set_title("Forestplot")
+detached_panel_layouts.append((host_l, [forest_ax], 0.03, 0.04))
+
+# Panel M: upsetplot
+host_m = mp.panel("M", 120, 200, margin_right=0, pad_left=-100, pad_top=10)
+upset_axes = cns.upsetplot(
+    upset_sets,
+    fig=mp.fig,
+    sort_by="cardinality",
+    totals_plot_elements=0,
+    facecolor="black",
+    show_counts=False,
+)
+upset_axes["intersections"].set_title("UpSetplot")
+detached_panel_layouts.append((host_m, list(upset_axes.values()), 0.03, 0.04))
 
 # Finalize panel C after the multipanel layout settles.
 if mp.fig is not None:
@@ -399,6 +478,10 @@ dp.cbar_ax.set_position(
 )
 dp.dot_legend.set_bbox_to_anchor((0.66, 1.02), transform=dp.legend_ax.transAxes)
 dp.legend_ax.set_axis_off()
+for host_ax, detached_axes, xpad, ypad in detached_panel_layouts:
+    _embed_detached_axes(host_ax, detached_axes, xpad=xpad, ypad=ypad)
+if mp.fig is not None:
+    mp.fig.canvas.draw()
 
 # Save final figure
-cns.savefig("~/Desktop/Figure2.jpg")
+cns.savefig("~/Desktop/Figure2.svg")

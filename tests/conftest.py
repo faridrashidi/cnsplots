@@ -25,6 +25,9 @@ ShowcaseBundle = tuple[
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    dict[str, set[str]],
 ]
 
 
@@ -298,6 +301,29 @@ def showcase_bundle(
             "condition": ["Control"] * 6 + ["Treatment"] * 6,
         }
     )
+    cumulative_incidence_df = pd.DataFrame(
+        {
+            "time": [3.0, 6.0, 8.0, 5.0, 9.0, 12.0],
+            "event": [1, 0, 2, 1, 2, 0],
+            "group": ["Control"] * 3 + ["Treatment"] * 3,
+        }
+    )
+    forest_df = pd.DataFrame(
+        {
+            "time": [5.0, 8.0, 13.0, 21.0, 7.0, 15.0],
+            "event": [1, 0, 1, 1, 0, 1],
+            "risk": ["Low", "Low", "High", "High", "Low", "High"],
+            "stage": ["I", "II", "I", "II", "I", "II"],
+            "age": [56.0, 62.0, 68.0, 71.0, 59.0, 65.0],
+            "marker": [2.1, 2.5, 3.8, 4.2, 2.3, 3.4],
+        }
+    )
+    upset_sets = {
+        "RNA": {"Gene1", "Gene2", "Gene3", "Gene4"},
+        "ATAC": {"Gene2", "Gene3", "Gene5"},
+        "WES": {"Gene1", "Gene3", "Gene6"},
+        "CRISPR": {"Gene3", "Gene4", "Gene6"},
+    }
     return (
         categorical_df.rename(columns={"group": "species", "value": "sepal_length"})[
             ["species", "sepal_length"]
@@ -315,6 +341,9 @@ def showcase_bundle(
         slope_df,
         confusion_df,
         line_df,
+        cumulative_incidence_df,
+        forest_df,
+        upset_sets,
     )
 
 

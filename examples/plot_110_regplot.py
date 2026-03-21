@@ -83,7 +83,7 @@ ax.set_title("Set2 Palette")
 # Multiple regression comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare regression trends across different subsets.
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(max_width=560)
 
 for i, day in enumerate(["Thur", "Fri", "Sat", "Sun"]):
     label = chr(65 + i)  # A, B, C, D
