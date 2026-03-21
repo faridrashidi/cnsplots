@@ -42,7 +42,9 @@ def test_public_namespace_contract() -> None:
     exec("from cnsplots import *", namespace)
     assert namespace["boxplot"] is cns.boxplot
     assert namespace["placeholderplot"] is cns.placeholderplot
+    assert namespace["save"] is cns.save
     assert namespace["savefig"] is cns.savefig
+    assert cns.save is cns.savefig
     assert namespace["validation"] is cns.validation
 
 
@@ -313,7 +315,7 @@ def test_public_prerank_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
         )
 
 
-def test_public_figure_and_savefig_contract(output_dir: Path) -> None:
+def test_public_figure_and_save_alias_contract(output_dir: Path) -> None:
     png_path = output_dir / "nested" / "plot.png"
     pdf_path = output_dir / "nested" / "plot.pdf"
     svg_path = output_dir / "nested" / "plot.svg"
@@ -322,9 +324,9 @@ def test_public_figure_and_savefig_contract(output_dir: Path) -> None:
     plt.plot([0, 1], [0, 1])
     plt.title("Contract Export")
 
-    cns.savefig(str(png_path))
+    cns.save(str(png_path))
     cns.savefig(str(pdf_path))
-    cns.savefig(str(svg_path))
+    cns.save(str(svg_path))
 
     assert png_path.exists()
     assert pdf_path.exists()

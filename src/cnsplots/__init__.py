@@ -66,6 +66,7 @@ from cnsplots.plots import (
 )
 
 __version__ = "0.0.4"
+save = savefig
 __all__ = (
     "utils",
     "settings",
@@ -93,6 +94,7 @@ __all__ = (
     "apply_unicode_font",
     "figure",
     "multipanel",
+    "save",
     "savefig",
     "palettes",
     "take_legend_out",
