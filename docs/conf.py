@@ -84,12 +84,125 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
 }
 
+_GALLERY_CATEGORIES = [
+    {
+        "title": "Getting Started",
+        "description": (
+            "Start here for the core cnsplots workflow: overview figures, global "
+            "settings, figure setup, color palettes, and publication-style "
+            "multipanel layouts."
+        ),
+        "examples": [
+            "showcase",
+            "settings",
+            "figure_setup",
+            "palettes",
+            "multipanel",
+        ],
+    },
+    {
+        "title": "Comparison & Categories",
+        "description": (
+            "Examples in this section focus on comparing groups and compositions "
+            "with categorical plots, proportion charts, and flow-based visual "
+            "summaries."
+        ),
+        "examples": [
+            "boxplot",
+            "stackplot",
+            "barplot",
+            "lollipopplot",
+            "stripplot",
+            "violinplot",
+            "dotplot",
+            "pieplot",
+            "donutplot",
+            "sankeyplot",
+        ],
+    },
+    {
+        "title": "Distributions & Trends",
+        "description": (
+            "These examples highlight continuous data, distribution shapes, "
+            "relationships, and trend-oriented visualizations for exploratory "
+            "and publication figures."
+        ),
+        "examples": [
+            "histplot",
+            "kdeplot",
+            "distplot",
+            "ridgeplot",
+            "qqplot",
+            "scatterplot",
+            "regplot",
+            "lineplot",
+            "slopeplot",
+        ],
+    },
+    {
+        "title": "Analysis & Evaluation",
+        "description": (
+            "This section collects analysis-driven examples including "
+            "enrichment, survival, classification, overlap, and evaluation "
+            "plots commonly used in scientific workflows."
+        ),
+        "examples": [
+            "heatmapplot",
+            "survivalplot",
+            "forestplot",
+            "gseaplot",
+            "volcanoplot",
+            "confusionplot",
+            "rocplot",
+            "vennplot",
+            "upsetplot",
+        ],
+    },
+    {
+        "title": "Integrations",
+        "description": (
+            "These examples show how to combine cnsplots styling, sizing, and "
+            "export helpers with native matplotlib, seaborn, and scanpy "
+            "workflows."
+        ),
+        "examples": [
+            "matplotlib_integration",
+            "seaborn_integration",
+            "scanpy_integration",
+        ],
+    },
+]
+
+_GALLERY_EXAMPLE_ORDER = [
+    f"{example}.py"
+    for category in _GALLERY_CATEGORIES
+    for example in category["examples"]
+]
+
+
+class GalleryExampleOrder:
+    """Keep gallery examples in a stable, curated order."""
+
+    def __init__(self, src_dir: str):
+        del src_dir
+        self.positions = {
+            name: index for index, name in enumerate(_GALLERY_EXAMPLE_ORDER)
+        }
+
+    def __call__(self, filename: str) -> tuple[int, str]:
+        name = Path(filename).name
+        return (self.positions.get(name, len(self.positions)), name)
+
+    def __repr__(self) -> str:
+        return "<GalleryExampleOrder>"
+
+
 sphinx_gallery_conf = {
-    "filename_pattern": "/plot_",
+    "filename_pattern": r"/.*\.py$",
     "ignore_pattern": "/todo_",
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "examples",  # path to where to save gallery generated output
-    "within_subsection_order": "sphinx_gallery.sorting.FileNameSortKey",
+    "within_subsection_order": GalleryExampleOrder,
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
     "reference_url": {
@@ -220,6 +333,114 @@ def _resolve_gallery_source_path(pagename: str) -> str | None:
         return None
 
     return relative_source.as_posix()
+
+
+def _render_gallery_category_section(
+    title: str, description: str, thumbnail_blocks: list[str]
+) -> str:
+    """Render a grouped gallery section using Sphinx-Gallery thumbnail markup."""
+    underline = "-" * len(title)
+    parts = [
+        title,
+        underline,
+        "",
+        description,
+        "",
+        "",
+        ".. raw:: html",
+        "",
+        '    <div class="sphx-glr-thumbnails">',
+        "",
+        ".. thumbnail-parent-div-open",
+        "",
+    ]
+    for block in thumbnail_blocks:
+        parts.append(block.rstrip())
+        parts.append("")
+    parts.extend(
+        [
+            ".. thumbnail-parent-div-close",
+            "",
+            ".. raw:: html",
+            "",
+            "    </div>",
+            "",
+            "",
+        ]
+    )
+    return "\n".join(parts)
+
+
+def _regroup_flat_gallery_index(app, env, docnames) -> None:
+    """Group the root examples gallery without requiring example subfolders."""
+    del app, env, docnames
+
+    gallery_index = _docs_dir / "examples" / "index.rst"
+    if not gallery_index.exists():
+        return
+
+    content = gallery_index.read_text(encoding="utf-8")
+    thumbnails_open = '.. raw:: html\n\n    <div class="sphx-glr-thumbnails">\n'
+    thumbnails_start = content.find(thumbnails_open)
+    toctree_start = content.find("\n.. toctree::\n")
+    if (
+        thumbnails_start == -1
+        or toctree_start == -1
+        or toctree_start <= thumbnails_start
+    ):
+        return
+
+    thumbnail_block_pattern = re.compile(
+        r'\.\. raw:: html\n\n    <div class="sphx-glr-thumbcontainer".*?\n    </div>\n\n',
+        re.S,
+    )
+    blocks = thumbnail_block_pattern.findall(content[thumbnails_start:toctree_start])
+    if not blocks:
+        return
+
+    blocks_by_slug = {}
+    ordered_blocks: list[tuple[str | None, str]] = []
+    for block in blocks:
+        match = re.search(r":doc:`/examples/([^`]+)`", block)
+        slug = match.group(1) if match else None
+        ordered_blocks.append((slug, block.rstrip()))
+        if slug is not None:
+            blocks_by_slug[slug] = block.rstrip()
+
+    preamble = content[:thumbnails_start].rstrip() + "\n\n"
+    suffix = content[toctree_start:].lstrip("\n")
+    sections = []
+    used = set()
+    for category in _GALLERY_CATEGORIES:
+        category_blocks = []
+        for slug in category["examples"]:
+            block = blocks_by_slug.get(slug)
+            if block is None:
+                continue
+            used.add(slug)
+            category_blocks.append(block)
+        if category_blocks:
+            sections.append(
+                _render_gallery_category_section(
+                    category["title"], category["description"], category_blocks
+                )
+            )
+
+    remaining_blocks = [
+        block for slug, block in ordered_blocks if slug is None or slug not in used
+    ]
+    if remaining_blocks:
+        sections.append(
+            _render_gallery_category_section(
+                "More Examples",
+                "Additional examples that are not assigned to a named gallery section.",
+                remaining_blocks,
+            )
+        )
+
+    regrouped = preamble + "".join(sections) + suffix
+    if regrouped != content:
+        gallery_index.write_text(regrouped, encoding="utf-8")
 
 
 def _resolve_source_info(obj: Any) -> dict[str, Any] | None:
@@ -382,5 +603,6 @@ def linkcode_resolve(domain, info):
 
 def setup(app):
     """Register Sphinx hooks for page metadata and source link overrides."""
+    app.connect("env-before-read-docs", _regroup_flat_gallery_index)
     app.connect("html-page-context", _override_source_links)
     app.connect("html-page-context", _inject_page_seo)

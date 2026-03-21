@@ -181,4 +181,4 @@ These include:
 - multipanel layout defaults
 - legend placement and panel label defaults
 
-See `examples/plot_010_settings.py` for a runnable overview of the settings API.
+See `examples/settings.py` for a runnable overview of the settings API.
