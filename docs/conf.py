@@ -126,7 +126,9 @@ html_favicon = "_static/images/favicon.ico"
 html_css_files = ["css/override.css"]
 html_js_files = [
     "https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js",
+    "js/third_party/snarkdown.umd.js",
     "js/repo-stats.js",
+    "js/release-notes.js",
 ]
 html_baseurl = site_url
 html_copy_source = False

@@ -59,6 +59,13 @@ Gallery of examples showing what you can do with cnsplots.
 
 Detailed description of all cnsplots functions and parameters.
 :::
+
+:::{grid-item-card} Release Notes {octicon}`tag;1em;`
+:link: release_notes
+:link-type: doc
+
+Published release history and changelog highlights.
+:::
 ::::
 
 ```{toctree}
@@ -69,5 +76,6 @@ Detailed description of all cnsplots functions and parameters.
 getting_started
 installation
 api
+release_notes
 examples/index
 ```
