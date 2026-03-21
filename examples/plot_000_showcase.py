@@ -260,9 +260,9 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     xlabel="Genes",
     ylabel="Patients",
-    legend_hpad=-2,
+    legend_hpad=-1.5,
     legend_vpad=0,
-    legend_hgap=4.5,
+    legend_hgap=4,
     legend_vgap=0,
     legend_width=3.0,
     legend_order=["Ensemble", "blobs", "Z-score"],
@@ -396,28 +396,31 @@ mp.newline()
 
 # Panel J: lollipopplot
 ax = mp.panel("J", 100, 40, color_cycle="NEJM", margin_right=15, margin_bottom=20)
-ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", errorbar="se")
+ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill")
 ax.set_title("Lollipopplot")
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
 )
 
 # Panel K: confusionplot
-ax = mp.panel("K", 30, 30, margin_right=60)
+ax = mp.panel("K", 60, 60, pad_top=30, margin_right=30)
 ax = cns.confusionplot(
     data=confusion_df,
     x="pred",
     y="truth",
-    add_pvalue=True,
+    add_pvalue=False,
     x_order=["Neg", "Pos"],
     y_order=["Neg", "Pos"],
-    pvalue_x_pad=-0.3,
-    pvalue_y_pad=3.8,
+    cmap="Blues",
+    # pvalue_x_pad=-0.3,
+    # pvalue_y_pad=3.8,
 )
 ax.set_title("Confusionplot")
 
 # Panel L: forestplot
-host_l = mp.panel("L", 100, 100, color_cycle=[cns.CHOCOLATE], pad_left=15, pad_top=10)
+host_l = mp.panel(
+    "L", 100, 100, color_cycle=[cns.CHOCOLATE], pad_left=15, pad_top=10, margin_right=20
+)
 forest_model = cns.methods.CoxModel(
     data=forest_df,
     duration="time",
