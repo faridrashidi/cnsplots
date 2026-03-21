@@ -253,6 +253,12 @@ Fixes #(issue number)
 - [ ] Breaking change
 - [ ] Documentation update
 
+## Release Notes Label
+
+Maintainers: apply one release label before merge so generated release notes are
+categorized correctly: `bug`, `enhancement`, `documentation`, `maintenance`, or
+`ignore-for-release`.
+
 ## Changes Made
 
 - Change 1
@@ -277,9 +283,31 @@ Add screenshots for visual changes
 ### Review Process
 
 - Maintainers will review your PR
+- Maintainers apply one release label before merge: `bug`, `enhancement`,
+  `documentation`, `maintenance`, or `ignore-for-release`
 - Address any feedback or requested changes
 - Once approved, a maintainer will merge your PR
 - Your contribution will be included in the next release
+
+### Release Process
+
+Maintainers can create a release with:
+
+```bash
+make release patch
+```
+
+You can replace `patch` with `minor` or `major` as needed. This bumps the
+package version, creates the release tag, and prepares the release commit.
+After pushing the commit and tag, GitHub Actions will:
+
+- publish the package to PyPI
+- create a draft GitHub release for the new tag
+- generate release notes from merged PRs since the previous tag
+
+Before publishing the draft release, add a short human-written summary under
+the `Added`, `Changed`, and `Fixed` headings, then verify the generated PR list
+and changelog link.
 
 ## Community
 
