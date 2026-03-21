@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -31,6 +32,8 @@ from statannotations.utils import DEFAULT
 
 import cnsplots as cns
 from cnsplots._svg import _save_svg
+
+logger = logging.getLogger(__name__)
 
 RED = "#D6372E"
 BLUE = "#5189BB"
@@ -1019,13 +1022,13 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
         annotator.annotate()
 
     if test == "Mann-Whitney":
-        print("   ---> P-values were determined by two-sided Mann-Whitney U test.")
+        logger.info("P-values were determined by two-sided Mann-Whitney U test.")
     if test == "t-test_welch":
-        print("   ---> P-values were determined by two-sided Welch's t-test.")
+        logger.info("P-values were determined by two-sided Welch's t-test.")
     if test == "fisher-exact":
-        print("   ---> P-values were determined by two-sided Fisher's exact test.")
+        logger.info("P-values were determined by two-sided Fisher's exact test.")
     if test == "chi-squared":
-        print("   ---> P-values were determined by two-sided Chi-squared test.")
+        logger.info("P-values were determined by two-sided Chi-squared test.")
 
 
 def get_showcase_data(

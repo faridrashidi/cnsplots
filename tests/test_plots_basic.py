@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +14,7 @@ import cnsplots as cns
 def test_boxplot_and_violinplot(
     categorical_df: pd.DataFrame,
     monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     calls: list[object] = []
     monkeypatch.setattr(
@@ -23,17 +24,18 @@ def test_boxplot_and_violinplot(
     )
 
     cns.figure(120, 120)
-    ax = cns.boxplot(
-        categorical_df,
-        x="group",
-        y="value",
-        pairs=[("A", "B")],
-        addcount=True,
-        showoutliers=True,
-        whis=(0, 100),
-    )
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax = cns.boxplot(
+            categorical_df,
+            x="group",
+            y="value",
+            pairs=[("A", "B")],
+            addcount=True,
+            showoutliers=True,
+            whis=(0, 100),
+        )
     assert ax.get_xticklabels()[0].get_text().startswith("A")
-    assert "minimum and maximum values" in capsys.readouterr().out
+    assert "minimum and maximum values" in caplog.text
     assert calls
 
     cns.figure(120, 120)
@@ -185,7 +187,7 @@ def test_stack_strip_pie_and_donut_plots(
 def test_distribution_wrappers(
     numeric_df: pd.DataFrame,
     categorical_df: pd.DataFrame,
-    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     cns.figure(120, 120)
     ax = cns.distplot(numeric_df, x="x", hue="group")
@@ -196,11 +198,12 @@ def test_distribution_wrappers(
     assert any(line.get_linestyle() == "--" for line in ax2.lines)
 
     cns.figure(120, 120)
-    ax3 = cns.kdeplot(
-        categorical_df.rename(columns={"value": "score"}), x="score", hue="hue"
-    )
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax3 = cns.kdeplot(
+            categorical_df.rename(columns={"value": "score"}), x="score", hue="hue"
+        )
     assert ax3.get_legend() is not None
-    assert "Anderson-Darling test" in capsys.readouterr().out
+    assert "Anderson-Darling test" in caplog.text
 
     cns.figure(120, 120)
     ax4 = cns.histplot(data=numeric_df, x="x", kde=True)
@@ -213,6 +216,26 @@ def test_distribution_wrappers(
     cns.figure(120, 120)
     ax6 = cns.qqplot(numeric_df, x="x")
     assert ax6 is plt.gca()
+
+
+def test_distribution_logging_respects_settings_verbosity(
+    categorical_df: pd.DataFrame,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    data = categorical_df.rename(columns={"value": "score"})
+
+    caplog.set_level(logging.INFO)
+    with cns.settings.context(verbosity=0):
+        caplog.clear()
+        cns.figure(120, 120)
+        cns.kdeplot(data, x="score", hue="hue")
+        assert "Anderson-Darling test" not in caplog.text
+
+    with cns.settings.context(verbosity=1):
+        caplog.clear()
+        cns.figure(120, 120)
+        cns.kdeplot(data, x="score", hue="hue")
+        assert "Anderson-Darling test" in caplog.text
 
 
 def test_line_scatter_reg_and_slope_plots(

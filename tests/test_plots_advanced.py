@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import sys
 import types
 from typing import Any, cast
@@ -124,20 +125,23 @@ def test_survival_plots(
     survival_three_group_df: pd.DataFrame,
     competing_risk_df: pd.DataFrame,
     monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     cns.figure(120, 120)
-    ax = cns.survivalplot(
-        survival_df, "time", "event", "group", hue_order=["Treatment", "Control"]
-    )
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax = cns.survivalplot(
+            survival_df, "time", "event", "group", hue_order=["Treatment", "Control"]
+        )
     assert ax.get_ylabel() == "Overall survival probability"
     assert "HR =" in ax.texts[0].get_text()
-    assert "multivariate log-rank test" in capsys.readouterr().out
+    assert "multivariate log-rank test" in caplog.text
 
     cns.figure(120, 120)
-    ax2 = cns.survivalplot(survival_three_group_df, "time", "event", "group")
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax2 = cns.survivalplot(survival_three_group_df, "time", "event", "group")
     assert ax2.get_xlabel() == "Time (Years)"
-    assert "trend" in capsys.readouterr().out
+    assert "trend" in caplog.text
 
     added: dict[str, object] = {}
     import lifelines.plotting as lifelines_plotting
@@ -148,17 +152,19 @@ def test_survival_plots(
         lambda *fitters, **kwargs: added.update({"fitters": fitters, **kwargs}),
     )
     cns.figure(120, 120)
-    ax3 = cns.cumulativeincidenceplot(
-        competing_risk_df,
-        "time",
-        "event",
-        "group",
-        show_risk_table=True,
-        xticks=[0, 2, 4, 6, 8],
-    )
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax3 = cns.cumulativeincidenceplot(
+            competing_risk_df,
+            "time",
+            "event",
+            "group",
+            show_risk_table=True,
+            xticks=[0, 2, 4, 6, 8],
+        )
     assert list(ax3.get_xticks()) == [0, 2, 4, 6, 8]
     assert added["rows_to_show"] == ["At risk"]
-    assert "Gray's test" in capsys.readouterr().out
+    assert "Gray's test" in caplog.text
 
     cns.figure(120, 120)
     single_group = competing_risk_df[competing_risk_df["group"] == "A"].copy()

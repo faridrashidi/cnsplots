@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 import re
+import warnings
 
 import lifelines as ll
 import numpy as np
@@ -368,8 +369,8 @@ class LogisticModel:
         2. LogisticRegressionCV fits with L1 penalty and 5-fold CV
         3. AUC and 95% CI are computed via bootstrap (1000 iterations)
 
-        Warnings are printed for hue groups with no outcome variance.
-        Errors during fitting are caught and reported.
+        Runtime warnings are emitted for hue groups with no outcome variance.
+        Errors during fitting are caught and surfaced as warnings.
 
         Examples
         --------
@@ -419,9 +420,10 @@ class LogisticModel:
                         )
                         y = hue_data[self.event].values
                         if len(np.unique(y)) < 2:
-                            print(
-                                f"Warning: No variance in outcome for {var} in hue"
-                                f" group {hue_group}"
+                            warnings.warn(
+                                f"No variance in outcome for {var} in hue group {hue_group}",
+                                RuntimeWarning,
+                                stacklevel=2,
                             )
                             continue
                         model = LogisticRegressionCV(
@@ -445,12 +447,20 @@ class LogisticModel:
                         }
                         all_results.append(model_result)
                     except Exception as e:
-                        print(f"Error fitting {var} for hue group {hue_group}: {e}")
+                        warnings.warn(
+                            f"Error fitting {var} for hue group {hue_group}: {e}",
+                            RuntimeWarning,
+                            stacklevel=2,
+                        )
                         continue
 
         results_df = pd.DataFrame(all_results)
         if len(results_df) == 0:
-            print("No successful model fits")
+            warnings.warn(
+                "No successful model fits",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             return
         results_df = results_df.sort_values(
             ["auc", "hue_group"], ascending=False

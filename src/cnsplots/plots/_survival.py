@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -23,6 +24,8 @@ from cnsplots._validation import (
     validate_no_nulls,
     validate_sufficient_data,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def survivalplot(
@@ -134,8 +137,8 @@ def survivalplot(
         try:
             logrank_test = multivariate_logrank_test(df[duration], df[hue], df[event])
             p = num2tex.num2tex(logrank_test.p_value, precision=2)
-            print(
-                "   ---> P-value was determined by two-sided multivariate log-rank test."
+            logger.info(
+                "P-value was determined by two-sided multivariate log-rank test."
             )
         except Exception as e:
             raise RuntimeError(
@@ -148,8 +151,8 @@ def survivalplot(
             cph.fit(df, duration_col=duration, event_col=event)
             trend_test = cph.log_likelihood_ratio_test()
             p = num2tex.num2tex(trend_test.p_value, precision=2)
-            print(
-                "   ---> P-value was determined by two-sided multivariate log-rank test for trend."
+            logger.info(
+                "P-value was determined by two-sided multivariate log-rank test for trend."
             )
         except Exception as e:
             raise RuntimeError(
@@ -325,7 +328,7 @@ def cumulativeincidenceplot(
             data[duration], data[event], group=data[hue].cat.codes
         )
         p = num2tex.num2tex(pvalue, precision=2)
-        print("   ---> P-value was determined by two-sided Gray's test.")
+        logger.info("P-value was determined by two-sided Gray's test.")
         ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
 
     if show_risk_table:

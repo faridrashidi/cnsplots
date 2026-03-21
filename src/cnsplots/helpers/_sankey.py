@@ -192,24 +192,15 @@ def init_values(
 def deprecation_warnings(
     closePlot: bool, figSize: tuple[int, int] | None, figureName: str | None
 ) -> None:
-    warn = []
     if figureName is not None:
         msg = "use of figureName in sankey() is deprecated"
-        warnings.warn(msg, DeprecationWarning)
-        warn.append(msg[7:-14])
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
     if closePlot is not False:
         msg = "use of closePlot in sankey() is deprecated"
-        warnings.warn(msg, DeprecationWarning)
-        warn.append(msg[7:-14])
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
     if figSize is not None:
         msg = "use of figSize in sankey() is deprecated"
-        warnings.warn(msg, DeprecationWarning)
-        warn.append(msg[7:-14])
-    if warn:
-        print(
-            " The following arguments are deprecated and should be removed: %s",
-            ", ".join(warn),
-        )
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
 
 def determine_widths(
