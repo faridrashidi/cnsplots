@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -22,6 +23,8 @@ from cnsplots._validation import (
     validate_dataframe,
     validate_dataframe_not_empty,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def boxplot(
@@ -147,7 +150,7 @@ def boxplot(
             else str(whis)
         )
     )
-    print(
+    logger.info(
         "Boxplots represent the median and bottom and upper quartiles; whiskers"
         f" correspond to the {whis_str}."
     )
@@ -376,7 +379,7 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
                 ha="right",
                 va="top",
             )
-            print("   ---> P-value was determined by Anderson-Darling test.")
+            logger.info("P-value was determined by Anderson-Darling test.")
     else:
         if add_mode and ax.get_lines():
             kde_data = ax.get_lines()[-1].get_data()

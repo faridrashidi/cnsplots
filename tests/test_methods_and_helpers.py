@@ -59,7 +59,6 @@ def test_cox_model_fit_and_forestplot(survival_df: pd.DataFrame) -> None:
 def test_logistic_model_paths(
     monkeypatch: pytest.MonkeyPatch,
     roc_df: pd.DataFrame,
-    capsys: pytest.CaptureFixture[str],
 ) -> None:
     data = pd.concat(
         [
@@ -101,10 +100,11 @@ def test_logistic_model_paths(
     model_hue = cns.LogisticModel(
         data_bad, event="event", variates=["score", "missing_col"], hue="group"
     )
-    model_hue.fit()
-    out = capsys.readouterr().out
-    assert "Warning: No variance in outcome" in out
-    assert "Error fitting missing_col" in out
+    with pytest.warns(RuntimeWarning) as caught:
+        model_hue.fit()
+    messages = [str(warning.message) for warning in caught]
+    assert any("No variance in outcome" in message for message in messages)
+    assert any("Error fitting missing_col" in message for message in messages)
 
     model_empty = cns.LogisticModel(
         data_bad[data_bad["group"] == "A"],
@@ -112,8 +112,11 @@ def test_logistic_model_paths(
         variates=["score"],
         hue="group",
     )
-    model_empty.fit()
-    assert "No successful model fits" in capsys.readouterr().out
+    with pytest.warns(RuntimeWarning) as empty_caught:
+        model_empty.fit()
+    empty_messages = [str(warning.message) for warning in empty_caught]
+    assert any("No variance in outcome" in message for message in empty_messages)
+    assert any("No successful model fits" in message for message in empty_messages)
 
     cns.figure(120, 120)
     ax = cns.forestplot(model, add_pvalue=False)
@@ -175,32 +178,31 @@ def test_competing_risk_helper(competing_risk_df: pd.DataFrame) -> None:
     assert 0 <= pvalue <= 1
 
 
-def test_sankey_helpers(
-    sankey_df: pd.DataFrame, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_sankey_helpers(sankey_df: pd.DataFrame) -> None:
     _sankey.check_data_matches_labels(
         ["Start", "Middle", "End"], sankey_df["source"], "left"
     )
     with pytest.raises(ValueError, match="left labels and data do not match"):
         _sankey.check_data_matches_labels(["Other"], sankey_df["source"], "left")
 
-    ax, left_labels, left_weight, right_labels, right_weight = _sankey.init_values(
-        None,
-        True,
-        (1, 1),
-        "name",
-        sankey_df["source"].tolist(),
-        None,
-        None,
-        None,
-        None,
-    )
+    with pytest.warns(DeprecationWarning) as caught:
+        ax, left_labels, left_weight, right_labels, right_weight = _sankey.init_values(
+            None,
+            True,
+            (1, 1),
+            "name",
+            sankey_df["source"].tolist(),
+            None,
+            None,
+            None,
+            None,
+        )
     assert ax is plt.gca()
     assert left_labels == []
     assert len(left_weight) == len(sankey_df)
     assert len(right_weight) == len(sankey_df)
-    out = capsys.readouterr().out
-    assert "deprecated" in out
+    messages = [str(warning.message) for warning in caught]
+    assert any("deprecated" in message for message in messages)
 
     data_frame = _sankey._create_dataframe(
         sankey_df["source"],

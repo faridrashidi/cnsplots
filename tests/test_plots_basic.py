@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +14,7 @@ import cnsplots as cns
 def test_boxplot_and_violinplot(
     categorical_df: pd.DataFrame,
     monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     calls: list[object] = []
     monkeypatch.setattr(
@@ -23,17 +24,18 @@ def test_boxplot_and_violinplot(
     )
 
     cns.figure(120, 120)
-    ax = cns.boxplot(
-        categorical_df,
-        x="group",
-        y="value",
-        pairs=[("A", "B")],
-        addcount=True,
-        showoutliers=True,
-        whis=(0, 100),
-    )
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax = cns.boxplot(
+            categorical_df,
+            x="group",
+            y="value",
+            pairs=[("A", "B")],
+            addcount=True,
+            showoutliers=True,
+            whis=(0, 100),
+        )
     assert ax.get_xticklabels()[0].get_text().startswith("A")
-    assert "minimum and maximum values" in capsys.readouterr().out
+    assert "minimum and maximum values" in caplog.text
     assert calls
 
     cns.figure(120, 120)
@@ -185,7 +187,7 @@ def test_stack_strip_pie_and_donut_plots(
 def test_distribution_wrappers(
     numeric_df: pd.DataFrame,
     categorical_df: pd.DataFrame,
-    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     cns.figure(120, 120)
     ax = cns.distplot(numeric_df, x="x", hue="group")
@@ -196,11 +198,12 @@ def test_distribution_wrappers(
     assert any(line.get_linestyle() == "--" for line in ax2.lines)
 
     cns.figure(120, 120)
-    ax3 = cns.kdeplot(
-        categorical_df.rename(columns={"value": "score"}), x="score", hue="hue"
-    )
+    with caplog.at_level(logging.INFO, logger="cnsplots"):
+        ax3 = cns.kdeplot(
+            categorical_df.rename(columns={"value": "score"}), x="score", hue="hue"
+        )
     assert ax3.get_legend() is not None
-    assert "Anderson-Darling test" in capsys.readouterr().out
+    assert "Anderson-Darling test" in caplog.text
 
     cns.figure(120, 120)
     ax4 = cns.histplot(data=numeric_df, x="x", kde=True)
