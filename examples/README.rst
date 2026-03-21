@@ -1,8 +1,7 @@
 Examples Gallery
 ================
 
-This gallery showcases the capabilities of cnsplots for creating publication-ready
-scientific visualizations. Each example demonstrates different plotting techniques and
-styling options available in the library. The examples below cover various use cases
-from basic plotting to advanced customizations suitable for high-impact scientific
-journals like Cell, Nature, and Science.
+This gallery showcases the breadth of cnsplots for publication-ready scientific
+visualization. The examples below are grouped into guided sections so you can move
+from core setup and styling through chart types, analysis-focused plots, and
+library integrations.

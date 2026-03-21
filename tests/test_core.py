@@ -1034,9 +1034,7 @@ def test_utils_helpers_and_showcase_data(
     assert isinstance(data[12], dict)
     data_with_assets = _utils.get_showcase_data(
         include_showcase_images=True,
-        caller_file=Path(__file__).resolve().parents[1]
-        / "examples"
-        / "plot_320_multipanel.py",
+        caller_file=Path(__file__).resolve().parents[1] / "examples" / "multipanel.py",
     )
     assert len(data_with_assets) == 14
     assert data_with_assets[-1].name == "assets"

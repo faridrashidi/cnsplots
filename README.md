@@ -24,7 +24,7 @@ Create visually stunning, journal-quality figures with minimal code. Built on ma
 
 ## Overview
 
-[![Overview](https://raw.githubusercontent.com/faridrashidi/cnsplots/main/docs/_static/images/overview.png)](https://cnsplots.farid.one/examples/plot_000_showcase.html#figure-1)
+[![Overview](https://raw.githubusercontent.com/faridrashidi/cnsplots/main/docs/_static/images/overview.png)](https://cnsplots.farid.one/examples/showcase.html#figure-1)
 
 **cnsplots** is a Python visualization library designed specifically for creating publication-ready scientific figures. It takes care of the tedious styling details so you can focus on your science.
 
