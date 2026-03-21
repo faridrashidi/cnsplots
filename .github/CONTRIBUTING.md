@@ -115,14 +115,14 @@ This uses `uv sync --all-extras` to install the package in editable mode with al
 
 After installation, you can use the following commands:
 
-| Command                            | Description                         |
-| ---------------------------------- | ----------------------------------- |
-| `make help`                        | Show available commands             |
-| `make lint`                        | Run linting and formatting          |
-| `make test`                        | Run all unit tests                  |
-| `make doc`                         | Build and serve documentation       |
+| Command                              | Description                            |
+| ------------------------------------ | -------------------------------------- |
+| `make help`                          | Show available commands                |
+| `make lint`                          | Run linting and formatting             |
+| `make test`                          | Run all unit tests                     |
+| `make doc`                           | Build and serve documentation          |
 | `make release [patch\|minor\|major]` | Bump the package version for a release |
-| `make clean`                       | Clean build artifacts               |
+| `make clean`                         | Clean build artifacts                  |
 
 ### 3. Verify Installation
 
