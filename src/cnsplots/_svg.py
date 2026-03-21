@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
-from tempfile import TemporaryDirectory
 import warnings
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -110,7 +110,7 @@ def _correct_svg(
     with open(input_file) as f:
         svg_content = f.read()
 
-    # NOTE: clip-path attributes and clipPath definitions are intentionally
+    # note clip-path attributes and clipPath definitions are intentionally
     # preserved so that axes clipping (e.g. from set_xlim / set_ylim) is
     # rendered correctly.  The _flatten_groups helper propagates clip-path
     # from parent <g> elements to their children when groups are dissolved.
