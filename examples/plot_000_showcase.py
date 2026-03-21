@@ -484,4 +484,4 @@ if mp.fig is not None:
     mp.fig.canvas.draw()
 
 # Save final figure
-cns.savefig("~/Desktop/Figure2.jpg")
+cns.savefig("~/Desktop/Figure2.svg")
