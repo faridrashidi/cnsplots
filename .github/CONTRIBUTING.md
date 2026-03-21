@@ -111,6 +111,19 @@ make install
 
 This uses `uv sync --all-extras` to install the package in editable mode with all dependencies, and sets up pre-commit hooks.
 
+### Development Commands
+
+After installation, you can use the following commands:
+
+| Command                            | Description                         |
+| ---------------------------------- | ----------------------------------- |
+| `make help`                        | Show available commands             |
+| `make lint`                        | Run linting and formatting          |
+| `make test`                        | Run all unit tests                  |
+| `make doc`                         | Build and serve documentation       |
+| `make release [patch\|minor\|major]` | Bump the package version for a release |
+| `make clean`                       | Clean build artifacts               |
+
 ### 3. Verify Installation
 
 ```bash
@@ -283,7 +296,7 @@ Maintainers: apply exactly one release label before merge:
 
 ### Release Process
 
-Maintainers can create a release with:
+Maintainers can create a release on the main branch (no PR needed) with:
 
 ```bash
 make release patch
