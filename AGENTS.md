@@ -79,6 +79,13 @@
 ## Pull request rules
 
 - Use `gh pr create`.
+- When creating a PR, add exactly one release label with `gh pr create --label <label>`.
+- Use the release label that matches the dominant change:
+  - `bug` for bug fixes
+  - `enhancement` for user-facing features or improvements
+  - `documentation` for documentation or text-only changes
+  - `maintenance` for internal chores, tooling, config, or refactors
+  - `ignore-for-release` only when the PR should be excluded from release notes
 - Base branch must be `main`.
 - Open the first pull request as a draft unless explicitly told otherwise.
 - Push the branch before creating the pull request.
