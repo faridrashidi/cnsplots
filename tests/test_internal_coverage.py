@@ -1,3 +1,5 @@
+"""Internal branch-coverage tests for private and helper implementation paths."""
+
 from __future__ import annotations
 
 import builtins
@@ -23,7 +25,7 @@ from cnsplots.plots import _heatmap as heatmap_mod
 from cnsplots.plots import _specialized as specialized_mod
 
 
-def test_methods_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_methods_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     class FakeCoxPHFitter:
         def __init__(self) -> None:
             self.summary = pd.DataFrame(
@@ -70,7 +72,7 @@ def test_methods_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     assert lower <= auc <= upper
 
 
-def test_multipanel_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_multipanel_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     mp = cns.multipanel()
     mp._panels = [{"label": "A", "_below": "missing"}]
     assert mp._get_panel_position(0) == (0, 0)
@@ -144,7 +146,9 @@ def test_multipanel_calculate_layout_wraps_to_new_row() -> None:
     assert mp._row_heights == [20, 30]
 
 
-def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_setup_internal_coverage(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     real_import = builtins.__import__
     real_exists = Path.exists
 
@@ -258,7 +262,7 @@ def test_setup_gap_coverage(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
     _setup._ensure_helvetica_bold()
 
 
-def test_svg_gap_coverage() -> None:
+def test_svg_internal_coverage() -> None:
     class FakeText:
         def getparent(self) -> None:
             return None
@@ -286,7 +290,7 @@ def test_svg_gap_coverage() -> None:
     )
 
 
-def test_utils_gap_coverage(
+def test_utils_internal_coverage(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     showcase_bundle: tuple[pd.DataFrame, ...],
@@ -414,7 +418,7 @@ def test_utils_gap_coverage(
         assert _utils.palettes(name)
 
 
-def test_validation_gap_coverage(heatmap_adata: ad.AnnData) -> None:
+def test_validation_internal_coverage(heatmap_adata: ad.AnnData) -> None:
     wide_df = pd.DataFrame(
         np.zeros((1, 11)), columns=pd.Index([f"c{i}" for i in range(11)])
     )
@@ -435,7 +439,7 @@ def test_validation_gap_coverage(heatmap_adata: ad.AnnData) -> None:
         _validation.validate_no_nulls(pd.DataFrame({"a": [1, None]}), "a", "func")
 
 
-def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_helper_heatmap_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[object] = []
 
     def fake_plot(self: object) -> None:
@@ -563,7 +567,7 @@ def test_helper_heatmap_gap_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     assert plotter6.ax_heatmap is not None
 
 
-def test_phylo_and_sankey_gap_coverage() -> None:
+def test_phylo_and_sankey_internal_coverage() -> None:
     fig, ax = plt.subplots()
     out_ax, cmap = _phylo._heatmap(
         np.array([["A"], ["B"]]),
@@ -623,7 +627,7 @@ def test_phylo_and_sankey_gap_coverage() -> None:
     )
 
 
-def test_plot_gap_coverage(
+def test_plot_internal_coverage(
     categorical_df: pd.DataFrame,
     stack_df: pd.DataFrame,
     heatmap_adata: ad.AnnData,
@@ -873,7 +877,7 @@ def test_plot_gap_coverage(
     )
 
 
-def test_remaining_visual_gap_coverage(
+def test_remaining_visual_internal_coverage(
     confusion_df: pd.DataFrame,
     heatmap_adata: ad.AnnData,
     numeric_df: pd.DataFrame,
