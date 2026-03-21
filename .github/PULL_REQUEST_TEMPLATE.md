@@ -1,22 +1,18 @@
-## Description
-Brief description of the changes in this PR.
+## What changed
+Describe the main changes in this PR.
 
-## Related Issue
-Fixes #(issue number)
+## How it was tested
+List the checks you ran, for example:
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
+- `make test`
+- `make lint`
+
+## Risks or follow-ups
+Note any known risks, caveats, or follow-up work.
+
+## Related issue
+Closes #(issue number)
 
 ## Release Notes Label
-Maintainers: apply one release label before merge so generated release notes are categorized correctly:
+Maintainers: apply exactly one release label before merge:
 `bug`, `enhancement`, `documentation`, `maintenance`, or `ignore-for-release`.
-
-## Checklist
-- [ ] My code follows the project's style guidelines
-- [ ] I have performed a self-review of my code
-- [ ] I have added tests that prove my fix/feature works
-- [ ] New and existing tests pass locally
-- [ ] I have updated the documentation accordingly

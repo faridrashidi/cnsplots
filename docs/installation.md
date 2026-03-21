@@ -13,14 +13,6 @@ Install cnsplots using pip:
 pip install cnsplots
 ```
 
-To install in an isolated environment (recommended):
-
-```bash
-python -m venv cnsplots-env
-source cnsplots-env/bin/activate  # On Windows: cnsplots-env\Scripts\activate
-pip install cnsplots
-```
-
 ## Verify Installation
 
 After installation, verify that cnsplots is correctly installed:
@@ -54,18 +46,6 @@ make install
 This uses `uv sync --all-extras` to install the package in editable mode with
 the project's development and documentation extras, and sets up pre-commit
 hooks.
-
-### Development Commands
-
-After installation, you can use the following commands:
-
-| Command      | Description                   |
-| ------------ | ----------------------------- |
-| `make help`  | Show available commands       |
-| `make lint`  | Run linting and formatting    |
-| `make test`  | Run all unit tests            |
-| `make doc`   | Build and serve documentation |
-| `make clean` | Clean build artifacts         |
 
 ## Dependencies
 

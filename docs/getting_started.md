@@ -22,6 +22,9 @@ cns.boxplot(data=df, x="day", y="total_bill")
 cns.savefig("my_figure.svg")
 ```
 
+In these examples, `data` is a pandas DataFrame, and `x`, `y`, and `hue`
+refer to column names in that DataFrame.
+
 ## Understanding Figure Dimensions
 
 cnsplots uses **pixels** for figure dimensions:
@@ -71,10 +74,10 @@ cns.savefig("scatter.svg")
 
 ```python
 cns.figure(100, 80)
-cns.boxplot(data=df, x="day", y="total_bill")
-plt.xlabel("Day of Week")
-plt.ylabel("Total Bill ($)")
-plt.title("Tips by Day")
+ax = cns.boxplot(data=df, x="day", y="total_bill")
+ax.set_xlabel("Day of Week")
+ax.set_ylabel("Total Bill ($)")
+ax.set_title("Tips by Day")
 cns.savefig("labeled_plot.svg")
 ```
 

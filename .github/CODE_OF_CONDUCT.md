@@ -60,7 +60,7 @@ This Code of Conduct also applies when an individual is officially representing 
 If you experience or witness unacceptable behavior, or have any other concerns, please report it by:
 
 1. **Opening a confidential issue**: Contact the project maintainers directly through GitHub
-2. **Email**: Contact the project lead at farid.rashidi [at] gmail.com
+2. **Email**: Contact the project lead at me@farid.one
 
 All reports will be handled with discretion and confidentiality.
 
