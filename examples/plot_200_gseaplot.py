@@ -154,8 +154,8 @@ gsea_res.head()
 # Basic GSEA plot - GO Biological Process
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize the strongest enriched terms from prerank-style results.
-cns.figure(250, 130)
-ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=12, size=1.8)
+cns.figure(180, 130)
+ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=12, size=1.5)
 ax.set_title("GSEA Plot")
 
 
@@ -163,15 +163,15 @@ ax.set_title("GSEA Plot")
 # Top 8 enriched terms
 # ~~~~~~~~~~~~~~~~~~~~
 # Display fewer terms for a cleaner plot.
-cns.figure(250, 100)
-cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=2.0)
+cns.figure(150, 100)
+cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1.5)
 
 
 # %%
 # All enriched terms
 # ~~~~~~~~~~~~~~~~~~
 # Show the complete result table.
-cns.figure(280, 180)
+cns.figure(200, 180)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=len(gsea_res), size=1.5)
 
 
@@ -179,8 +179,8 @@ cns.gseaplot(gsea_res, y="Clean_Term", top_term=len(gsea_res), size=1.5)
 # KEGG pathway enrichment
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Use prerank-style KEGG results for pathway analysis.
-cns.figure(250, 100)
-ax = cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=10, size=1.8)
+cns.figure(150, 100)
+ax = cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=10, size=1.5)
 ax.set_title("KEGG Pathways")
 
 
@@ -188,8 +188,8 @@ ax.set_title("KEGG Pathways")
 # Reactome pathway enrichment
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use prerank-style Reactome results for biological pathways.
-cns.figure(280, 120)
-ax = cns.gseaplot(gsea_reactome, y="Clean_Term", top_term=10, size=1.6)
+cns.figure(180, 120)
+ax = cns.gseaplot(gsea_reactome, y="Clean_Term", top_term=10, size=1.5)
 ax.set_title("Reactome Pathways")
 
 
@@ -198,7 +198,7 @@ ax.set_title("Reactome Pathways")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Enrichment analysis for molecular functions.
 cns.figure(250, 100)
-ax = cns.gseaplot(gsea_mf, y="Clean_Term", top_term=8, size=1.8)
+ax = cns.gseaplot(gsea_mf, y="Clean_Term", top_term=8, size=1.5)
 ax.set_title("GO Molecular Function")
 
 
@@ -206,8 +206,8 @@ ax.set_title("GO Molecular Function")
 # GO Cellular Component
 # ~~~~~~~~~~~~~~~~~~~~~
 # Enrichment analysis for cellular locations.
-cns.figure(250, 100)
-ax = cns.gseaplot(gsea_cc, y="Clean_Term", top_term=8, size=1.8)
+cns.figure(150, 100)
+ax = cns.gseaplot(gsea_cc, y="Clean_Term", top_term=8, size=1.5)
 ax.set_title("GO Cellular Component")
 
 
@@ -215,8 +215,8 @@ ax.set_title("GO Cellular Component")
 # WikiPathways enrichment
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Use prerank-style WikiPathways results.
-cns.figure(280, 100)
-ax = cns.gseaplot(gsea_wiki, y="Clean_Term", top_term=8, size=1.8)
+cns.figure(150, 100)
+ax = cns.gseaplot(gsea_wiki, y="Clean_Term", top_term=8, size=1.5)
 ax.set_title("WikiPathways")
 
 
@@ -224,8 +224,8 @@ ax.set_title("WikiPathways")
 # Larger dot size
 # ~~~~~~~~~~~~~~~
 # Increase dot size for emphasis.
-cns.figure(250, 100)
-ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=2.5)
+cns.figure(100, 100)
+ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1)
 ax.set_title("Larger Dots")
 
 
@@ -233,7 +233,7 @@ ax.set_title("Larger Dots")
 # Smaller dot size
 # ~~~~~~~~~~~~~~~~
 # Decrease dot size for denser plots.
-cns.figure(280, 150)
+cns.figure(180, 150)
 ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=12, size=1.2)
 ax.set_title("Smaller Dots")
 
@@ -242,15 +242,15 @@ ax.set_title("Smaller Dots")
 # Comparing pathway databases
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Side-by-side comparison of different databases.
-mp = cns.multipanel(max_width=540)
+mp = cns.multipanel(max_width=300)
 
-mp.panel("A", 100, 220, margin_right=0, margin_bottom=20)
+mp.panel("A", 100, 100, margin_right=0, margin_bottom=20)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1.5)
 mp.get_axes("A").set_title("GO Biological Process")
 
 mp.newline()
 
-mp.panel("B", 100, 220, margin_right=0)
+mp.panel("B", 100, 100, margin_right=0)
 cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=8, size=1.5)
 mp.get_axes("B").set_title("KEGG")
 
@@ -259,20 +259,20 @@ mp.get_axes("B").set_title("KEGG")
 # GO categories comparison
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different Gene Ontology categories.
-mp = cns.multipanel(max_width=500)
+mp = cns.multipanel(max_width=300)
 
-mp.panel("A", 100, 180, margin_right=0, margin_bottom=30)
+mp.panel("A", 100, 100, margin_right=0, margin_bottom=30)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=6, size=1.4)
 mp.get_axes("A").set_title("Biological Process")
 
 mp.newline()
 
-mp.panel("B", 100, 180, margin_right=0, margin_bottom=30)
+mp.panel("B", 100, 100, margin_right=0, margin_bottom=30)
 cns.gseaplot(gsea_mf, y="Clean_Term", top_term=6, size=1.4)
 mp.get_axes("B").set_title("Molecular Function")
 
 mp.newline()
 
-mp.panel("C", 100, 180, margin_right=0)
+mp.panel("C", 100, 100, margin_right=0)
 cns.gseaplot(gsea_cc, y="Clean_Term", top_term=6, size=1.4)
 mp.get_axes("C").set_title("Cellular Component")
