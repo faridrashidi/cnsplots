@@ -59,13 +59,14 @@ hooks.
 
 After installation, you can use the following commands:
 
-| Command      | Description                   |
-| ------------ | ----------------------------- |
-| `make help`  | Show available commands       |
-| `make lint`  | Run linting and formatting    |
-| `make test`  | Run all unit tests            |
-| `make doc`   | Build and serve documentation |
-| `make clean` | Clean build artifacts         |
+| Command                          | Description                       |
+| -------------------------------- | --------------------------------- |
+| `make help`                      | Show available commands           |
+| `make lint`                      | Run linting and formatting        |
+| `make test`                      | Run all unit tests                |
+| `make doc`                       | Build and serve documentation     |
+| `make release [patch|minor|major]` | Bump the package version for a release |
+| `make clean`                     | Clean build artifacts             |
 
 ## Dependencies
 

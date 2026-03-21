@@ -210,74 +210,66 @@ def test_boxplot_invalid_data():
 
 ### Before Submitting
 
-1. Ensure all tests pass
-2. Update documentation if needed
-3. Add an example if introducing new functionality
-4. Run linters and formatters
-5. Update CHANGELOG if applicable
+1. Run `make test`
+2. Run `make lint`
+3. Update documentation if needed
+4. Add an example if introducing new functionality
 
 ### Submitting Your PR
 
 1. **Title**: Use a clear, descriptive title
-   - `feat: Add violin plot with split option`
-   - `fix: Correct legend positioning in boxplot`
-   - `docs: Update survival plot examples`
+   - `✨ Add split violin plot support`
+   - `🐛 Fix legend positioning in boxplot`
+   - `📝 Clarify survival plot examples`
 
-2. **Description**: Include:
-   - What changes you made and why
-   - Link to related issue(s)
-   - Screenshots for visual changes
-   - Breaking changes (if any)
+2. **Description**: Follow the PR template and include:
+   - What changed
+   - How it was tested
+   - Any risks or follow-ups
+   - Related issue(s), if any
 
-3. **Checklist**: Ensure you've completed:
+3. **Release Notes Label**: Ask a maintainer to apply exactly one release label before merge:
+   - `bug`
+   - `enhancement`
+   - `documentation`
+   - `maintenance`
+   - `ignore-for-release`
+
+4. **Checklist**: Ensure you've completed:
    - [ ] Code follows style guidelines
    - [ ] Self-review completed
    - [ ] Tests added/updated
    - [ ] Documentation updated
    - [ ] All tests pass
-   - [ ] No new warnings
+   - [ ] Screenshots added for visual changes when helpful
 
 ### PR Template
 
 ```markdown
-## Description
+## What changed
 
-Brief description of changes
+Describe the main changes in this PR.
 
-Fixes #(issue number)
+## How it was tested
 
-## Type of Change
+List the checks you ran, for example:
 
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
+- `make test`
+- `make lint`
+
+## Risks or follow-ups
+
+Note any known risks, caveats, or follow-up work.
+
+## Related issue
+
+Closes #(issue number)
 
 ## Release Notes Label
 
-Maintainers: apply one release label before merge so generated release notes are
-categorized correctly: `bug`, `enhancement`, `documentation`, `maintenance`, or
+Maintainers: apply exactly one release label before merge:
+`bug`, `enhancement`, `documentation`, `maintenance`, or
 `ignore-for-release`.
-
-## Changes Made
-
-- Change 1
-- Change 2
-
-## Testing
-
-Describe testing performed
-
-## Screenshots (if applicable)
-
-Add screenshots for visual changes
-
-## Checklist
-
-- [ ] Code follows style guidelines
-- [ ] Tests added/updated
-- [ ] Documentation updated
-- [ ] All tests pass
 ```
 
 ### Review Process
