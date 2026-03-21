@@ -34,7 +34,7 @@ lint:
 	uv run pre-commit run --all-files
 
 test:
-	uv run pytest --disable-warnings ./tests
+	uv run pytest ./tests
 
 doc: clean
 	cd docs && $(MAKE) html
