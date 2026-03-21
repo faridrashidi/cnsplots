@@ -90,9 +90,9 @@ fig.tight_layout()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Export the current seaborn figure using the cnsplots save helper.
 monthly_passengers = (
-    flights.groupby("year", as_index=False)["passengers"].mean().rename(
-        columns={"passengers": "mean_passengers"}
-    )
+    flights.groupby("year", as_index=False)["passengers"]
+    .mean()
+    .rename(columns={"passengers": "mean_passengers"})
 )
 export_dir = Path(tempfile.gettempdir()) / "cnsplots-gallery"
 export_dir.mkdir(parents=True, exist_ok=True)
