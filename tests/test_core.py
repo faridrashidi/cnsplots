@@ -10,9 +10,9 @@ from typing import Any, cast
 
 import anndata as ad
 import matplotlib as mpl
+import matplotlib.colorbar
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
-import matplotlib.colorbar
 import numpy as np
 import pandas as pd
 import pytest
@@ -117,7 +117,7 @@ def _bbox_is_within(fig_bbox, artist_bbox, *, pad: float = 0.8) -> bool:
 def test_settings_behavior() -> None:
     settings = _settings.CNSSettings()
     assert settings.palette_qual == "Ecotyper1"
-    assert settings.savefig_bbox == "standard"
+    assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
@@ -314,7 +314,7 @@ def test_settings_behavior() -> None:
     settings.reset()
     assert settings.palette_qual == "Ecotyper1"
     assert settings.title_fontweight == "bold"
-    assert settings.savefig_bbox == "standard"
+    assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)

@@ -22,6 +22,7 @@ from cnsplots.helpers import _heatmap as helper_heatmap, _phylo, _sankey
 from cnsplots.plots import _distribution as dist_mod
 from cnsplots.plots import _genomics as genomics_mod
 from cnsplots.plots import _heatmap as heatmap_mod
+from cnsplots.plots import _sets as sets_mod
 from cnsplots.plots import _specialized as specialized_mod
 
 
@@ -260,6 +261,54 @@ def test_setup_internal_coverage(
     )
     monkeypatch.setattr(_setup.fm, "fontManager", bad_font_manager)
     _setup._ensure_helvetica_bold()
+
+
+def test_import_upsetplot_module_skips_local_shadow_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    shadow_dir = tmp_path / "shadow"
+    shadow_dir.mkdir()
+    (shadow_dir / "upsetplot.py").write_text(
+        "import cnsplots as cns\ncns.upsetplot({'A': ['x']})\n",
+        encoding="utf-8",
+    )
+
+    package_dir = tmp_path / "package"
+    package_root = package_dir / "upsetplot"
+    package_root.mkdir(parents=True)
+    (package_root / "__init__.py").write_text(
+        "\n".join(
+            [
+                "def from_memberships(memberships):",
+                "    return memberships",
+                "",
+                "class UpSet:",
+                "    def __init__(self, data, **kwargs):",
+                "        self.data = data",
+                "",
+                "    def plot(self, fig=None):",
+                "        return {}",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    shadow_module = types.ModuleType("upsetplot")
+    shadow_module.__file__ = str(shadow_dir / "upsetplot.py")
+
+    monkeypatch.setitem(sys.modules, "upsetplot", shadow_module)
+    monkeypatch.setattr(
+        sys,
+        "path",
+        [str(shadow_dir), str(package_dir), *sys.path],
+    )
+
+    usp = sets_mod._import_upsetplot_module()
+
+    assert hasattr(usp, "from_memberships")
+    assert hasattr(usp, "UpSet")
+    assert Path(usp.__file__).resolve() == (package_root / "__init__.py").resolve()
 
 
 def test_svg_internal_coverage() -> None:
