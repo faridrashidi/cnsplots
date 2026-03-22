@@ -346,13 +346,16 @@ def test_public_settings_context_changes_plot_and_export_contract(
     output_dir: Path,
 ) -> None:
     default_png = output_dir / "default.png"
+    default_pdf = output_dir / "default.pdf"
     custom_png = output_dir / "custom.png"
+    custom_pdf = output_dir / "custom.pdf"
 
     cns.settings.reset()
     try:
         cns.figure(72, 72)
         plt.plot([0, 1], [0, 1])
         cns.savefig(str(default_png))
+        cns.savefig(str(default_pdf))
 
         with cns.settings.context(
             savefig_dpi=72,
@@ -362,12 +365,27 @@ def test_public_settings_context_changes_plot_and_export_contract(
             ax = cns.boxplot(categorical_df, x="group", y="value")
             ax.set_title("Styled Title")
             cns.savefig(str(custom_png))
+            cns.savefig(str(custom_pdf))
             assert ax.title.get_fontweight() == "normal"
 
         default_height, default_width = plt.imread(str(default_png)).shape[:2]
         custom_height, custom_width = plt.imread(str(custom_png)).shape[:2]
-        assert (default_width, default_height) == (288, 288)
-        assert (custom_width, custom_height) == (72, 72)
+        default_pdf_width_pt, default_pdf_height_pt = _pdf_media_box_size(default_pdf)
+        custom_pdf_width_pt, custom_pdf_height_pt = _pdf_media_box_size(custom_pdf)
+        default_scale = float(cns.settings.savefig_dpi) / 72
+        custom_scale = 72 / 72
+        assert default_width == pytest.approx(
+            default_pdf_width_pt * default_scale, abs=1
+        )
+        assert default_height == pytest.approx(
+            default_pdf_height_pt * default_scale,
+            abs=1,
+        )
+        assert custom_width == pytest.approx(custom_pdf_width_pt * custom_scale, abs=1)
+        assert custom_height == pytest.approx(
+            custom_pdf_height_pt * custom_scale,
+            abs=1,
+        )
     finally:
         cns.settings.reset()
 

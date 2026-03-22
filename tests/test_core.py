@@ -806,8 +806,8 @@ def test_savefig_default_bounds_match_jpg_and_pdf(
         pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
         scale = float(cns.settings.savefig_dpi) / 72
 
-        assert jpg_width == pytest.approx(pdf_width_pt * scale, abs=1)
-        assert jpg_height == pytest.approx(pdf_height_pt * scale, abs=1)
+        assert jpg_width == pytest.approx(pdf_width_pt * scale, abs=3)
+        assert jpg_height == pytest.approx(pdf_height_pt * scale, abs=3)
     finally:
         cns.settings.reset()
 

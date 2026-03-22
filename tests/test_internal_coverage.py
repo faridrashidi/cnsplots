@@ -311,6 +311,25 @@ def test_import_upsetplot_module_skips_local_shadow_file(
     assert Path(usp.__file__).resolve() == (package_root / "__init__.py").resolve()
 
 
+def test_import_upsetplot_module_tolerates_path_resolution_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    valid_module = types.ModuleType("upsetplot")
+    valid_module.from_memberships = lambda memberships: memberships
+    valid_module.UpSet = object
+
+    monkeypatch.setitem(sys.modules, "upsetplot", valid_module)
+    monkeypatch.setattr(
+        sets_mod.Path,
+        "resolve",
+        lambda self: (_ for _ in ()).throw(OSError("bad path")),
+    )
+
+    usp = sets_mod._import_upsetplot_module()
+
+    assert usp is valid_module
+
+
 def test_svg_internal_coverage() -> None:
     class FakeText:
         def getparent(self) -> None:
