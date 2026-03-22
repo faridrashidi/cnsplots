@@ -260,9 +260,9 @@ cmp = cns.heatmapplot(
     row_dendrogram=True,
     xlabel="Genes",
     ylabel="Patients",
-    legend_hpad=-1.5,
+    legend_hpad=-1.3,
     legend_vpad=0,
-    legend_hgap=4,
+    legend_hgap=3.8,
     legend_vgap=0,
     legend_width=3.0,
     legend_order=["Ensemble", "blobs", "Z-score"],
@@ -395,8 +395,8 @@ ax.set_title("Placeholder")
 mp.newline()
 
 # Panel J: lollipopplot
-ax = mp.panel("J", 100, 40, color_cycle="NEJM", margin_right=15, margin_bottom=20)
-ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill")
+ax = mp.panel("J", 80, 40, color_cycle="NEJM", margin_right=15, margin_bottom=20)
+ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", pairs="all")
 ax.set_title("Lollipopplot")
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"

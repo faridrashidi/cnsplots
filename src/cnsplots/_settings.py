@@ -32,11 +32,11 @@ Examples
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
-import logging
 from typing import Any, Callable
 
 _CNSPLOTS_LOGGER_NAME = "cnsplots"
@@ -239,7 +239,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Preferred sans-serif font family fallbacks.",
     ),
     "savefig_bbox": _spec(
-        "standard",
+        "tight",
         lambda value: _validate_string("savefig_bbox", value),
         "Default savefig bounding box mode.",
     ),
@@ -476,11 +476,6 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         150,
         lambda value: _validate_number("figure_height", value, positive=True),
         "Default figure height in pixels for figure().",
-    ),
-    "figure_autofit": _spec(
-        True,
-        lambda value: _validate_bool("figure_autofit", value),
-        "Whether figure() auto-expands the canvas to fit overflowing decorations.",
     ),
     "figure_dpi": _spec(
         72 * 2,

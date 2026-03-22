@@ -28,6 +28,17 @@ def _pdf_media_box_size(path: Path) -> tuple[float, float]:
     return x1 - x0, y1 - y0
 
 
+def _svg_view_box_size(path: Path) -> tuple[float, float]:
+    match = re.search(
+        r'viewBox="[-+]?\d*\.?\d+ [-+]?\d*\.?\d+ ([-+]?\d*\.?\d+) ([-+]?\d*\.?\d+)"',
+        path.read_text(encoding="utf-8"),
+    )
+    if match is None:
+        raise AssertionError(f"viewBox not found in {path}")
+    width, height = (float(value) for value in match.groups())
+    return width, height
+
+
 def test_public_namespace_contract() -> None:
     assert cns.__version__ == version("cnsplots")
     assert all(not name.startswith("_") for name in cns.__all__)
@@ -334,10 +345,13 @@ def test_public_figure_and_save_alias_contract(output_dir: Path) -> None:
 
     png_height, png_width = plt.imread(str(png_path)).shape[:2]
     pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
+    svg_width_pt, svg_height_pt = _svg_view_box_size(svg_path)
     scale = float(cns.settings.savefig_dpi) / 72
 
     assert png_width == pytest.approx(pdf_width_pt * scale, abs=1)
     assert png_height == pytest.approx(pdf_height_pt * scale, abs=1)
+    assert png_width == pytest.approx(svg_width_pt * scale, abs=1)
+    assert png_height == pytest.approx(svg_height_pt * scale, abs=1)
     assert "<svg" in svg_path.read_text(encoding="utf-8")
 
 
@@ -346,17 +360,21 @@ def test_public_settings_context_changes_plot_and_export_contract(
     output_dir: Path,
 ) -> None:
     default_png = output_dir / "default.png"
+    default_pdf = output_dir / "default.pdf"
+    default_svg = output_dir / "default.svg"
     custom_png = output_dir / "custom.png"
+    custom_pdf = output_dir / "custom.pdf"
+    custom_svg = output_dir / "custom.svg"
 
     cns.settings.reset()
     try:
-        with cns.settings.context(figure_autofit=False):
-            cns.figure(72, 72)
-            plt.plot([0, 1], [0, 1])
-            cns.savefig(str(default_png))
+        cns.figure(72, 72)
+        plt.plot([0, 1], [0, 1])
+        cns.savefig(str(default_png))
+        cns.savefig(str(default_pdf))
+        cns.savefig(str(default_svg))
 
         with cns.settings.context(
-            figure_autofit=False,
             savefig_dpi=72,
             title_fontweight="normal",
         ):
@@ -364,12 +382,42 @@ def test_public_settings_context_changes_plot_and_export_contract(
             ax = cns.boxplot(categorical_df, x="group", y="value")
             ax.set_title("Styled Title")
             cns.savefig(str(custom_png))
+            cns.savefig(str(custom_pdf))
+            cns.savefig(str(custom_svg))
             assert ax.title.get_fontweight() == "normal"
 
         default_height, default_width = plt.imread(str(default_png)).shape[:2]
         custom_height, custom_width = plt.imread(str(custom_png)).shape[:2]
-        assert (default_width, default_height) == (288, 288)
-        assert (custom_width, custom_height) == (72, 72)
+        default_pdf_width_pt, default_pdf_height_pt = _pdf_media_box_size(default_pdf)
+        custom_pdf_width_pt, custom_pdf_height_pt = _pdf_media_box_size(custom_pdf)
+        default_svg_width_pt, default_svg_height_pt = _svg_view_box_size(default_svg)
+        custom_svg_width_pt, custom_svg_height_pt = _svg_view_box_size(custom_svg)
+        default_scale = float(cns.settings.savefig_dpi) / 72
+        custom_scale = 72 / 72
+        assert default_width == pytest.approx(
+            default_pdf_width_pt * default_scale, abs=1
+        )
+        assert default_height == pytest.approx(
+            default_pdf_height_pt * default_scale,
+            abs=1,
+        )
+        assert custom_width == pytest.approx(custom_pdf_width_pt * custom_scale, abs=1)
+        assert custom_height == pytest.approx(
+            custom_pdf_height_pt * custom_scale,
+            abs=1,
+        )
+        assert default_width == pytest.approx(
+            default_svg_width_pt * default_scale, abs=1
+        )
+        assert default_height == pytest.approx(
+            default_svg_height_pt * default_scale,
+            abs=1,
+        )
+        assert custom_width == pytest.approx(custom_svg_width_pt * custom_scale, abs=1)
+        assert custom_height == pytest.approx(
+            custom_svg_height_pt * custom_scale,
+            abs=1,
+        )
     finally:
         cns.settings.reset()
 

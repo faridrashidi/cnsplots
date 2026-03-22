@@ -7,6 +7,9 @@ if TYPE_CHECKING:
 
 from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
+import importlib
+from pathlib import Path
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +28,40 @@ def _normalize_text_position(text: Any) -> None:
 
     x, y = text.get_position()
     text.set_position((_to_scalar(x), _to_scalar(y)))
+
+
+def _import_upsetplot_module() -> Any:
+    """Import the third-party upsetplot package, avoiding local file shadowing."""
+
+    def _path_contains_shadow_module(entry: str) -> bool:
+        try:
+            return (Path(entry or ".").resolve() / "upsetplot.py").is_file()
+        except OSError:
+            return False
+
+    shadowed_module = sys.modules.get("upsetplot")
+    shadowed_file = getattr(shadowed_module, "__file__", None)
+    pruned_sys_path = [
+        entry for entry in sys.path if not _path_contains_shadow_module(entry)
+    ]
+    removed_shadow_paths = len(pruned_sys_path) != len(sys.path)
+    shadowed_local_module = bool(
+        shadowed_file is not None
+        and Path(str(shadowed_file)).name == "upsetplot.py"
+        and not hasattr(shadowed_module, "from_memberships")
+    )
+
+    if not removed_shadow_paths and not shadowed_local_module:
+        return importlib.import_module("upsetplot")
+
+    original_sys_path = sys.path[:]
+    try:
+        sys.path[:] = pruned_sys_path
+        if shadowed_local_module:
+            sys.modules.pop("upsetplot", None)
+        return importlib.import_module("upsetplot")
+    finally:
+        sys.path[:] = original_sys_path
 
 
 def upsetplot(
@@ -79,7 +116,7 @@ def upsetplot(
     if not sets:
         raise ValueError("[upsetplot] Parameter 'sets' cannot be empty")
 
-    import upsetplot as usp
+    usp = _import_upsetplot_module()
 
     normalized_sets: dict[str, set] = {
         k: (v if isinstance(v, set) else set(v)) for k, v in sets.items()

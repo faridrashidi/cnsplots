@@ -37,10 +37,8 @@ cns.figure(100, 80)
 cns.figure(200, 150)
 ```
 
-`cns.figure(height, width)` uses height first. With the default
-`cns.settings.figure_autofit=True`, those values are the starting canvas size;
-the rendered figure may expand or trim on draw if a long title, outside
-legend, or annotation would otherwise be clipped or leave extra outer space.
+`cns.figure(height, width)` uses height first, and those values are the final
+canvas size in pixels.
 
 ## Basic Plot Types
 

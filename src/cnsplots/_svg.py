@@ -44,17 +44,25 @@ def _collect_bold_texts() -> set[str]:
     return bold_texts
 
 
-def _save_plain_svg(filepath: str, message: str) -> None:
+def _save_plain_svg(filepath: str, message: str, bbox_inches=None) -> None:
     """Save a standard matplotlib SVG and surface why the optimized path was skipped."""
     warnings.warn(message, RuntimeWarning, stacklevel=2)
+    savefig_kwargs: dict[str, object] = {"format": "svg"}
+    if bbox_inches is not None:
+        savefig_kwargs["bbox_inches"] = bbox_inches
+        savefig_kwargs["pad_inches"] = 0
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        plt.savefig(filepath, format="svg")
+        plt.savefig(filepath, **savefig_kwargs)
 
 
-def _save_svg(filepath: str, root: str) -> None:
+def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
     bold_texts = _collect_bold_texts()
     stem = Path(root).name or Path(filepath).stem or "cnsplots"
+    savefig_kwargs: dict[str, object] = {}
+    if bbox_inches is not None:
+        savefig_kwargs["bbox_inches"] = bbox_inches
+        savefig_kwargs["pad_inches"] = 0
 
     with TemporaryDirectory(prefix=f"{stem}-svg-") as tmp_dir:
         tmp_dir_path = Path(tmp_dir)
@@ -62,7 +70,7 @@ def _save_svg(filepath: str, root: str) -> None:
         tmp_svg = tmp_dir_path / "1.svg"
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            plt.savefig(tmp_pdf)
+            plt.savefig(tmp_pdf, **savefig_kwargs)
         try:
             subprocess.run(
                 [
@@ -84,6 +92,7 @@ def _save_svg(filepath: str, root: str) -> None:
             _save_plain_svg(
                 filepath,
                 "MuPDF's `mutool` is unavailable; saved a standard matplotlib SVG instead.",
+                bbox_inches=bbox_inches,
             )
         except subprocess.CalledProcessError as exc:
             stderr = (exc.stderr or b"").decode(errors="replace").strip()
@@ -92,6 +101,7 @@ def _save_svg(filepath: str, root: str) -> None:
                 filepath,
                 "MuPDF's `mutool` failed during SVG conversion"
                 f"{detail}; saved a standard matplotlib SVG instead.",
+                bbox_inches=bbox_inches,
             )
 
 

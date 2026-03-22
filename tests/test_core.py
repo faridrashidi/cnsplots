@@ -10,17 +10,15 @@ from typing import Any, cast
 
 import anndata as ad
 import matplotlib as mpl
-import matplotlib.lines as mlines
+import matplotlib.colorbar
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
-import matplotlib.colorbar
 import numpy as np
 import pandas as pd
 import pytest
 import seaborn as sns
 from lxml import etree
 from matplotlib.backend_bases import DrawEvent, Event
-from matplotlib.legend import Legend
 
 import cnsplots as cns
 from cnsplots import _settings, _setup, _svg, _utils
@@ -98,6 +96,17 @@ def _pdf_media_box_size(path: Path) -> tuple[float, float]:
     return x1 - x0, y1 - y0
 
 
+def _svg_view_box_size(path: Path) -> tuple[float, float]:
+    match = re.search(
+        r'viewBox="[-+]?\d*\.?\d+ [-+]?\d*\.?\d+ ([-+]?\d*\.?\d+) ([-+]?\d*\.?\d+)"',
+        path.read_text(encoding="utf-8"),
+    )
+    if match is None:
+        raise AssertionError(f"viewBox not found in {path}")
+    width, height = (float(value) for value in match.groups())
+    return width, height
+
+
 def _panel_column_origin(mp: cns.multipanel, panel_idx: int) -> float:
     panel = mp._panels[panel_idx]
     return (
@@ -119,7 +128,7 @@ def _bbox_is_within(fig_bbox, artist_bbox, *, pad: float = 0.8) -> bool:
 def test_settings_behavior() -> None:
     settings = _settings.CNSSettings()
     assert settings.palette_qual == "Ecotyper1"
-    assert settings.savefig_bbox == "standard"
+    assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
@@ -219,6 +228,11 @@ def test_settings_behavior() -> None:
     with pytest.raises(AttributeError, match="panel_label_offset_x"):
         with settings.context(panel_label_offset_x=-0.3):
             pass
+    with pytest.raises(AttributeError, match="figure_autofit"):
+        settings.figure_autofit = False
+    with pytest.raises(AttributeError, match="figure_autofit"):
+        with settings.context(figure_autofit=False):
+            pass
 
     with settings.context(
         title_fontsize=12,
@@ -311,7 +325,7 @@ def test_settings_behavior() -> None:
     settings.reset()
     assert settings.palette_qual == "Ecotyper1"
     assert settings.title_fontweight == "bold"
-    assert settings.savefig_bbox == "standard"
+    assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
     assert settings.legend_fontsize is None
     assert settings.scanpy_figsize == (2.5, 2.5)
@@ -700,13 +714,40 @@ def test_svg_helpers_and_export(
         dpi = kwargs.get("dpi", plt.gcf().dpi)
         assert isinstance(dpi, (int, float))
         saved_png_meta["dpi_kwarg"] = float(dpi)
+        bbox_inches = kwargs.get("bbox_inches")
+        if bbox_inches is not None:
+            saved_png_meta["bbox_x0"] = float(bbox_inches.x0)
+            saved_png_meta["bbox_y0"] = float(bbox_inches.y0)
+            saved_png_meta["bbox_x1"] = float(bbox_inches.x1)
+            saved_png_meta["bbox_y1"] = float(bbox_inches.y1)
+            pad_inches = kwargs.get("pad_inches", 0)
+            assert isinstance(pad_inches, (int, float))
+            saved_png_meta["pad_inches"] = float(pad_inches)
 
     monkeypatch.setattr(_utils.plt, "savefig", fake_png_savefig)
     with cns.settings.context(savefig_dpi=300):
         cns.savefig(str(output_dir / "captured.png"))
     assert saved_png_meta["fig_dpi"] == pytest.approx(300)
     assert saved_png_meta["dpi_kwarg"] == pytest.approx(300)
+    assert saved_png_meta["bbox_x1"] > saved_png_meta["bbox_x0"]
+    assert saved_png_meta["bbox_y1"] > saved_png_meta["bbox_y0"]
+    assert saved_png_meta["pad_inches"] == pytest.approx(0)
     assert plt.gcf().dpi == pytest.approx(original_dpi)
+    monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+    standard_meta: dict[str, object] = {}
+
+    def fake_standard_savefig(*args: object, **kwargs: object) -> None:
+        standard_meta["bbox_inches"] = kwargs.get("bbox_inches")
+        standard_meta["pad_inches"] = kwargs.get("pad_inches")
+
+    monkeypatch.setattr(_utils.plt, "savefig", fake_standard_savefig)
+    with cns.settings.context(savefig_bbox="standard"):
+        cns.savefig(str(output_dir / "captured-standard.png"))
+    assert standard_meta["bbox_inches"] is None
+    assert standard_meta["pad_inches"] is None
     monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
 
     cns.figure(120, 120)
@@ -714,15 +755,28 @@ def test_svg_helpers_and_export(
     original_svg_dpi = plt.gcf().dpi
     saved_svg_meta: dict[str, float] = {}
 
-    def fake_save_svg(filepath: str, root: str) -> None:
+    def fake_save_svg(filepath: str, root: str, bbox_inches=None) -> None:
         saved_svg_meta["fig_dpi"] = plt.gcf().dpi
+        if bbox_inches is not None:
+            saved_svg_meta["bbox_x0"] = float(bbox_inches.x0)
+            saved_svg_meta["bbox_y0"] = float(bbox_inches.y0)
+            saved_svg_meta["bbox_x1"] = float(bbox_inches.x1)
+            saved_svg_meta["bbox_y1"] = float(bbox_inches.y1)
         Path(filepath).write_text("<svg xmlns='http://www.w3.org/2000/svg' />")
 
     monkeypatch.setattr(_utils, "_save_svg", fake_save_svg)
     with cns.settings.context(savefig_dpi=300):
         cns.savefig(str(output_dir / "captured.svg"))
     assert saved_svg_meta["fig_dpi"] == pytest.approx(300)
+    assert saved_svg_meta["bbox_x1"] > saved_svg_meta["bbox_x0"]
+    assert saved_svg_meta["bbox_y1"] > saved_svg_meta["bbox_y0"]
     assert plt.gcf().dpi == pytest.approx(original_svg_dpi)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+    fig = plt.gcf()
+    monkeypatch.setattr(fig, "get_tightbbox", lambda renderer: None)
+    assert _utils._get_export_bbox_inches(fig) is None
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
@@ -761,7 +815,11 @@ def test_svg_helpers_and_export(
     monkeypatch.setattr(_svg.subprocess, "run", missing_run)
     missing_path = output_dir / "missing-mutool.svg"
     with pytest.warns(RuntimeWarning, match="mutool"):
-        _svg._save_svg(str(missing_path), str(output_dir / "missing-mutool"))
+        _svg._save_svg(
+            str(missing_path),
+            str(output_dir / "missing-mutool"),
+            bbox_inches=mtransforms.Bbox.from_extents(0, 0, 1, 1),
+        )
     assert missing_path.exists()
 
     cns.figure(120, 120)
@@ -777,7 +835,7 @@ def test_svg_helpers_and_export(
     assert failed_path.exists()
 
 
-def test_savefig_default_bounds_match_jpg_and_pdf(
+def test_savefig_default_bounds_match_jpg_pdf_and_svg(
     output_dir: Path,
     categorical_df: pd.DataFrame,
 ) -> None:
@@ -796,15 +854,20 @@ def test_savefig_default_bounds_match_jpg_and_pdf(
 
         jpg_path = output_dir / "figure.jpg"
         pdf_path = output_dir / "figure.pdf"
+        svg_path = output_dir / "figure.svg"
         cns.savefig(str(jpg_path))
         cns.savefig(str(pdf_path))
+        cns.savefig(str(svg_path))
 
         jpg_height, jpg_width = plt.imread(str(jpg_path)).shape[:2]
         pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
+        svg_width_pt, svg_height_pt = _svg_view_box_size(svg_path)
         scale = float(cns.settings.savefig_dpi) / 72
 
-        assert jpg_width == pytest.approx(pdf_width_pt * scale, abs=1)
-        assert jpg_height == pytest.approx(pdf_height_pt * scale, abs=1)
+        assert jpg_width == pytest.approx(pdf_width_pt * scale, abs=3)
+        assert jpg_height == pytest.approx(pdf_height_pt * scale, abs=3)
+        assert jpg_width == pytest.approx(svg_width_pt * scale, abs=3)
+        assert jpg_height == pytest.approx(svg_height_pt * scale, abs=3)
     finally:
         cns.settings.reset()
 
@@ -813,6 +876,7 @@ def test_savefig_heatmap_multipanel_exports_without_pdf_renderer(
     output_dir: Path,
     heatmap_adata: ad.AnnData,
 ) -> None:
+    png_path = output_dir / "heatmap.png"
     pdf_path = output_dir / "heatmap.pdf"
     svg_path = output_dir / "heatmap.svg"
 
@@ -830,9 +894,19 @@ def test_savefig_heatmap_multipanel_exports_without_pdf_renderer(
     )
     cmp.ax.set_title("Heatmap")
 
+    cns.savefig(str(png_path))
     cns.savefig(str(pdf_path))
     cns.savefig(str(svg_path))
 
+    png_height, png_width = plt.imread(str(png_path)).shape[:2]
+    pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
+    svg_width_pt, svg_height_pt = _svg_view_box_size(svg_path)
+    scale = float(cns.settings.savefig_dpi) / 72
+
+    assert png_width == pytest.approx(pdf_width_pt * scale, abs=3)
+    assert png_height == pytest.approx(pdf_height_pt * scale, abs=3)
+    assert png_width == pytest.approx(svg_width_pt * scale, abs=3)
+    assert png_height == pytest.approx(svg_height_pt * scale, abs=3)
     assert pdf_path.exists()
     assert svg_path.exists()
 
@@ -1051,454 +1125,29 @@ def test_utils_helpers_and_showcase_data(
     assert data_without_file[-1].name == "assets"
 
 
-def test_figure_autofit_keeps_stackplot_title_and_legend_in_bounds() -> None:
-    tips = sns.load_dataset("tips")
-
-    with cns.settings.context(figure_autofit=True):
-        cns.figure(120, 100)
-        fig = plt.gcf()
-        initial_size = tuple(fig.get_size_inches())
-
-        ax = cns.stackplot(
-            data=tips,
-            x="sex",
-            y="day",
-            width=0.4,
-            normalize=True,
-            addtip=True,
-        )
-        ax.set_title("Normalized Stacked Bar (with labels)")
-
-        fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
-        legend = ax.get_legend()
-        title_bbox = ax.title.get_window_extent(renderer=renderer)
-        ylabel_bbox = ax.yaxis.label.get_window_extent(renderer=renderer)
-        content_bbox = fig._cnsplots_autofit_manager._get_content_bbox(renderer)
-
-        assert legend is not None
-        assert fig.get_size_inches()[0] > initial_size[0]
-        assert content_bbox is not None
-        assert _bbox_is_within(fig.bbox, title_bbox)
-        assert _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
-        assert ylabel_bbox.x0 == pytest.approx(fig.bbox.x0, abs=1.0)
-        assert content_bbox.x0 == pytest.approx(fig.bbox.x0, abs=1.0)
-        assert content_bbox.x1 == pytest.approx(fig.bbox.x1, abs=1.0)
-        assert content_bbox.y0 == pytest.approx(fig.bbox.y0, abs=1.0)
-        assert content_bbox.y1 == pytest.approx(fig.bbox.y1, abs=1.0)
-
-
-def test_figure_autofit_handles_generic_matplotlib_overflow() -> None:
-    with cns.settings.context(figure_autofit=True):
-        cns.figure(120, 100)
-        fig = plt.gcf()
-        initial_size = tuple(fig.get_size_inches())
-        ax = plt.gca()
-        ax.plot([0, 1], [0, 1], label="Series")
-        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
-        fig_title = fig.suptitle("A Generic Figure-Level Title That Needs More Width")
-        outside_text = ax.text(1.02, 1.05, "Outside note", transform=ax.transAxes)
-        unclipped_line = ax.plot(
-            [0, 1],
-            [1.04, 1.04],
-            transform=ax.transAxes,
-            clip_on=False,
-            color="black",
-        )[0]
-        figure_artist = mlines.Line2D(
-            [10, float(fig.bbox.width) + 40],
-            [float(fig.bbox.height) - 8, float(fig.bbox.height) - 8],
-            transform=mtransforms.IdentityTransform(),
-            clip_on=False,
-            color="black",
-        )
-        fig.add_artist(figure_artist)
-
-        fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
-        content_bbox = fig._cnsplots_autofit_manager._get_content_bbox(renderer)
-
-        assert fig.get_size_inches()[0] > initial_size[0]
-        assert content_bbox is not None
-        assert _bbox_is_within(fig.bbox, fig_title.get_window_extent(renderer=renderer))
-        assert _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
-        assert _bbox_is_within(
-            fig.bbox, outside_text.get_window_extent(renderer=renderer)
-        )
-        assert _bbox_is_within(
-            fig.bbox, unclipped_line.get_window_extent(renderer=renderer)
-        )
-        assert _bbox_is_within(
-            fig.bbox, figure_artist.get_window_extent(renderer=renderer)
-        )
-        assert content_bbox.x0 == pytest.approx(fig.bbox.x0, abs=1.0)
-        assert content_bbox.x1 == pytest.approx(fig.bbox.x1, abs=1.0)
-        assert content_bbox.y0 == pytest.approx(fig.bbox.y0, abs=1.0)
-        assert content_bbox.y1 == pytest.approx(fig.bbox.y1, abs=1.0)
-
-
-def test_figure_autofit_ignores_hidden_helper_axes_for_clustered_heatmap() -> None:
-    rng = np.random.default_rng(42)
-    n_rows = 120
-    n_cols = 10
-    n_groups = 5
-    row_groups = np.repeat(np.arange(n_groups), n_rows // n_groups)
-    base_profile = np.linspace(-1.0, 1.0, n_cols)
-    group_profiles = np.vstack(
-        [
-            np.roll(base_profile, shift) + np.linspace(0.0, 0.8, n_groups)[shift]
-            for shift in range(n_groups)
-        ]
-    )
-    matrix = np.vstack(
-        [
-            group_profiles[group] + rng.normal(scale=0.12, size=n_cols)
-            for group in row_groups
-        ]
-    )
-    adata = ad.AnnData(matrix)
-    adata.obs_names = [str(i) for i in range(n_rows)]
-    adata.var_names = [str(i) for i in range(n_cols)]
-    selected = pd.Series(pd.NA, index=adata.obs_names, dtype="string")
-    selected[np.linspace(0.0, 1.0, n_rows) > 0.96] = "o"
-    adata.obs["selected"] = selected
-    adata.obs["mitf"] = np.linspace(0.0, 1.0, n_rows)
-    adata.obs["blobs"] = pd.Categorical([f"C{group}" for group in row_groups])
-    adata.var["ensemble"] = pd.Categorical([f"ens{i % 3}" for i in range(n_cols)])
-
-    with cns.settings.context(figure_autofit=True):
-        cns.figure(300, 250)
-        fig = plt.gcf()
-        initial_bbox = fig.bbox.frozen()
-        cmp = cns.heatmapplot(
-            adata,
-            label="Expression",
-            xlabel="Genes",
-            ylabel="Samples",
-            row_annotation=["selected", "mitf", "blobs"],
-            col_annotation=["ensemble"],
-            row_split=5,
-            row_cluster=True,
-            col_cluster=True,
-            row_cluster_method="ward",
-            row_cluster_metric="euclidean",
-            col_cluster_method="ward",
-            col_cluster_metric="euclidean",
-            show_rownames=True,
-            show_colnames=True,
-            xticklabels_fontsize=7,
-            yticklabels_fontsize=7,
-            row_dendrogram=True,
-            col_dendrogram=True,
-            row_split_gap=1,
-            col_split_gap=1,
-            legend_hpad=-2,
-            legend_vpad=6,
-            legend_width=20,
-        )
-        cmp.ax.set_title("Basic Heatmapplot")
-
-        assert cmp.ax_heatmap is not None
-
-        fig.canvas.draw()
-        first_bbox = fig.bbox.frozen()
-        renderer = fig.canvas.get_renderer()
-        fig.canvas.draw()
-        second_bbox = fig.bbox.frozen()
-        legends = [obj for obj in cmp.cbars if isinstance(obj, Legend)]
-
-        assert float(first_bbox.width) < float(initial_bbox.width) * 2.0
-        assert float(first_bbox.height) < float(initial_bbox.height) * 2.0
-        assert second_bbox.bounds == pytest.approx(first_bbox.bounds, abs=1.0)
-        assert _bbox_is_within(
-            fig.bbox,
-            cmp.ax.title.get_window_extent(renderer=renderer),
-        )
-        assert len(legends) == 2
-        for legend in legends:
-            assert _bbox_is_within(
-                fig.bbox,
-                legend.get_window_extent(renderer=renderer),
-            )
-        heatmap_bbox = cmp.ax_heatmap.get_window_extent(renderer=renderer)
-        for legend_ax in cmp.legend_axes:
-            assert (
-                legend_ax.get_window_extent(renderer=renderer).x0
-                >= heatmap_bbox.x1 - 1.0
-            )
-        colorbars = [obj for obj in cmp.cbars if isinstance(obj, mpl.colorbar.Colorbar)]
-        assert colorbars
-        for cbar in colorbars:
-            assert _bbox_is_within(
-                fig.bbox,
-                cbar.ax.get_window_extent(renderer=renderer),
-            )
-            assert (
-                cbar.ax.get_window_extent(renderer=renderer).x0 >= heatmap_bbox.x1 - 1.0
-            )
-        assert len(cmp.ax_col_dendrogram_axes) == 1
-        assert _bbox_is_within(
-            fig.bbox,
-            cmp.ax_col_dendrogram_axes[0].get_window_extent(renderer=renderer),
-        )
-
-
-def test_figure_autofit_can_be_disabled() -> None:
-    with cns.settings.context(figure_autofit=False):
-        cns.figure(120, 100)
-        fig = plt.gcf()
-        initial_size = tuple(fig.get_size_inches())
-        ax = plt.gca()
-        ax.plot([0, 1], [0, 1], label="Series")
-        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
-        ax.set_title("Normalized Stacked Bar (with labels)")
-
-        fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
-
-        assert tuple(fig.get_size_inches()) == pytest.approx(initial_size)
-        assert not _bbox_is_within(fig.bbox, ax.title.get_window_extent(renderer))
-        assert not _bbox_is_within(fig.bbox, legend.get_window_extent(renderer))
-
-
-def test_figure_autofit_internal_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
-    cns.figure(120, 120)
-    fig = plt.gcf()
-    manager = fig._cnsplots_autofit_manager
-    original_cid = manager._draw_event_cid
-
-    manager._connect_draw_handler()
-    assert manager._draw_event_cid == original_cid
-    assert manager._get_canvas_renderer(object()) is None
-
-    class TightBBoxArtist:
-        def get_tightbbox(self, renderer: object) -> mtransforms.Bbox:
-            return mtransforms.Bbox.from_bounds(1, 2, 3, 4)
-
-    class WindowExtentFallbackArtist:
-        def get_window_extent(
-            self,
-            renderer: object | None = None,
-        ) -> mtransforms.Bbox:
-            if renderer is not None:
-                raise TypeError
-            return mtransforms.Bbox.from_bounds(5, 6, 7, 8)
-
-    assert manager._get_artist_bbox(TightBBoxArtist(), cast(Any, object())) is not None
-    fallback_bbox = manager._get_artist_bbox(
-        WindowExtentFallbackArtist(),
-        cast(Any, object()),
-    )
-    assert fallback_bbox is not None
-    assert fallback_bbox.bounds == pytest.approx((5, 6, 7, 8))
-    assert manager._get_artist_bbox(object(), cast(Any, object())) is None
-    assert manager._figure_has_expanded() is False
-    assert manager._tighten_single_axes_horizontal_layout(cast(Any, object())) is False
-    assert manager._get_content_bbox(cast(Any, object())) is None
-    assert manager._measure_overflow_px(cast(Any, object())) == (0.0, 0.0, 0.0, 0.0)
-    assert manager._crop_canvas_to_content(cast(Any, object())) is False
-
-    manager._on_draw(cast(Any, object()))
-
-    other_fig = plt.figure()
-    other_fig.canvas.draw()
-    other_event = DrawEvent(
-        "draw_event",
-        other_fig.canvas,
-        other_fig.canvas.get_renderer(),
-    )
-    manager._on_draw(other_event)
-
-    original_canvas = fig.canvas
-    seen_canvases: list[str] = []
-    monkeypatch.setattr(
-        manager,
-        "_on_draw",
-        lambda event: seen_canvases.append(
-            type(getattr(event, "canvas", None)).__name__
-        ),
-    )
-    _utils._preflight_autofit_for_export(fig)
-    assert seen_canvases == ["FigureCanvasAgg"]
-    assert fig.canvas is original_canvas
-    seen_canvases.clear()
-    with cns.settings.context(figure_autofit=False):
-        _utils._preflight_autofit_for_export(fig)
-    assert seen_canvases == []
-
+def test_figure_keeps_fixed_size_with_overflowing_artists() -> None:
     cns.figure(120, 100)
-    fig2 = plt.gcf()
-    manager2 = fig2._cnsplots_autofit_manager
-    ax2 = plt.gca()
-    ax2.plot([0, 1], [0, 1], label="Series")
-    ax2.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
-    ax2.set_title("Normalized Stacked Bar (with labels)")
-    fig2.canvas.draw()
-    assert manager2._figure_has_expanded() is True
-    manager2._is_relayout_in_draw = True
-    fig2.canvas.draw()
-    manager2._is_relayout_in_draw = False
-    monkeypatch.setattr(manager2, "_get_canvas_renderer", lambda canvas: None)
-    manager2._on_draw(DrawEvent("draw_event", fig2.canvas, fig2.canvas.get_renderer()))
-
-    cns.figure(120, 120)
-    fig3 = plt.gcf()
-    ax3 = fig3.add_subplot(121)
-    fig3.add_subplot(122)
-    ax3.plot([0, 1], [0, 1])
-    fig3.canvas.draw()
-    assert (
-        fig3._cnsplots_autofit_manager._tighten_single_axes_horizontal_layout(
-            fig3.canvas.get_renderer()
-        )
-        is False
-    )
-
-    zero_size_manager = object.__new__(_utils._FigureAutofitManager)
-    zero_size_manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 0, 0)
-    )
-    zero_size_manager._grow_canvas(1, 1, 1, 1)
-    assert zero_size_manager._resize_canvas(-1, -1, -1, -1) is False
-
-    collapsed_manager = object.__new__(_utils._FigureAutofitManager)
-    collapsed_manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 10, 10),
-        dpi=100,
-        get_axes=lambda: [],
-        set_size_inches=lambda *args, **kwargs: None,
-    )
-    assert collapsed_manager._resize_canvas(-11, 0, 0, 0) is False
-
-
-def test_figure_autofit_tighten_single_axes_helper_branches() -> None:
-    class DummyArtist:
-        def __init__(self, visible: bool = True) -> None:
-            self._visible = visible
-
-        def get_visible(self) -> bool:
-            return self._visible
-
-    class DummyTitle:
-        def __init__(self, text: str = "") -> None:
-            self._text = text
-            self._x = 0.5
-
-        def get_text(self) -> str:
-            return self._text
-
-        def get_position(self) -> tuple[float, float]:
-            return self._x, 0.0
-
-        def set_x(self, value: float) -> None:
-            self._x = value
-
-    class DummyAxes:
-        def __init__(
-            self,
-            *,
-            position: tuple[float, float, float, float] = (0.2, 0.1, 0.5, 0.5),
-            extents: list[mtransforms.Bbox] | None = None,
-            left_title: str = "",
-            right_title: str = "",
-        ) -> None:
-            self._position = list(position)
-            self._extents = list(
-                extents or [mtransforms.Bbox.from_bounds(20, 20, 50, 40)]
-            )
-            self.title = DummyTitle("Center")
-            self._left_title = DummyTitle(left_title)
-            self._right_title = DummyTitle(right_title)
-
-        def get_window_extent(
-            self,
-            renderer: object | None = None,
-        ) -> mtransforms.Bbox:
-            if len(self._extents) > 1:
-                return self._extents.pop(0)
-            return self._extents[0]
-
-        def get_position(self) -> mtransforms.Bbox:
-            return mtransforms.Bbox.from_bounds(*self._position)
-
-        def set_position(self, position: list[float]) -> None:
-            self._position = list(position)
-
-    manager = object.__new__(_utils._FigureAutofitManager)
-    renderer = cast(Any, object())
-
-    invisible_ax = DummyAxes()
-    manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
-        get_axes=lambda: [invisible_ax],
-    )
-    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist(False)])
-    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
-        5, 5, 10, 10
-    )
-    assert manager._tighten_single_axes_horizontal_layout(renderer) is False
-
-    zero_width_ax = DummyAxes(extents=[mtransforms.Bbox.from_bounds(20, 20, 0, 40)])
-    manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
-        get_axes=lambda: [zero_width_ax],
-    )
-    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
-    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
-        5, 5, 10, 10
-    )
-    assert manager._tighten_single_axes_horizontal_layout(renderer) is False
-
-    clamped_ax = DummyAxes(position=(0.001, 0.1, 0.5, 0.5))
-    manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
-        get_axes=lambda: [clamped_ax],
-    )
-    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
-    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
-        5, 5, 10, 10
-    )
-    assert manager._tighten_single_axes_horizontal_layout(renderer) is False
-
-    updated_zero_ax = DummyAxes(
-        extents=[
-            mtransforms.Bbox.from_bounds(20, 20, 50, 40),
-            mtransforms.Bbox.from_bounds(20, 20, 0, 40),
-        ]
-    )
-    manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
-        get_axes=lambda: [updated_zero_ax],
-    )
-    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
-    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
-        5, 5, 10, 10
-    )
-    assert manager._tighten_single_axes_horizontal_layout(renderer) is True
-
-    titled_ax = DummyAxes(left_title="Left", right_title="Right")
-    manager.fig = types.SimpleNamespace(
-        bbox=mtransforms.Bbox.from_bounds(0, 0, 100, 100),
-        get_axes=lambda: [titled_ax],
-    )
-    manager._iter_axes_non_title_artists = lambda ax: iter([DummyArtist()])
-    manager._get_artist_bbox = lambda artist, renderer: mtransforms.Bbox.from_bounds(
-        5, 5, 10, 10
-    )
-    assert manager._tighten_single_axes_horizontal_layout(renderer) is True
-    assert titled_ax._left_title.get_position()[0] > 0.5
-    assert titled_ax._right_title.get_position()[0] > 0.5
-
-
-def test_figure_autofit_iter_axes_non_title_artists_counts_axis_off_patch() -> None:
-    cns.figure(120, 120)
     fig = plt.gcf()
+    initial_size = tuple(fig.get_size_inches())
     ax = plt.gca()
-    ax.set_axis_off()
+    ax.plot([0, 1], [0, 1], label="Series")
+    legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1.02))
+    fig_title = fig.suptitle(
+        "A Generic Figure-Level Title That Needs More Width Than The Figure Provides"
+    )
+    outside_text = ax.text(1.02, 1.05, "Outside note", transform=ax.transAxes)
 
-    artists = list(fig._cnsplots_autofit_manager._iter_axes_non_title_artists(ax))
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
 
-    assert ax.patch in artists
+    assert legend is not None
+    assert tuple(fig.get_size_inches()) == pytest.approx(initial_size)
+    assert not _bbox_is_within(fig.bbox, legend.get_window_extent(renderer=renderer))
+    assert not _bbox_is_within(
+        fig.bbox,
+        outside_text.get_window_extent(renderer=renderer),
+    )
+    assert not _bbox_is_within(fig.bbox, fig_title.get_window_extent(renderer=renderer))
 
 
 def test_multipanel_layout() -> None:

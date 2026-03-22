@@ -47,15 +47,6 @@ def _relative_axes_bounds(
     )
 
 
-def _bbox_is_within(fig_bbox, artist_bbox, *, pad: float = 0.8) -> bool:
-    return (
-        artist_bbox.x0 >= fig_bbox.x0 - pad
-        and artist_bbox.y0 >= fig_bbox.y0 - pad
-        and artist_bbox.x1 <= fig_bbox.x1 + pad
-        and artist_bbox.y1 <= fig_bbox.y1 + pad
-    )
-
-
 @pytest.fixture(scope="module")
 def scanpy_blobs() -> tuple[Any, ad.AnnData]:
     sc = pytest.importorskip("scanpy")
@@ -68,7 +59,7 @@ def scanpy_blobs() -> tuple[Any, ad.AnnData]:
     return sc, blobs
 
 
-def test_slopeplot_autofit_keeps_axes_within_figure() -> None:
+def test_slopeplot_keeps_requested_figure_size() -> None:
     slope_df = pd.DataFrame(
         {
             "site": ["site1", "site1", "site2", "site2", "site3", "site3"] * 5,
@@ -108,16 +99,15 @@ def test_slopeplot_autofit_keeps_axes_within_figure() -> None:
         }
     )
 
-    with cns.settings.context(figure_autofit=True):
-        cns.figure(150, 150)
-        ax = cns.slopeplot(slope_df, x="site", y="value", hue="label")
-        ax.set_title("Basic Slope Plot", pad=15)
+    cns.figure(150, 150)
+    fig = plt.gcf()
+    initial_size = tuple(fig.get_size_inches())
+    ax = cns.slopeplot(slope_df, x="site", y="value", hue="label")
+    ax.set_title("Basic Slope Plot", pad=15)
 
-        fig = plt.gcf()
-        fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
+    fig.canvas.draw()
 
-        assert _bbox_is_within(fig.bbox, ax.get_window_extent(renderer=renderer))
+    assert tuple(fig.get_size_inches()) == pytest.approx(initial_size)
 
 
 def test_survival_plots(
@@ -576,30 +566,29 @@ def test_scanpy_umap_colorbars_preserve_linked_geometry_in_multipanel(
     assert hasattr(ax_b, "_cnsplots_detached_axes_layout")
 
 
-def test_scanpy_violin_autofit_keeps_axes_within_figure(
+def test_scanpy_violin_keeps_requested_figure_size(
     scanpy_blobs: tuple[Any, ad.AnnData],
 ) -> None:
     sc, blobs = scanpy_blobs
 
-    with cns.settings.context(figure_autofit=True):
-        cns.figure(150, 150)
-        cns.setup_scanpy()
-        ax = plt.gca()
-        sc.pl.violin(
-            blobs,
-            keys="mitf",
-            groupby="blobs",
-            ax=ax,
-            show=False,
-            edgecolor=None,
-            stripplot=False,
-        )
+    cns.figure(150, 150)
+    fig = plt.gcf()
+    initial_size = tuple(fig.get_size_inches())
+    cns.setup_scanpy()
+    ax = plt.gca()
+    sc.pl.violin(
+        blobs,
+        keys="mitf",
+        groupby="blobs",
+        ax=ax,
+        show=False,
+        edgecolor=None,
+        stripplot=False,
+    )
 
-        fig = plt.gcf()
-        fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
+    fig.canvas.draw()
 
-        assert _bbox_is_within(fig.bbox, ax.get_window_extent(renderer=renderer))
+    assert tuple(fig.get_size_inches()) == pytest.approx(initial_size)
 
 
 def test_scanpy_umap_colorbar_tracks_multipanel_relayout(
