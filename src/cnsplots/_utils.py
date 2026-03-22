@@ -18,6 +18,7 @@ import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import num2tex
 import palettable
 import pandas as pd
@@ -254,14 +255,38 @@ def savefig(filepath):
         if target_dpi != original_dpi:
             fig.set_dpi(target_dpi)
         fig.canvas.draw()
+        bbox_inches = _get_export_bbox_inches(fig)
         if ext.lower() == ".svg":
-            _save_svg(str(filepath), root)
+            _save_svg(str(filepath), root, bbox_inches=bbox_inches)
         else:
-            plt.savefig(filepath, dpi=target_dpi)
+            savefig_kwargs: dict[str, object] = {"dpi": target_dpi}
+            if bbox_inches is not None:
+                savefig_kwargs["bbox_inches"] = bbox_inches
+                savefig_kwargs["pad_inches"] = 0
+            plt.savefig(filepath, **savefig_kwargs)
     finally:
         if fig.dpi != original_dpi:
             fig.set_dpi(original_dpi)
             fig.canvas.draw()
+
+
+def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
+    """Return a shared export bbox so raster and vector outputs align."""
+    if cns.settings.savefig_bbox != "tight":
+        return None
+
+    original_canvas = fig.canvas
+    agg_canvas = FigureCanvasAgg(fig)
+    try:
+        agg_canvas.draw()
+        bbox_inches = fig.get_tightbbox(agg_canvas.get_renderer())
+        if bbox_inches is None:
+            return None
+        if cns.settings.savefig_pad_inches:
+            bbox_inches = bbox_inches.padded(float(cns.settings.savefig_pad_inches))
+        return mtransforms.Bbox.from_extents(*bbox_inches.extents)
+    finally:
+        fig.set_canvas(original_canvas)
 
 
 def take_legend_out(title=None):

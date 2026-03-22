@@ -96,6 +96,17 @@ def _pdf_media_box_size(path: Path) -> tuple[float, float]:
     return x1 - x0, y1 - y0
 
 
+def _svg_view_box_size(path: Path) -> tuple[float, float]:
+    match = re.search(
+        r'viewBox="[-+]?\d*\.?\d+ [-+]?\d*\.?\d+ ([-+]?\d*\.?\d+) ([-+]?\d*\.?\d+)"',
+        path.read_text(encoding="utf-8"),
+    )
+    if match is None:
+        raise AssertionError(f"viewBox not found in {path}")
+    width, height = (float(value) for value in match.groups())
+    return width, height
+
+
 def _panel_column_origin(mp: cns.multipanel, panel_idx: int) -> float:
     panel = mp._panels[panel_idx]
     return (
@@ -703,13 +714,40 @@ def test_svg_helpers_and_export(
         dpi = kwargs.get("dpi", plt.gcf().dpi)
         assert isinstance(dpi, (int, float))
         saved_png_meta["dpi_kwarg"] = float(dpi)
+        bbox_inches = kwargs.get("bbox_inches")
+        if bbox_inches is not None:
+            saved_png_meta["bbox_x0"] = float(bbox_inches.x0)
+            saved_png_meta["bbox_y0"] = float(bbox_inches.y0)
+            saved_png_meta["bbox_x1"] = float(bbox_inches.x1)
+            saved_png_meta["bbox_y1"] = float(bbox_inches.y1)
+            pad_inches = kwargs.get("pad_inches", 0)
+            assert isinstance(pad_inches, (int, float))
+            saved_png_meta["pad_inches"] = float(pad_inches)
 
     monkeypatch.setattr(_utils.plt, "savefig", fake_png_savefig)
     with cns.settings.context(savefig_dpi=300):
         cns.savefig(str(output_dir / "captured.png"))
     assert saved_png_meta["fig_dpi"] == pytest.approx(300)
     assert saved_png_meta["dpi_kwarg"] == pytest.approx(300)
+    assert saved_png_meta["bbox_x1"] > saved_png_meta["bbox_x0"]
+    assert saved_png_meta["bbox_y1"] > saved_png_meta["bbox_y0"]
+    assert saved_png_meta["pad_inches"] == pytest.approx(0)
     assert plt.gcf().dpi == pytest.approx(original_dpi)
+    monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+    standard_meta: dict[str, object] = {}
+
+    def fake_standard_savefig(*args: object, **kwargs: object) -> None:
+        standard_meta["bbox_inches"] = kwargs.get("bbox_inches")
+        standard_meta["pad_inches"] = kwargs.get("pad_inches")
+
+    monkeypatch.setattr(_utils.plt, "savefig", fake_standard_savefig)
+    with cns.settings.context(savefig_bbox="standard"):
+        cns.savefig(str(output_dir / "captured-standard.png"))
+    assert standard_meta["bbox_inches"] is None
+    assert standard_meta["pad_inches"] is None
     monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
 
     cns.figure(120, 120)
@@ -717,15 +755,28 @@ def test_svg_helpers_and_export(
     original_svg_dpi = plt.gcf().dpi
     saved_svg_meta: dict[str, float] = {}
 
-    def fake_save_svg(filepath: str, root: str) -> None:
+    def fake_save_svg(filepath: str, root: str, bbox_inches=None) -> None:
         saved_svg_meta["fig_dpi"] = plt.gcf().dpi
+        if bbox_inches is not None:
+            saved_svg_meta["bbox_x0"] = float(bbox_inches.x0)
+            saved_svg_meta["bbox_y0"] = float(bbox_inches.y0)
+            saved_svg_meta["bbox_x1"] = float(bbox_inches.x1)
+            saved_svg_meta["bbox_y1"] = float(bbox_inches.y1)
         Path(filepath).write_text("<svg xmlns='http://www.w3.org/2000/svg' />")
 
     monkeypatch.setattr(_utils, "_save_svg", fake_save_svg)
     with cns.settings.context(savefig_dpi=300):
         cns.savefig(str(output_dir / "captured.svg"))
     assert saved_svg_meta["fig_dpi"] == pytest.approx(300)
+    assert saved_svg_meta["bbox_x1"] > saved_svg_meta["bbox_x0"]
+    assert saved_svg_meta["bbox_y1"] > saved_svg_meta["bbox_y0"]
     assert plt.gcf().dpi == pytest.approx(original_svg_dpi)
+
+    cns.figure(120, 120)
+    plt.plot([0, 1], [0, 1])
+    fig = plt.gcf()
+    monkeypatch.setattr(fig, "get_tightbbox", lambda renderer: None)
+    assert _utils._get_export_bbox_inches(fig) is None
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
@@ -764,7 +815,11 @@ def test_svg_helpers_and_export(
     monkeypatch.setattr(_svg.subprocess, "run", missing_run)
     missing_path = output_dir / "missing-mutool.svg"
     with pytest.warns(RuntimeWarning, match="mutool"):
-        _svg._save_svg(str(missing_path), str(output_dir / "missing-mutool"))
+        _svg._save_svg(
+            str(missing_path),
+            str(output_dir / "missing-mutool"),
+            bbox_inches=mtransforms.Bbox.from_extents(0, 0, 1, 1),
+        )
     assert missing_path.exists()
 
     cns.figure(120, 120)
@@ -780,7 +835,7 @@ def test_svg_helpers_and_export(
     assert failed_path.exists()
 
 
-def test_savefig_default_bounds_match_jpg_and_pdf(
+def test_savefig_default_bounds_match_jpg_pdf_and_svg(
     output_dir: Path,
     categorical_df: pd.DataFrame,
 ) -> None:
@@ -799,15 +854,20 @@ def test_savefig_default_bounds_match_jpg_and_pdf(
 
         jpg_path = output_dir / "figure.jpg"
         pdf_path = output_dir / "figure.pdf"
+        svg_path = output_dir / "figure.svg"
         cns.savefig(str(jpg_path))
         cns.savefig(str(pdf_path))
+        cns.savefig(str(svg_path))
 
         jpg_height, jpg_width = plt.imread(str(jpg_path)).shape[:2]
         pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
+        svg_width_pt, svg_height_pt = _svg_view_box_size(svg_path)
         scale = float(cns.settings.savefig_dpi) / 72
 
         assert jpg_width == pytest.approx(pdf_width_pt * scale, abs=3)
         assert jpg_height == pytest.approx(pdf_height_pt * scale, abs=3)
+        assert jpg_width == pytest.approx(svg_width_pt * scale, abs=3)
+        assert jpg_height == pytest.approx(svg_height_pt * scale, abs=3)
     finally:
         cns.settings.reset()
 
@@ -816,6 +876,7 @@ def test_savefig_heatmap_multipanel_exports_without_pdf_renderer(
     output_dir: Path,
     heatmap_adata: ad.AnnData,
 ) -> None:
+    png_path = output_dir / "heatmap.png"
     pdf_path = output_dir / "heatmap.pdf"
     svg_path = output_dir / "heatmap.svg"
 
@@ -833,9 +894,19 @@ def test_savefig_heatmap_multipanel_exports_without_pdf_renderer(
     )
     cmp.ax.set_title("Heatmap")
 
+    cns.savefig(str(png_path))
     cns.savefig(str(pdf_path))
     cns.savefig(str(svg_path))
 
+    png_height, png_width = plt.imread(str(png_path)).shape[:2]
+    pdf_width_pt, pdf_height_pt = _pdf_media_box_size(pdf_path)
+    svg_width_pt, svg_height_pt = _svg_view_box_size(svg_path)
+    scale = float(cns.settings.savefig_dpi) / 72
+
+    assert png_width == pytest.approx(pdf_width_pt * scale, abs=3)
+    assert png_height == pytest.approx(pdf_height_pt * scale, abs=3)
+    assert png_width == pytest.approx(svg_width_pt * scale, abs=3)
+    assert png_height == pytest.approx(svg_height_pt * scale, abs=3)
     assert pdf_path.exists()
     assert svg_path.exists()
 
