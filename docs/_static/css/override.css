@@ -255,16 +255,11 @@ article[role="main"]
 }
 
 .release-notes-entry {
-  padding: 1.4rem;
-  border: 1px solid var(--color-foreground-border);
-  border-radius: 18px;
-  background: color-mix(
-    in srgb,
-    var(--color-brand-content) 3%,
-    var(--color-background-primary)
-  );
-  box-shadow: 0 8px 24px
-    color-mix(in srgb, var(--color-brand-content) 8%, transparent);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .release-notes-entry > :first-child,
@@ -288,16 +283,7 @@ article[role="main"]
 
 .release-notes-title {
   margin: 0;
-  font-size: clamp(1.15rem, 1.1rem + 0.35vw, 1.45rem);
-}
-
-.release-notes-title a {
-  text-decoration: none;
-}
-
-.release-notes-title a:hover,
-.release-notes-title a:focus-visible {
-  text-decoration: underline;
+  font-size: clamp(1.45rem, 1.3rem + 0.9vw, 2rem);
 }
 
 .release-notes-meta {
@@ -307,31 +293,6 @@ article[role="main"]
   align-items: center;
   color: var(--color-foreground-secondary);
   font-size: 0.93rem;
-}
-
-.release-notes-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.55rem;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--color-brand-content) 22%,
-    var(--color-foreground-border)
-  );
-  border-radius: 999px;
-  background: color-mix(
-    in srgb,
-    var(--color-brand-content) 10%,
-    var(--color-background-primary)
-  );
-  color: var(--color-brand-content);
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.release-notes-github-link {
-  white-space: nowrap;
 }
 
 .release-notes-body {
@@ -381,11 +342,6 @@ article[role="main"]
 }
 
 @media (max-width: 640px) {
-  .release-notes-entry {
-    padding: 1rem;
-    border-radius: 14px;
-  }
-
   .release-notes-header {
     flex-direction: column;
   }
