@@ -24,7 +24,7 @@ import cnsplots as cns
 import seaborn as sns
 
 df = sns.load_dataset("tips")
-cns.figure(150, 100)  # Height x Width in pixels; starting canvas when autofit is on
+cns.figure(150, 100)  # Height x Width in pixels
 cns.boxplot(data=df, x="day", y="total_bill")
 cns.savefig("figure.svg")
 ```

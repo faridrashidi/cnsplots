@@ -350,13 +350,11 @@ def test_public_settings_context_changes_plot_and_export_contract(
 
     cns.settings.reset()
     try:
-        with cns.settings.context(figure_autofit=False):
-            cns.figure(72, 72)
-            plt.plot([0, 1], [0, 1])
-            cns.savefig(str(default_png))
+        cns.figure(72, 72)
+        plt.plot([0, 1], [0, 1])
+        cns.savefig(str(default_png))
 
         with cns.settings.context(
-            figure_autofit=False,
             savefig_dpi=72,
             title_fontweight="normal",
         ):

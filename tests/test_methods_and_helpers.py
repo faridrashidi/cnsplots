@@ -496,25 +496,6 @@ def test_sync_detached_legend_axes_respects_explicit_delta_x() -> None:
     assert legend_ax.get_position().x0 == pytest.approx(ax.get_position().x1 + 0.15)
 
 
-def test_figure_autofit_sync_hooks_deduplicate_callbacks() -> None:
-    cns.figure(120, 120)
-    fig = plt.gcf()
-    manager = getattr(fig, "_cnsplots_autofit_manager")
-    ax1 = plt.gca()
-    ax2 = fig.add_axes((0.6, 0.2, 0.2, 0.2))
-    calls: list[str] = []
-
-    def sync() -> None:
-        calls.append("called")
-
-    setattr(ax1, "_sync_test", sync)
-    setattr(ax2, "_sync_test", sync)
-
-    manager._run_axes_sync_hooks("_sync_test")
-
-    assert calls == ["called"]
-
-
 def test_capture_detached_axes_layout_returns_empty_without_new_axes() -> None:
     cns.figure(120, 120)
     host_ax = plt.gca()

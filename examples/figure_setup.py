@@ -25,8 +25,8 @@ iris = sns.load_dataset("iris")
 # Basic figure creation
 # ~~~~~~~~~~~~~~~~~~~~~
 # Create a figure with specified dimensions in pixels.
-# figure(height, width) uses height first, and with autofit enabled these
-# requested dimensions are the minimum canvas size.
+# figure(height, width) uses height first, and those requested dimensions are
+# the final canvas size.
 cns.figure(150, 150)
 ax = cns.placeholderplot("150x150 Figure")
 ax.set_title("Figure Setup")
