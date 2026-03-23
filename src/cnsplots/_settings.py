@@ -443,7 +443,7 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default scanpy figure size in inches.",
     ),
     "scanpy_facecolor": _spec(
-        "white",
+        "none",
         lambda value: _validate_string("scanpy_facecolor", value),
         "Default scanpy figure background color.",
     ),

@@ -330,6 +330,61 @@ def test_import_upsetplot_module_tolerates_path_resolution_errors(
     assert usp is valid_module
 
 
+def test_upsetplot_clears_white_figure_patch(monkeypatch: pytest.MonkeyPatch) -> None:
+    class FakePatch:
+        def __init__(self) -> None:
+            self.facecolor: object = (1.0, 1.0, 1.0, 1.0)
+            self.alpha: object = None
+
+        def get_facecolor(self) -> object:
+            return self.facecolor
+
+        def set_facecolor(self, value: object) -> None:
+            self.facecolor = value
+
+        def set_alpha(self, value: object) -> None:
+            self.alpha = value
+
+    class FakeAxes:
+        def __init__(self, figure: object) -> None:
+            self.figure = figure
+            self.facecolor: object = None
+            self.texts: list[object] = []
+
+        def set_facecolor(self, value: object) -> None:
+            self.facecolor = value
+
+        def tick_params(self, *args: object, **kwargs: object) -> None:
+            return None
+
+    class FakeUpSet:
+        def __init__(self, data: object, **kwargs: object) -> None:
+            self.data = data
+            self.kwargs = kwargs
+
+        def plot(self, fig: object = None) -> dict[str, object]:
+            patch = FakePatch()
+            figure = types.SimpleNamespace(patch=patch)
+            return {
+                "matrix": FakeAxes(figure),
+                "shading": FakeAxes(figure),
+                "intersections": FakeAxes(figure),
+                "totals": None,
+            }
+
+    fake_module = types.SimpleNamespace(
+        from_memberships=lambda memberships: memberships,
+        UpSet=FakeUpSet,
+    )
+    monkeypatch.setattr(sets_mod, "_import_upsetplot_module", lambda: fake_module)
+    monkeypatch.setattr(cns, "setup_ax", lambda ax: None)
+
+    axes = cns.upsetplot({"A": {"x"}, "B": {"x", "y"}})
+
+    assert axes["matrix"].figure.patch.facecolor == "none"
+    assert axes["matrix"].figure.patch.alpha == 0
+
+
 def test_svg_internal_coverage() -> None:
     class FakeText:
         def getparent(self) -> None:
