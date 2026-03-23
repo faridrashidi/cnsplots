@@ -91,16 +91,19 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
         "dev": {
             "name": "dev",
             "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-dev-docs"),
             "docnames": ["index"],
         },
         "v0.1.0": {
             "name": "v0.1.0",
             "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-v010-docs"),
             "docnames": ["index"],
         },
         "v0.0.4": {
             "name": "v0.0.4",
             "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-v004-docs"),
             "docnames": ["index"],
         },
     }
@@ -127,6 +130,8 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
     ):
         build_calls["version_name"] = version_name
         build_calls["metadata_names"] = set(version_metadata)
+        build_calls["dev_confdir"] = version_metadata["dev"]["confdir"]
+        build_calls["release_confdir"] = version_metadata["v0.1.0"]["confdir"]
         build_calls["latest_release_tag"] = latest_release_tag
         version_output_dir.mkdir(parents=True)
         (version_output_dir / "index.html").write_text(
@@ -144,6 +149,8 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
     assert build_calls == {
         "version_name": "dev",
         "metadata_names": {"dev", "v0.1.0", "v0.0.4"},
+        "dev_confdir": str(docs_build.DOCS_DIR.resolve()),
+        "release_confdir": str(tmp_path / "temp-v010-docs"),
         "latest_release_tag": "v0.1.0",
     }
     assert (output_dir / "latest" / "index.html").read_text(encoding="utf-8") == (
