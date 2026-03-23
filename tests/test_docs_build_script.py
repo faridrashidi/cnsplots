@@ -159,6 +159,10 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
         "<html>dev</html>"
     )
     assert "latest/" in (output_dir / "index.html").read_text(encoding="utf-8")
+    assert not (output_dir / "installation.html").exists()
+    assert not (output_dir / "api.html").exists()
+    assert not (output_dir / "examples").exists()
+    assert not (output_dir / "api").exists()
     assert (output_dir / "CNAME").read_text(encoding="utf-8").strip() == (
         "cnsplots.farid.one"
     )

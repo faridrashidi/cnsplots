@@ -4,14 +4,13 @@ import argparse
 import html
 import json
 import os
-import posixpath
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
 from contextlib import contextmanager
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Iterator
 from urllib.parse import urlparse
 
@@ -67,13 +66,6 @@ def _version_sort_key(name: str) -> tuple[int, int, int]:
     if not match:
         return (-1, -1, -1)
     return tuple(int(part) for part in name[1:].split("."))
-
-
-def _relative_target(stub_relative_path: Path, target_path: PurePosixPath) -> str:
-    """Return a relative redirect target from the stub path to the target path."""
-    stub_parent = PurePosixPath(stub_relative_path.parent.as_posix())
-    start = "." if str(stub_parent) in {"", "."} else stub_parent.as_posix()
-    return posixpath.relpath(target_path.as_posix(), start=start)
 
 
 def _render_redirect_page(relative_target: str, absolute_target: str) -> str:
@@ -152,30 +144,15 @@ def _write_latest_release_alias(output_dir: Path, latest_release_tag: str) -> No
 
 
 def _write_root_redirects(output_dir: Path) -> None:
-    """Mirror latest HTML paths at the site root via redirect stubs."""
+    """Write only the site-root redirect to the latest stable docs."""
     latest_alias_dir = output_dir / LATEST_DOCS_NAME
     if not latest_alias_dir.exists():
         raise RuntimeError(f"Latest docs alias was not built at {latest_alias_dir}.")
 
-    latest_alias_prefix = PurePosixPath(LATEST_DOCS_NAME)
-    for source_path in latest_alias_dir.rglob("*.html"):
-        relative_html = source_path.relative_to(latest_alias_dir)
-        if relative_html.name == "404.html":
-            continue
-
-        destination_path = output_dir / relative_html
-        if relative_html == Path("index.html"):
-            target_path = latest_alias_prefix
-            relative_target = f"{LATEST_DOCS_NAME}/"
-            absolute_target = _latest_absolute_url("/")
-        else:
-            target_path = latest_alias_prefix / PurePosixPath(relative_html.as_posix())
-            relative_target = _relative_target(relative_html, target_path)
-            absolute_target = f"{SITE_URL.rstrip('/')}/{target_path.as_posix()}"
-        _write_text(
-            destination_path,
-            _render_redirect_page(relative_target, absolute_target),
-        )
+    _write_text(
+        output_dir / "index.html",
+        _render_redirect_page(f"{LATEST_DOCS_NAME}/", _latest_absolute_url("/")),
+    )
 
 
 def _write_root_404(output_dir: Path) -> None:
