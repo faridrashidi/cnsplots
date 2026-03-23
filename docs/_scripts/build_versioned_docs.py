@@ -350,11 +350,13 @@ def _copy_preserved_versions(existing_site_dir: Path, output_dir: Path) -> list[
 
 
 def _rewrite_metadata_entry(
-    entry: dict[str, object], outputdir: Path
+    entry: dict[str, object], outputdir: Path, confdir: Path | None = None
 ) -> dict[str, object]:
     """Return a metadata entry that points to the assembled site tree."""
     rewritten = dict(entry)
     rewritten["outputdir"] = str(outputdir.resolve())
+    if confdir is not None:
+        rewritten["confdir"] = str(confdir.resolve())
     return rewritten
 
 
@@ -369,7 +371,9 @@ def _build_metadata_for_main_site(
 
     metadata = {
         DEV_DOCS_NAME: _rewrite_metadata_entry(
-            all_metadata[DEV_DOCS_NAME], output_dir / DEV_DOCS_NAME
+            all_metadata[DEV_DOCS_NAME],
+            output_dir / DEV_DOCS_NAME,
+            DOCS_DIR,
         )
     }
     for name in preserved_release_names:
