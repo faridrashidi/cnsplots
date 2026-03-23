@@ -135,6 +135,15 @@ def upsetplot(
     upset = usp.UpSet(data, **kwargs)
     axes = upset.plot(fig=fig)
     plt.grid(False)
+    for ax in axes.values():
+        if ax is not None:
+            ax.set_facecolor("none")
+    plot_fig = next((ax.figure for ax in axes.values() if ax is not None), None)
+    if plot_fig is not None and np.allclose(
+        plot_fig.patch.get_facecolor(), (1.0, 1.0, 1.0, 1.0)
+    ):
+        plot_fig.patch.set_facecolor("none")
+        plot_fig.patch.set_alpha(0)
     ax_tot = axes.get("totals")
     cns.setup_ax(axes["matrix"])
     cns.setup_ax(axes["shading"])

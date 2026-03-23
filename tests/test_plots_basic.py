@@ -5,7 +5,7 @@ import logging
 import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
-from matplotlib.colors import to_hex
+from matplotlib.colors import to_hex, to_rgba
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Wedge
 
 import cnsplots as cns
@@ -332,6 +332,8 @@ def test_sets_and_specialized_plots(
     cns.figure(120, 120)
     axes = cns.upsetplot(sets_fixture, min_subset_size=1)
     assert set(axes) >= {"matrix", "intersections"}
+    assert all(ax is None or ax.get_facecolor()[-1] == 0 for ax in axes.values())
+    assert axes["matrix"].figure.patch.get_facecolor()[-1] == 0
     assert all(
         not tick.tick1line.get_visible()
         for tick in axes["shading"].yaxis.get_major_ticks()
@@ -340,6 +342,13 @@ def test_sets_and_specialized_plots(
     fig = plt.figure()
     embedded_axes = cns.upsetplot(sets_fixture, fig=fig, min_subset_size=1)
     assert all(ax is None or ax.figure is fig for ax in embedded_axes.values())
+    assert fig.patch.get_facecolor()[-1] == 0
+
+    custom_fig = plt.figure()
+    custom_fig.patch.set_facecolor("red")
+    custom_fig.patch.set_alpha(1)
+    cns.upsetplot(sets_fixture, fig=custom_fig, min_subset_size=1)
+    assert custom_fig.patch.get_facecolor() == to_rgba("red")
 
     cns.figure(120, 120)
     venn = cns.vennplot(list(sets_fixture.values())[:2], labels=["A", "B"])
