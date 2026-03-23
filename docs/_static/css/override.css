@@ -240,11 +240,7 @@ article[role="main"]
 }
 
 .release-notes-status[data-state="error"] {
-  border-color: color-mix(
-    in srgb,
-    #b42318 30%,
-    var(--color-foreground-border)
-  );
+  border-color: color-mix(in srgb, #b42318 30%, var(--color-foreground-border));
   background: color-mix(in srgb, #b42318 6%, var(--color-background-primary));
 }
 
@@ -322,11 +318,12 @@ article[role="main"]
 .release-notes-body blockquote {
   margin: 1rem 0;
   padding-left: 1rem;
-  border-left: 3px solid color-mix(
-    in srgb,
-    var(--color-brand-content) 35%,
-    var(--color-foreground-border)
-  );
+  border-left: 3px solid
+    color-mix(
+      in srgb,
+      var(--color-brand-content) 35%,
+      var(--color-foreground-border)
+    );
   color: var(--color-foreground-secondary);
 }
 
@@ -757,10 +754,22 @@ article table.align-default {
   display: none;
 }
 
+article[role="main"]:has(.not-found-page) {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: calc(100vh - 16rem);
+  text-align: center;
+}
+
+article[role="main"]:has(.not-found-page) > h1 {
+  width: min(100%, 48rem);
+}
+
 .not-found-page {
   max-width: 48rem;
-  margin: 0 auto;
-  padding: 2rem 0 1rem;
+  margin: 0;
+  padding: 1rem 0 0;
 }
 
 .repo-stats,
@@ -866,12 +875,10 @@ article table.align-default {
   border: 1px solid var(--color-background-border);
   border-left: 4px solid var(--color-brand-primary);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(0, 50, 98, 0.08), transparent);
 }
 
 .docs-version-banner--development {
   border-left-color: #8c510a;
-  background: linear-gradient(135deg, rgba(140, 81, 10, 0.1), transparent);
 }
 
 .docs-version-banner-title {
@@ -887,13 +894,7 @@ article table.align-default {
   margin: 1rem 0;
   padding: 0.95rem 1rem 1rem;
   border: 1px solid var(--color-background-border);
-  border-radius: 0.85rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-brand-primary) 5%, transparent),
-    var(--color-background-primary)
-  );
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-primary) 7%, transparent);
+  border-radius: 0.5rem;
 }
 
 .docs-version-switcher-header {
@@ -916,11 +917,12 @@ article table.align-default {
   display: inline-flex;
   align-items: center;
   padding: 0.2rem 0.55rem;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--color-brand-primary) 24%,
-    var(--color-background-border)
-  );
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--color-brand-primary) 24%,
+      var(--color-background-border)
+    );
   border-radius: 999px;
   background: color-mix(
     in srgb,
@@ -948,11 +950,12 @@ article table.align-default {
 .docs-version-switcher-select {
   width: 100%;
   padding: 0.82rem 2.8rem 0.82rem 0.95rem;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--color-brand-primary) 18%,
-    var(--color-background-border)
-  );
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--color-brand-primary) 18%,
+      var(--color-background-border)
+    );
   border-radius: 0.8rem;
   background: color-mix(
     in srgb,
