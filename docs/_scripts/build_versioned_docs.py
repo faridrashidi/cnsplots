@@ -2,16 +2,23 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import os
 import posixpath
 import re
 import shutil
 import subprocess
+import sys
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
+from typing import Iterator
+from urllib.parse import urlparse
 
 SITE_URL = "https://cnsplots.farid.one/"
 DEV_DOCS_NAME = "dev"
 LATEST_DOCS_NAME = "latest"
+GITHUB_PAGES_BRANCH = "gh-pages"
 RELEASE_TAG_PATTERN = re.compile(r"^v\d+\.\d+\.\d+$")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -20,9 +27,16 @@ ROBOTS_FILE = DOCS_DIR / "robots.txt"
 COMPAT_SITE_DIR = Path(__file__).resolve().parent / "compat"
 
 
-def _run(*args: str) -> str:
+def _run(*args: str, env: dict[str, str] | None = None, cwd: Path = REPO_ROOT) -> str:
     """Run a command in the repo root and return stripped stdout."""
-    return subprocess.check_output(args, cwd=REPO_ROOT, text=True).strip()
+    return subprocess.check_output(args, cwd=cwd, env=env, text=True).strip()
+
+
+def _run_checked(
+    *args: str, env: dict[str, str] | None = None, cwd: Path = REPO_ROOT
+) -> None:
+    """Run a command in the repo root and require success."""
+    subprocess.run(args, cwd=cwd, env=env, check=True)
 
 
 def _find_latest_release_tag() -> str:
@@ -38,6 +52,13 @@ def _write_text(path: Path, content: str) -> None:
     """Write UTF-8 text to disk, creating parent directories as needed."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def _ensure_clean_dir(path: Path) -> None:
+    """Replace a directory with an empty copy."""
+    if path.exists():
+        shutil.rmtree(path)
+    path.mkdir(parents=True, exist_ok=True)
 
 
 def _version_sort_key(name: str) -> tuple[int, int, int]:
@@ -228,11 +249,15 @@ def _write_root_sitemap_index(output_dir: Path) -> None:
     )
 
 
-def _build_versioned_docs(output_dir: Path, latest_release_tag: str) -> None:
-    """Build all versioned docs into the output directory."""
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
+def _write_cname(output_dir: Path) -> None:
+    """Write the custom domain used by GitHub Pages when configured."""
+    hostname = urlparse(SITE_URL).hostname
+    if hostname:
+        _write_text(output_dir / "CNAME", f"{hostname}\n")
+
+
+def _docs_env(latest_release_tag: str) -> dict[str, str]:
+    """Return the environment used for docs builds."""
     env = os.environ.copy()
     compat_path = str(COMPAT_SITE_DIR)
     existing_pythonpath = env.get("PYTHONPATH")
@@ -242,29 +267,235 @@ def _build_versioned_docs(output_dir: Path, latest_release_tag: str) -> None:
         else f"{compat_path}{os.pathsep}{existing_pythonpath}"
     )
     env["CNSPLOTS_DOCS_LATEST_VERSION"] = latest_release_tag
-
-    subprocess.run(
-        [
-            "sphinx-multiversion",
-            str(DOCS_DIR),
-            str(output_dir),
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        env=env,
-    )
+    return env
 
 
-def build(output_dir: Path) -> None:
-    """Build versioned docs and package them for GitHub Pages."""
-    latest_release_tag = _find_latest_release_tag()
-    _build_versioned_docs(output_dir, latest_release_tag)
-    _write_latest_release_alias(output_dir, latest_release_tag)
+def _build_full_versioned_docs(output_dir: Path, latest_release_tag: str) -> None:
+    """Build all versioned docs into the output directory."""
+    _ensure_clean_dir(output_dir)
+    env = _docs_env(latest_release_tag)
+
+    _run_checked("sphinx-multiversion", str(DOCS_DIR), str(output_dir), env=env)
+
+
+def _finalize_site(output_dir: Path) -> None:
+    """Write the top-level files expected by GitHub Pages."""
+    if not (output_dir / LATEST_DOCS_NAME).exists():
+        raise RuntimeError(
+            f"Latest docs alias was not assembled at {output_dir / LATEST_DOCS_NAME}."
+        )
+
     _write_root_redirects(output_dir)
     shutil.copy2(ROBOTS_FILE, output_dir / "robots.txt")
-    (output_dir / ".nojekyll").write_text("", encoding="utf-8")
+    _write_text(output_dir / ".nojekyll", "")
+    _write_cname(output_dir)
     _write_root_404(output_dir)
     _write_root_sitemap_index(output_dir)
+
+
+def _build_full_site(output_dir: Path, latest_release_tag: str) -> None:
+    """Build a complete multiversion site and package it for publishing."""
+    _build_full_versioned_docs(output_dir, latest_release_tag)
+    _write_latest_release_alias(output_dir, latest_release_tag)
+    _finalize_site(output_dir)
+
+
+def _dump_multiversion_metadata(
+    output_dir: Path, latest_release_tag: str
+) -> dict[str, dict[str, object]]:
+    """Return sphinx-multiversion metadata without building HTML."""
+    env = _docs_env(latest_release_tag)
+    payload = _run(
+        "sphinx-multiversion",
+        "--dump-metadata",
+        str(DOCS_DIR),
+        str(output_dir),
+        env=env,
+    )
+    return json.loads(payload)
+
+
+def _remote_branch_exists(branch_name: str) -> bool:
+    """Return whether the named remote branch exists on origin."""
+    result = subprocess.run(
+        ["git", "ls-remote", "--exit-code", "--heads", "origin", branch_name],
+        cwd=REPO_ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def _fetch_remote_branch(branch_name: str) -> str | None:
+    """Fetch a remote branch into a local remote-tracking ref."""
+    if not _remote_branch_exists(branch_name):
+        return None
+
+    remote_ref = f"refs/remotes/origin/{branch_name}"
+    _run_checked(
+        "git",
+        "fetch",
+        "--depth=1",
+        "origin",
+        f"+refs/heads/{branch_name}:{remote_ref}",
+    )
+    return remote_ref
+
+
+@contextmanager
+def _temporary_worktree(ref: str) -> Iterator[Path]:
+    """Check out a detached git ref in a temporary worktree."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        worktree_path = Path(tmpdir)
+        _run_checked("git", "worktree", "add", "--detach", str(worktree_path), ref)
+        try:
+            yield worktree_path
+        finally:
+            _run_checked("git", "worktree", "remove", "--force", str(worktree_path))
+
+
+def _copy_preserved_versions(existing_site_dir: Path, output_dir: Path) -> list[str]:
+    """Copy published release directories and the stable alias into output_dir."""
+    release_names: list[str] = []
+    for path in existing_site_dir.iterdir():
+        if not path.is_dir():
+            continue
+        if RELEASE_TAG_PATTERN.fullmatch(path.name):
+            shutil.copytree(path, output_dir / path.name)
+            release_names.append(path.name)
+
+    latest_alias_dir = existing_site_dir / LATEST_DOCS_NAME
+    if latest_alias_dir.exists():
+        shutil.copytree(latest_alias_dir, output_dir / LATEST_DOCS_NAME)
+
+    return sorted(release_names, key=_version_sort_key)
+
+
+def _rewrite_metadata_entry(
+    entry: dict[str, object], outputdir: Path
+) -> dict[str, object]:
+    """Return a metadata entry that points to the assembled site tree."""
+    rewritten = dict(entry)
+    rewritten["outputdir"] = str(outputdir.resolve())
+    return rewritten
+
+
+def _build_metadata_for_main_site(
+    all_metadata: dict[str, dict[str, object]],
+    output_dir: Path,
+    preserved_release_names: list[str],
+) -> dict[str, dict[str, object]]:
+    """Return metadata for the dev build plus preserved release versions."""
+    if DEV_DOCS_NAME not in all_metadata:
+        raise RuntimeError("Missing dev metadata for the current main docs build.")
+
+    metadata = {
+        DEV_DOCS_NAME: _rewrite_metadata_entry(
+            all_metadata[DEV_DOCS_NAME], output_dir / DEV_DOCS_NAME
+        )
+    }
+    for name in preserved_release_names:
+        entry = all_metadata.get(name)
+        if entry is None:
+            continue
+        metadata[name] = _rewrite_metadata_entry(entry, output_dir / name)
+    return metadata
+
+
+def _build_single_version_docs(
+    version_name: str,
+    output_dir: Path,
+    metadata: dict[str, dict[str, object]],
+    latest_release_tag: str,
+) -> None:
+    """Build a single docs version using precomputed multiversion metadata."""
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+
+    env = _docs_env(latest_release_tag)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        metadata_path = Path(tmpdir) / "versions.json"
+        metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+        _run_checked(
+            sys.executable,
+            "-m",
+            "sphinx",
+            "-D",
+            f"smv_metadata_path={metadata_path}",
+            "-D",
+            f"smv_current_version={version_name}",
+            str(DOCS_DIR),
+            str(output_dir),
+            env=env,
+        )
+
+
+def _build_bootstrap_site(output_dir: Path, latest_release_tag: str) -> None:
+    """Build the full site for the initial gh-pages bootstrap."""
+    _build_full_site(output_dir, latest_release_tag)
+
+
+def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
+    """Build only dev docs and preserve published releases from gh-pages."""
+    remote_ref = _fetch_remote_branch(GITHUB_PAGES_BRANCH)
+    if remote_ref is None:
+        _build_bootstrap_site(output_dir, latest_release_tag)
+        return
+
+    all_metadata = _dump_multiversion_metadata(output_dir, latest_release_tag)
+    if latest_release_tag not in all_metadata:
+        raise RuntimeError(
+            f"Missing metadata for the latest release tag {latest_release_tag}."
+        )
+
+    with _temporary_worktree(remote_ref) as existing_site_dir:
+        if (
+            not (existing_site_dir / LATEST_DOCS_NAME).exists()
+            or not (existing_site_dir / latest_release_tag).exists()
+        ):
+            _build_bootstrap_site(output_dir, latest_release_tag)
+            return
+
+        _ensure_clean_dir(output_dir)
+        preserved_release_names = _copy_preserved_versions(
+            existing_site_dir, output_dir
+        )
+        if latest_release_tag not in preserved_release_names:
+            _build_bootstrap_site(output_dir, latest_release_tag)
+            return
+
+        metadata = _build_metadata_for_main_site(
+            all_metadata, output_dir, preserved_release_names
+        )
+        _build_single_version_docs(
+            DEV_DOCS_NAME,
+            output_dir / DEV_DOCS_NAME,
+            metadata,
+            latest_release_tag,
+        )
+
+    _finalize_site(output_dir)
+
+
+def _build_release_site(output_dir: Path, latest_release_tag: str) -> None:
+    """Build the full multiversion site for a tagged release."""
+    _build_full_site(output_dir, latest_release_tag)
+
+
+def build(output_dir: Path, mode: str) -> None:
+    """Build docs and package them for GitHub Pages."""
+    latest_release_tag = _find_latest_release_tag()
+    if mode == "bootstrap":
+        _build_bootstrap_site(output_dir, latest_release_tag)
+        return
+    if mode == "main":
+        _build_main_site(output_dir, latest_release_tag)
+        return
+    if mode == "release":
+        _build_release_site(output_dir, latest_release_tag)
+        return
+    raise ValueError(f"Unsupported build mode: {mode}")
 
 
 def main() -> None:
@@ -272,10 +503,16 @@ def main() -> None:
         description="Build versioned Sphinx docs and package them for GitHub Pages."
     )
     parser.add_argument(
+        "--mode",
+        choices=("bootstrap", "main", "release"),
+        default="bootstrap",
+        help="Build mode for docs publishing.",
+    )
+    parser.add_argument(
         "output_dir", type=Path, help="Directory to write the site into."
     )
     args = parser.parse_args()
-    build(args.output_dir.resolve())
+    build(args.output_dir.resolve(), args.mode)
 
 
 if __name__ == "__main__":

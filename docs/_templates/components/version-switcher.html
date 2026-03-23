@@ -21,16 +21,9 @@
         <optgroup label="Development">
           <option
             value="{{ docs_development_version.url }}"
-            {%
-            if
-            current_version
-            and
-            current_version.name=""
-            ="docs_development_version.name"
-            %}
-            selected{%
-            endif
-            %}
+            {% if current_version and current_version.name == docs_development_version.name %}
+            selected
+            {% endif %}
           >
             dev
           </option>
@@ -40,16 +33,9 @@
           {% for item in docs_release_versions %}
           <option
             value="{{ item.url }}"
-            {%
-            if
-            current_version
-            and
-            current_version.name=""
-            ="item.name"
-            %}
-            selected{%
-            endif
-            %}
+            {% if current_version and current_version.name == item.name %}
+            selected
+            {% endif %}
           >
             {{ item.name }}
           </option>

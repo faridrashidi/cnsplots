@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 import matplotlib as mpl
 import matplotlib.colorbar  # noqa: F401  # ensure submodule is importable for isinstance checks
+import matplotlib.legend  # noqa: F401  # ensure submodule is importable for isinstance checks
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
