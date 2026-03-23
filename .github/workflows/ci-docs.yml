@@ -33,7 +33,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
       - name: Sync docs dependencies
-        run: uv sync --extra doc
+        run: uv sync --extra dev
       - name: Verify docs font
         run: |
           uv run python - <<'PY'

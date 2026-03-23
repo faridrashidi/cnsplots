@@ -75,7 +75,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --extra doc
+        run: uv sync --extra dev
 
       - name: Build docs
         run: make doc
