@@ -319,7 +319,7 @@ and changelog link.
 ### Getting Help
 
 - Check the [documentation](https://cnsplots.farid.one/)
-- Browse [examples](https://cnsplots.farid.one/examples/index.html)
+- Browse [examples](https://cnsplots.farid.one/latest/examples/index.html)
 - Search [existing issues](https://github.com/faridrashidi/cnsplots/issues)
 - Ask in [discussions](https://github.com/faridrashidi/cnsplots/discussions)
 
