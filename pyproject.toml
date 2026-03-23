@@ -63,6 +63,7 @@ dev = [
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
+    "sphinx-multiversion",
     "sphinx-sitemap",
 ]
 

@@ -9,7 +9,16 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import urlparse
 
-import cnsplots as cns
+_conf_dir = Path(__file__).resolve().parent
+_active_docs_dir = Path(
+    os.environ.get("SPHINX_MULTIVERSION_SOURCEDIR", str(_conf_dir))
+).resolve()
+_active_repo_root = _active_docs_dir.parent
+
+sys.path.insert(0, str(_active_repo_root / "src"))
+sys.path.insert(0, str(_conf_dir / "_ext"))
+
+import cnsplots as cns  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -19,6 +28,12 @@ author = "Farid Rashidi"
 version = cns.__version__
 release = cns.__version__
 site_url = "https://cnsplots.farid.one/"
+dev_docs_name = "dev"
+_active_docs_version_name = os.environ.get("SPHINX_MULTIVERSION_NAME", "").strip()
+_latest_release_name = os.environ.get("CNSPLOTS_DOCS_LATEST_VERSION", "").strip()
+_is_archived_release_build = bool(_active_docs_version_name) and (
+    _active_docs_version_name not in {dev_docs_name, _latest_release_name}
+)
 site_description = (
     "Publication-ready scientific visualizations for Cell, Nature, and Science "
     "journals built on matplotlib and seaborn."
@@ -27,10 +42,9 @@ social_preview_image = f"{site_url.rstrip('/')}/_static/images/overview.png"
 
 # -- General configuration ---------------------------------------------------
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "_ext"))
-
 extensions = [
     "sphinx_gallery.gen_gallery",
+    "sphinx_multiversion",
     "sphinx_design",
     "myst_parser",
     "sphinx_copybutton",
@@ -69,6 +83,12 @@ typehints_defaults = "braces"
 todo_include_todos = False
 numpydoc_show_class_members = False
 annotate_defaults = True  # scanpydoc option, look into why we need this
+smv_branch_whitelist = rf"^{dev_docs_name}$"
+smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"
+smv_remote_whitelist = None
+smv_released_pattern = r"^refs/tags/v\d+\.\d+\.\d+$"
+smv_outputdir_format = "{ref.name}"
+smv_latest_version = _latest_release_name or dev_docs_name
 myst_enable_extensions = [
     "colon_fence",
     "dollarmath",
@@ -200,8 +220,9 @@ class GalleryExampleOrder:
 sphinx_gallery_conf = {
     "filename_pattern": r"/.*\.py$",
     "ignore_pattern": "/todo_",
-    "examples_dirs": "../examples",  # path to your example scripts
+    "examples_dirs": str(_active_repo_root / "examples"),
     "gallery_dirs": "examples",  # path to where to save gallery generated output
+    "only_warn_on_example_error": _is_archived_release_build,
     "within_subsection_order": GalleryExampleOrder,
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
@@ -243,7 +264,7 @@ html_js_files = [
     "js/repo-stats.js",
     "js/release-notes.js",
 ]
-html_baseurl = site_url
+html_baseurl = site_url.rstrip("/")
 html_copy_source = False
 html_context = repo_stats_context.copy()
 sitemap_url_scheme = "{link}"
@@ -287,31 +308,56 @@ html_theme_options = {
 
 def git(*args):
     """Run git command and return output as string."""
-    return subprocess.check_output(["git", *args]).strip().decode()
+    return (
+        subprocess.check_output(["git", *args], stderr=subprocess.DEVNULL)
+        .strip()
+        .decode()
+    )
 
 
-# https://github.com/DisnakeDev/disnake/blob/7853da70b13fcd2978c39c0b7efa59b34d298186/docs/conf.py#L192
-# Current git reference. Uses branch/tag name if found, otherwise uses commit hash
-git_ref = None
-try:
-    git_ref = git("name-rev", "--name-only", "--no-undefined", "HEAD")
-    git_ref = re.sub(r"^(remotes/[^/]+|tags)/", "", git_ref)
-except Exception:  # noqa: B902
-    pass
+def _published_site_baseurl(version_name: str | None = None) -> str:
+    """Return the public base URL for a docs version."""
+    name = (version_name or "").strip()
+    baseurl = site_url.rstrip("/")
+    if name:
+        return f"{baseurl}/{name}"
+    return baseurl
 
-# (if no name found or relative ref, use commit hash instead)
-if not git_ref or re.search(r"[\^~]", git_ref):
+
+def _resolve_git_ref(version_name: str | None = None) -> str:
+    """Return the GitHub ref that matches the published docs version."""
+    name = (version_name or "").strip()
+    if name:
+        if name == dev_docs_name:
+            return "main"
+        return name
+
+    # https://github.com/DisnakeDev/disnake/blob/7853da70b13fcd2978c39c0b7efa59b34d298186/docs/conf.py#L192
+    # Current git reference. Uses branch/tag name if found, otherwise commit hash
+    git_ref = None
     try:
-        git_ref = git("rev-parse", "HEAD")
+        git_ref = git("name-rev", "--name-only", "--no-undefined", "HEAD")
+        git_ref = re.sub(r"^(remotes/[^/]+|tags)/", "", git_ref)
     except Exception:  # noqa: B902
-        git_ref = "main"
+        pass
+
+    if not git_ref or re.search(r"[\^~]", git_ref):
+        try:
+            git_ref = git("rev-parse", "HEAD")
+        except Exception:  # noqa: B902
+            git_ref = "main"
+
+    return git_ref
+
+
+git_ref = _resolve_git_ref(_active_docs_version_name)
 
 # https://github.com/DisnakeDev/disnake/blob/7853da70b13fcd2978c39c0b7efa59b34d298186/docs/conf.py#L192
 _cnsplots_tools_module_path = os.path.dirname(
     importlib.util.find_spec("cnsplots").origin
 )
-_docs_dir = Path(__file__).resolve().parent
-_repo_root = _docs_dir.parent
+_docs_dir = _active_docs_dir
+_repo_root = _active_repo_root
 
 
 def _resolve_gallery_source_path(pagename: str) -> str | None:
@@ -571,12 +617,89 @@ def _inject_page_seo(
     context["seo_title"] = seo_title
     context["seo_description"] = _build_page_description(pagename, title)
     context["seo_canonical_url"] = _build_page_url(app, pagename)
-    context["seo_image_url"] = social_preview_image
+    context["seo_image_url"] = (
+        f"{app.config.html_baseurl.rstrip('/')}/_static/images/overview.png"
+    )
     context["seo_image_alt"] = "Overview of cnsplots visualizations"
     context["seo_robots"] = (
         "noindex, nofollow" if pagename in noindex_pages else "index, follow"
     )
     context["seo_og_type"] = "website" if pagename == "index" else "article"
+
+
+def _configure_active_docs_build(app, config) -> None:
+    """Apply version-aware URLs and source refs after config values are loaded."""
+    del app
+
+    version_name = (config.smv_current_version or _active_docs_version_name).strip()
+    config.html_baseurl = _published_site_baseurl(version_name)
+    config.html_extra_path = [] if version_name else ["robots.txt"]
+
+    global social_preview_image, git_ref
+    social_preview_image = (
+        f"{config.html_baseurl.rstrip('/')}/_static/images/overview.png"
+    )
+    git_ref = _resolve_git_ref(version_name)
+
+
+def _parse_release_name(name: str) -> tuple[int, int, int]:
+    """Return a semantic sort key for release tags."""
+    match = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", name)
+    if match is None:
+        return (-1, -1, -1)
+    return tuple(int(part) for part in match.groups())
+
+
+def _inject_version_navigation(
+    app, pagename: str, templatename, context: dict[str, Any], doctree
+):
+    """Add ordered version-switcher and banner context for multiversion builds."""
+    del app, pagename, templatename, doctree
+
+    current_version = context.get("current_version")
+    latest_version = context.get("latest_version")
+    versions = context.get("versions")
+
+    if current_version is None or latest_version is None or versions is None:
+        context["docs_release_versions"] = []
+        context["docs_development_version"] = None
+        context["docs_version_banner"] = None
+        context["docs_current_version_label"] = None
+        return
+
+    release_versions = sorted(
+        versions.releases,
+        key=lambda item: _parse_release_name(item.name),
+        reverse=True,
+    )
+    development_version = next(
+        (item for item in versions.in_development if item.name == dev_docs_name),
+        None,
+    )
+
+    context["docs_release_versions"] = release_versions
+    context["docs_development_version"] = development_version
+    context["docs_current_version_label"] = (
+        "dev (main)" if current_version.name == dev_docs_name else current_version.name
+    )
+
+    banner = None
+    if current_version.name == dev_docs_name and latest_version is not None:
+        banner = {
+            "kind": "development",
+            "title": "You are reading the development documentation.",
+            "url": latest_version.url,
+            "label": f"View the latest stable release ({latest_version.name})",
+        }
+    elif current_version.is_released and current_version.name != latest_version.name:
+        banner = {
+            "kind": "outdated",
+            "title": "You are reading an older release of the documentation.",
+            "url": latest_version.url,
+            "label": f"View the latest stable release ({latest_version.name})",
+        }
+
+    context["docs_version_banner"] = banner
 
 
 def linkcode_resolve(domain, info):
@@ -604,5 +727,7 @@ def linkcode_resolve(domain, info):
 def setup(app):
     """Register Sphinx hooks for page metadata and source link overrides."""
     app.connect("env-before-read-docs", _regroup_flat_gallery_index)
+    app.connect("config-inited", _configure_active_docs_build, priority=800)
     app.connect("html-page-context", _override_source_links)
     app.connect("html-page-context", _inject_page_seo)
+    app.connect("html-page-context", _inject_version_navigation, priority=800)

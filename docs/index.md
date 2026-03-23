@@ -7,7 +7,7 @@ cnsplots is a Python visualization library built on matplotlib and fully compati
 ```{image} _static/images/overview.png
 :alt: Overview of cnsplots visualizations
 :align: center
-:target: https://cnsplots.farid.one/examples/showcase.html#figure-1
+:target: examples/showcase.html#figure-1
 ```
 
 ## Key Features
