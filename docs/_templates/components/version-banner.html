@@ -1,0 +1,10 @@
+{% if docs_version_banner %}
+<div
+  class="docs-version-banner docs-version-banner--{{ docs_version_banner.kind }}"
+>
+  <p class="docs-version-banner-title">{{ docs_version_banner.title }}</p>
+  <a class="docs-version-banner-link" href="{{ docs_version_banner.url }}">
+    {{ docs_version_banner.label }}
+  </a>
+</div>
+{% endif %}
