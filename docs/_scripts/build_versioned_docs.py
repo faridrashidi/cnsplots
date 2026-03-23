@@ -107,140 +107,122 @@ def _render_root_404_page() -> str:
     """Render a branded site-wide 404 page."""
     return Template(
         """<!DOCTYPE html>
-<html lang="en">
+<html class="no-js" lang="en">
   <head>
     <meta charset="utf-8">
     <title>Page not found | cnsplots</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
     <meta name="description" content="The page you requested could not be found. Return to the latest cnsplots documentation.">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#003262">
+    <link rel="prefetch" href="$logo_src" as="image">
     <link rel="icon" type="image/svg+xml" href="$favicon_src">
+    <link rel="stylesheet" type="text/css" href="$furo_css_src">
+    <link rel="stylesheet" type="text/css" href="$furo_extensions_css_src">
+    <link rel="stylesheet" type="text/css" href="$override_css_src">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.prefix.dev" crossorigin>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap"
+    >
     <style>
-      :root {
-        color-scheme: light dark;
-        --brand: #003262;
-        --brand-strong: #002349;
-        --brand-soft: #e9f1fb;
-        --text: #13202f;
-        --muted: #526172;
-        --page: #f4f7fb;
-        --surface: #ffffff;
-        --border: #d4deea;
-        --shadow: 0 24px 60px rgba(0, 50, 98, 0.12);
+      body {
+        --color-code-background: #f2f2f2;
+        --color-code-foreground: #1e1e1e;
+        --color-brand-primary: #003262;
+        --color-brand-content: #003262;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --brand: #8cb8ff;
-          --brand-strong: #d9e8ff;
-          --brand-soft: rgba(140, 184, 255, 0.12);
-          --text: #eef4fb;
-          --muted: #adc0d5;
-          --page: #0b1220;
-          --surface: #121c2a;
-          --border: #253449;
-          --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      @media not print {
+        body[data-theme="dark"] {
+          --color-code-background: #202020;
+          --color-code-foreground: #d0d0d0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          body:not([data-theme="light"]) {
+            --color-code-background: #202020;
+            --color-code-foreground: #d0d0d0;
+          }
         }
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
+      .root-404-shell .page {
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        background:
-          radial-gradient(circle at top, rgba(0, 50, 98, 0.18), transparent 38%),
-          var(--page);
-        color: var(--text);
       }
 
-      .page {
-        width: min(1100px, calc(100% - 2rem));
-        margin: 0 auto;
-        min-height: 100vh;
-        padding: 2rem 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+      .root-404-shell .sidebar-search-container,
+      .root-404-shell #searchbox,
+      .root-404-shell .sidebar-tree {
+        display: none;
       }
 
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: var(--text);
-        text-decoration: none;
-        font-weight: 700;
+      .root-404-shell .sidebar-sticky {
+        gap: 0;
       }
 
-      .brand:hover {
-        color: var(--brand-strong);
+      .root-404-shell .sidebar-scroll {
+        min-height: 0;
       }
 
-      .brand-mark {
-        width: 2.75rem;
-        height: 2.75rem;
+      .root-404-shell .content {
+        padding-top: 0;
       }
 
-      .hero {
-        width: min(100%, 44rem);
-        max-width: 44rem;
-        margin-top: 1.5rem;
-        padding: clamp(1.5rem, 4vw, 2.5rem);
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        background:
-          linear-gradient(135deg, var(--brand-soft), transparent 65%),
-          var(--surface);
-        box-shadow: var(--shadow);
-        text-align: center;
+      .root-404-shell .article-container {
+        max-width: 52rem;
       }
 
-      .eyebrow {
+      .root-404-shell .not-found-root {
+        max-width: 46rem;
+        padding: clamp(2rem, 9vh, 5rem) 0 3rem;
+      }
+
+      .root-404-shell .not-found-root > :first-child {
+        margin-top: 0;
+      }
+
+      .root-404-shell .eyebrow {
         display: inline-flex;
         margin-bottom: 1rem;
         padding: 0.35rem 0.75rem;
         border-radius: 999px;
-        background: var(--brand-soft);
-        color: var(--brand-strong);
+        background: color-mix(
+          in srgb,
+          var(--color-brand-primary) 12%,
+          var(--color-background-primary)
+        );
+        color: var(--color-brand-content);
         font-size: 0.8rem;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
 
-      h1 {
+      .root-404-shell h1 {
         margin: 0;
-        font-size: clamp(2.5rem, 7vw, 4.5rem);
-        line-height: 1;
+        font-size: clamp(2.4rem, 6vw, 4.25rem);
+        line-height: 1.05;
       }
 
-      .copy p {
+      .root-404-shell .copy p {
         max-width: 38rem;
-        margin: 1rem auto 0;
-        color: var(--muted);
+        margin: 1rem 0 0;
+        color: var(--color-foreground-secondary);
         font-size: 1.05rem;
         line-height: 1.7;
       }
 
-      .actions {
+      .root-404-shell .actions {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
         gap: 0.75rem;
         margin-top: 1.5rem;
       }
 
-      .button {
+      .root-404-shell .button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -257,47 +239,94 @@ def _render_root_404_page() -> str:
           color 0.2s ease;
       }
 
-      .button:hover {
+      .root-404-shell .button:hover {
         transform: translateY(-1px);
+        text-decoration: none;
       }
 
-      .button-primary {
-        background: var(--brand-strong);
+      .root-404-shell .button-primary {
+        background: var(--color-brand-primary);
         color: #ffffff;
       }
 
-      .button-primary:hover {
-        background: var(--brand);
+      .root-404-shell .button-primary:hover {
+        background: color-mix(in srgb, black 14%, var(--color-brand-primary));
       }
 
-      .button-secondary {
-        border-color: var(--border);
-        background: var(--surface);
-        color: var(--text);
-      }
+      @media (max-width: 996px) {
+        .root-404-shell .content {
+          padding-top: 1rem;
+        }
 
-      .button-secondary:hover {
-        border-color: var(--brand);
-        color: var(--brand-strong);
-      }
-
-      @media (max-width: 640px) {
-        .page {
-          width: min(100% - 1rem, 1100px);
-          padding: 1rem 0;
+        .root-404-shell .not-found-root {
+          padding-top: 1.25rem;
         }
       }
     </style>
   </head>
-  <body>
-    <main class="page">
-      <a class="brand" href="$home_target" aria-label="cnsplots documentation">
-        <img class="brand-mark" src="$logo_src" alt="">
-        <span>cnsplots</span>
-      </a>
+  <body class="root-404-shell">
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
 
-      <section class="hero">
-        <div class="copy">
+    <input
+      type="checkbox"
+      class="sidebar-toggle"
+      name="__navigation"
+      id="__navigation"
+      aria-label="Toggle site navigation sidebar"
+    >
+    <label class="overlay sidebar-overlay" for="__navigation"></label>
+
+    <a class="skip-to-content muted-link" href="#furo-main-content">
+      Skip to content
+    </a>
+
+    <div class="page">
+      <header class="mobile-header">
+        <div class="header-left">
+          <label class="nav-overlay-icon" for="__navigation">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M3 6h18M3 12h18M3 18h18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></path>
+              </svg>
+            </span>
+          </label>
+        </div>
+        <div class="header-center">
+          <a href="$home_target"><div class="brand">cnsplots</div></a>
+        </div>
+        <div class="header-right"></div>
+      </header>
+      <aside class="sidebar-drawer">
+        <div class="sidebar-container">
+          <div class="sidebar-sticky">
+            <a
+              class="sidebar-brand"
+              href="$home_target"
+              aria-label="cnsplots documentation"
+            >
+              <div class="sidebar-logo-container">
+                <img class="sidebar-logo" src="$logo_src" alt="Logo">
+              </div>
+            </a>
+            <div class="sidebar-scroll" aria-hidden="true"></div>
+          </div>
+        </div>
+      </aside>
+      <div class="main">
+        <div class="content">
+          <div class="article-container">
+            <article role="main" id="furo-main-content">
+              <section class="not-found-root">
+                <div class="copy">
           <div class="eyebrow">404</div>
           <h1>Page not found</h1>
           <p>
@@ -310,8 +339,13 @@ def _render_root_404_page() -> str:
             </a>
           </div>
         </div>
-      </section>
-    </main>
+              </section>
+            </article>
+          </div>
+        </div>
+        <aside class="toc-drawer no-toc"></aside>
+      </div>
+    </div>
   </body>
 </html>
 """
@@ -319,8 +353,17 @@ def _render_root_404_page() -> str:
         favicon_src=html.escape(
             _latest_site_path("/_static/images/favicon.svg"), quote=True
         ),
+        furo_css_src=html.escape(
+            _latest_site_path("/_static/styles/furo.css"), quote=True
+        ),
+        furo_extensions_css_src=html.escape(
+            _latest_site_path("/_static/styles/furo-extensions.css"), quote=True
+        ),
         home_target=html.escape("/", quote=True),
-        logo_src=html.escape(_latest_site_path("/_static/images/logo.svg"), quote=True),
+        logo_src=html.escape(_latest_site_path("/_static/logo.svg"), quote=True),
+        override_css_src=html.escape(
+            _latest_site_path("/_static/css/override.css"), quote=True
+        ),
     )
 
 

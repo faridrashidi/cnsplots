@@ -192,8 +192,15 @@ def test_root_404_matches_latest_docs_ui(tmp_path):
 
     assert "<title>Page not found | cnsplots</title>" in content
     assert 'href="/"' in content
-    assert 'src="/latest/_static/images/logo.svg"' in content
+    assert 'href="/latest/_static/styles/furo.css"' in content
+    assert 'href="/latest/_static/css/override.css"' in content
+    assert 'class="sidebar-drawer"' in content
+    assert 'class="sidebar-brand"' in content
+    assert 'src="/latest/_static/logo.svg"' in content
     assert "Go to homepage" in content
+    assert '<form class="sidebar-search-container"' not in content
+    assert '<div class="sidebar-tree">' not in content
+    assert "search.html" not in content
     assert "/latest/getting_started.html" not in content
     assert "/latest/examples/index.html" not in content
     assert "/latest/api.html" not in content
