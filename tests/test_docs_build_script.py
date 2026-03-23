@@ -180,3 +180,21 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
     assert "/dev/sitemap.xml" in sitemap
     assert "/v0.1.0/sitemap.xml" in sitemap
     assert "/v0.0.4/sitemap.xml" in sitemap
+
+
+def test_root_404_matches_latest_docs_ui(tmp_path):
+    docs_build = _load_docs_build_script()
+
+    output_dir = tmp_path / "site"
+    docs_build._write_root_404(output_dir)
+
+    content = (output_dir / "404.html").read_text(encoding="utf-8")
+
+    assert "<title>Page not found | cnsplots</title>" in content
+    assert 'href="/"' in content
+    assert 'src="/latest/_static/images/logo.svg"' in content
+    assert "Go to homepage" in content
+    assert "/latest/getting_started.html" not in content
+    assert "/latest/examples/index.html" not in content
+    assert "/latest/api.html" not in content
+    assert "/latest/_static/images/overview.png" not in content

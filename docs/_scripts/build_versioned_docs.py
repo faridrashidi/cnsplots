@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+from string import Template
 import subprocess
 import sys
 import tempfile
@@ -96,6 +97,224 @@ def _latest_absolute_url(relative_path: str = "") -> str:
     return f"{SITE_URL.rstrip('/')}/{LATEST_DOCS_NAME}{suffix}"
 
 
+def _latest_site_path(relative_path: str = "") -> str:
+    """Return a site-root path for the latest docs alias."""
+    suffix = f"/{relative_path.lstrip('/')}" if relative_path else ""
+    return f"/{LATEST_DOCS_NAME}{suffix}"
+
+
+def _render_root_404_page() -> str:
+    """Render a branded site-wide 404 page."""
+    return Template(
+        """<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Page not found | cnsplots</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The page you requested could not be found. Return to the latest cnsplots documentation.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#003262">
+    <link rel="icon" type="image/svg+xml" href="$favicon_src">
+    <style>
+      :root {
+        color-scheme: light dark;
+        --brand: #003262;
+        --brand-strong: #002349;
+        --brand-soft: #e9f1fb;
+        --text: #13202f;
+        --muted: #526172;
+        --page: #f4f7fb;
+        --surface: #ffffff;
+        --border: #d4deea;
+        --shadow: 0 24px 60px rgba(0, 50, 98, 0.12);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --brand: #8cb8ff;
+          --brand-strong: #d9e8ff;
+          --brand-soft: rgba(140, 184, 255, 0.12);
+          --text: #eef4fb;
+          --muted: #adc0d5;
+          --page: #0b1220;
+          --surface: #121c2a;
+          --border: #253449;
+          --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top, rgba(0, 50, 98, 0.18), transparent 38%),
+          var(--page);
+        color: var(--text);
+      }
+
+      .page {
+        width: min(1100px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 1.5rem 0 4rem;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .brand:hover {
+        color: var(--brand-strong);
+      }
+
+      .brand-mark {
+        width: 2.75rem;
+        height: 2.75rem;
+      }
+
+      .hero {
+        max-width: 44rem;
+        margin-top: 1.5rem;
+        padding: clamp(1.5rem, 4vw, 2.5rem);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, var(--brand-soft), transparent 65%),
+          var(--surface);
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        margin-bottom: 1rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand-strong);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.5rem, 7vw, 4.5rem);
+        line-height: 1;
+      }
+
+      .copy p {
+        max-width: 38rem;
+        margin: 1rem 0 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.85rem;
+        padding: 0.8rem 1.15rem;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          transform 0.2s ease,
+          background-color 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button-primary {
+        background: var(--brand-strong);
+        color: #ffffff;
+      }
+
+      .button-primary:hover {
+        background: var(--brand);
+      }
+
+      .button-secondary {
+        border-color: var(--border);
+        background: var(--surface);
+        color: var(--text);
+      }
+
+      .button-secondary:hover {
+        border-color: var(--brand);
+        color: var(--brand-strong);
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          width: min(100% - 1rem, 1100px);
+          padding-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <a class="brand" href="$home_target" aria-label="cnsplots documentation">
+        <img class="brand-mark" src="$logo_src" alt="">
+        <span>cnsplots</span>
+      </a>
+
+      <section class="hero">
+        <div class="copy">
+          <div class="eyebrow">404</div>
+          <h1>Page not found</h1>
+          <p>
+            The page you requested does not exist, may have moved, or may have
+            been renamed. Return to the documentation homepage to continue.
+          </p>
+          <div class="actions">
+            <a class="button button-primary" href="$home_target">
+              Go to homepage
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+"""
+    ).substitute(
+        favicon_src=html.escape(
+            _latest_site_path("/_static/images/favicon.svg"), quote=True
+        ),
+        home_target=html.escape("/", quote=True),
+        logo_src=html.escape(_latest_site_path("/_static/images/logo.svg"), quote=True),
+    )
+
+
 def _rewrite_latest_alias_content(
     content: str, latest_release_tag: str, suffix: str
 ) -> str:
@@ -157,26 +376,7 @@ def _write_root_redirects(output_dir: Path) -> None:
 
 def _write_root_404(output_dir: Path) -> None:
     """Write a site-wide 404 page that points users to the latest release."""
-    home_target = f"{LATEST_DOCS_NAME}/"
-    _write_text(
-        output_dir / "404.html",
-        f"""<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Page not found</title>
-    <meta name="robots" content="noindex, nofollow">
-  </head>
-  <body>
-    <main>
-      <h1>Page not found</h1>
-      <p>The page you requested does not exist, may have moved, or may have been renamed.</p>
-      <p><a href="{html.escape(home_target, quote=True)}">Return to the latest documentation homepage</a>.</p>
-    </main>
-  </body>
-</html>
-""",
-    )
+    _write_text(output_dir / "404.html", _render_root_404_page())
 
 
 def _write_root_sitemap_index(output_dir: Path) -> None:
