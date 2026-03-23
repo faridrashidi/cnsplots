@@ -16,7 +16,7 @@
 
 Create visually stunning, journal-quality figures with minimal code. Built on matplotlib, fully compatible with seaborn, and optimized for Adobe Illustrator.
 
-[Documentation](https://cnsplots.farid.one/) · [Examples Gallery](https://cnsplots.farid.one/examples/index.html) · [Report Bug](https://github.com/faridrashidi/cnsplots/issues) · [Request Feature](https://github.com/faridrashidi/cnsplots/issues)
+[Documentation](https://cnsplots.farid.one/) · [Examples Gallery](https://cnsplots.farid.one/latest/examples/index.html) · [Report Bug](https://github.com/faridrashidi/cnsplots/issues) · [Request Feature](https://github.com/faridrashidi/cnsplots/issues)
 
 </div>
 
@@ -24,7 +24,7 @@ Create visually stunning, journal-quality figures with minimal code. Built on ma
 
 ## Overview
 
-[![Overview](https://raw.githubusercontent.com/faridrashidi/cnsplots/main/docs/_static/images/overview.png)](https://cnsplots.farid.one/examples/showcase.html#figure-1)
+[![Overview](https://raw.githubusercontent.com/faridrashidi/cnsplots/main/docs/_static/images/overview.png)](https://cnsplots.farid.one/latest/examples/showcase.html#figure-1)
 
 **cnsplots** is a Python visualization library designed specifically for creating publication-ready scientific figures. It takes care of the tedious styling details so you can focus on your science.
 
@@ -161,7 +161,7 @@ cns.violinplot(data=df, x="day", y="total_bill", hue="sex")
 
 ## Examples Gallery
 
-Explore our comprehensive [examples gallery](https://cnsplots.farid.one/examples/index.html) featuring:
+Explore our comprehensive [examples gallery](https://cnsplots.farid.one/latest/examples/index.html) featuring:
 
 - 📦 Basic statistical plots
 - 🧬 Genomics and bioinformatics visualizations
@@ -174,9 +174,9 @@ Explore our comprehensive [examples gallery](https://cnsplots.farid.one/examples
 
 Full documentation is available at [cnsplots.farid.one](https://cnsplots.farid.one/)
 
-- [Installation Guide](https://cnsplots.farid.one/installation.html)
-- [API Reference](https://cnsplots.farid.one/api.html)
-- [Examples Gallery](https://cnsplots.farid.one/examples/index.html)
+- [Installation Guide](https://cnsplots.farid.one/latest/installation.html)
+- [API Reference](https://cnsplots.farid.one/latest/api.html)
+- [Examples Gallery](https://cnsplots.farid.one/latest/examples/index.html)
 
 ## Key Concepts
 
