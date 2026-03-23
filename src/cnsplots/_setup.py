@@ -362,7 +362,7 @@ def setup_scanpy() -> None:
     2. Sets scanpy figure parameters:
        - scanpy=False: Disable scanpy's default styling
        - figsize=(2.5, 2.5): Default figure size in inches
-       - facecolor='white': White background for figures
+       - facecolor='none': Transparent figure and axes backgrounds
 
     This ensures consistency between cnsplots and scanpy visualizations in
     single-cell analysis workflows.

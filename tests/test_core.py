@@ -130,6 +130,7 @@ def test_settings_behavior() -> None:
     assert settings.palette_qual == "Ecotyper1"
     assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
+    assert settings.scanpy_facecolor == "none"
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
     settings.title_fontsize = 10
@@ -600,6 +601,10 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         set_figure_params=lambda **kwargs: calls.update(kwargs)
     )
     monkeypatch.setitem(sys.modules, "scanpy", fake_scanpy)
+    _setup.setup_scanpy()
+    assert calls == {"scanpy": False, "figsize": (2.5, 2.5), "facecolor": "none"}
+
+    calls.clear()
     with cns.settings.context(
         scanpy_use_default_style=True,
         scanpy_figsize=(3.0, 4.0),
