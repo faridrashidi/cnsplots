@@ -230,6 +230,30 @@ body[data-theme="dark"] {
   }
 }
 
+article[role="main"] h1 {
+  font-size: 1.8em;
+}
+
+article[role="main"] h2 {
+  font-size: 1.6em;
+}
+
+article[role="main"] h3 {
+  font-size: 1.4em;
+}
+
+article[role="main"] h4 {
+  font-size: 1.2em;
+}
+
+article[role="main"] h5 {
+  font-size: 1.1em;
+}
+
+article[role="main"] h6 {
+  font-size: 1em;
+}
+
 article[role="main"] .highlight,
 article[role="main"] pre.literal-block {
   color: var(--syntax-text);
@@ -330,7 +354,6 @@ article[role="main"]
 
 .release-notes-title {
   margin: 0;
-  font-size: clamp(1.45rem, 1.3rem + 0.9vw, 2rem);
 }
 
 .release-notes-meta {
