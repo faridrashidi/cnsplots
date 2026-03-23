@@ -23,7 +23,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --all-extras
+        run: uv sync --extra dev
 
       - name: Run lint
         run: make lint
@@ -44,10 +44,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --extra dev
 
       - name: Install mutool
         run: |
@@ -55,8 +56,29 @@ jobs:
           sudo apt-get install -y mupdf-tools
 
       - name: Run tests
-        run: python -m pytest --disable-warnings ./tests
+        run: make test
 
+  docs:
+    name: docs-validation
+    runs-on: ubuntu-latest
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --extra doc
+
+      - name: Build docs
+        run: make doc
   package:
     name: package-validation
     runs-on: ubuntu-latest
