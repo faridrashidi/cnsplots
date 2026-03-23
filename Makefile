@@ -43,7 +43,7 @@ ifneq ($(CI),true)
 endif
 
 install:
-	uv sync --all-extras
+	uv sync --extra dev
 	uv run pre-commit install
 
 release:

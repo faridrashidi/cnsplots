@@ -109,7 +109,7 @@ cd cnsplots
 make install
 ```
 
-This uses `uv sync --all-extras` to install the package in editable mode with all dependencies, and sets up pre-commit hooks.
+This uses `uv sync --extra dev` to install the package in editable mode with all dependencies, and sets up pre-commit hooks.
 
 ### Development Commands
 

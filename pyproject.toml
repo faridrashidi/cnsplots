@@ -55,8 +55,6 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-cov",
-]
-doc = [
     "furo",
     "myst-parser",
     "sphinx<9; python_version < '3.11'",
