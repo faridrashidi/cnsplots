@@ -34,9 +34,6 @@
 - Prefer a single commit for a small, self-contained change.
 - For larger work, use multiple logical commits rather than one large commit.
 - Do not amend, squash, or rewrite existing commits unless explicitly asked.
-
-## Commit subject format
-
 - Each commit subject line must use the format `<emoji> <subject>`.
 - Use a Unicode Gitmoji, not a shortcode.
 - Do not add a scope, colon, body, or trailing period.
@@ -48,33 +45,73 @@
 - Capitalize the first word unless syntax or style requires otherwise.
 - Keep the subject under 72 characters.
 
-## Allowed Gitmoji choices
+## Gitmoji rules
 
-- ✨ feature
-- 🐛 bug fix
-- ♻️ refactor
-- 📝 docs or text
-- ✅ tests
-- 🔧 config or tooling
-- ⬆️ upgrade dependencies
-- ⬇️ downgrade dependencies
-- ➕ add dependency
-- ➖ remove dependency
-- 🔥 remove code or files
-- 🚚 move or rename
-- 💄 UI or style
-- 🚨 lint or warnings
-- ⚡️ performance
-- 👷 CI or build
-- 🔒️ security
+A gitmoji commit message is composed using the following pieces:
 
-## Gitmoji tie-break rules
+- **intention**: The intention you want to express with the commit, using an emoji from the gitmoji list. In unicode format.
+- **message**: A brief explanation of the change.
 
-- Choose 🐛 or ✨ over ♻️ when the main intent is a fix or feature.
-- Use dependency emojis only for dependency-only diffs.
-- Use 🔧 for config-only or tooling-only diffs.
-- Use ✅ only when the change is primarily test-related.
-- Use 📝 only when the change is primarily documentation or text-related.
+### Format
+
+```
+<intention> <message>
+
+[optional body]
+```
+
+### Reference
+
+Fetch all available gitmojis from: https://gitmoji.dev/api/gitmojis.
+
+### Selecting the correct emoji
+
+1. **Identify the primary purpose** of the commit
+2. **Choose the most specific emoji** that matches the change
+3. **Use only one emoji** per commit for clarity
+4. **Prioritize by impact**: Breaking changes (💥) > Features (✨) > Fixes (🐛) > Refactoring (♻️)
+
+### Examples
+
+```
+✨ Add user authentication system
+
+Implement JWT-based authentication with login and registration endpoints.
+Closes #123
+```
+
+```
+🐛 Resolve null pointer exception in user service
+
+Added null check before accessing user properties to prevent crashes.
+```
+
+```
+📝 Update installation instructions
+
+Added step-by-step guide for setting up the development environment.
+```
+
+```
+⚡️ Optimize user query with indexing
+
+Reduced query time from 500ms to 50ms by adding composite index.
+```
+
+```
+💥 Update API response format to REST specification
+
+All API endpoints now return data in a standardized envelope format.
+Clients must update their response parsing logic.
+```
+
+### Best Practices
+
+1. **Be atomic**: One emoji, one purpose, one commit
+2. **Write clear subjects**: Keep under 60 characters, imperative mood
+3. **Use the body**: Explain "why" not "what" for complex changes
+4. **Reference issues**: Include issue numbers when applicable
+5. **Indicate breaking changes**: Use 💥.
 
 ## Pull request rules
 
