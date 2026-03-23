@@ -38,7 +38,9 @@ test:
 
 doc: clean
 	cd docs && $(MAKE) html
+ifneq ($(CI),true)
 	cd docs/build/html && python -m http.server 8080
+endif
 
 install:
 	uv sync --all-extras
