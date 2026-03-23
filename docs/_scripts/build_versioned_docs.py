@@ -151,6 +151,9 @@ def _render_root_404_page() -> str:
       body {
         margin: 0;
         min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
           "Segoe UI", sans-serif;
         background:
@@ -162,7 +165,12 @@ def _render_root_404_page() -> str:
       .page {
         width: min(1100px, calc(100% - 2rem));
         margin: 0 auto;
-        padding: 1.5rem 0 4rem;
+        min-height: 100vh;
+        padding: 2rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
 
       .brand {
@@ -184,6 +192,7 @@ def _render_root_404_page() -> str:
       }
 
       .hero {
+        width: min(100%, 44rem);
         max-width: 44rem;
         margin-top: 1.5rem;
         padding: clamp(1.5rem, 4vw, 2.5rem);
@@ -217,7 +226,7 @@ def _render_root_404_page() -> str:
 
       .copy p {
         max-width: 38rem;
-        margin: 1rem 0 0;
+        margin: 1rem auto 0;
         color: var(--muted);
         font-size: 1.05rem;
         line-height: 1.7;
@@ -275,7 +284,7 @@ def _render_root_404_page() -> str:
       @media (max-width: 640px) {
         .page {
           width: min(100% - 1rem, 1100px);
-          padding-top: 1rem;
+          padding: 1rem 0;
         }
       }
     </style>

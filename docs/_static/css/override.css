@@ -754,10 +754,22 @@ article table.align-default {
   display: none;
 }
 
+article[role="main"]:has(.not-found-page) {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: calc(100vh - 16rem);
+  text-align: center;
+}
+
+article[role="main"]:has(.not-found-page) > h1 {
+  width: min(100%, 48rem);
+}
+
 .not-found-page {
   max-width: 48rem;
-  margin: 0 auto;
-  padding: 2rem 0 1rem;
+  margin: 0;
+  padding: 1rem 0 0;
 }
 
 .repo-stats,
