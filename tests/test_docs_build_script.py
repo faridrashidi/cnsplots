@@ -190,14 +190,28 @@ def test_root_404_matches_latest_docs_ui(tmp_path):
 
     content = (output_dir / "404.html").read_text(encoding="utf-8")
 
-    assert "<title>Page not found | cnsplots</title>" in content
+    assert "<title>Page not found - cnsplots</title>" in content
     assert 'href="/"' in content
     assert 'href="/latest/_static/styles/furo.css"' in content
     assert 'href="/latest/_static/css/override.css"' in content
+    assert 'src="/latest/_static/scripts/furo.js"' in content
     assert 'class="sidebar-drawer"' in content
     assert 'class="sidebar-brand"' in content
+    assert 'class="content-icon-container"' in content
+    assert 'class="theme-toggle"' in content
+    assert 'class="bottom-of-page"' in content
     assert 'src="/latest/_static/logo.svg"' in content
-    assert "Go to homepage" in content
+    assert "Return to the documentation homepage" in content
+    assert (
+        'href="https://github.com/faridrashidi/cnsplots/blob/main/docs/404.md?plain=true"'
+        in content
+    )
+    assert (
+        'href="https://github.com/faridrashidi/cnsplots/edit/main/docs/404.md"'
+        in content
+    )
+    assert "Go to homepage" not in content
+    assert 'class="eyebrow"' not in content
     assert '<form class="sidebar-search-container"' not in content
     assert '<div class="sidebar-tree">' not in content
     assert "search.html" not in content
