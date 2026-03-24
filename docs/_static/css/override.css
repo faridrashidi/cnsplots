@@ -835,8 +835,51 @@ article table.align-default {
   padding-top: 0.75rem;
 }
 
+.not-found-page > :first-child {
+  margin-top: 0;
+}
+
 .not-found-page > :last-child {
   margin-bottom: 0;
+}
+
+.root-404-shell .page {
+  min-height: 100vh;
+}
+
+.root-404-shell .sidebar-sticky {
+  gap: 0;
+}
+
+.root-404-shell .sidebar-scroll {
+  min-height: 0;
+}
+
+.root-404-shell .content {
+  padding-top: 0;
+}
+
+.root-404-shell .article-container {
+  max-width: 52rem;
+}
+
+.root-404-shell .not-found-root {
+  max-width: 48rem;
+  padding: clamp(2rem, 9vh, 5rem) 0 3rem;
+}
+
+.root-404-shell .not-found-root > :first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 996px) {
+  .root-404-shell .content {
+    padding-top: 1rem;
+  }
+
+  .root-404-shell .not-found-root {
+    padding-top: 1.25rem;
+  }
 }
 
 .repo-stats,

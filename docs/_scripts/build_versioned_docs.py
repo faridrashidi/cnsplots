@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Iterator
 from urllib.parse import urlparse
@@ -19,6 +20,7 @@ SITE_URL = "https://cnsplots.farid.one/"
 DEV_DOCS_NAME = "dev"
 LATEST_DOCS_NAME = "latest"
 GITHUB_PAGES_BRANCH = "gh-pages"
+GITHUB_REPO = "https://github.com/faridrashidi/cnsplots"
 RELEASE_TAG_PATTERN = re.compile(r"^v\d+\.\d+\.\d+$")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -110,7 +112,7 @@ def _render_root_404_page() -> str:
 <html class="no-js" lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Page not found | cnsplots</title>
+    <title>Page not found - cnsplots</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <meta name="description" content="The page you requested could not be found. Return to the latest cnsplots documentation.">
@@ -148,126 +150,99 @@ def _render_root_404_page() -> str:
           }
         }
       }
-
-      .root-404-shell .page {
-        min-height: 100vh;
-      }
-
-      .root-404-shell .sidebar-search-container,
-      .root-404-shell #searchbox,
-      .root-404-shell .sidebar-tree {
-        display: none;
-      }
-
-      .root-404-shell .sidebar-sticky {
-        gap: 0;
-      }
-
-      .root-404-shell .sidebar-scroll {
-        min-height: 0;
-      }
-
-      .root-404-shell .content {
-        padding-top: 0;
-      }
-
-      .root-404-shell .article-container {
-        max-width: 52rem;
-      }
-
-      .root-404-shell .not-found-root {
-        max-width: 46rem;
-        padding: clamp(2rem, 9vh, 5rem) 0 3rem;
-      }
-
-      .root-404-shell .not-found-root > :first-child {
-        margin-top: 0;
-      }
-
-      .root-404-shell .eyebrow {
-        display: inline-flex;
-        margin-bottom: 1rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: color-mix(
-          in srgb,
-          var(--color-brand-primary) 12%,
-          var(--color-background-primary)
-        );
-        color: var(--color-brand-content);
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .root-404-shell h1 {
-        margin: 0;
-        font-size: clamp(2.4rem, 6vw, 4.25rem);
-        line-height: 1.05;
-      }
-
-      .root-404-shell .copy p {
-        max-width: 38rem;
-        margin: 1rem 0 0;
-        color: var(--color-foreground-secondary);
-        font-size: 1.05rem;
-        line-height: 1.7;
-      }
-
-      .root-404-shell .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-top: 1.5rem;
-      }
-
-      .root-404-shell .button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 2.85rem;
-        padding: 0.8rem 1.15rem;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        font-weight: 700;
-        text-decoration: none;
-        transition:
-          transform 0.2s ease,
-          background-color 0.2s ease,
-          border-color 0.2s ease,
-          color 0.2s ease;
-      }
-
-      .root-404-shell .button:hover {
-        transform: translateY(-1px);
-        text-decoration: none;
-      }
-
-      .root-404-shell .button-primary {
-        background: var(--color-brand-primary);
-        color: #ffffff;
-      }
-
-      .root-404-shell .button-primary:hover {
-        background: color-mix(in srgb, black 14%, var(--color-brand-primary));
-      }
-
-      @media (max-width: 996px) {
-        .root-404-shell .content {
-          padding-top: 1rem;
-        }
-
-        .root-404-shell .not-found-root {
-          padding-top: 1.25rem;
-        }
-      }
     </style>
   </head>
   <body class="root-404-shell">
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="svg-toc" viewBox="0 0 24 24">
+        <title>Contents</title>
+        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+          <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"></path>
+        </svg>
+      </symbol>
+      <symbol id="svg-menu" viewBox="0 0 24 24">
+        <title>Menu</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </symbol>
+      <symbol id="svg-sun" viewBox="0 0 24 24">
+        <title>Light mode</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </symbol>
+      <symbol id="svg-moon" viewBox="0 0 24 24">
+        <title>Dark mode</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+        </svg>
+      </symbol>
+      <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+        <title>Auto light/dark, in light mode</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"></path>
+          <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"></line>
+          <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"></line>
+          <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"></line>
+          <line x1="19" y1="14.05" x2="20.414" y2="15.464"></line>
+          <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"></line>
+          <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"></line>
+          <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"></line>
+          <line x1="19" y1="5.05" x2="20.414" y2="3.636"></line>
+          <circle cx="14.5" cy="9.55" r="3.6"></circle>
+        </svg>
+      </symbol>
+      <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+        <title>Auto light/dark, in dark mode</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"></path>
+          <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"></line>
+          <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"></line>
+          <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"></line>
+          <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"></line>
+          <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"></line>
+          <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"></line>
+          <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"></line>
+          <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"></line>
+          <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"></circle>
+        </svg>
+      </symbol>
+      <symbol id="svg-pencil" viewBox="0 0 24 24">
+        <title>Edit this page</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+          <path d="M13.5 6.5l4 4"></path>
+          <path d="M20 21l2 -2l-2 -2"></path>
+          <path d="M17 17l-2 2l2 2"></path>
+        </svg>
+      </symbol>
+      <symbol id="svg-eye" viewBox="0 0 24 24">
+        <title>View this page</title>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path>
+          <path d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008"></path>
+          <path d="M20 21l2 -2l-2 -2"></path>
+          <path d="M17 17l-2 2l2 2"></path>
+        </svg>
+      </symbol>
+    </svg>
 
     <input
       type="checkbox"
@@ -276,7 +251,15 @@ def _render_root_404_page() -> str:
       id="__navigation"
       aria-label="Toggle site navigation sidebar"
     >
+    <input
+      type="checkbox"
+      class="sidebar-toggle"
+      name="__toc"
+      id="__toc"
+      aria-label="Toggle table of contents sidebar"
+    >
     <label class="overlay sidebar-overlay" for="__navigation"></label>
+    <label class="overlay toc-overlay" for="__toc"></label>
 
     <a class="skip-to-content muted-link" href="#furo-main-content">
       Skip to content
@@ -303,7 +286,19 @@ def _render_root_404_page() -> str:
         <div class="header-center">
           <a href="$home_target"><div class="brand">cnsplots</div></a>
         </div>
-        <div class="header-right"></div>
+        <div class="header-right">
+          <div class="theme-toggle-container theme-toggle-header">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
       </header>
       <aside class="sidebar-drawer">
         <div class="sidebar-container">
@@ -324,32 +319,86 @@ def _render_root_404_page() -> str:
       <div class="main">
         <div class="content">
           <div class="article-container">
-            <article role="main" id="furo-main-content">
-              <section class="not-found-root">
-                <div class="copy">
-          <div class="eyebrow">404</div>
-          <h1>Page not found</h1>
-          <p>
-            The page you requested does not exist, may have moved, or may have
-            been renamed. Return to the documentation homepage to continue.
-          </p>
-          <div class="actions">
-            <a class="button button-primary" href="$home_target">
-              Go to homepage
+            <a href="#" class="back-to-top muted-link">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+              </svg>
+              <span>Back to top</span>
             </a>
-          </div>
-        </div>
+            <div class="content-icon-container">
+              <div class="view-this-page">
+                <a class="muted-link" href="$view_page_target" title="View this page">
+                  <svg><use href="#svg-eye"></use></svg>
+                  <span class="visually-hidden">View this page</span>
+                </a>
+              </div>
+              <div class="edit-this-page">
+                <a class="muted-link" href="$edit_page_target" rel="edit" title="Edit this page">
+                  <svg><use href="#svg-pencil"></use></svg>
+                  <span class="visually-hidden">Edit this page</span>
+                </a>
+              </div>
+              <div class="theme-toggle-container theme-toggle-content">
+                <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+                  <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+                  <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+                  <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+                  <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+                </button>
+              </div>
+              <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+                <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+              </label>
+            </div>
+            <article role="main" id="furo-main-content">
+              <section class="not-found-root" aria-labelledby="root-404-title">
+                <h1 id="root-404-title">Page not found</h1>
+                <div class="not-found-page">
+                  <p>
+                    <strong>
+                      The page you requested does not exist, may have moved, or
+                      may have been renamed.
+                    </strong>
+                  </p>
+                  <p>
+                    <a href="$home_target">Return to the documentation homepage</a>.
+                  </p>
+                </div>
               </section>
             </article>
           </div>
+          <footer>
+            <div class="related-pages"></div>
+            <div class="bottom-of-page">
+              <div class="left-details">
+                <div class="copyright">
+                  Copyright &#169; $copyright_notice
+                </div>
+              </div>
+              <div class="right-details">
+                <div class="icons">
+                  <a class="muted-link" href="$github_repo" aria-label="GitHub">
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </footer>
         </div>
         <aside class="toc-drawer no-toc"></aside>
       </div>
     </div>
+    <script src="$furo_script_src"></script>
   </body>
 </html>
 """
     ).substitute(
+        copyright_notice=html.escape(f"2023-{datetime.now().year}, Farid Rashidi"),
+        edit_page_target=html.escape(
+            f"{GITHUB_REPO}/edit/main/docs/404.md", quote=True
+        ),
         favicon_src=html.escape(
             _latest_site_path("/_static/images/favicon.svg"), quote=True
         ),
@@ -359,10 +408,17 @@ def _render_root_404_page() -> str:
         furo_extensions_css_src=html.escape(
             _latest_site_path("/_static/styles/furo-extensions.css"), quote=True
         ),
+        furo_script_src=html.escape(
+            _latest_site_path("/_static/scripts/furo.js"), quote=True
+        ),
+        github_repo=html.escape(GITHUB_REPO, quote=True),
         home_target=html.escape("/", quote=True),
         logo_src=html.escape(_latest_site_path("/_static/logo.svg"), quote=True),
         override_css_src=html.escape(
             _latest_site_path("/_static/css/override.css"), quote=True
+        ),
+        view_page_target=html.escape(
+            f"{GITHUB_REPO}/blob/main/docs/404.md?plain=true", quote=True
         ),
     )
 
