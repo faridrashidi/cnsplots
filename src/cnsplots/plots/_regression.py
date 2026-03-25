@@ -384,7 +384,8 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
         ncol=2,
     )
     for handle in lgd.legend_handles:
-        if hasattr(handle, "set_sizes"):
-            handle.set_sizes([12])  # type: ignore[union-attr]
+        set_sizes = getattr(handle, "set_sizes", None)
+        if callable(set_sizes):
+            set_sizes([12])
 
     return ax

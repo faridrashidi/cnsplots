@@ -18,6 +18,13 @@ import seaborn as sns
 import cnsplots as cns
 
 
+def _legend_fontsize() -> int | float:
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        return cns.settings.title_fontsize
+    return legend_fontsize
+
+
 def _normalize_text_position(text: Any) -> None:
     """Coerce singleton array coordinates from upsetplot into scalar positions."""
 
@@ -150,14 +157,15 @@ def upsetplot(
     axes["shading"].tick_params(axis="y", which="both", length=0, left=False)
     cns.setup_ax(axes["intersections"])
     axes["matrix"].tick_params(axis="both", which="both", length=0)
+    legend_fontsize = _legend_fontsize()
     for txt in axes["intersections"].texts:
         _normalize_text_position(txt)
-        txt.set_size(cns.settings.fontsize_legend)
+        txt.set_size(legend_fontsize)
     if ax_tot is not None:
         cns.setup_ax(ax_tot)
         for txt in ax_tot.texts:
             _normalize_text_position(txt)
-            txt.set_size(cns.settings.fontsize_legend)
+            txt.set_size(legend_fontsize)
         pos_mat = ax_tot.get_position()
         dx = 0.03
         new_pos = [pos_mat.x0 + dx, pos_mat.y0, pos_mat.width, pos_mat.height]
@@ -219,18 +227,20 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
     import matplotlib_venn as venn
 
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
-    func: Any
     if len(lists) == 2:
         areas = ["10", "01", "11"]
-        func = venn.venn2
         names = ["A", "B"]
-        colors = sns.color_palette(n_colors=2)
+        colors = tuple(sns.color_palette(n_colors=2))
+        subsets = (lists[0], lists[1])
+        label_tuple = (labels[0], labels[1])
+        ax = venn.venn2(subsets, label_tuple, set_colors=colors, alpha=0.8)
     else:
         areas = ["100", "010", "001", "110", "101", "011", "111"]
-        func = venn.venn3
         names = ["A", "B", "C"]
-        colors = sns.color_palette(n_colors=3)
-    ax = func(lists, tuple(labels), set_colors=colors, alpha=0.8)  # type: ignore[arg-type]
+        colors = tuple(sns.color_palette(n_colors=3))
+        subsets = (lists[0], lists[1], lists[2])
+        label_tuple = (labels[0], labels[1], labels[2])
+        ax = venn.venn3(subsets, label_tuple, set_colors=colors, alpha=0.8)
     for area in areas:
         try:
             ax.get_label_by_id(area).set_fontsize(6)

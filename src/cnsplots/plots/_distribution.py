@@ -415,8 +415,9 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
     legend = ax.get_legend()
     if legend is not None:
         for handle in legend.legend_handles:
-            if hasattr(handle, "set_linewidth"):
-                handle.set_linewidth(1.7)  # type: ignore[call-non-callable]
+            set_linewidth = getattr(handle, "set_linewidth", None)
+            if callable(set_linewidth):
+                set_linewidth(1.7)
 
     return ax
 

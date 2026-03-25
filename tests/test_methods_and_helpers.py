@@ -151,12 +151,13 @@ def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
     assert out_ax is ax
     assert set(cmap) == {"A", "B"}
 
+    legacy_heatmap = cast(Any, _phylo._heatmap)
     with pytest.raises(TypeError, match="Unable to work with data"):
-        _phylo._heatmap("bad")  # type: ignore[arg-type]
+        legacy_heatmap("bad")
     with pytest.raises(TypeError, match="Unable to interpret colormap"):
-        _phylo._heatmap(pd.DataFrame({"group": ["A", "B"]}), cmap="bad")  # type: ignore[arg-type]
+        legacy_heatmap(pd.DataFrame({"group": ["A", "B"]}), cmap="bad")
     with pytest.raises(TypeError, match="leg_ax must be matplotlib axes"):
-        _phylo._heatmap(pd.DataFrame({"group": ["A", "B"]}), leg_ax="bad")  # type: ignore[arg-type]
+        legacy_heatmap(pd.DataFrame({"group": ["A", "B"]}), leg_ax="bad")
 
     assert _phylo._is_categorical(pd.DataFrame({"a": [1, 2]})) == [False]
     with pytest.raises(TypeError):
@@ -178,7 +179,7 @@ def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
     with pytest.raises(ValueError, match="at least as many colors"):
         _phylo._gen_colors(["red"], 2)
     with pytest.raises(TypeError, match="Unable to generate colors"):
-        _phylo._gen_colors(1, 2)  # type: ignore[arg-type]
+        cast(Any, _phylo._gen_colors)(1, 2)
 
 
 def test_cluster_map_plotter_new_collect_legends() -> None:

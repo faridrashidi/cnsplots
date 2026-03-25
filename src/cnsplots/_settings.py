@@ -203,11 +203,6 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         lambda value: _validate_fontweight("title_fontweight", value),
         "Font weight for titles.",
     ),
-    "fontsize_legend": _spec(
-        7,
-        lambda value: _validate_number("fontsize_legend", value, positive=True),
-        "Font size for tick labels and legend-adjacent helper text.",
-    ),
     "axes_linewidth": _spec(
         0.5,
         lambda value: _validate_number("axes_linewidth", value, positive=True),
@@ -319,9 +314,9 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default y-axis margin.",
     ),
     "legend_fontsize": _spec(
-        None,
+        7,
         lambda value: _validate_optional_number("legend_fontsize", value),
-        "Default legend text size. Use None to inherit title_fontsize.",
+        "Default font size for legend text, tick labels, colorbar ticks, and legend-adjacent helper text. Use None to inherit title_fontsize.",
     ),
     "legend_title_fontsize": _spec(
         None,

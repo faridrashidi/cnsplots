@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -321,7 +322,7 @@ def test_placeholderplot_renders_centered_placeholder() -> None:
 def test_placeholderplot_requires_string_description() -> None:
     cns.figure(120, 120)
     with pytest.raises(TypeError, match="must be a string"):
-        cns.placeholderplot(123)  # type: ignore[arg-type]
+        cast(Any, cns.placeholderplot)(123)
 
 
 def test_sets_and_specialized_plots(
@@ -343,6 +344,14 @@ def test_sets_and_specialized_plots(
     embedded_axes = cns.upsetplot(sets_fixture, fig=fig, min_subset_size=1)
     assert all(ax is None or ax.figure is fig for ax in embedded_axes.values())
     assert fig.patch.get_facecolor()[-1] == 0
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        inherited_axes = cns.upsetplot(sets_fixture, min_subset_size=1)
+        assert inherited_axes["intersections"].texts
+        assert {
+            text.get_fontsize() for text in inherited_axes["intersections"].texts
+        } == {12}
 
     custom_fig = plt.figure()
     custom_fig.patch.set_facecolor("red")

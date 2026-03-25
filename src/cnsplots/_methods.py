@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     import numpy as np
@@ -573,7 +573,9 @@ def prerank(
     rnk["Gene"] = rnk["Gene"].str.strip().str.upper()
     gsea_res = gp.prerank(
         rnk=rnk,
-        gene_sets=gene_sets,  # type: ignore[arg-type]  # gseapy accepts dict[str, list[str]] at runtime
+        gene_sets=cast(
+            Any, gene_sets
+        ),  # gseapy accepts dict[str, list[str]] at runtime
         min_size=15,
         max_size=1000,
         permutation_num=permutation_num,
