@@ -200,7 +200,7 @@ ax.set_title("Manual Setup")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.setup_matplotlib(
     title_fontsize=10,
-    fontsize_legend=8,
+    legend_fontsize=8,
     axes_linewidth=0.8,
 )
 fig, ax = plt.subplots(figsize=(2, 1.5))

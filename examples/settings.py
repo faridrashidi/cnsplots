@@ -70,7 +70,7 @@ cns.settings.palette_qual = "Set2"
 cns.settings.palette_seq = "parula"
 cns.settings.title_fontsize = 10
 cns.settings.title_fontweight = "normal"
-cns.settings.fontsize_legend = 9
+cns.settings.legend_fontsize = 9
 cns.settings.axes_linewidth = 1.0
 
 cns.figure()

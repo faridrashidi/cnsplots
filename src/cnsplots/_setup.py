@@ -15,6 +15,7 @@ import cnsplots as cns
 
 _HELVETICA_BOLD_REGISTERED = False
 ColorCycle = Union[str, list[str]]
+_UNSET = object()
 
 
 def _ensure_helvetica_bold() -> None:
@@ -88,17 +89,23 @@ def _font_rcparams() -> dict[str, object]:
 
 def _resolve_legend_fontsizes(
     title_fontsize: int | float,
+    legend_fontsize: int | float | None | object = _UNSET,
 ) -> tuple[int | float, int | float]:
     """Resolve legend font sizes while preserving title-font inheritance."""
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        legend_fontsize = title_fontsize
+    if legend_fontsize is _UNSET:
+        resolved_legend_fontsize = cns.settings.legend_fontsize
+    elif legend_fontsize is None or isinstance(legend_fontsize, (int, float)):
+        resolved_legend_fontsize = legend_fontsize
+    else:
+        raise TypeError("legend_fontsize must be a number or None")
+    if resolved_legend_fontsize is None:
+        resolved_legend_fontsize = title_fontsize
 
     legend_title_fontsize = cns.settings.legend_title_fontsize
     if legend_title_fontsize is None:
         legend_title_fontsize = title_fontsize
 
-    return legend_fontsize, legend_title_fontsize
+    return resolved_legend_fontsize, legend_title_fontsize
 
 
 def setup_matplotlib(
@@ -106,7 +113,7 @@ def setup_matplotlib(
     color_map: str | None = None,
     title_fontsize: int | float | None = None,
     title_fontweight: str | int | None = None,
-    fontsize_legend: int | float | None = None,
+    legend_fontsize: int | float | None | object = _UNSET,
     axes_linewidth: float | None = None,
 ) -> None:
     """
@@ -134,9 +141,9 @@ def setup_matplotlib(
     title_fontweight : str | int, default: None
         Font weight for titles.
         If None, uses cns.settings.title_fontweight.
-    fontsize_legend : int, default: None
-        Font size for tick labels and legend text.
-        If None, uses cns.settings.fontsize_legend.
+    legend_fontsize : int | None, default: cns.settings.legend_fontsize
+        Font size for legend text, tick labels, and colorbar ticks.
+        Use None to inherit title_fontsize.
     axes_linewidth : float, default: None
         Line width for axis spines.
         If None, uses cns.settings.axes_linewidth.
@@ -159,7 +166,7 @@ def setup_matplotlib(
     **Fonts:**
     - Family: Sans-serif (Helvetica)
     - Math text: Custom fontset
-    - Sizes: title=8pt, legend=7pt (by default)
+    - Sizes: title=8pt, legend/ticks=7pt (by default)
     - Title weight: bold (by default)
 
     **Axes:**
@@ -202,7 +209,7 @@ def setup_matplotlib(
     ...     color_map="parula",
     ...     title_fontsize=10,
     ...     title_fontweight="normal",
-    ...     fontsize_legend=8,
+    ...     legend_fontsize=8,
     ... )
     """
     # Use settings values if parameters are not provided
@@ -215,13 +222,13 @@ def setup_matplotlib(
     if title_fontweight is None:
         title_fontweight = cns.settings.title_fontweight
     title_fontweight = _validate_title_fontweight(title_fontweight)
-    if fontsize_legend is None:
-        fontsize_legend = cns.settings.fontsize_legend
     if axes_linewidth is None:
         axes_linewidth = cns.settings.axes_linewidth
 
     _ensure_helvetica_bold()
-    legend_fontsize, legend_title_fontsize = _resolve_legend_fontsizes(title_fontsize)
+    resolved_legend_fontsize, legend_title_fontsize = _resolve_legend_fontsizes(
+        title_fontsize, legend_fontsize
+    )
 
     def config() -> dict[str, object]:
         """
@@ -261,21 +268,21 @@ def setup_matplotlib(
             "axes.ymargin": cns.settings.axes_ymargin,
             "axes.prop_cycle": mpl.cycler(color=cns.palettes(color_cycle)),
             "image.cmap": color_map,
-            "legend.fontsize": legend_fontsize,
+            "legend.fontsize": resolved_legend_fontsize,
             "legend.title_fontsize": legend_title_fontsize,
             "legend.frameon": cns.settings.legend_frameon,
             "legend.markerscale": cns.settings.legend_markerscale,
             "legend.handlelength": cns.settings.legend_handlelength,
             "legend.handleheight": cns.settings.legend_handleheight,
             "legend.handletextpad": cns.settings.legend_handletextpad,
-            "xtick.labelsize": fontsize_legend,
+            "xtick.labelsize": resolved_legend_fontsize,
             "xtick.bottom": cns.settings.xtick_bottom,
             "xtick.color": cns.settings.xtick_color,
             "xtick.major.size": cns.settings.xtick_major_size,
             "xtick.major.width": cns.settings.xtick_major_width,
             "xtick.major.pad": cns.settings.xtick_major_pad,
             "xtick.alignment": cns.settings.xtick_alignment,
-            "ytick.labelsize": fontsize_legend,
+            "ytick.labelsize": resolved_legend_fontsize,
             "ytick.left": cns.settings.ytick_left,
             "ytick.color": cns.settings.ytick_color,
             "ytick.major.size": cns.settings.ytick_major_size,
@@ -388,7 +395,7 @@ def setup_ax(
     ax: Axes,
     title_fontsize: int | float | None = None,
     title_fontweight: str | int | None = None,
-    fontsize_legend: int | float | None = None,
+    legend_fontsize: int | float | None | object = _UNSET,
     axes_linewidth: float | None = None,
     colorbar_label: str | None = None,
 ) -> None:
@@ -408,9 +415,9 @@ def setup_ax(
     title_fontweight : str | int, default: None
         Font weight for the title.
         If None, uses cns.settings.title_fontweight.
-    fontsize_legend : int, default: None
-        Font size for tick labels and colorbar labels.
-        If None, uses cns.settings.fontsize_legend.
+    legend_fontsize : int | None, default: cns.settings.legend_fontsize
+        Font size for tick labels and colorbar ticks.
+        Use None to inherit title_fontsize.
     axes_linewidth : float, default: None
         Line width for axis spines.
         If None, uses cns.settings.axes_linewidth.
@@ -434,7 +441,7 @@ def setup_ax(
 
     **Font settings:**
     - Family: Sans-serif (Helvetica)
-    - Sizes: title=8pt, tick labels=7pt (by default)
+    - Sizes: title=8pt, tick/colorbar labels=7pt (by default)
     - Title weight: bold (by default)
     - Color: Black
 
@@ -468,7 +475,7 @@ def setup_ax(
 
     >>> # Format with custom sizes and title weight
     >>> cns.setup_ax(
-    ...     ax, title_fontsize=10, title_fontweight="normal", fontsize_legend=9
+    ...     ax, title_fontsize=10, title_fontweight="normal", legend_fontsize=9
     ... )
 
     >>> # Format axes from external library
@@ -482,14 +489,15 @@ def setup_ax(
     if title_fontweight is None:
         title_fontweight = cns.settings.title_fontweight
     title_fontweight = _validate_title_fontweight(title_fontweight)
-    if fontsize_legend is None:
-        fontsize_legend = cns.settings.fontsize_legend
     if axes_linewidth is None:
         axes_linewidth = cns.settings.axes_linewidth
     if colorbar_label is None:
         colorbar_label = cns.settings.setup_ax_colorbar_label
 
     _ensure_helvetica_bold()
+    resolved_legend_fontsize, _ = _resolve_legend_fontsizes(
+        title_fontsize, legend_fontsize
+    )
 
     mpl.rcParams.update(_font_rcparams())
     title_props = ax.title.get_fontproperties().copy()
@@ -520,7 +528,7 @@ def setup_ax(
         ax.spines[spine_name].set_color(cns.settings.axes_edgecolor)
     ax.tick_params(
         axis="x",
-        labelsize=fontsize_legend,
+        labelsize=resolved_legend_fontsize,
         colors=cns.settings.xtick_color,
         length=cns.settings.xtick_major_size,
         width=cns.settings.xtick_major_width,
@@ -530,7 +538,7 @@ def setup_ax(
     )
     ax.tick_params(
         axis="y",
-        labelsize=fontsize_legend,
+        labelsize=resolved_legend_fontsize,
         colors=cns.settings.ytick_color,
         length=cns.settings.ytick_major_size,
         width=cns.settings.ytick_major_width,
@@ -546,7 +554,10 @@ def setup_ax(
     ax.margins(x=cns.settings.axes_xmargin, y=cns.settings.axes_ymargin)
     cbar = ax.collections[0].colorbar if ax.collections else None
     if cbar is not None:
-        cbar.ax.tick_params(labelsize=fontsize_legend, colors=cns.settings.ytick_color)
+        cbar.ax.tick_params(
+            labelsize=resolved_legend_fontsize,
+            colors=cns.settings.ytick_color,
+        )
         if colorbar_label:
             cbar.set_label(
                 colorbar_label,

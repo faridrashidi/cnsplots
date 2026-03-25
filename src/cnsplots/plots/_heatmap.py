@@ -35,15 +35,23 @@ from cnsplots._validation import (
 )
 
 
+def _legend_fontsize() -> int | float:
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        return cns.settings.title_fontsize
+    return legend_fontsize
+
+
 def _style_plotter_colorbars(cbars: list[Any]) -> None:
     font_family = mpl.rcParams.get("font.family")
+    legend_fontsize = _legend_fontsize()
     for cbar in cbars:
         if not isinstance(cbar, mpl.colorbar.Colorbar):
             continue
         cbar.outline.set_linewidth(0.3)
         cbar.ax.tick_params(
             size=0,
-            labelsize=cns.settings.fontsize_legend,
+            labelsize=legend_fontsize,
             colors=cns.settings.ytick_color,
             pad=cns.settings.ytick_major_pad,
         )

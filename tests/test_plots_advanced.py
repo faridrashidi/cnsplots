@@ -306,7 +306,7 @@ def test_heatmap_and_dotplot(
             size="pct_expr",
         )
 
-    with cns.settings.context(fontsize_legend=13, ytick_color="#cc2233"):
+    with cns.settings.context(legend_fontsize=13, ytick_color="#cc2233"):
         cns.figure(180, 180)
         cmp3 = cns.heatmapplot(
             heatmap_adata,
@@ -339,6 +339,20 @@ def test_heatmap_and_dotplot(
         assert {tick.get_color() for tick in dotplot_cbar.ax.get_yticklabels()} == {
             "#cc2233"
         }
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(180, 180)
+        cmp4 = cns.heatmapplot(
+            heatmap_adata,
+            layer="scaled",
+            row_annotation=["cluster"],
+            col_annotation=["pathway"],
+            cmap="parula",
+        )
+        inherited_cbar = next(cbar for cbar in cmp4.cbars if isinstance(cbar, Colorbar))
+        assert {
+            tick.get_fontsize() for tick in inherited_cbar.ax.get_yticklabels()
+        } == {12}
 
 
 def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:
@@ -779,7 +793,7 @@ def test_genomics_plots(
     assert {text.get_text() for text in ax4.texts} == {"GENE1", "GENE6"}
 
     with pytest.raises(TypeError, match="Parameter 'n_show' must be an integer"):
-        cns.volcanoplot(volcano_df, n_show=1.5)  # type: ignore[arg-type]
+        cast(Any, cns.volcanoplot)(volcano_df, n_show=1.5)
 
     with pytest.raises(ValueError, match="Parameter 'n_show' must be non-negative"):
         cns.volcanoplot(volcano_df, n_show=-1)
@@ -814,12 +828,14 @@ def test_genomics_plots(
 
 
 def test_sets_validation_errors(sets_fixture: dict[str, set[int]]) -> None:
+    legacy_upsetplot = cast(Any, cns.upsetplot)
+    legacy_vennplot = cast(Any, cns.vennplot)
     with pytest.raises(TypeError, match="must be a dictionary"):
-        cns.upsetplot([])  # type: ignore[arg-type]
+        legacy_upsetplot([])
     with pytest.raises(ValueError, match="cannot be empty"):
         cns.upsetplot({})
     with pytest.raises(TypeError, match="must be a list"):
-        cns.vennplot(tuple(sets_fixture.values()), labels=["A", "B"])  # type: ignore[arg-type]
+        legacy_vennplot(tuple(sets_fixture.values()), labels=["A", "B"])
     with pytest.raises(ValueError, match="must contain 2 or 3 sets"):
         cns.vennplot([set()], labels=["A"])
     with pytest.raises(ValueError, match="Length of 'labels'"):
