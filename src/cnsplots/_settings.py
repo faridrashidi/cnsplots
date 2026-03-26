@@ -55,6 +55,7 @@ _LEGEND_LOCS = (
     "upper center",
     "center",
 )
+_P_VALUE_FORMATS = ("star", "threshold", "full")
 
 
 @dataclass(frozen=True)
@@ -170,6 +171,18 @@ def _validate_numeric_tuple(
 
 def _validate_optional_number(name: str, value: Any) -> int | float | None:
     return _validate_number(name, value, positive=True, allow_none=True)
+
+
+def _validate_fontsize(name: str, value: Any) -> str | int | float:
+    if isinstance(value, str):
+        if value == "":
+            raise ValueError(f"{name} must not be empty")
+        return value
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be a positive number or string")
+    if value <= 0:
+        raise ValueError(f"{name} must be positive")
+    return value
 
 
 def _spec(default: Any, validator: Callable[[Any], Any], doc: str) -> _SettingSpec:
@@ -322,6 +335,16 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         None,
         lambda value: _validate_optional_number("legend_title_fontsize", value),
         "Default legend title size. Use None to inherit title_fontsize.",
+    ),
+    "pvalue_format": _spec(
+        "star",
+        lambda value: _validate_string_choice("pvalue_format", value, _P_VALUE_FORMATS),
+        "Default format for p-value annotations. Use 'star', 'threshold', or 'full'.",
+    ),
+    "pvalue_fontsize": _spec(
+        "small",
+        lambda value: _validate_fontsize("pvalue_fontsize", value),
+        "Default font size for p-value annotations. Accepts a positive number or matplotlib named size string.",
     ),
     "legend_frameon": _spec(
         False,

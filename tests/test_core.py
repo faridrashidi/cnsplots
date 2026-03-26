@@ -158,6 +158,8 @@ def test_settings_behavior() -> None:
     settings.axes_ymargin = 0.2
     settings.legend_fontsize = 11
     settings.legend_title_fontsize = 12
+    settings.pvalue_format = "threshold"
+    settings.pvalue_fontsize = 9
     settings.legend_frameon = True
     settings.legend_markerscale = 1.2
     settings.legend_handlelength = 1.3
@@ -209,6 +211,8 @@ def test_settings_behavior() -> None:
     assert "title_fontweight='normal'" in repr(settings)
     assert "figure_width=180" in repr(settings)
     assert "font_sans_serif=('Arial', 'DejaVu Sans')" in repr(settings)
+    assert "pvalue_format='threshold'" in repr(settings)
+    assert "pvalue_fontsize=9" in repr(settings)
     assert "panel_label_left" not in repr(settings)
     assert "panel_label_top" not in repr(settings)
     assert "panel_label_offset_x" not in repr(settings)
@@ -239,6 +243,8 @@ def test_settings_behavior() -> None:
         title_fontweight=600,
         palette_qual="Dark2",
         legend_fontsize=None,
+        pvalue_format="full",
+        pvalue_fontsize="large",
         scanpy_figsize=(5.0, 4.0),
         panel_margin_top=6,
         panel_margin_bottom=8,
@@ -249,6 +255,8 @@ def test_settings_behavior() -> None:
         assert ctx.title_fontweight == 600
         assert settings.palette_qual == "Dark2"
         assert ctx.legend_fontsize is None
+        assert ctx.pvalue_format == "full"
+        assert ctx.pvalue_fontsize == "large"
         assert ctx.scanpy_figsize == (5.0, 4.0)
         assert ctx.panel_margin_top == 6
         assert ctx.panel_margin_bottom == 8
@@ -258,6 +266,8 @@ def test_settings_behavior() -> None:
     assert settings.title_fontweight == "normal"
     assert settings.palette_qual == "Set2"
     assert settings.legend_fontsize == 11
+    assert settings.pvalue_format == "threshold"
+    assert settings.pvalue_fontsize == 9
     assert settings.scanpy_figsize == (3.0, 4.0)
     assert settings.panel_margin_top == 2
     assert settings.panel_margin_bottom == 4
@@ -320,6 +330,16 @@ def test_settings_behavior() -> None:
         settings.legend_fontsize = "1"
     with pytest.raises(ValueError):
         settings.legend_fontsize = 0
+    with pytest.raises(ValueError):
+        settings.pvalue_format = "simple"
+    with pytest.raises(TypeError):
+        settings.pvalue_fontsize = None
+    with pytest.raises(TypeError):
+        settings.pvalue_fontsize = []
+    with pytest.raises(ValueError):
+        settings.pvalue_fontsize = 0
+    with pytest.raises(ValueError):
+        settings.pvalue_fontsize = ""
     with pytest.raises(TypeError):
         settings.axes_linewidth = "1"
     with pytest.raises(ValueError):
@@ -335,6 +355,8 @@ def test_settings_behavior() -> None:
     assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
     assert settings.legend_fontsize == 7
+    assert settings.pvalue_format == "star"
+    assert settings.pvalue_fontsize == "small"
     assert settings.scanpy_figsize == (2.5, 2.5)
     assert settings.panel_pad_left == 0
     assert settings.panel_pad_top == 0
@@ -374,6 +396,20 @@ def test_settings_validation_errors() -> None:
         settings.legend_fontsize = "1"
     with pytest.raises(ValueError):
         settings.legend_fontsize = 0
+    with pytest.raises(ValueError, match="pvalue_format must be one of"):
+        settings.pvalue_format = "simple"
+    with pytest.raises(
+        TypeError, match="pvalue_fontsize must be a positive number or string"
+    ):
+        settings.pvalue_fontsize = None
+    with pytest.raises(
+        TypeError, match="pvalue_fontsize must be a positive number or string"
+    ):
+        settings.pvalue_fontsize = []
+    with pytest.raises(ValueError, match="pvalue_fontsize must be positive"):
+        settings.pvalue_fontsize = 0
+    with pytest.raises(ValueError, match="pvalue_fontsize must not be empty"):
+        settings.pvalue_fontsize = ""
     with pytest.raises(TypeError):
         settings.axes_linewidth = "1"
     with pytest.raises(ValueError):
@@ -1035,9 +1071,14 @@ def test_utils_helpers_and_showcase_data(
     assert "(n=" in ax4.get_xticklabels()[0].get_text()
 
     class DummyResult:
-        pvalue = 0.01
         test_short_name = "T"
         significance_suffix = ""
+
+        def __init__(self, pvalue: float) -> None:
+            self.pvalue = pvalue
+
+        def adjust(self, text: str) -> str:
+            return text
 
     class DummyAnnotator:
         last: "DummyAnnotator | None" = None
@@ -1088,9 +1129,33 @@ def test_utils_helpers_and_showcase_data(
         format="full",
     )
     formatter = DummyAnnotator.last._pvalue_format
-    formatted = formatter.format_data(DummyResult())
+    formatted = formatter.format_data(DummyResult(0.01))
     assert formatted.startswith("$T P = ")
     assert r"\times 10^{-2}$" in formatted
+
+    with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=9):
+        _utils._p_value_helper(
+            "Mann-Whitney",
+            categorical_df,
+            ax5,
+            {"x": "group", "y": "value"},
+            "all",
+        )
+    formatter = DummyAnnotator.last._pvalue_format
+    assert formatter.fontsize == 9
+    assert formatter.format_data(DummyResult(0.2)) == "P > 0.05"
+    assert formatter.format_data(DummyResult(0.049)) == "P < 0.05"
+    assert formatter.format_data(DummyResult(0.009)) == "P < 0.01"
+    assert formatter.format_data(DummyResult(0.00008)) == "P < 0.0001"
+    with pytest.raises(ValueError, match="format must be one of"):
+        _utils._p_value_helper(
+            "Mann-Whitney",
+            categorical_df,
+            ax5,
+            {"x": "group", "y": "value"},
+            "all",
+            format="invalid",
+        )
 
     contingency = pd.DataFrame(
         [[3, 1], [1, 3]],

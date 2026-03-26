@@ -93,14 +93,15 @@ for index in range(tips["day"].nunique()):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``pairs="all"`` to perform Mann-Whitney U tests between all groups.
 # The ``addcount=True`` parameter adds sample sizes below each box.
-cns.figure(150, 100)
-ax = cns.boxplot(
-    data=iris,
-    x="species",
-    y="sepal_width",
-    pairs="all",
-    addcount=True,
-)
+with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
+    cns.figure(150, 100)
+    ax = cns.boxplot(
+        data=iris,
+        x="species",
+        y="sepal_width",
+        pairs="all",
+        addcount=True,
+    )
 ax.set_title("All Pairwise Comparisons\nwith Sample Counts")
 
 
@@ -108,13 +109,14 @@ ax.set_title("All Pairwise Comparisons\nwith Sample Counts")
 # Boxplot with specific pair comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test only specific pairs by providing a list of tuples.
-cns.figure(150, 100)
-ax = cns.boxplot(
-    data=iris,
-    x="species",
-    y="sepal_width",
-    pairs=[("setosa", "virginica"), ("versicolor", "virginica")],
-)
+with cns.settings.context(pvalue_format="full", pvalue_fontsize=8):
+    cns.figure(150, 100)
+    ax = cns.boxplot(
+        data=iris,
+        x="species",
+        y="sepal_width",
+        pairs=[("setosa", "virginica"), ("versicolor", "virginica")],
+    )
 ax.set_title("Selected Pair Comparisons")
 
 
@@ -123,14 +125,15 @@ ax.set_title("Selected Pair Comparisons")
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``hue`` parameter to create side-by-side boxes for subgroups.
 # Statistical testing works across hue groups as well.
-cns.figure(180, 100)
-ax = cns.boxplot(
-    data=tips,
-    x="day",
-    y="total_bill",
-    hue="sex",
-    pairs=[(("Thur", "Male"), ("Fri", "Male"))],
-)
+with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
+    cns.figure(180, 100)
+    ax = cns.boxplot(
+        data=tips,
+        x="day",
+        y="total_bill",
+        hue="sex",
+        pairs=[(("Thur", "Male"), ("Fri", "Male"))],
+    )
 cns.take_legend_out()
 ax.set_title("Grouped Boxplot with\nCross-Group Comparison")
 
@@ -140,14 +143,15 @@ ax.set_title("Grouped Boxplot with\nCross-Group Comparison")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create horizontal boxplots by swapping x and y.
 # Use ``order`` to specify the display order of categories.
-cns.figure(100, 150)
-ax = cns.boxplot(
-    data=iris,
-    x="sepal_width",
-    y="species",
-    pairs="all",
-    order=["versicolor", "setosa", "virginica"],
-)
+with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
+    cns.figure(100, 150)
+    ax = cns.boxplot(
+        data=iris,
+        x="sepal_width",
+        y="species",
+        pairs="all",
+        order=["versicolor", "setosa", "virginica"],
+    )
 ax.set_title("Horizontal Boxplot")
 
 
@@ -230,16 +234,17 @@ plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
 # Boxplot with grouped hue and all comparisons within groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # When using hue, you can compare all subgroups within a category.
-cns.figure(120, 180)
-ax = cns.boxplot(
-    data=tips,
-    x="day",
-    y="total_bill",
-    hue="smoker",
-    pairs=[
-        (("Sat", "Yes"), ("Sat", "No")),
-        (("Sun", "Yes"), ("Sun", "No")),
-    ],
-)
+with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
+    cns.figure(120, 180)
+    ax = cns.boxplot(
+        data=tips,
+        x="day",
+        y="total_bill",
+        hue="smoker",
+        pairs=[
+            (("Sat", "Yes"), ("Sat", "No")),
+            (("Sun", "Yes"), ("Sun", "No")),
+        ],
+    )
 cns.take_legend_out()
 ax.set_title("Within-Group Comparisons")

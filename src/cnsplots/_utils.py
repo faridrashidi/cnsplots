@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
 import logging
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -18,12 +18,12 @@ import matplotlib as mpl
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 import num2tex
 import palettable
 import pandas as pd
 import scipy.stats as stats
 import seaborn as sns
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
@@ -562,23 +562,28 @@ def _addcount_helper(data, attr, ax):
     ax.set_xticklabels(new_xtick_labels)
 
 
-def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="star"):
-    # format {star, full}
+def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=None):
+    resolved_format = cns.settings.pvalue_format if format is None else format
+    if resolved_format not in {"star", "threshold", "full"}:
+        raise ValueError("format must be one of: 'star', 'threshold', 'full'")
+
+    pvalue_fontsize = cns.settings.pvalue_fontsize
+
     class PValueFormatNew(PValueFormat):
         def __init__(self):
             super(PValueFormat, self).__init__()
             self._pvalue_format_string = "{:.3e}"
             self._simple_format_string = "{:.2f}"
             self._text_format = "star"
-            self.fontsize = "small"
+            self.fontsize = pvalue_fontsize
             self._default_pvalue_thresholds = True
             self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
             self._correction_format = "{star} ({suffix})"
             self.show_test_name = True
+            self.p_capitalized = True
 
-        if format == "full":
-
-            def format_data(self, result):
+        def format_data(self, result):
+            if resolved_format == "full":
                 text = f"{result.test_short_name} " if self.show_test_name else ""
                 if result.pvalue > 0.05:
                     return "ns"
@@ -587,6 +592,22 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
                 ).format(
                     text, num2tex.num2tex(result.pvalue), result.significance_suffix
                 )
+
+            if resolved_format == "threshold":
+                pvalue_threshold_labels = (
+                    (1e-4, "P < 0.0001"),
+                    (1e-3, "P < 0.001"),
+                    (1e-2, "P < 0.01"),
+                    (0.05, "P < 0.05"),
+                )
+                for threshold, label in pvalue_threshold_labels:
+                    if result.pvalue <= threshold:
+                        adjust = getattr(result, "adjust", None)
+                        return adjust(label) if callable(adjust) else label
+                adjust = getattr(result, "adjust", None)
+                return adjust("P > 0.05") if callable(adjust) else "P > 0.05"
+
+            return super().format_data(result)
 
     x_is_numeric = pd.api.types.is_numeric_dtype(data[plotting["x"]])
     if x_is_numeric:
@@ -630,7 +651,7 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format="s
     annotator._pvalue_format = PValueFormatNew()
     annotator.configure(
         test=test if contingency is None else None,
-        text_format=format,
+        text_format="full" if resolved_format == "full" else "star",
         loc="inside",
         line_width=0.5,
         line_offset=0,
