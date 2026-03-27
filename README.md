@@ -243,7 +243,7 @@ and emits a warning instead of failing.
 
 ## Requirements
 
-- Python ≥ 3.9
+- Python ≥ 3.10
 - Core: matplotlib, numpy, pandas, seaborn
 - Included integrations: lifelines, gseapy, scanpy, and other plotting backends
 - Optional external tool: MuPDF's `mutool` for enhanced SVG post-processing

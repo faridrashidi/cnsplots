@@ -4,7 +4,7 @@ version = "0.2.0"
 description = "A comprehensive plotting library for bioinformatics and data visualization"
 readme = "README.md"
 license = { text = "BSD-3-Clause" }
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.10,<4.0"
 keywords = ["plotting", "visualization", "bioinformatics"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -12,7 +12,6 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -81,7 +80,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 88
 src = ["src"]
 

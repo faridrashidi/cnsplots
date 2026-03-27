@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.9 or higher (< 4.0)
+- Python 3.10 or higher (< 4.0)
 - pip (Python package installer)
 
 ## Basic Installation

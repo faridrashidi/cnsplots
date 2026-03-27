@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -384,7 +384,7 @@ def setup_scanpy() -> None:
     import scanpy
 
     setup_matplotlib()
-    scanpy.set_figure_params(
+    cast(Any, scanpy).set_figure_params(
         scanpy=cns.settings.scanpy_use_default_style,
         figsize=cns.settings.scanpy_figsize,
         facecolor=cns.settings.scanpy_facecolor,

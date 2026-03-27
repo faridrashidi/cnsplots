@@ -130,7 +130,7 @@ After installation, you can use the following commands:
 python -c "import cnsplots as cns; print(cns.__version__)"
 ```
 
-The project is CI-tested on Python 3.9 through 3.14.
+The project is CI-tested on Python 3.10 through 3.14.
 
 ## Code Style Guidelines
 
