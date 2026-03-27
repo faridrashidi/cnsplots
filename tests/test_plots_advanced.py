@@ -179,6 +179,14 @@ def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
     stats_ax = plt.gcf().axes[1]
     assert len(stats_ax.texts) == 1
     assert stats_ax.texts[0].get_position() == pytest.approx((-0.25, -1.5))
+    text_colors = {
+        tuple(int(coord) for coord in text.get_position()): text.get_color()
+        for text in ax.texts
+    }
+    assert text_colors[(0, 0)] == "white"
+    assert text_colors[(1, 1)] == "white"
+    assert text_colors[(1, 0)] == "black"
+    assert text_colors[(0, 1)] == "black"
 
     cns.figure(120, 120)
     cns.confusionplot(

@@ -615,7 +615,16 @@ def confusionplot(
                         f"[confusionplot] Confusion matrix contains NaN at position [{i},{j}]. "
                         "All values must be valid numbers."
                     )
-                ax.text(j, i, str(int(cell_value)), ha="center", va="center")
+                r, g, b, _ = im.cmap(im.norm(cell_value))
+                luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+                ax.text(
+                    j,
+                    i,
+                    str(int(cell_value)),
+                    ha="center",
+                    va="center",
+                    color="white" if luminance < 0.5 else "black",
+                )
 
     # Remove colorbar to match your original style
     cb = fig.colorbar(im, ax=ax)

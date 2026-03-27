@@ -52,6 +52,7 @@ ax = cns.confusionplot(
     data=data2,
     x="truth",
     y="pred",
+    cmap="Reds",
     add_pvalue=True,
     pvalue_x_pad=0.35,
     pvalue_y_pad=1.5,
