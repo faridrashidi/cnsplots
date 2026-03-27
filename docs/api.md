@@ -142,6 +142,33 @@ import cnsplots as cns
    setup_ggplot
 ```
 
+## Settings
+
+`cnsplots` exposes its package-wide defaults through `cns.settings`.
+Use it to inspect current defaults, set global styling and helper behavior,
+restore package defaults with `cns.settings.reset()`, or apply temporary
+overrides with `cns.settings.context(...)`.
+
+```python
+print(cns.settings)
+cns.settings.title_fontsize = 10
+
+with cns.settings.context(palette_qual="Dark2", figure_width=200):
+    ...
+
+cns.settings.reset()
+```
+
+See the {doc}`settings reference <settings>` for the full catalog of settings
+and the runnable {doc}`settings example <examples/settings>` for end-to-end
+usage.
+
+```{toctree}
+:hidden: true
+
+settings
+```
+
 ## Color Palettes
 
 ```{eval-rst}
@@ -168,17 +195,3 @@ The following color constants are available:
 - `GRAY` - #A3A3A3
 - `VIOLET` - #442288
 - `CHOCOLATE` - #662506
-
-Default settings:
-
-`cnsplots` exposes its configurable defaults through `cns.settings`.
-These include:
-
-- palettes and font defaults
-- matplotlib setup and export defaults
-- scanpy and ggplot helper defaults
-- figure sizing defaults
-- multipanel layout defaults
-- legend placement and panel label defaults
-
-See `examples/settings.py` for a runnable overview of the settings API.

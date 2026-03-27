@@ -612,7 +612,16 @@ def _make_setting_property(name: str, doc: str) -> property:
 
 
 class CNSSettings:
-    """Global settings for cnsplots."""
+    """Mutable container for package-wide cnsplots defaults.
+
+    The public settings instance is exposed as ``cns.settings``. Updating
+    attributes on that object changes the defaults used by later plotting,
+    setup, export, figure helper, and multipanel helper calls.
+
+    Assignments are validated immediately. Use :meth:`context` for temporary
+    overrides and :meth:`reset` to restore every setting to its package
+    default.
+    """
 
     _setting_specs = _SETTING_SPECS
     _defaults = {name: spec.default for name, spec in _SETTING_SPECS.items()}
@@ -641,13 +650,39 @@ class CNSSettings:
         self.reset()
 
     def reset(self) -> None:
-        """Reset all settings to their default values."""
+        """Reset all settings to their package defaults.
+
+        This mutates the shared ``cns.settings`` object in place and restores
+        every documented setting to the default declared by cnsplots.
+        """
         for name, spec in type(self)._setting_specs.items():
             setattr(self, name, deepcopy(spec.default))
 
     @contextmanager
     def context(self, **kwargs: Any) -> Generator[CNSSettings, None, None]:
-        """Temporarily override settings within a context manager."""
+        """Temporarily override settings within a context manager.
+
+        Parameters
+        ----------
+        **kwargs
+            Setting names and temporary values to apply to ``cns.settings``
+            for the duration of the ``with`` block.
+
+        Yields
+        ------
+        CNSSettings
+            The shared settings object with the temporary overrides applied.
+
+        Raises
+        ------
+        AttributeError
+            If any provided key is not a valid public setting name.
+
+        Notes
+        -----
+        Previous values are restored after the context exits, even if an
+        exception is raised inside the block.
+        """
         for key in kwargs:
             if key not in self._defaults:
                 raise AttributeError(self._invalid_setting_message(key))
