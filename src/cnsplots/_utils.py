@@ -764,7 +764,8 @@ def get_showcase_data(
     blobs.obs["KRAS"] = np.random.random(blobs.shape[0])
     blobs.var["Ensemble"] = [f"ens{x}" for x in np.random.randint(0, 3, blobs.shape[1])]
     selected = pd.Series(pd.NA, index=blobs.obs_names, dtype="string")
-    selected[blobs.obs["TP53"] > 0.95] = "o"
+    tp53_values = np.asarray(blobs.obs["TP53"], dtype=float)
+    selected[tp53_values > 0.95] = "o"
     blobs.obs["Selected"] = selected
     blobs.obs["Cluster"] = pd.Categorical(
         [f"C{x}" for x in np.random.randint(0, 4, blobs.shape[0])]
