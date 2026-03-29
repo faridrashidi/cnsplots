@@ -423,51 +423,24 @@ def _render_root_404_page() -> str:
     )
 
 
-def _rewrite_latest_alias_content(
-    content: str, latest_release_tag: str, suffix: str
-) -> str:
-    """Rewrite copied latest-release files to use the stable /latest public URL."""
-    rewritten = content.replace(
-        f"{SITE_URL.rstrip('/')}/{latest_release_tag}/",
-        _latest_absolute_url("/"),
-    )
-    if suffix == ".xml":
-        rewritten = rewritten.replace(
-            f"<loc>{SITE_URL}",
-            f"<loc>{_latest_absolute_url('/')}",
-        )
-    if suffix == ".html":
-        rewritten = rewritten.replace(
-            f'<span class="docs-version-switcher-current">{latest_release_tag}</span>',
-            f'<span class="docs-version-switcher-current">{LATEST_DOCS_NAME}</span>',
-        )
-        rewritten = re.sub(
-            rf'(<option value="[^"]+" selected>){re.escape(latest_release_tag)}(</option>)',
-            rf"\1{LATEST_DOCS_NAME}\2",
-            rewritten,
-        )
-    return rewritten
+def _remove_path(path: Path) -> None:
+    """Remove a filesystem path regardless of whether it is a file or directory."""
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+        return
+    if path.exists():
+        shutil.rmtree(path)
 
 
-def _write_latest_release_alias(output_dir: Path, latest_release_tag: str) -> None:
-    """Copy the newest release docs into the stable /latest alias."""
-    latest_release_dir = output_dir / latest_release_tag
-    latest_alias_dir = output_dir / LATEST_DOCS_NAME
-    if not latest_release_dir.exists():
-        raise RuntimeError(
-            f"Latest release docs were not built at {latest_release_dir}."
-        )
+def _write_version_symlink(output_dir: Path, alias_name: str, target_name: str) -> None:
+    """Create a relative symlink alias for a published docs version."""
+    target_dir = output_dir / target_name
+    if not target_dir.exists():
+        raise RuntimeError(f"Cannot link {alias_name} to missing docs at {target_dir}.")
 
-    shutil.copytree(latest_release_dir, latest_alias_dir)
-    for path in latest_alias_dir.rglob("*"):
-        if not path.is_file() or path.suffix not in {".html", ".xml"}:
-            continue
-        content = path.read_text(encoding="utf-8")
-        rewritten = _rewrite_latest_alias_content(
-            content, latest_release_tag, path.suffix
-        )
-        if rewritten != content:
-            path.write_text(rewritten, encoding="utf-8")
+    alias_path = output_dir / alias_name
+    _remove_path(alias_path)
+    alias_path.symlink_to(target_name)
 
 
 def _write_root_redirects(output_dir: Path) -> None:
@@ -555,14 +528,6 @@ def _docs_env(latest_release_tag: str) -> dict[str, str]:
     return env
 
 
-def _build_full_versioned_docs(output_dir: Path, latest_release_tag: str) -> None:
-    """Build all versioned docs into the output directory."""
-    _ensure_clean_dir(output_dir)
-    env = _docs_env(latest_release_tag)
-
-    _run_checked("sphinx-multiversion", str(DOCS_DIR), str(output_dir), env=env)
-
-
 def _finalize_site(output_dir: Path) -> None:
     """Write the top-level files expected by GitHub Pages."""
     if not (output_dir / LATEST_DOCS_NAME).exists():
@@ -576,13 +541,6 @@ def _finalize_site(output_dir: Path) -> None:
     _write_cname(output_dir)
     _write_root_404(output_dir)
     _write_root_sitemap_index(output_dir)
-
-
-def _build_full_site(output_dir: Path, latest_release_tag: str) -> None:
-    """Build a complete multiversion site and package it for publishing."""
-    _build_full_versioned_docs(output_dir, latest_release_tag)
-    _write_latest_release_alias(output_dir, latest_release_tag)
-    _finalize_site(output_dir)
 
 
 def _dump_multiversion_metadata(
@@ -640,21 +598,30 @@ def _temporary_worktree(ref: str) -> Iterator[Path]:
             _run_checked("git", "worktree", "remove", "--force", str(worktree_path))
 
 
-def _copy_preserved_versions(existing_site_dir: Path, output_dir: Path) -> list[str]:
-    """Copy published release directories and the stable alias into output_dir."""
-    release_names: list[str] = []
+def _copy_preserved_versions(
+    existing_site_dir: Path,
+    output_dir: Path,
+    *,
+    include_dev: bool = False,
+    exclude_names: set[str] | None = None,
+) -> tuple[list[str], bool]:
+    """Copy published version directories into output_dir without alias symlinks."""
+    excluded_names = exclude_names or set()
+    preserved_release_names: list[str] = []
+    preserved_dev = False
+
     for path in existing_site_dir.iterdir():
-        if not path.is_dir():
+        if path.name in excluded_names or path.is_symlink() or not path.is_dir():
             continue
         if RELEASE_TAG_PATTERN.fullmatch(path.name):
-            shutil.copytree(path, output_dir / path.name)
-            release_names.append(path.name)
+            shutil.copytree(path, output_dir / path.name, symlinks=True)
+            preserved_release_names.append(path.name)
+            continue
+        if include_dev and path.name == DEV_DOCS_NAME:
+            shutil.copytree(path, output_dir / path.name, symlinks=True)
+            preserved_dev = True
 
-    latest_alias_dir = existing_site_dir / LATEST_DOCS_NAME
-    if latest_alias_dir.exists():
-        shutil.copytree(latest_alias_dir, output_dir / LATEST_DOCS_NAME)
-
-    return sorted(release_names, key=_version_sort_key)
+    return sorted(preserved_release_names, key=_version_sort_key), preserved_dev
 
 
 def _rewrite_metadata_entry(
@@ -668,27 +635,26 @@ def _rewrite_metadata_entry(
     return rewritten
 
 
-def _build_metadata_for_main_site(
+def _build_version_metadata(
     all_metadata: dict[str, dict[str, object]],
     output_dir: Path,
-    preserved_release_names: list[str],
+    version_names: list[str],
+    current_version_name: str,
+    current_confdir: Path,
 ) -> dict[str, dict[str, object]]:
-    """Return metadata for the dev build plus preserved release versions."""
-    if DEV_DOCS_NAME not in all_metadata:
-        raise RuntimeError("Missing dev metadata for the current main docs build.")
-
-    metadata = {
-        DEV_DOCS_NAME: _rewrite_metadata_entry(
-            all_metadata[DEV_DOCS_NAME],
-            output_dir / DEV_DOCS_NAME,
-            DOCS_DIR,
+    """Return metadata rewritten for the assembled site tree."""
+    if current_version_name not in all_metadata:
+        raise RuntimeError(
+            f"Missing metadata for the current docs build version {current_version_name}."
         )
-    }
-    for name in preserved_release_names:
+
+    metadata: dict[str, dict[str, object]] = {}
+    for name in version_names:
         entry = all_metadata.get(name)
         if entry is None:
             continue
-        metadata[name] = _rewrite_metadata_entry(entry, output_dir / name)
+        confdir = current_confdir if name == current_version_name else None
+        metadata[name] = _rewrite_metadata_entry(entry, output_dir / name, confdir)
     return metadata
 
 
@@ -697,10 +663,12 @@ def _build_single_version_docs(
     output_dir: Path,
     metadata: dict[str, dict[str, object]],
     latest_release_tag: str,
+    *,
+    docs_dir: Path = DOCS_DIR,
+    cwd: Path = REPO_ROOT,
 ) -> None:
     """Build a single docs version using precomputed multiversion metadata."""
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
+    _remove_path(output_dir)
 
     env = _docs_env(latest_release_tag)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -714,15 +682,58 @@ def _build_single_version_docs(
             f"smv_metadata_path={metadata_path}",
             "-D",
             f"smv_current_version={version_name}",
-            str(DOCS_DIR),
+            str(docs_dir),
             str(output_dir),
             env=env,
+            cwd=cwd,
         )
 
 
 def _build_bootstrap_site(output_dir: Path, latest_release_tag: str) -> None:
-    """Build the full site for the initial gh-pages bootstrap."""
-    _build_full_site(output_dir, latest_release_tag)
+    """Build a minimal site from scratch with dev and the newest release."""
+    all_metadata = _dump_multiversion_metadata(output_dir, latest_release_tag)
+    _ensure_clean_dir(output_dir)
+
+    version_names = [DEV_DOCS_NAME, latest_release_tag]
+
+    with _temporary_worktree(DEV_DOCS_NAME) as dev_worktree:
+        dev_docs_dir = dev_worktree / "docs"
+        dev_metadata = _build_version_metadata(
+            all_metadata,
+            output_dir,
+            version_names,
+            DEV_DOCS_NAME,
+            dev_docs_dir,
+        )
+        _build_single_version_docs(
+            DEV_DOCS_NAME,
+            output_dir / DEV_DOCS_NAME,
+            dev_metadata,
+            latest_release_tag,
+            docs_dir=dev_docs_dir,
+            cwd=dev_worktree,
+        )
+
+    with _temporary_worktree(latest_release_tag) as release_worktree:
+        release_docs_dir = release_worktree / "docs"
+        release_metadata = _build_version_metadata(
+            all_metadata,
+            output_dir,
+            version_names,
+            latest_release_tag,
+            release_docs_dir,
+        )
+        _build_single_version_docs(
+            latest_release_tag,
+            output_dir / latest_release_tag,
+            release_metadata,
+            latest_release_tag,
+            docs_dir=release_docs_dir,
+            cwd=release_worktree,
+        )
+
+    _write_version_symlink(output_dir, LATEST_DOCS_NAME, latest_release_tag)
+    _finalize_site(output_dir)
 
 
 def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
@@ -739,23 +750,24 @@ def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
         )
 
     with _temporary_worktree(remote_ref) as existing_site_dir:
-        if (
-            not (existing_site_dir / LATEST_DOCS_NAME).exists()
-            or not (existing_site_dir / latest_release_tag).exists()
-        ):
+        if not (existing_site_dir / latest_release_tag).exists():
             _build_bootstrap_site(output_dir, latest_release_tag)
             return
 
         _ensure_clean_dir(output_dir)
-        preserved_release_names = _copy_preserved_versions(
+        preserved_release_names, _ = _copy_preserved_versions(
             existing_site_dir, output_dir
         )
         if latest_release_tag not in preserved_release_names:
             _build_bootstrap_site(output_dir, latest_release_tag)
             return
 
-        metadata = _build_metadata_for_main_site(
-            all_metadata, output_dir, preserved_release_names
+        metadata = _build_version_metadata(
+            all_metadata,
+            output_dir,
+            [DEV_DOCS_NAME, *preserved_release_names],
+            DEV_DOCS_NAME,
+            DOCS_DIR,
         )
         _build_single_version_docs(
             DEV_DOCS_NAME,
@@ -764,12 +776,73 @@ def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
             latest_release_tag,
         )
 
+    _write_version_symlink(output_dir, LATEST_DOCS_NAME, latest_release_tag)
     _finalize_site(output_dir)
 
 
 def _build_release_site(output_dir: Path, latest_release_tag: str) -> None:
-    """Build the full multiversion site for a tagged release."""
-    _build_full_site(output_dir, latest_release_tag)
+    """Build only the newest release docs and preserve existing published versions."""
+    remote_ref = _fetch_remote_branch(GITHUB_PAGES_BRANCH)
+    if remote_ref is None:
+        _build_bootstrap_site(output_dir, latest_release_tag)
+        return
+
+    all_metadata = _dump_multiversion_metadata(output_dir, latest_release_tag)
+    if latest_release_tag not in all_metadata:
+        raise RuntimeError(
+            f"Missing metadata for the latest release tag {latest_release_tag}."
+        )
+
+    with _temporary_worktree(remote_ref) as existing_site_dir:
+        _ensure_clean_dir(output_dir)
+        preserved_release_names, preserved_dev = _copy_preserved_versions(
+            existing_site_dir,
+            output_dir,
+            include_dev=True,
+            exclude_names={latest_release_tag},
+        )
+
+    version_names = [
+        *([DEV_DOCS_NAME] if preserved_dev or DEV_DOCS_NAME in all_metadata else []),
+        *preserved_release_names,
+        latest_release_tag,
+    ]
+
+    if not preserved_dev and DEV_DOCS_NAME in all_metadata:
+        with _temporary_worktree(DEV_DOCS_NAME) as dev_worktree:
+            dev_docs_dir = dev_worktree / "docs"
+            dev_metadata = _build_version_metadata(
+                all_metadata,
+                output_dir,
+                version_names,
+                DEV_DOCS_NAME,
+                dev_docs_dir,
+            )
+            _build_single_version_docs(
+                DEV_DOCS_NAME,
+                output_dir / DEV_DOCS_NAME,
+                dev_metadata,
+                latest_release_tag,
+                docs_dir=dev_docs_dir,
+                cwd=dev_worktree,
+            )
+
+    release_metadata = _build_version_metadata(
+        all_metadata,
+        output_dir,
+        version_names,
+        latest_release_tag,
+        DOCS_DIR,
+    )
+    _build_single_version_docs(
+        latest_release_tag,
+        output_dir / latest_release_tag,
+        release_metadata,
+        latest_release_tag,
+    )
+
+    _write_version_symlink(output_dir, LATEST_DOCS_NAME, latest_release_tag)
+    _finalize_site(output_dir)
 
 
 def build(output_dir: Path, mode: str) -> None:
