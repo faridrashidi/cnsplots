@@ -219,6 +219,22 @@ def test_distribution_wrappers(
     assert ax6 is plt.gca()
 
 
+def test_pieplot_uses_legend_fontsize(categorical_df: pd.DataFrame) -> None:
+    with cns.settings.context(legend_fontsize=13):
+        cns.figure(120, 120)
+        ax = cns.pieplot(categorical_df, x="group")
+        assert {
+            text.get_fontsize() for text in ax.texts if text.get_text().endswith("%")
+        } == {13}
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        ax = cns.pieplot(categorical_df, x="group")
+        assert {
+            text.get_fontsize() for text in ax.texts if text.get_text().endswith("%")
+        } == {12}
+
+
 def test_distribution_logging_respects_settings_verbosity(
     categorical_df: pd.DataFrame,
     caplog: pytest.LogCaptureFixture,
