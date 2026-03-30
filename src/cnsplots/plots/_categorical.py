@@ -23,6 +23,13 @@ from cnsplots._validation import (
 LollipopPair = Union[tuple[str, str], tuple[tuple[str, str], tuple[str, str]]]
 
 
+def _legend_fontsize() -> int | float:
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        return cns.settings.title_fontsize
+    return legend_fontsize
+
+
 def barplot(
     data: pd.DataFrame,
     x: str,
@@ -863,7 +870,7 @@ def pieplot(
         shadow=False,
         autopct="%1.0f%%",
         explode=[0] * df.shape[0],
-        textprops={"fontsize": 6, "color": "white"},
+        textprops={"fontsize": _legend_fontsize(), "color": "white"},
         labeldistance=None,
         wedgeprops={"linewidth": 0.3, "edgecolor": "white"},
         ax=ax,
