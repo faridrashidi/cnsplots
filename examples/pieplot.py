@@ -84,6 +84,19 @@ ax.set_title("Set2 Palette")
 
 
 # %%
+# Pie chart with contrast-aware labels
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Percentage labels switch between white and black based on slice luminance.
+contrast_data = pd.DataFrame(
+    {"region": np.repeat(["Dark Region", "Light Region"], [7, 3])}
+)
+
+cns.figure(100, 100, ["#1F2937", "#F3F4F6"])
+ax = cns.pieplot(contrast_data, "region", hue_order=["Dark Region", "Light Region"])
+ax.set_title("Contrast-Aware Labels")
+
+
+# %%
 # Comparing pie charts side-by-side
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare composition across conditions.

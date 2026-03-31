@@ -877,6 +877,9 @@ def pieplot(
         ylabel="",
         legend=True,
     )
+    percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
+    for wedge, text in zip(ax.patches, percent_texts):
+        text.set_color(cns.utils._annotation_text_color(wedge.get_facecolor()))
     legend_positions = {
         "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},
         "left": {"loc": "upper right", "bbox_to_anchor": (-0.02, 1.02)},

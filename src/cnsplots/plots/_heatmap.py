@@ -616,14 +616,13 @@ def confusionplot(
                         "All values must be valid numbers."
                     )
                 r, g, b, _ = im.cmap(im.norm(cell_value))
-                luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
                 ax.text(
                     j,
                     i,
                     str(int(cell_value)),
                     ha="center",
                     va="center",
-                    color="white" if luminance < 0.5 else "black",
+                    color=cns.utils._annotation_text_color((r, g, b, 1.0)),
                 )
 
     # Remove colorbar to match your original style

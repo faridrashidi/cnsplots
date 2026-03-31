@@ -130,6 +130,7 @@ def test_settings_behavior() -> None:
     assert settings.palette_qual == "Ecotyper1"
     assert settings.savefig_bbox == "tight"
     assert settings.savefig_transparent is True
+    assert settings.annotation_auto_contrast is True
     assert settings.scanpy_facecolor == "none"
     settings.palette_qual = "Set2"
     settings.palette_seq = "parula"
@@ -160,6 +161,7 @@ def test_settings_behavior() -> None:
     settings.legend_title_fontsize = 12
     settings.pvalue_format = "threshold"
     settings.pvalue_fontsize = 9
+    settings.annotation_auto_contrast = False
     settings.legend_frameon = True
     settings.legend_markerscale = 1.2
     settings.legend_handlelength = 1.3
@@ -213,6 +215,7 @@ def test_settings_behavior() -> None:
     assert "font_sans_serif=('Arial', 'DejaVu Sans')" in repr(settings)
     assert "pvalue_format='threshold'" in repr(settings)
     assert "pvalue_fontsize=9" in repr(settings)
+    assert "annotation_auto_contrast=False" in repr(settings)
     assert "panel_label_left" not in repr(settings)
     assert "panel_label_top" not in repr(settings)
     assert "panel_label_offset_x" not in repr(settings)
@@ -245,6 +248,7 @@ def test_settings_behavior() -> None:
         legend_fontsize=None,
         pvalue_format="full",
         pvalue_fontsize="large",
+        annotation_auto_contrast=True,
         scanpy_figsize=(5.0, 4.0),
         panel_margin_top=6,
         panel_margin_bottom=8,
@@ -257,6 +261,7 @@ def test_settings_behavior() -> None:
         assert ctx.legend_fontsize is None
         assert ctx.pvalue_format == "full"
         assert ctx.pvalue_fontsize == "large"
+        assert ctx.annotation_auto_contrast is True
         assert ctx.scanpy_figsize == (5.0, 4.0)
         assert ctx.panel_margin_top == 6
         assert ctx.panel_margin_bottom == 8
@@ -268,6 +273,7 @@ def test_settings_behavior() -> None:
     assert settings.legend_fontsize == 11
     assert settings.pvalue_format == "threshold"
     assert settings.pvalue_fontsize == 9
+    assert settings.annotation_auto_contrast is False
     assert settings.scanpy_figsize == (3.0, 4.0)
     assert settings.panel_margin_top == 2
     assert settings.panel_margin_bottom == 4
@@ -357,6 +363,7 @@ def test_settings_behavior() -> None:
     assert settings.legend_fontsize == 7
     assert settings.pvalue_format == "star"
     assert settings.pvalue_fontsize == "small"
+    assert settings.annotation_auto_contrast is True
     assert settings.scanpy_figsize == (2.5, 2.5)
     assert settings.panel_pad_left == 0
     assert settings.panel_pad_top == 0
@@ -438,6 +445,8 @@ def test_settings_validation_errors() -> None:
         settings.legend_fontsize = "big"
     with pytest.raises(ValueError):
         settings.legend_markerscale = -1
+    with pytest.raises(TypeError, match="annotation_auto_contrast must be a boolean"):
+        settings.annotation_auto_contrast = "yes"
     with pytest.raises(TypeError):
         settings.panel_margin_top = "big"
     with pytest.raises(ValueError):

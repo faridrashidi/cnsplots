@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -44,6 +44,16 @@ PINK = "#E787E5"
 GRAY = "#A3A3A3"
 VIOLET = "#442288"
 CHOCOLATE = "#662506"
+
+
+def _annotation_text_color(color: Any) -> str:
+    """Return a readable annotation color for a background fill."""
+    if not cns.settings.annotation_auto_contrast:
+        return "white"
+
+    r, g, b, _ = mcolors.to_rgba(color)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return "white" if luminance < 0.5 else "black"
 
 
 def _chain_axes_sync_hook(

@@ -243,9 +243,14 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
         ax = venn.venn3(subsets, label_tuple, set_colors=colors, alpha=0.8)
     for area in areas:
         try:
-            ax.get_label_by_id(area).set_fontsize(6)
-            ax.get_patch_by_id(area).set_edgecolor("black")
-            ax.get_patch_by_id(area).set_linewidth(0.5)
+            label = ax.get_label_by_id(area)
+            label.set_fontsize(6)
+            patch = ax.get_patch_by_id(area)
+            patch.set_edgecolor("black")
+            patch.set_linewidth(0.5)
+            get_facecolor = getattr(patch, "get_facecolor", None)
+            if callable(get_facecolor):
+                label.set_color(cns.utils._annotation_text_color(get_facecolor()))
         except AttributeError:
             pass
     for area in names:
