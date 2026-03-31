@@ -86,6 +86,18 @@ plt.title("Treatment vs Control Genes")
 
 
 # %%
+# Venn diagram with contrast-aware labels
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Region labels switch between white and black based on patch luminance.
+dark_set = set(range(1, 9))
+light_set = set(range(5, 13))
+
+cns.figure(100, 100, ["#111827", "#F3F4F6"])
+cns.vennplot([dark_set, light_set], ["Dark Set", "Light Set"])
+plt.title("Contrast-Aware Labels")
+
+
+# %%
 # Sample overlap example
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Compare samples passing different QC criteria.

@@ -848,3 +848,57 @@ def test_sets_validation_errors(sets_fixture: dict[str, set[int]]) -> None:
         cns.vennplot([set()], labels=["A"])
     with pytest.raises(ValueError, match="Length of 'labels'"):
         cns.vennplot([set(), set()], labels=["A"])
+
+
+def test_vennplot_uses_contrast_text_color(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeLabel:
+        def __init__(self) -> None:
+            self.fontsize: float | None = None
+            self.color: str | None = None
+
+        def set_fontsize(self, value: float) -> None:
+            self.fontsize = value
+
+        def set_color(self, value: str) -> None:
+            self.color = value
+
+    class FakePatch:
+        def __init__(self, color: tuple[float, float, float, float]) -> None:
+            self.color = color
+            self.edgecolor: str | None = None
+            self.linewidth: float | None = None
+
+        def set_edgecolor(self, value: str) -> None:
+            self.edgecolor = value
+
+        def set_linewidth(self, value: float) -> None:
+            self.linewidth = value
+
+        def get_facecolor(self) -> tuple[float, float, float, float]:
+            return self.color
+
+    subset_labels = {area: FakeLabel() for area in ["10", "01", "11"]}
+    set_labels = {area: FakeLabel() for area in ["A", "B"]}
+    patches = {
+        "10": FakePatch((0.1, 0.1, 0.1, 0.8)),
+        "01": FakePatch((0.9, 0.9, 0.9, 0.8)),
+        "11": FakePatch((0.2, 0.2, 0.2, 0.8)),
+    }
+    fake_venn_obj = types.SimpleNamespace(
+        get_label_by_id=lambda area: subset_labels.get(area, set_labels.get(area)),
+        get_patch_by_id=lambda area: patches.get(area),
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "matplotlib_venn",
+        types.SimpleNamespace(venn2=lambda *args, **kwargs: fake_venn_obj),
+    )
+
+    cns.figure(120, 120)
+    cns.vennplot([{1, 2}, {2, 3}], labels=["A", "B"])
+
+    assert subset_labels["10"].color == "white"
+    assert subset_labels["01"].color == "black"
+    assert subset_labels["11"].color == "white"

@@ -6,6 +6,7 @@ from typing import Any, cast
 import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
+from cycler import cycler
 from matplotlib.colors import to_hex, to_rgba
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Wedge
 
@@ -233,6 +234,17 @@ def test_pieplot_uses_legend_fontsize(categorical_df: pd.DataFrame) -> None:
         assert {
             text.get_fontsize() for text in ax.texts if text.get_text().endswith("%")
         } == {12}
+
+
+def test_pieplot_uses_contrast_text_color() -> None:
+    data = pd.DataFrame({"group": ["dark"] * 3 + ["light"] * 2})
+
+    cns.figure(120, 120)
+    with plt.rc_context({"axes.prop_cycle": cycler(color=["#111111", "#eeeeee"])}):
+        ax = cns.pieplot(data, x="group", hue_order=["dark", "light"])
+
+    percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
+    assert [text.get_color() for text in percent_texts] == ["white", "black"]
 
 
 def test_distribution_logging_respects_settings_verbosity(
