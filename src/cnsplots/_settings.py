@@ -346,6 +346,11 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         lambda value: _validate_fontsize("pvalue_fontsize", value),
         "Default font size for p-value annotations. Accepts a positive number or matplotlib named size string.",
     ),
+    "annotation_auto_contrast": _spec(
+        True,
+        lambda value: _validate_bool("annotation_auto_contrast", value),
+        "Whether plot annotation text automatically switches between white and black based on background luminance. When False, annotation text stays white.",
+    ),
     "legend_frameon": _spec(
         False,
         lambda value: _validate_bool("legend_frameon", value),

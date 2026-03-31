@@ -110,6 +110,7 @@ formatting helpers, and annotation utilities.
 .. autoattribute:: cnsplots._settings.CNSSettings.legend_handletextpad
 .. autoattribute:: cnsplots._settings.CNSSettings.pvalue_format
 .. autoattribute:: cnsplots._settings.CNSSettings.pvalue_fontsize
+.. autoattribute:: cnsplots._settings.CNSSettings.annotation_auto_contrast
 .. autoattribute:: cnsplots._settings.CNSSettings.xtick_bottom
 .. autoattribute:: cnsplots._settings.CNSSettings.xtick_color
 .. autoattribute:: cnsplots._settings.CNSSettings.xtick_major_size

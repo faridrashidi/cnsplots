@@ -14,7 +14,6 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from matplotlib.colors import to_rgba
 
 import cnsplots as cns
 
@@ -24,12 +23,6 @@ def _legend_fontsize() -> int | float:
     if legend_fontsize is None:
         return cns.settings.title_fontsize
     return legend_fontsize
-
-
-def _annotation_text_color(color: Any) -> str:
-    r, g, b, _ = to_rgba(color)
-    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
-    return "white" if luminance < 0.5 else "black"
 
 
 def _normalize_text_position(text: Any) -> None:
@@ -257,7 +250,7 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
             patch.set_linewidth(0.5)
             get_facecolor = getattr(patch, "get_facecolor", None)
             if callable(get_facecolor):
-                label.set_color(_annotation_text_color(get_facecolor()))
+                label.set_color(cns.utils._annotation_text_color(get_facecolor()))
         except AttributeError:
             pass
     for area in names:

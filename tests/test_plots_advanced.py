@@ -188,6 +188,17 @@ def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
     assert text_colors[(1, 0)] == "black"
     assert text_colors[(0, 1)] == "black"
 
+    with cns.settings.context(annotation_auto_contrast=False):
+        cns.figure(120, 120)
+        disabled_ax = cns.confusionplot(
+            confusion_df,
+            x="pred",
+            y="truth",
+            x_order=["neg", "pos"],
+            y_order=["neg", "pos"],
+        )
+    assert {text.get_color() for text in disabled_ax.texts} == {"white"}
+
     cns.figure(120, 120)
     cns.confusionplot(
         confusion_df,
@@ -879,17 +890,21 @@ def test_vennplot_uses_contrast_text_color(
         def get_facecolor(self) -> tuple[float, float, float, float]:
             return self.color
 
-    subset_labels = {area: FakeLabel() for area in ["10", "01", "11"]}
-    set_labels = {area: FakeLabel() for area in ["A", "B"]}
-    patches = {
-        "10": FakePatch((0.1, 0.1, 0.1, 0.8)),
-        "01": FakePatch((0.9, 0.9, 0.9, 0.8)),
-        "11": FakePatch((0.2, 0.2, 0.2, 0.8)),
-    }
-    fake_venn_obj = types.SimpleNamespace(
-        get_label_by_id=lambda area: subset_labels.get(area, set_labels.get(area)),
-        get_patch_by_id=lambda area: patches.get(area),
-    )
+    def build_fake_venn_obj() -> tuple[dict[str, FakeLabel], types.SimpleNamespace]:
+        subset_labels = {area: FakeLabel() for area in ["10", "01", "11"]}
+        set_labels = {area: FakeLabel() for area in ["A", "B"]}
+        patches = {
+            "10": FakePatch((0.1, 0.1, 0.1, 0.8)),
+            "01": FakePatch((0.9, 0.9, 0.9, 0.8)),
+            "11": FakePatch((0.2, 0.2, 0.2, 0.8)),
+        }
+        fake_venn_obj = types.SimpleNamespace(
+            get_label_by_id=lambda area: subset_labels.get(area, set_labels.get(area)),
+            get_patch_by_id=lambda area: patches.get(area),
+        )
+        return subset_labels, fake_venn_obj
+
+    subset_labels, fake_venn_obj = build_fake_venn_obj()
     monkeypatch.setitem(
         sys.modules,
         "matplotlib_venn",
@@ -901,4 +916,18 @@ def test_vennplot_uses_contrast_text_color(
 
     assert subset_labels["10"].color == "white"
     assert subset_labels["01"].color == "black"
+    assert subset_labels["11"].color == "white"
+
+    subset_labels, fake_venn_obj = build_fake_venn_obj()
+    monkeypatch.setitem(
+        sys.modules,
+        "matplotlib_venn",
+        types.SimpleNamespace(venn2=lambda *args, **kwargs: fake_venn_obj),
+    )
+    with cns.settings.context(annotation_auto_contrast=False):
+        cns.figure(120, 120)
+        cns.vennplot([{1, 2}, {2, 3}], labels=["A", "B"])
+
+    assert subset_labels["10"].color == "white"
+    assert subset_labels["01"].color == "white"
     assert subset_labels["11"].color == "white"

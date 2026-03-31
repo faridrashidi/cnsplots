@@ -246,6 +246,14 @@ def test_pieplot_uses_contrast_text_color() -> None:
     percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
     assert [text.get_color() for text in percent_texts] == ["white", "black"]
 
+    with cns.settings.context(annotation_auto_contrast=False):
+        cns.figure(120, 120)
+        with plt.rc_context({"axes.prop_cycle": cycler(color=["#111111", "#eeeeee"])}):
+            ax = cns.pieplot(data, x="group", hue_order=["dark", "light"])
+
+    percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
+    assert [text.get_color() for text in percent_texts] == ["white", "white"]
+
 
 def test_distribution_logging_respects_settings_verbosity(
     categorical_df: pd.DataFrame,
