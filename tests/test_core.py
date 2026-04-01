@@ -1143,6 +1143,9 @@ def test_utils_helpers_and_showcase_data(
     formatted = formatter.format_data(DummyResult(0.01))
     assert formatted.startswith("$T P = ")
     assert r"\times 10^{-2}$" in formatted
+    nonsig_formatted = formatter.format_data(DummyResult(0.2))
+    assert nonsig_formatted.startswith("$T P = ")
+    assert r"\times 10^{-1}$" in nonsig_formatted
 
     with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=9):
         _utils._p_value_helper(
