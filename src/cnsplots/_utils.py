@@ -561,15 +561,28 @@ def apply_unicode_font(ax=None, font="DejaVu Sans"):
             text_obj.set_fontfamily(font)
 
 
-def _addcount_helper(data, attr, ax):
-    xtick_labels = ax.get_xticklabels()
-    tick_positions = ax.get_xticks()
-    new_xtick_labels = []
-    for label in xtick_labels:
-        n = len(data[data[attr] == label.get_text()])
-        new_xtick_labels.append(f"{label.get_text()}\n(n={n})")
-    ax.set_xticks(tick_positions)
-    ax.set_xticklabels(new_xtick_labels)
+def _addcount_helper(data, attr, ax, axis="x"):
+    counts = data[attr].astype(str).value_counts()
+    if axis == "x":
+        tick_labels = ax.get_xticklabels()
+        tick_positions = ax.get_xticks()
+        set_ticks = ax.set_xticks
+        set_ticklabels = ax.set_xticklabels
+    elif axis == "y":
+        tick_labels = ax.get_yticklabels()
+        tick_positions = ax.get_yticks()
+        set_ticks = ax.set_yticks
+        set_ticklabels = ax.set_yticklabels
+    else:
+        raise ValueError("axis must be 'x' or 'y'")
+
+    new_tick_labels = []
+    for label in tick_labels:
+        label_text = label.get_text()
+        n = int(counts.get(label_text, 0))
+        new_tick_labels.append(f"{label_text}\n(n={n})")
+    set_ticks(tick_positions)
+    set_ticklabels(new_tick_labels)
 
 
 def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=None):

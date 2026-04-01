@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import inspect
 import re
 import sys
 import types
@@ -57,6 +58,12 @@ def test_public_namespace_contract() -> None:
     assert namespace["savefig"] is cns.savefig
     assert cns.save is cns.savefig
     assert namespace["validation"] is cns.validation
+
+
+def test_public_stackplot_signature_contract() -> None:
+    parameters = inspect.signature(cns.stackplot).parameters
+    assert "addcount" in parameters
+    assert "addtip" not in parameters
 
 
 def test_public_validation_contract(heatmap_adata: object) -> None:

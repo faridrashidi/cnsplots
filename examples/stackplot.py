@@ -25,9 +25,11 @@ tips = sns.load_dataset("tips")
 # Basic stacked bar plot (normalized)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Shows proportions that sum to 100% within each bar.
-# Use ``addtip=True`` to display percentage labels.
+# Use ``addcount=True`` to display total counts in the tick labels.
 cns.figure(120, 100)
-ax = cns.stackplot(data=tips, x="sex", y="day", width=0.4, normalize=True, addtip=True)
+ax = cns.stackplot(
+    data=tips, x="sex", y="day", width=0.4, normalize=True, addcount=True
+)
 ax.set_title("Basic Stacked Plot")
 
 
@@ -159,7 +161,7 @@ mp.get_axes("B").set_title("BlueRed")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Stack plots work with multiple categories in the y variable.
 cns.figure(150, 100, "Ecotyper1")
-ax = cns.stackplot(data=tips, x="sex", y="time", normalize=True, addtip=True)
+ax = cns.stackplot(data=tips, x="sex", y="time", normalize=True, addcount=True)
 ax.set_title("Multiple Stack Categories")
 
 
@@ -199,9 +201,9 @@ ax.set_ylabel("Proportion")
 
 
 # %%
-# Horizontal stacked bar with percentage labels
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Combine horizontal orientation with percentage labels.
+# Horizontal stacked bar with count labels
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Combine horizontal orientation with count labels on the category axis.
 cns.figure(120, 100, "Pastel1")
 ax = cns.stackplot(
     data=tips,
@@ -209,7 +211,7 @@ ax = cns.stackplot(
     y="sex",
     horizontal=True,
     normalize=True,
-    addtip=True,
+    addcount=True,
     width=0.6,
 )
 ax.set_title("Horizontal with Labels")
@@ -229,6 +231,6 @@ mp.get_axes("A").set_ylabel("Count")
 mp.newline()
 
 mp.panel("B", 80, 130, margin_top=10)
-cns.stackplot(data=tips, x="day", y="sex", normalize=True, addtip=True)
+cns.stackplot(data=tips, x="day", y="sex", normalize=True, addcount=True)
 mp.get_axes("B").set_title("Normalized Proportions")
 mp.get_axes("B").set_ylabel("Proportion")

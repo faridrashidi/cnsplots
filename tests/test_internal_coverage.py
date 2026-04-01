@@ -791,7 +791,7 @@ def test_plot_internal_coverage(
         y="response",
         horizontal=True,
         normalize=True,
-        addtip=True,
+        addcount=True,
         bar_order=["A", "B", "C"],
     )
 

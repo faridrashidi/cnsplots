@@ -577,7 +577,7 @@ def stackplot(
     width: float = 0.5,
     normalize: bool = True,
     pairs: list[tuple[str, str]] | None = None,
-    addtip: bool = False,
+    addcount: bool = False,
     n_factor: int | float = 1,
 ) -> Axes:
     """
@@ -607,8 +607,9 @@ def stackplot(
         Whether to normalize counts to frequencies (proportions summing to 1).
     pairs : list of tuple of str, optional
         List of pairs of category names from x for pairwise statistical comparisons.
-    addtip : bool, default: False
-        Whether to add total count labels above/beside each bar when normalize=True.
+    addcount : bool, default: False
+        Whether to append total counts to the category tick labels in the
+        format ``n=...``.
     n_factor : int or float, default: 1
         Scaling factor to divide all values.
 
@@ -674,33 +675,10 @@ def stackplot(
         ax.set_ylabel(value_label)
         ax.set_xlabel("")
     cns.take_legend_out()
-    if addtip and normalize:
-        tips = (
-            contingency.sum(axis=1).astype(int).reindex(index=bar_order).reset_index()
-        )
-        tips = tips.rename(columns={0: "value"})
-        for _, row in tips.iterrows():
-            if horizontal:
-                ax.text(
-                    1 + 0.02,
-                    row.name,
-                    row["value"],
-                    color="black",
-                    ha="left",
-                    va="center",
-                    rotation=0,
-                    size=6,
-                )
-            else:
-                ax.text(
-                    row.name,
-                    1 + 0.02,
-                    row["value"],
-                    color="black",
-                    ha="center",
-                    rotation=0,
-                    size=6,
-                )
+    if addcount:
+        count_attr = y if horizontal else x
+        count_axis = "y" if horizontal else "x"
+        cns.utils._addcount_helper(data, count_attr, ax, axis=count_axis)
     if pairs is not None:
         if horizontal:
             plotting = {"data": data2, "x": "count", "y": y, "order": bar_order}
