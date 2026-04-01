@@ -496,7 +496,8 @@ def test_utils_internal_coverage(
         format="full",
     )
     formatted = CaptureAnnotator.last._pvalue_format.format_data(DummyResult(0.2))
-    assert formatted == "ns"
+    assert formatted.startswith("$T P = ")
+    assert r"\times 10^{-1}$" in formatted
 
     with pytest.raises(ValueError, match="requires a hue column"):
         _utils._p_value_helper(

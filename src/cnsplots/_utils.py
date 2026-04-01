@@ -608,8 +608,6 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
         def format_data(self, result):
             if resolved_format == "full":
                 text = f"{result.test_short_name} " if self.show_test_name else ""
-                if result.pvalue > 0.05:
-                    return "ns"
                 return r"${}P = {}{}$".format(
                     "{}", self.pvalue_format_string, "{}"
                 ).format(
