@@ -1078,6 +1078,8 @@ def test_utils_helpers_and_showcase_data(
     sns.boxplot(data=categorical_df, x="group", y="value", ax=ax4)
     _utils._addcount_helper(categorical_df, "group", ax4)
     assert "(n=" in ax4.get_xticklabels()[0].get_text()
+    with pytest.raises(ValueError, match="axis must be 'x' or 'y'"):
+        _utils._addcount_helper(categorical_df, "group", ax4, axis="z")
 
     class DummyResult:
         test_short_name = "T"

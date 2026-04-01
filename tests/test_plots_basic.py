@@ -137,12 +137,18 @@ def test_stack_strip_pie_and_donut_plots(
         x="treatment",
         y="response",
         normalize=True,
-        addtip=True,
+        addcount=True,
         pairs=[("A", "B")],
         bar_order=["A", "B", "C"],
         stack_order=["Yes", "No"],
     )
     assert ax.get_ylabel() == "Frequency"
+    assert [tick.get_text() for tick in ax.get_xticklabels()] == [
+        "A\n(n=4)",
+        "B\n(n=4)",
+        "C\n(n=4)",
+    ]
+    assert not ax.texts
 
     cns.figure(120, 120)
     ax2 = cns.stackplot(
@@ -156,6 +162,21 @@ def test_stack_strip_pie_and_donut_plots(
         stack_order=["No", "Yes"],
     )
     assert ax2.get_xlabel() == "Count"
+
+    cns.figure(120, 120)
+    ax2b = cns.stackplot(
+        stack_df,
+        x="treatment",
+        y="response",
+        horizontal=True,
+        normalize=False,
+        addcount=True,
+    )
+    assert {tick.get_text() for tick in ax2b.get_yticklabels()} == {
+        "No\n(n=6)",
+        "Yes\n(n=6)",
+    }
+    assert not ax2b.texts
 
     cns.figure(120, 120)
     ax3 = cns.stripplot(
