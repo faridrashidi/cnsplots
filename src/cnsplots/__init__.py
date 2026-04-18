@@ -65,7 +65,7 @@ from cnsplots.plots import (
     volcanoplot,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 save = savefig
 __all__ = (
     "utils",
