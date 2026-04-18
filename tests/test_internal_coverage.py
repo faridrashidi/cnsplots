@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 import sys
 import types
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import anndata as ad
 import matplotlib.pyplot as plt
@@ -629,7 +629,7 @@ def test_helper_heatmap_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> No
         plot=False,
         verbose=1,
     )
-    plotter3.data = np.array([[0, 1], [1, 0]])
+    plotter3.data = cast(Any, np.array([[0, 1], [1, 0]]))
     plotter3.ax = plt.gca()
     plotter3.yticklabels = []
     plotter3.collect_legends()
@@ -642,7 +642,7 @@ def test_helper_heatmap_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> No
         plot=False,
         verbose=0,
     )
-    plotter4.data = np.array([[0, 1], [1, 0]])
+    plotter4.data = cast(Any, np.array([[0, 1], [1, 0]]))
     plotter4.ax = plt.gca()
     plotter4.yticklabels = []
     plotter4.collect_legends()
