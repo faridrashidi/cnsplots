@@ -239,6 +239,116 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
     assert "/v0.0.4/sitemap.xml" in sitemap
 
 
+def test_main_build_keeps_published_latest_when_newer_tag_is_unpublished(
+    tmp_path, monkeypatch
+):
+    docs_build = _load_docs_build_script()
+    published_site = tmp_path / "published"
+    _write_version_dir(published_site, "v0.2.0")
+    _write_version_dir(published_site, "v0.1.0")
+    (published_site / "latest").symlink_to("v0.2.0")
+
+    metadata = {
+        "dev": {
+            "name": "dev",
+            "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-dev-docs"),
+            "docnames": ["index"],
+        },
+        "v0.1.0": {
+            "name": "v0.1.0",
+            "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-v010-docs"),
+            "docnames": ["index"],
+        },
+        "v0.2.0": {
+            "name": "v0.2.0",
+            "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-v020-docs"),
+            "docnames": ["index"],
+        },
+        "v0.3.0": {
+            "name": "v0.3.0",
+            "outputdir": "unused",
+            "confdir": str(tmp_path / "temp-v030-docs"),
+            "docnames": ["index"],
+        },
+    }
+    bootstrap_calls = []
+    build_calls = []
+    metadata_requests = []
+
+    monkeypatch.setattr(
+        docs_build, "_fetch_remote_branch", lambda branch_name: "origin/gh-pages"
+    )
+
+    @contextmanager
+    def fake_worktree(ref):
+        assert ref == "origin/gh-pages"
+        yield published_site
+
+    monkeypatch.setattr(docs_build, "_temporary_worktree", fake_worktree)
+    monkeypatch.setattr(
+        docs_build,
+        "_dump_multiversion_metadata",
+        lambda output_dir, latest_release_tag: (
+            metadata_requests.append(latest_release_tag) or metadata
+        ),
+    )
+    monkeypatch.setattr(
+        docs_build,
+        "_build_bootstrap_site",
+        lambda output_dir, latest_release_tag: bootstrap_calls.append(
+            (output_dir, latest_release_tag)
+        ),
+    )
+
+    def fake_build_single_version_docs(
+        version_name,
+        version_output_dir,
+        version_metadata,
+        latest_release_tag,
+        **kwargs,
+    ):
+        build_calls.append(
+            {
+                "version_name": version_name,
+                "metadata_names": set(version_metadata),
+                "latest_release_tag": latest_release_tag,
+            }
+        )
+        version_output_dir.mkdir(parents=True)
+        (version_output_dir / "index.html").write_text(
+            "<html>dev</html>", encoding="utf-8"
+        )
+        (version_output_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+
+    monkeypatch.setattr(
+        docs_build, "_build_single_version_docs", fake_build_single_version_docs
+    )
+
+    output_dir = tmp_path / "site"
+    docs_build._build_main_site(output_dir, "v0.3.0")
+
+    assert bootstrap_calls == []
+    assert metadata_requests == ["v0.2.0"]
+    assert build_calls == [
+        {
+            "version_name": "dev",
+            "metadata_names": {"dev", "v0.2.0", "v0.1.0"},
+            "latest_release_tag": "v0.2.0",
+        }
+    ]
+    assert (output_dir / "latest").is_symlink()
+    assert (output_dir / "latest").readlink() == Path("v0.2.0")
+    assert (output_dir / "v0.2.0" / "index.html").read_text(encoding="utf-8") == (
+        "<html>v0.2.0</html>"
+    )
+    assert (output_dir / "v0.1.0" / "index.html").read_text(encoding="utf-8") == (
+        "<html>v0.1.0</html>"
+    )
+
+
 def test_release_build_preserves_dev_and_previous_releases(tmp_path, monkeypatch):
     docs_build = _load_docs_build_script()
     published_site = tmp_path / "published"

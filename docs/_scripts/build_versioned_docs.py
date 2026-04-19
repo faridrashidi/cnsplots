@@ -624,6 +624,24 @@ def _copy_preserved_versions(
     return sorted(preserved_release_names, key=_version_sort_key), preserved_dev
 
 
+def _resolve_published_latest_release(
+    existing_site_dir: Path, preserved_release_names: list[str]
+) -> str | None:
+    """Return the stable release currently published as latest on gh-pages."""
+    latest_alias = existing_site_dir / LATEST_DOCS_NAME
+    if latest_alias.is_symlink():
+        target_name = Path(os.readlink(latest_alias)).name
+        if target_name in preserved_release_names and RELEASE_TAG_PATTERN.fullmatch(
+            target_name
+        ):
+            return target_name
+
+    if not preserved_release_names:
+        return None
+
+    return max(preserved_release_names, key=_version_sort_key)
+
+
 def _rewrite_metadata_entry(
     entry: dict[str, object], outputdir: Path, confdir: Path | None = None
 ) -> dict[str, object]:
@@ -743,14 +761,21 @@ def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
         _build_bootstrap_site(output_dir, latest_release_tag)
         return
 
-    all_metadata = _dump_multiversion_metadata(output_dir, latest_release_tag)
-    if latest_release_tag not in all_metadata:
-        raise RuntimeError(
-            f"Missing metadata for the latest release tag {latest_release_tag}."
-        )
-
     with _temporary_worktree(remote_ref) as existing_site_dir:
-        if not (existing_site_dir / latest_release_tag).exists():
+        preserved_release_names = sorted(
+            (
+                path.name
+                for path in existing_site_dir.iterdir()
+                if path.is_dir()
+                and not path.is_symlink()
+                and RELEASE_TAG_PATTERN.fullmatch(path.name)
+            ),
+            key=_version_sort_key,
+        )
+        published_latest_release_tag = _resolve_published_latest_release(
+            existing_site_dir, preserved_release_names
+        )
+        if published_latest_release_tag is None:
             _build_bootstrap_site(output_dir, latest_release_tag)
             return
 
@@ -758,25 +783,29 @@ def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
         preserved_release_names, _ = _copy_preserved_versions(
             existing_site_dir, output_dir
         )
-        if latest_release_tag not in preserved_release_names:
-            _build_bootstrap_site(output_dir, latest_release_tag)
-            return
 
-        metadata = _build_version_metadata(
-            all_metadata,
-            output_dir,
-            [DEV_DOCS_NAME, *preserved_release_names],
-            DEV_DOCS_NAME,
-            DOCS_DIR,
-        )
-        _build_single_version_docs(
-            DEV_DOCS_NAME,
-            output_dir / DEV_DOCS_NAME,
-            metadata,
-            latest_release_tag,
+    all_metadata = _dump_multiversion_metadata(output_dir, published_latest_release_tag)
+    if published_latest_release_tag not in all_metadata:
+        raise RuntimeError(
+            "Missing metadata for the latest published release tag "
+            f"{published_latest_release_tag}."
         )
 
-    _write_version_symlink(output_dir, LATEST_DOCS_NAME, latest_release_tag)
+    metadata = _build_version_metadata(
+        all_metadata,
+        output_dir,
+        [DEV_DOCS_NAME, *preserved_release_names],
+        DEV_DOCS_NAME,
+        DOCS_DIR,
+    )
+    _build_single_version_docs(
+        DEV_DOCS_NAME,
+        output_dir / DEV_DOCS_NAME,
+        metadata,
+        published_latest_release_tag,
+    )
+
+    _write_version_symlink(output_dir, LATEST_DOCS_NAME, published_latest_release_tag)
     _finalize_site(output_dir)
 
 
