@@ -3,7 +3,7 @@ from __future__ import annotations
 # https://github.com/Pierre-Sassoulas/pySankey
 import warnings
 from collections import defaultdict
-from typing import Any
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,9 +23,9 @@ def check_data_matches_labels(
     if len(labels) > 0:
         data_set: set[str]
         if isinstance(data, list):
-            data_set = set(data)
+            data_set = set(cast("list[str]", data))
         elif isinstance(data, pd.Series):
-            data_set = set(data.unique().tolist())
+            data_set = set(cast("list[str]", data.unique().tolist()))
         else:
             data_set = data
         label_set: set[str] = set(labels) if isinstance(labels, list) else labels
