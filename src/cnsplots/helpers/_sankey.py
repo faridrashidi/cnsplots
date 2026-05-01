@@ -48,7 +48,7 @@ def sankeyplot(
     rightLabels: list[str] | None = None,
     aspect: int = 4,
     rightColor: bool = False,
-    fontsize: int = 14,
+    fontsize: int | float = 14,
     label_rotation: float = 0,
     figureName: str | None = None,
     closePlot: bool = False,
@@ -229,7 +229,7 @@ def determine_widths(
 def draw_vertical_bars(
     ax: Any,
     colorDict: dict[str, tuple[float, float, float]] | dict[str, str],
-    fontsize: int,
+    fontsize: int | float,
     leftLabels: list[str],
     leftWidths: dict,
     rightLabels: list[str],

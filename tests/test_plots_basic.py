@@ -119,6 +119,36 @@ def test_barplot_and_lollipopplot(
     assert calls
 
 
+def test_categorical_annotations_use_legend_fontsize(
+    categorical_df: pd.DataFrame,
+) -> None:
+    with cns.settings.context(legend_fontsize=13):
+        cns.figure(120, 120)
+        bar_ax = cns.barplot(categorical_df, x="group", y="value", addtip=True)
+        assert {text.get_fontsize() for text in bar_ax.texts} == {13}
+
+        cns.figure(120, 120)
+        lollipop_ax = cns.lollipopplot(
+            categorical_df, x="group", y="value", addtip=True
+        )
+        assert {text.get_fontsize() for text in lollipop_ax.texts} == {13}
+
+        cns.figure(120, 120)
+        donut_ax = cns.donutplot(categorical_df, x="group")
+        center_label = next(
+            text for text in donut_ax.texts if text.get_text() == "group"
+        )
+        assert center_label.get_fontsize() == pytest.approx(13)
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        donut_ax = cns.donutplot(categorical_df, x="group")
+        center_label = next(
+            text for text in donut_ax.texts if text.get_text() == "group"
+        )
+        assert center_label.get_fontsize() == pytest.approx(12)
+
+
 def test_stack_strip_pie_and_donut_plots(
     categorical_df: pd.DataFrame,
     stack_df: pd.DataFrame,
@@ -239,6 +269,27 @@ def test_distribution_wrappers(
     cns.figure(120, 120)
     ax6 = cns.qqplot(numeric_df, x="x")
     assert ax6 is plt.gca()
+
+
+def test_distribution_annotations_use_legend_fontsize(
+    numeric_df: pd.DataFrame,
+    categorical_df: pd.DataFrame,
+) -> None:
+    with cns.settings.context(legend_fontsize=13):
+        cns.figure(120, 120)
+        kde_ax = cns.kdeplot(numeric_df, x="x", add_mode=True)
+        assert kde_ax.texts
+        assert {text.get_fontsize() for text in kde_ax.texts} == {13}
+
+        cns.figure(120, 120)
+        ridge_ax = cns.ridgeplot(categorical_df, x="value", y="group")
+        assert {text.get_fontsize() for text in ridge_ax.texts} == {13}
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        kde_ax = cns.kdeplot(numeric_df, x="x", add_mode=True)
+        assert kde_ax.texts
+        assert {text.get_fontsize() for text in kde_ax.texts} == {12}
 
 
 def test_pieplot_uses_legend_fontsize(categorical_df: pd.DataFrame) -> None:
@@ -441,3 +492,17 @@ def test_sets_and_specialized_plots(
     cns.figure(120, 120)
     ax3 = cns.rocplot(roc_df, "truth", ["model_a", "model_b"])
     assert len(ax3.lines) == 3
+
+
+def test_sankey_annotations_use_legend_fontsize(sankey_df: pd.DataFrame) -> None:
+    with cns.settings.context(legend_fontsize=13):
+        cns.figure(120, 120)
+        ax = cns.sankeyplot(sankey_df, x="source", y="target")
+        assert ax.texts
+        assert {text.get_fontsize() for text in ax.texts} == {13}
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        ax = cns.sankeyplot(sankey_df, x="source", y="target")
+        assert ax.texts
+        assert {text.get_fontsize() for text in ax.texts} == {12}
