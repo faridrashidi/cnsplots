@@ -27,6 +27,13 @@ from cnsplots._validation import (
 logger = logging.getLogger(__name__)
 
 
+def _legend_fontsize() -> int | float:
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        return cns.settings.title_fontsize
+    return legend_fontsize
+
+
 def boxplot(
     data: pd.DataFrame,
     x: str,
@@ -407,7 +414,7 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
                 f"{mode:.2f}",
                 ha="center",
                 va="bottom",
-                fontsize=7,
+                fontsize=_legend_fontsize(),
                 color=kde_color,
                 bbox=dict(facecolor="white", edgecolor="none", pad=2),
             )
@@ -555,7 +562,7 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
             cat,
             ha="right",
             va="bottom",
-            fontsize=plt.rcParams.get("xtick.labelsize", 7),
+            fontsize=_legend_fontsize(),
         )
 
     ax.set_xlim(x_min, x_max)

@@ -846,6 +846,26 @@ def test_genomics_plots(
     assert ax5.get_xlabel() == "Normalized Enrichment Score (NES)"
 
 
+def test_volcanoplot_annotations_use_legend_fontsize(
+    volcano_df: pd.DataFrame,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_adjust = types.SimpleNamespace(adjust_text=lambda *args, **kwargs: None)
+    monkeypatch.setitem(sys.modules, "adjustText", fake_adjust)
+
+    with cns.settings.context(legend_fontsize=13):
+        cns.figure(120, 120)
+        ax = cns.volcanoplot(volcano_df, n_show=1)
+        assert ax.texts
+        assert {text.get_fontsize() for text in ax.texts} == {13}
+
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        ax = cns.volcanoplot(volcano_df, n_show=1)
+        assert ax.texts
+        assert {text.get_fontsize() for text in ax.texts} == {12}
+
+
 def test_sets_validation_errors(sets_fixture: dict[str, set[int]]) -> None:
     legacy_upsetplot = cast(Any, cns.upsetplot)
     legacy_vennplot = cast(Any, cns.vennplot)
@@ -931,3 +951,58 @@ def test_vennplot_uses_contrast_text_color(
     assert subset_labels["10"].color == "white"
     assert subset_labels["01"].color == "white"
     assert subset_labels["11"].color == "white"
+
+
+def test_vennplot_annotations_use_legend_fontsize(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeLabel:
+        def __init__(self) -> None:
+            self.fontsize: float | None = None
+
+        def set_fontsize(self, value: float) -> None:
+            self.fontsize = value
+
+        def set_color(self, value: str) -> None:
+            pass
+
+    class FakePatch:
+        def set_edgecolor(self, value: str) -> None:
+            pass
+
+        def set_linewidth(self, value: float) -> None:
+            pass
+
+        def get_facecolor(self) -> tuple[float, float, float, float]:
+            return (0.1, 0.1, 0.1, 0.8)
+
+    def build_fake_venn_obj() -> tuple[dict[str, FakeLabel], dict[str, FakeLabel]]:
+        subset_labels = {area: FakeLabel() for area in ["10", "01", "11"]}
+        set_labels = {area: FakeLabel() for area in ["A", "B"]}
+        patches = {area: FakePatch() for area in subset_labels}
+        fake_venn_obj = types.SimpleNamespace(
+            get_label_by_id=lambda area: subset_labels.get(area, set_labels.get(area)),
+            get_patch_by_id=lambda area: patches.get(area),
+        )
+        monkeypatch.setitem(
+            sys.modules,
+            "matplotlib_venn",
+            types.SimpleNamespace(venn2=lambda *args, **kwargs: fake_venn_obj),
+        )
+        return subset_labels, set_labels
+
+    subset_labels, set_labels = build_fake_venn_obj()
+    with cns.settings.context(legend_fontsize=13):
+        cns.figure(120, 120)
+        cns.vennplot([{1, 2}, {2, 3}], labels=["A", "B"])
+
+    assert {label.fontsize for label in subset_labels.values()} == {13}
+    assert {label.fontsize for label in set_labels.values()} == {13}
+
+    subset_labels, set_labels = build_fake_venn_obj()
+    with cns.settings.context(legend_fontsize=None, title_fontsize=12):
+        cns.figure(120, 120)
+        cns.vennplot([{1, 2}, {2, 3}], labels=["A", "B"])
+
+    assert {label.fontsize for label in subset_labels.values()} == {12}
+    assert {label.fontsize for label in set_labels.values()} == {12}

@@ -241,10 +241,11 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
         subsets = (lists[0], lists[1], lists[2])
         label_tuple = (labels[0], labels[1], labels[2])
         ax = venn.venn3(subsets, label_tuple, set_colors=colors, alpha=0.8)
+    legend_fontsize = _legend_fontsize()
     for area in areas:
         try:
             label = ax.get_label_by_id(area)
-            label.set_fontsize(6)
+            label.set_fontsize(legend_fontsize)
             patch = ax.get_patch_by_id(area)
             patch.set_edgecolor("black")
             patch.set_linewidth(0.5)
@@ -254,6 +255,6 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
         except AttributeError:
             pass
     for area in names:
-        ax.get_label_by_id(area).set_fontsize(7)
+        ax.get_label_by_id(area).set_fontsize(legend_fontsize)
 
     return ax

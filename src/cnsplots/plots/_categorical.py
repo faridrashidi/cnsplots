@@ -138,7 +138,7 @@ def barplot(
                 color="black",
                 ha="center",
                 rotation=0,
-                size=6,
+                size=_legend_fontsize(),
             )
     if pairs is not None:
         cns.utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
@@ -351,7 +351,7 @@ def lollipopplot(
                         color="black",
                         ha="center",
                         va="bottom",
-                        fontsize=6,
+                        fontsize=_legend_fontsize(),
                     )
         else:
             ax.hlines(
@@ -395,7 +395,7 @@ def lollipopplot(
                         color="black",
                         ha="left",
                         va="center",
-                        fontsize=6,
+                        fontsize=_legend_fontsize(),
                     )
     else:
         # Grouped: multiple stems per category
@@ -505,7 +505,7 @@ def lollipopplot(
                                 color="black",
                                 ha="center",
                                 va="bottom",
-                                fontsize=6,
+                                fontsize=_legend_fontsize(),
                             )
         else:
             ax.set_yticks(cat_positions)
@@ -525,7 +525,7 @@ def lollipopplot(
                                 color="black",
                                 ha="left",
                                 va="center",
-                                fontsize=6,
+                                fontsize=_legend_fontsize(),
                             )
 
     # Statistical annotations
@@ -925,7 +925,7 @@ def donutplot(
         legend=True,
         wedgeprops={"edgecolor": "black", "linewidth": 0.3, "width": 0.4},
     )
-    plt.annotate(x, (0, 0), size=7, ha="center", va="center")
+    plt.annotate(x, (0, 0), size=_legend_fontsize(), ha="center", va="center")
     cns.utils._remove_edge_from_legend_items(ax)
     legend_positions = {
         "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},

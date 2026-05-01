@@ -19,6 +19,13 @@ from cnsplots._validation import (
 )
 
 
+def _legend_fontsize() -> int | float:
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        return cns.settings.title_fontsize
+    return legend_fontsize
+
+
 def volcanoplot(
     data: pd.DataFrame,
     x: str = "log2FoldChange",
@@ -136,7 +143,7 @@ def volcanoplot(
                     t,
                     (x0, y0),
                     color=color,
-                    size=6,
+                    size=_legend_fontsize(),
                     path_effects=[pe.withStroke(linewidth=1, foreground="white")],
                 )
             )
