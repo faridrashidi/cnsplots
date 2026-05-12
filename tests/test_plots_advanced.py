@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import sys
 import types
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import anndata as ad
 import matplotlib.pyplot as plt
@@ -12,6 +12,8 @@ import pandas as pd
 import pytest
 from matplotlib.axes import Axes
 from matplotlib.colorbar import Colorbar
+from matplotlib.collections import LineCollection
+from matplotlib.colors import to_rgba
 from matplotlib.legend import Legend
 
 import cnsplots as cns
@@ -32,6 +34,22 @@ def _linked_colorbar(ax: Axes) -> Colorbar | None:
         if isinstance(colorbar, Colorbar):
             return colorbar
     return None
+
+
+def _censor_mark_collections(ax: Axes) -> list[LineCollection]:
+    return [
+        collection
+        for collection in ax.collections
+        if isinstance(collection, LineCollection)
+    ]
+
+
+def _line_y_at_x(line: Any, x: float) -> float:
+    xdata = np.asarray(line.get_xdata(), dtype=float)
+    ydata = np.asarray(line.get_ydata(), dtype=float)
+    matches = np.flatnonzero(np.isclose(xdata, x))
+    assert matches.size > 0
+    return float(ydata[matches[-1]])
 
 
 def _relative_axes_bounds(
@@ -160,6 +178,156 @@ def test_survival_plots(
     single_group = competing_risk_df[competing_risk_df["group"] == "A"].copy()
     ax4 = cns.cumulativeincidenceplot(single_group, "time", "event", "group")
     assert ax4 is plt.gca()
+
+
+@pytest.mark.parametrize(
+    ("position", "lower_delta", "upper_delta"),
+    [
+        ("line", -0.01, 0.01),
+        ("above", 0.0, 0.02),
+        ("below", -0.02, 0.0),
+    ],
+)
+def test_cumulativeincidenceplot_censor_mark_positions(
+    competing_risk_df: pd.DataFrame,
+    position: Literal["line", "above", "below"],
+    lower_delta: float,
+    upper_delta: float,
+) -> None:
+    cns.figure(120, 120)
+    ax = cns.cumulativeincidenceplot(
+        competing_risk_df,
+        "time",
+        "event",
+        "group",
+        censor_mark_position=position,
+    )
+
+    curve_lines = ax.get_lines()
+    censor_collections = _censor_mark_collections(ax)
+
+    assert len(curve_lines) == 2
+    assert len(censor_collections) == 2
+
+    for line, collection in zip(curve_lines, censor_collections, strict=True):
+        assert collection.get_colors()[0] == pytest.approx(to_rgba(line.get_color()))
+        assert len(collection.get_segments()) == 2
+
+        for segment in collection.get_segments():
+            x = float(segment[0, 0])
+            y0 = float(segment[0, 1])
+            y1 = float(segment[1, 1])
+            curve_y = _line_y_at_x(line, x)
+
+            assert segment[1, 0] == pytest.approx(x)
+            assert y0 == pytest.approx(curve_y + lower_delta)
+            assert y1 == pytest.approx(curve_y + upper_delta)
+
+
+def test_cumulativeincidenceplot_censor_marks_can_be_hidden(
+    competing_risk_df: pd.DataFrame,
+) -> None:
+    cns.figure(120, 120)
+    ax = cns.cumulativeincidenceplot(
+        competing_risk_df,
+        "time",
+        "event",
+        "group",
+        censor_mark_position="none",
+    )
+
+    assert len(ax.get_lines()) == 2
+    assert _censor_mark_collections(ax) == []
+
+
+def test_cumulativeincidenceplot_censor_mark_positions_by_hue_order(
+    competing_risk_df: pd.DataFrame,
+) -> None:
+    group_c = competing_risk_df[competing_risk_df["group"] == "A"].copy()
+    group_c["group"] = "C"
+    three_group_df = pd.concat([competing_risk_df, group_c], ignore_index=True)
+
+    cns.figure(120, 120)
+    ax = cns.cumulativeincidenceplot(
+        three_group_df,
+        "time",
+        "event",
+        "group",
+        hue_order=["A", "B", "C"],
+        censor_mark_position=["above", "none", "below"],
+        censor_mark_length=0.04,
+    )
+
+    curve_lines = ax.get_lines()
+    censor_collections = _censor_mark_collections(ax)
+
+    assert len(curve_lines) == 3
+    assert len(censor_collections) == 2
+
+    expected_marks = [
+        (curve_lines[0], censor_collections[0], 0.0, 0.04),
+        (curve_lines[2], censor_collections[1], -0.04, 0.0),
+    ]
+    for line, collection, lower_delta, upper_delta in expected_marks:
+        assert collection.get_colors()[0] == pytest.approx(to_rgba(line.get_color()))
+        assert len(collection.get_segments()) == 2
+
+        for segment in collection.get_segments():
+            x = float(segment[0, 0])
+            curve_y = _line_y_at_x(line, x)
+            assert segment[0, 1] == pytest.approx(curve_y + lower_delta)
+            assert segment[1, 1] == pytest.approx(curve_y + upper_delta)
+
+
+def test_cumulativeincidenceplot_invalid_censor_mark_position_raises(
+    competing_risk_df: pd.DataFrame,
+) -> None:
+    cumulativeincidenceplot = cast(Any, cns.cumulativeincidenceplot)
+
+    with pytest.raises(ValueError, match="censor_mark_position"):
+        cumulativeincidenceplot(
+            competing_risk_df,
+            "time",
+            "event",
+            "group",
+            censor_mark_position="middle",
+        )
+
+    with pytest.raises(ValueError, match="invalid position"):
+        cumulativeincidenceplot(
+            competing_risk_df,
+            "time",
+            "event",
+            "group",
+            censor_mark_position=["above", "middle"],
+        )
+
+    with pytest.raises(ValueError, match="one position per hue_order group"):
+        cumulativeincidenceplot(
+            competing_risk_df,
+            "time",
+            "event",
+            "group",
+            censor_mark_position=["above"],
+        )
+
+    with pytest.raises(TypeError, match="string position or a list"):
+        cumulativeincidenceplot(
+            competing_risk_df,
+            "time",
+            "event",
+            "group",
+            censor_mark_position={"A": "above"},
+        )
+
+    with pytest.raises(ValueError, match="censor_mark_length"):
+        cumulativeincidenceplot(
+            competing_risk_df,
+            "time",
+            "event",
+            "group",
+            censor_mark_length=-0.01,
+        )
 
 
 def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
