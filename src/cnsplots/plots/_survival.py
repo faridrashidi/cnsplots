@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 import logging
-from typing import TYPE_CHECKING, Any
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
-    from matplotlib.axes import Axes
     import numpy as np
     import pandas as pd
+    from matplotlib.axes import Axes
 
 import matplotlib.pyplot as plt
 import num2tex
@@ -26,6 +26,87 @@ from cnsplots._validation import (
 )
 
 logger = logging.getLogger(__name__)
+
+CensorMarkPosition = Literal["line", "above", "below", "none"]
+VisibleCensorMarkPosition = Literal["line", "above", "below"]
+
+_CIF_Y_LIMITS = (-0.05, 1.01)
+_DEFAULT_CENSOR_MARK_LENGTH = 0.02
+_CENSOR_MARK_POSITIONS = ("line", "above", "below", "none")
+
+
+def _format_valid_censor_mark_positions() -> str:
+    return "', '".join(_CENSOR_MARK_POSITIONS)
+
+
+def _validate_censor_mark_position(
+    censor_mark_position: CensorMarkPosition | list[CensorMarkPosition],
+    hue_order: Sequence[Any],
+) -> None:
+    valid_positions = _format_valid_censor_mark_positions()
+    if isinstance(censor_mark_position, str):
+        if censor_mark_position not in _CENSOR_MARK_POSITIONS:
+            raise ValueError(
+                "[cumulativeincidenceplot] Parameter 'censor_mark_position' must be one "
+                f"of '{valid_positions}', got {censor_mark_position!r}"
+            )
+        return
+
+    if not isinstance(censor_mark_position, list):
+        raise TypeError(
+            "[cumulativeincidenceplot] Parameter 'censor_mark_position' must be a "
+            "string position or a list of positions"
+        )
+
+    if len(censor_mark_position) != len(hue_order):
+        raise ValueError(
+            "[cumulativeincidenceplot] Parameter 'censor_mark_position' must provide "
+            "one position per hue_order group when passing a list, got "
+            f"{len(censor_mark_position)} position(s) for {len(hue_order)} group(s)"
+        )
+
+    invalid_positions = {
+        index: position
+        for index, position in enumerate(censor_mark_position)
+        if position not in _CENSOR_MARK_POSITIONS
+    }
+    if invalid_positions:
+        raise ValueError(
+            "[cumulativeincidenceplot] Parameter 'censor_mark_position' contains "
+            f"invalid position(s) {invalid_positions!r}. Values must be one of "
+            f"'{valid_positions}'"
+        )
+
+
+def _resolve_censor_mark_position(
+    censor_mark_position: CensorMarkPosition | list[CensorMarkPosition],
+    group_index: int,
+) -> CensorMarkPosition:
+    if isinstance(censor_mark_position, str):
+        return censor_mark_position
+    return censor_mark_position[group_index]
+
+
+def _censor_mark_extents(
+    censor_y: np.ndarray,
+    position: VisibleCensorMarkPosition,
+    length: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    if position == "line":
+        offset = length / 2
+        ymin = censor_y - offset
+        ymax = censor_y + offset
+    elif position == "above":
+        ymin = censor_y
+        ymax = censor_y + length
+    else:
+        ymin = censor_y - length
+        ymax = censor_y
+
+    return (
+        np.clip(ymin, _CIF_Y_LIMITS[0], _CIF_Y_LIMITS[1]),
+        np.clip(ymax, _CIF_Y_LIMITS[0], _CIF_Y_LIMITS[1]),
+    )
 
 
 def survivalplot(
@@ -200,6 +281,8 @@ def cumulativeincidenceplot(
     risk_table_rows: tuple[str, ...] = ("At risk",),
     risk_table_ypos: float = -0.2,
     xticks: np.ndarray | Sequence[int | float] | None = None,
+    censor_mark_position: CensorMarkPosition | list[CensorMarkPosition] = "line",
+    censor_mark_length: float = _DEFAULT_CENSOR_MARK_LENGTH,
 ) -> Axes:
     """
     Create a cumulative incidence plot for competing risks analysis.
@@ -231,6 +314,16 @@ def cumulativeincidenceplot(
         Vertical position of the risk table relative to the plot.
     xticks : array-like, optional
         Specific x-axis tick positions.
+    censor_mark_position : {'line', 'above', 'below', 'none'} or list, default: 'line'
+        Where to draw censoring marks relative to each cumulative incidence curve.
+        ``'line'`` draws short vertical marks crossing the curve, ``'above'`` draws
+        marks from the curve upward, ``'below'`` draws marks up to the curve, and
+        ``'none'`` hides censoring marks. Pass a list with one value per hue group
+        to control groups separately, for example
+        ``['above', 'none', 'below']`` for ``hue_order=['A', 'B', 'C']``.
+    censor_mark_length : float, default: 0.02
+        Length of each vertical censoring mark in cumulative-incidence probability
+        units. The same length is used for all curves.
 
     Returns
     -------
@@ -277,12 +370,19 @@ def cumulativeincidenceplot(
     # Validate sufficient data
     validate_sufficient_data(data, duration, 2, "cumulativeincidenceplot")
 
+    if censor_mark_length < 0:
+        raise ValueError(
+            "[cumulativeincidenceplot] Parameter 'censor_mark_length' must be "
+            f"non-negative, got {censor_mark_length!r}"
+        )
+
     import lifelines as ll
     from lifelines.plotting import add_at_risk_counts
 
     ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
+    _validate_censor_mark_position(censor_mark_position, hue_order)
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
     fitters = []
@@ -307,9 +407,27 @@ def cumulativeincidenceplot(
         else:
             ax = fitter.plot(ax=ax, linewidth=1, ci_show=False)
         line_color = ax.get_lines()[-1].get_color()
-        ax.plot(df[duration], df["CIF_1"], "+", markersize=3, color=line_color)
+        group_censor_mark_position = _resolve_censor_mark_position(
+            censor_mark_position, i
+        )
+        if group_censor_mark_position != "none":
+            censor_df = df[[duration, "CIF_1"]].dropna()
+            if not censor_df.empty:
+                censor_y = censor_df["CIF_1"].to_numpy(dtype=float)
+                ymin, ymax = _censor_mark_extents(
+                    censor_y,
+                    group_censor_mark_position,
+                    censor_mark_length,
+                )
+                ax.vlines(
+                    censor_df[duration],
+                    ymin,
+                    ymax,
+                    colors=line_color,
+                    linewidth=1,
+                )
     assert ax is not None
-    ax.set_ylim(-0.05, 1.01)
+    ax.set_ylim(_CIF_Y_LIMITS)
     ax.set_ylabel("Cumulative incidence probability")
     ax.set_xlabel("Time (Years)")
     specified_xticks = None
