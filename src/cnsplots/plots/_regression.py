@@ -348,10 +348,10 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
 
     ax = plt.gca()
 
-    sites = []
+    sites: list[str] = []
     i = 1.0
     for site, subdf in data.groupby(x):
-        sites.append(site)
+        sites.append(str(site))
         h = subdf[subdf[hue] == hues[0]][y].values
         d = subdf[subdf[hue] == hues[1]][y].values
 
