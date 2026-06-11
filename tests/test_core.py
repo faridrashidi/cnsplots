@@ -161,6 +161,7 @@ def test_settings_behavior() -> None:
     settings.legend_title_fontsize = 12
     settings.pvalue_format = "threshold"
     settings.pvalue_fontsize = 9
+    settings.pvalue_loc = "outside"
     settings.annotation_auto_contrast = False
     settings.legend_frameon = True
     settings.legend_markerscale = 1.2
@@ -215,6 +216,7 @@ def test_settings_behavior() -> None:
     assert "font_sans_serif=('Arial', 'DejaVu Sans')" in repr(settings)
     assert "pvalue_format='threshold'" in repr(settings)
     assert "pvalue_fontsize=9" in repr(settings)
+    assert "pvalue_loc='outside'" in repr(settings)
     assert "annotation_auto_contrast=False" in repr(settings)
     assert "panel_label_left" not in repr(settings)
     assert "panel_label_top" not in repr(settings)
@@ -248,6 +250,7 @@ def test_settings_behavior() -> None:
         legend_fontsize=None,
         pvalue_format="full",
         pvalue_fontsize="large",
+        pvalue_loc="inside",
         annotation_auto_contrast=True,
         scanpy_figsize=(5.0, 4.0),
         panel_margin_top=6,
@@ -261,6 +264,7 @@ def test_settings_behavior() -> None:
         assert ctx.legend_fontsize is None
         assert ctx.pvalue_format == "full"
         assert ctx.pvalue_fontsize == "large"
+        assert ctx.pvalue_loc == "inside"
         assert ctx.annotation_auto_contrast is True
         assert ctx.scanpy_figsize == (5.0, 4.0)
         assert ctx.panel_margin_top == 6
@@ -273,6 +277,7 @@ def test_settings_behavior() -> None:
     assert settings.legend_fontsize == 11
     assert settings.pvalue_format == "threshold"
     assert settings.pvalue_fontsize == 9
+    assert settings.pvalue_loc == "outside"
     assert settings.annotation_auto_contrast is False
     assert settings.scanpy_figsize == (3.0, 4.0)
     assert settings.panel_margin_top == 2
@@ -338,6 +343,8 @@ def test_settings_behavior() -> None:
         settings.legend_fontsize = 0
     with pytest.raises(ValueError):
         settings.pvalue_format = "simple"
+    with pytest.raises(ValueError):
+        settings.pvalue_loc = "between"
     with pytest.raises(TypeError):
         settings.pvalue_fontsize = None
     with pytest.raises(TypeError):
@@ -363,6 +370,7 @@ def test_settings_behavior() -> None:
     assert settings.legend_fontsize == 7
     assert settings.pvalue_format == "star"
     assert settings.pvalue_fontsize == "small"
+    assert settings.pvalue_loc == "inside"
     assert settings.annotation_auto_contrast is True
     assert settings.scanpy_figsize == (2.5, 2.5)
     assert settings.panel_pad_left == 0
@@ -405,6 +413,8 @@ def test_settings_validation_errors() -> None:
         settings.legend_fontsize = 0
     with pytest.raises(ValueError, match="pvalue_format must be one of"):
         settings.pvalue_format = "simple"
+    with pytest.raises(ValueError, match="pvalue_loc must be one of"):
+        settings.pvalue_loc = "between"
     with pytest.raises(
         TypeError, match="pvalue_fontsize must be a positive number or string"
     ):
@@ -1147,7 +1157,11 @@ def test_utils_helpers_and_showcase_data(
     assert nonsig_formatted.startswith("$T P = ")
     assert r"\times 10^{-1}$" in nonsig_formatted
 
-    with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=9):
+    with cns.settings.context(
+        pvalue_format="threshold",
+        pvalue_fontsize=9,
+        pvalue_loc="outside",
+    ):
         _utils._p_value_helper(
             "Mann-Whitney",
             categorical_df,
@@ -1156,6 +1170,7 @@ def test_utils_helpers_and_showcase_data(
             "all",
         )
     formatter = DummyAnnotator.last._pvalue_format
+    assert DummyAnnotator.last.configured["loc"] == "outside"
     assert formatter.fontsize == 9
     assert formatter.format_data(DummyResult(0.2)) == "P > 0.05"
     assert formatter.format_data(DummyResult(0.049)) == "P < 0.05"
