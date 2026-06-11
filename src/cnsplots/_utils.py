@@ -673,7 +673,7 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
     annotator.configure(
         test=test if contingency is None else None,
         text_format="full" if resolved_format == "full" else "star",
-        loc="inside",
+        loc=cns.settings.pvalue_loc,
         line_width=0.5,
         line_offset=0,
         line_offset_to_group=0,

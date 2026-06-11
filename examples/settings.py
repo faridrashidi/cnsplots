@@ -44,6 +44,7 @@ print(f"scanpy_figsize: {cns.settings.scanpy_figsize}")
 print(f"multipanel_max_width: {cns.settings.multipanel_max_width}")
 print(f"panel defaults: {cns.settings.panel_width} x {cns.settings.panel_height} px")
 print(f"legend_out_bbox_to_anchor: {cns.settings.legend_out_bbox_to_anchor}")
+print(f"pvalue_loc: {cns.settings.pvalue_loc}")
 print(f"annotation_auto_contrast: {cns.settings.annotation_auto_contrast}")
 print(
     "panel_label_padding: "

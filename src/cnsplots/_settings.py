@@ -56,6 +56,7 @@ _LEGEND_LOCS = (
     "center",
 )
 _P_VALUE_FORMATS = ("star", "threshold", "full")
+_P_VALUE_LOCS = ("inside", "outside")
 
 
 @dataclass(frozen=True)
@@ -345,6 +346,11 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "small",
         lambda value: _validate_fontsize("pvalue_fontsize", value),
         "Default font size for p-value annotations. Accepts a positive number or matplotlib named size string.",
+    ),
+    "pvalue_loc": _spec(
+        "inside",
+        lambda value: _validate_string_choice("pvalue_loc", value, _P_VALUE_LOCS),
+        "Default p-value annotation location. Use 'inside' or 'outside'.",
     ),
     "annotation_auto_contrast": _spec(
         True,
