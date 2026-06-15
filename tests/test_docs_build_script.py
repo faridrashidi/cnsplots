@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -26,7 +27,15 @@ def _write_version_dir(root: Path, version_name: str) -> Path:
         f"<html>{version_name}</html>", encoding="utf-8"
     )
     (version_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+    (version_dir / "_static" / "js").mkdir(parents=True)
+    (version_dir / "_static" / "js" / "repo-stats.js").write_text(
+        f"// stale {version_name}\n", encoding="utf-8"
+    )
     return version_dir
+
+
+def _read_versions_manifest(root: Path) -> list[dict[str, object]]:
+    return json.loads((root / "versions.json").read_text(encoding="utf-8"))
 
 
 def test_main_build_bootstraps_when_gh_pages_branch_is_missing(tmp_path, monkeypatch):
@@ -125,6 +134,11 @@ def test_main_build_recreates_latest_symlink_when_alias_is_missing(
     assert (output_dir / "latest" / "index.html").read_text(encoding="utf-8") == (
         "<html>v0.1.0</html>"
     )
+    assert _read_versions_manifest(output_dir) == [
+        {"version": "dev", "title": "dev", "aliases": []},
+        {"version": "v0.1.0", "title": "v0.1.0", "aliases": ["latest"]},
+        {"version": "v0.0.4", "title": "v0.0.4", "aliases": []},
+    ]
 
 
 def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
@@ -231,6 +245,17 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
         "cnsplots.farid.one"
     )
     assert (output_dir / ".nojekyll").exists()
+    assert (output_dir / "versions.json").exists()
+    assert _read_versions_manifest(output_dir) == [
+        {"version": "dev", "title": "dev", "aliases": []},
+        {"version": "v0.1.0", "title": "v0.1.0", "aliases": ["latest"]},
+        {"version": "v0.0.4", "title": "v0.0.4", "aliases": []},
+    ]
+    assert (output_dir / "v0.1.0" / "_static" / "js" / "repo-stats.js").read_text(
+        encoding="utf-8"
+    ) == (docs_build.DOCS_DIR / "_static" / "js" / "repo-stats.js").read_text(
+        encoding="utf-8"
+    )
 
     sitemap = (output_dir / "sitemap.xml").read_text(encoding="utf-8")
     assert "/latest/sitemap.xml" in sitemap
@@ -347,6 +372,11 @@ def test_main_build_keeps_published_latest_when_newer_tag_is_unpublished(
     assert (output_dir / "v0.1.0" / "index.html").read_text(encoding="utf-8") == (
         "<html>v0.1.0</html>"
     )
+    assert _read_versions_manifest(output_dir) == [
+        {"version": "dev", "title": "dev", "aliases": []},
+        {"version": "v0.2.0", "title": "v0.2.0", "aliases": ["latest"]},
+        {"version": "v0.1.0", "title": "v0.1.0", "aliases": []},
+    ]
 
 
 def test_release_build_preserves_dev_and_previous_releases(tmp_path, monkeypatch):
@@ -454,6 +484,17 @@ def test_release_build_preserves_dev_and_previous_releases(tmp_path, monkeypatch
     assert (output_dir / "latest").is_symlink()
     assert (output_dir / "latest").readlink() == Path("v0.2.0")
     assert "latest/" in (output_dir / "index.html").read_text(encoding="utf-8")
+    assert _read_versions_manifest(output_dir) == [
+        {"version": "dev", "title": "dev", "aliases": []},
+        {"version": "v0.2.0", "title": "v0.2.0", "aliases": ["latest"]},
+        {"version": "v0.1.0", "title": "v0.1.0", "aliases": []},
+        {"version": "v0.0.4", "title": "v0.0.4", "aliases": []},
+    ]
+    assert (output_dir / "v0.1.0" / "_static" / "js" / "repo-stats.js").read_text(
+        encoding="utf-8"
+    ) == (docs_build.DOCS_DIR / "_static" / "js" / "repo-stats.js").read_text(
+        encoding="utf-8"
+    )
 
 
 def test_bootstrap_build_only_builds_dev_and_latest_release(tmp_path, monkeypatch):
@@ -548,6 +589,28 @@ def test_bootstrap_build_only_builds_dev_and_latest_release(tmp_path, monkeypatc
     assert (output_dir / "latest" / "index.html").read_text(encoding="utf-8") == (
         "<html>v0.1.0</html>"
     )
+    assert _read_versions_manifest(output_dir) == [
+        {"version": "dev", "title": "dev", "aliases": []},
+        {"version": "v0.1.0", "title": "v0.1.0", "aliases": ["latest"]},
+    ]
+
+
+def test_versions_manifest_uses_published_versions_in_order(tmp_path):
+    docs_build = _load_docs_build_script()
+    output_dir = tmp_path / "site"
+    _write_version_dir(output_dir, "v0.1.0")
+    _write_version_dir(output_dir, "v0.3.0")
+    _write_version_dir(output_dir, "v0.2.0")
+    _write_version_dir(output_dir, "dev")
+    (output_dir / "v9.9.9").mkdir()
+    (output_dir / "latest").symlink_to("v0.3.0")
+
+    assert docs_build._build_versions_manifest(output_dir) == [
+        {"version": "dev", "title": "dev", "aliases": []},
+        {"version": "v0.3.0", "title": "v0.3.0", "aliases": ["latest"]},
+        {"version": "v0.2.0", "title": "v0.2.0", "aliases": []},
+        {"version": "v0.1.0", "title": "v0.1.0", "aliases": []},
+    ]
 
 
 def test_root_404_matches_latest_docs_ui(tmp_path):
