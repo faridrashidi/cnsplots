@@ -27,6 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCS_DIR = REPO_ROOT / "docs"
 ROBOTS_FILE = DOCS_DIR / "robots.txt"
 COMPAT_SITE_DIR = Path(__file__).resolve().parent / "compat"
+REFRESHED_VERSION_STATIC_ASSETS = (Path("_static/js/repo-stats.js"),)
 
 
 def _run(*args: str, env: dict[str, str] | None = None, cwd: Path = REPO_ROOT) -> str:
@@ -506,6 +507,72 @@ def _write_root_sitemap_index(output_dir: Path) -> None:
     )
 
 
+def _published_version_index_exists(output_dir: Path, version_name: str) -> bool:
+    """Return whether a published docs version has an index page."""
+    return (output_dir / version_name / "index.html").exists()
+
+
+def _resolve_latest_alias_target(output_dir: Path) -> str | None:
+    """Return the release version targeted by the latest docs alias."""
+    latest_alias = output_dir / LATEST_DOCS_NAME
+    if latest_alias.is_symlink():
+        target_name = Path(os.readlink(latest_alias)).name
+        if RELEASE_TAG_PATTERN.fullmatch(
+            target_name
+        ) and _published_version_index_exists(output_dir, target_name):
+            return target_name
+
+    if latest_alias.exists():
+        target_name = latest_alias.resolve().name
+        if RELEASE_TAG_PATTERN.fullmatch(
+            target_name
+        ) and _published_version_index_exists(output_dir, target_name):
+            return target_name
+
+    return None
+
+
+def _build_versions_manifest(output_dir: Path) -> list[dict[str, object]]:
+    """Return the published docs versions manifest for dynamic navigation."""
+    latest_release_name = _resolve_latest_alias_target(output_dir)
+    entries: list[dict[str, object]] = []
+
+    if _published_version_index_exists(output_dir, DEV_DOCS_NAME):
+        entries.append(
+            {"version": DEV_DOCS_NAME, "title": DEV_DOCS_NAME, "aliases": []}
+        )
+
+    release_names = sorted(
+        (
+            path.name
+            for path in output_dir.iterdir()
+            if path.is_dir()
+            and not path.is_symlink()
+            and RELEASE_TAG_PATTERN.fullmatch(path.name)
+            and (path / "index.html").exists()
+        ),
+        key=_version_sort_key,
+        reverse=True,
+    )
+    entries.extend(
+        {
+            "version": name,
+            "title": name,
+            "aliases": [LATEST_DOCS_NAME] if name == latest_release_name else [],
+        }
+        for name in release_names
+    )
+    return entries
+
+
+def _write_versions_manifest(output_dir: Path) -> None:
+    """Write the dynamic docs version manifest to the site root."""
+    _write_text(
+        output_dir / "versions.json",
+        f"{json.dumps(_build_versions_manifest(output_dir), indent=2)}\n",
+    )
+
+
 def _write_cname(output_dir: Path) -> None:
     """Write the custom domain used by GitHub Pages when configured."""
     hostname = urlparse(SITE_URL).hostname
@@ -527,6 +594,26 @@ def _docs_env(latest_release_tag: str) -> dict[str, str]:
     return env
 
 
+def _refresh_version_static_assets(output_dir: Path) -> None:
+    """Refresh shared static assets inside all assembled docs versions."""
+    version_names = [
+        path.name
+        for path in output_dir.iterdir()
+        if path.is_dir()
+        and not path.is_symlink()
+        and (path.name == DEV_DOCS_NAME or RELEASE_TAG_PATTERN.fullmatch(path.name))
+    ]
+    for version_name in version_names:
+        version_dir = output_dir / version_name
+        for asset_path in REFRESHED_VERSION_STATIC_ASSETS:
+            source_path = DOCS_DIR / asset_path
+            target_path = version_dir / asset_path
+            if not source_path.exists():
+                continue
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, target_path)
+
+
 def _finalize_site(output_dir: Path) -> None:
     """Write the top-level files expected by GitHub Pages."""
     if not (output_dir / LATEST_DOCS_NAME).exists():
@@ -534,6 +621,8 @@ def _finalize_site(output_dir: Path) -> None:
             f"Latest docs alias was not assembled at {output_dir / LATEST_DOCS_NAME}."
         )
 
+    _refresh_version_static_assets(output_dir)
+    _write_versions_manifest(output_dir)
     _write_root_redirects(output_dir)
     shutil.copy2(ROBOTS_FILE, output_dir / "robots.txt")
     _write_text(output_dir / ".nojekyll", "")
