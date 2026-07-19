@@ -124,8 +124,8 @@ def volcanoplot(
         de.loc[de[symbol].isin(show_list) & down, hue] = "Down"
     de = de.sort_values(hue)
 
-    blue = utils.get_hexcolors_from_apalette([0], "BlueRed")
-    red = utils.get_hexcolors_from_apalette([1], "BlueRed")
+    blue = utils.get_hexcolors_from_apalette([0], "BlueRed")[0]
+    red = utils.get_hexcolors_from_apalette([1], "BlueRed")[0]
     ax = sns.scatterplot(
         data=de,
         x=x,

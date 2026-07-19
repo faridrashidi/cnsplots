@@ -1066,7 +1066,7 @@ def test_utils_helpers_and_showcase_data(
     ]
     assert _utils._is_qualitative_cmap("Set1") is True
     assert _utils._is_qualitative_cmap("viridis") is False
-    assert len(_utils._get_hex_colors_from_colorbar("viridis", 3)) == 4
+    assert len(_utils._get_hex_colors_from_colorbar("viridis", 3)) == 3
 
     fig2, ax2 = plt.subplots()
     ax2.scatter([0, 1], [0, 1], label="Group", edgecolors="black")

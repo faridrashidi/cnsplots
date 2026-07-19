@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 import itertools
 import math
-import operator
 import os
 import re
 from pathlib import Path
@@ -20,6 +19,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import num2tex
+import numpy as np
 import palettable
 import pandas as pd
 import scipy.stats as stats
@@ -516,19 +516,16 @@ def get_hexcolors_from_apalette(
     >>> # Extract first two colors from Set1
     >>> colors = cns.get_hexcolors_from_apalette([0, 1], "Set1")
     >>> colors
-    ['#E41A1C', '#377EB8']
+    ['#e41a1c', '#377eb8']
 
     >>> # Extract specific colors from custom palette
     >>> custom = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00"]
     >>> selected = cns.get_hexcolors_from_apalette([0, 2], custom)
     >>> selected
-    ['#FF0000', '#0000FF']
+    ['#ff0000', '#0000ff']
     """
-    if isinstance(palette, str):
-        colors = palettes(palette)
-        return list(operator.itemgetter(*alist)(colors))
-    else:
-        return list(operator.itemgetter(*alist)(palette))
+    colors = palettes(palette) if isinstance(palette, str) else palette
+    return [mcolors.to_hex(colors[index]) for index in alist]
 
 
 def _is_qualitative_cmap(cmap_name):
@@ -541,11 +538,7 @@ def _is_qualitative_cmap(cmap_name):
 
 def _get_hex_colors_from_colorbar(cmap_name, n_colors):
     cmap = mpl.colormaps[cmap_name]
-    if _is_qualitative_cmap(cmap_name):
-        colors = [mcolors.to_hex(cmap(i)) for i in range(0, n_colors)]
-    else:
-        colors = [mcolors.to_hex(cmap(i)) for i in range(0, cmap.N, cmap.N // n_colors)]
-    return colors
+    return [mcolors.to_hex(cmap(value)) for value in np.linspace(0, 1, n_colors)]
 
 
 def _remove_edge_from_legend_items(ax):

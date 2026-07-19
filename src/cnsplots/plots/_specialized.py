@@ -191,9 +191,9 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str, label_rotation: float = 0) ->
     validate_dataframe_not_empty(data, "sankeyplot")
 
     ax = plt.gca()
-    current_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     keys = np.union1d(data[x].unique(), data[y].unique())
-    color_dict = dict(zip(keys, current_colors))
+    colors = sns.color_palette(n_colors=len(keys))
+    color_dict = dict(zip(keys, colors))
     helper_sankey.sankeyplot(
         data[x],
         data[y],
