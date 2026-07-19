@@ -9,13 +9,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from numpy import float64, ndarray
-from pandas.core.frame import DataFrame
-from pandas.core.series import Series
+
+from cnsplots._validation import (
+    validate_column_type,
+    validate_dataframe_not_empty,
+    validate_length_match,
+    validate_no_nulls,
+)
 
 
 def check_data_matches_labels(
-    labels: list[str] | set[str], data: Series | list[str] | set[str], side: str
+    labels: list[str] | set[str], data: pd.Series | list[str] | set[str], side: str
 ) -> None:
     """Check whether data matches labels.
 
@@ -39,10 +43,10 @@ def check_data_matches_labels(
 
 
 def sankeyplot(
-    left: list | ndarray | Series,
-    right: ndarray | Series,
-    leftWeight: ndarray | None = None,
-    rightWeight: ndarray | None = None,
+    left: list | np.ndarray | pd.Series,
+    right: np.ndarray | pd.Series,
+    leftWeight: np.ndarray | None = None,
+    rightWeight: np.ndarray | None = None,
     colorDict: dict[str, str] | None = None,
     leftLabels: list[str] | None = None,
     rightLabels: list[str] | None = None,
@@ -142,7 +146,7 @@ def sankeyplot(
 
 
 def identify_labels(
-    dataFrame: DataFrame,
+    dataFrame: pd.DataFrame,
     leftLabels: list[str],
     rightLabels: list[str],
 ) -> tuple[list[str], list[str]]:
@@ -164,12 +168,12 @@ def init_values(
     closePlot: bool,
     figSize: tuple[int, int] | None,
     figureName: str | None,
-    left: list | ndarray | Series,
+    left: list | np.ndarray | pd.Series,
     leftLabels: list[str] | None,
-    leftWeight: ndarray | None,
+    leftWeight: np.ndarray | None,
     rightLabels: list[str] | None,
-    rightWeight: ndarray | None,
-) -> tuple[Any, list[str], ndarray, list[str], ndarray]:
+    rightWeight: np.ndarray | None,
+) -> tuple[Any, list[str], np.ndarray, list[str], np.ndarray]:
     deprecation_warnings(closePlot, figSize, figureName)
     if ax is None:
         ax = plt.gca()
@@ -204,23 +208,25 @@ def deprecation_warnings(
 
 
 def determine_widths(
-    dataFrame: DataFrame,
+    dataFrame: pd.DataFrame,
     leftLabels: list[str],
     rightLabels: list[str],
 ) -> tuple[dict, dict]:
     # Determine widths of individual strips
+    grouped_weights = dataFrame.groupby(["left", "right"], sort=False, observed=True)[
+        ["leftWeight", "rightWeight"]
+    ].sum()
+    left_weights = grouped_weights["leftWeight"]
+    right_weights = grouped_weights["rightWeight"]
     ns_l: dict = defaultdict()
     ns_r: dict = defaultdict()
     for leftLabel in leftLabels:
         left_dict = {}
         right_dict = {}
         for rightLabel in rightLabels:
-            left_dict[rightLabel] = dataFrame[
-                (dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)
-            ].leftWeight.sum()
-            right_dict[rightLabel] = dataFrame[
-                (dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)
-            ].rightWeight.sum()
+            pair = (leftLabel, rightLabel)
+            left_dict[rightLabel] = left_weights.get(pair, 0)
+            right_dict[rightLabel] = right_weights.get(pair, 0)
         ns_l[leftLabel] = left_dict
         ns_r[leftLabel] = right_dict
     return ns_l, ns_r
@@ -234,7 +240,7 @@ def draw_vertical_bars(
     leftWidths: dict,
     rightLabels: list[str],
     rightWidths: dict,
-    xMax: float64,
+    xMax: np.float64,
     label_rotation: float = 0,
 ) -> None:
     # Draw vertical bars on left and right of each  label's section & print label
@@ -287,7 +293,7 @@ def draw_vertical_bars(
 
 
 def create_colors(
-    allLabels: ndarray, colorDict: dict[str, str] | None
+    allLabels: np.ndarray, colorDict: dict[str, str] | None
 ) -> dict[str, tuple[float, float, float]] | dict[str, str]:
     # If no colorDict given, make one
     if colorDict is None:
@@ -307,12 +313,15 @@ def create_colors(
 
 
 def _create_dataframe(
-    left: list | ndarray | Series,
-    leftWeight: ndarray | Series,
-    right: ndarray | Series,
-    rightWeight: ndarray | Series,
-) -> DataFrame:
-    # Create Dataframe
+    left: list | np.ndarray | pd.Series,
+    leftWeight: np.ndarray | pd.Series,
+    right: np.ndarray | pd.Series,
+    rightWeight: np.ndarray | pd.Series,
+) -> pd.DataFrame:
+    validate_length_match(left, right, "left", "right", "sankeyplot")
+    validate_length_match(left, leftWeight, "left", "leftWeight", "sankeyplot")
+    validate_length_match(left, rightWeight, "left", "rightWeight", "sankeyplot")
+
     if isinstance(left, pd.Series):
         left = left.reset_index(drop=True)
     if isinstance(right, pd.Series):
@@ -330,15 +339,17 @@ def _create_dataframe(
         },
         index=range(len(left)),
     )
-    if len(data_frame[(data_frame.left.isnull()) | (data_frame.right.isnull())]):
-        raise ValueError("Sankey graph does not support null values.")
+    validate_dataframe_not_empty(data_frame, "sankeyplot")
+    validate_no_nulls(data_frame, ["left", "right"], "sankeyplot")
+    validate_column_type(data_frame, "leftWeight", ["numeric"], "sankeyplot")
+    validate_column_type(data_frame, "rightWeight", ["numeric"], "sankeyplot")
     return data_frame
 
 
 def plot_strips(
     ax: Any,
     colorDict: dict[str, tuple[float, float, float]] | dict[str, str],
-    dataFrame: DataFrame,
+    dataFrame: pd.DataFrame,
     leftLabels: list[str],
     leftWidths: dict,
     ns_l: dict,
@@ -346,22 +357,18 @@ def plot_strips(
     rightColor: bool,
     rightLabels: list[str],
     rightWidths: dict,
-    xMax: float64,
+    xMax: np.float64,
 ) -> None:
     # Plot strips
+    observed_pairs = set(
+        dataFrame[["left", "right"]].itertuples(index=False, name=None)
+    )
     for leftLabel in leftLabels:
         for rightLabel in rightLabels:
             label_color = leftLabel
             if rightColor:
                 label_color = rightLabel
-            if (
-                len(
-                    dataFrame[
-                        (dataFrame.left == leftLabel) & (dataFrame.right == rightLabel)
-                    ]
-                )
-                > 0
-            ):
+            if (leftLabel, rightLabel) in observed_pairs:
                 # Create array of y values for each strip, half at left value,
                 # half at right, convolve
                 ys_d = np.array(
@@ -393,19 +400,21 @@ def plot_strips(
 
 
 def _get_positions_and_total_widths(
-    df: DataFrame, labels: list[str], side: str
-) -> tuple[dict, float64]:
+    df: pd.DataFrame, labels: list[str], side: str
+) -> tuple[dict, np.float64]:
     """Determine positions of label patches and total widths"""
+    weight_column = side + "Weight"
+    widths_by_label = df.groupby(side, sort=False, observed=True)[weight_column].sum()
+    weighted_sum = 0.02 * df[weight_column].sum()
     widths: dict = defaultdict()
     for i, label in enumerate(labels):
         label_widths = {}
-        label_widths[side] = df[df[side] == label][side + "Weight"].sum()
+        label_widths[side] = widths_by_label.get(label, 0)
         if i == 0:
             label_widths["bottom"] = 0
             label_widths["top"] = label_widths[side]
         else:
             bottom_width = widths[labels[i - 1]]["top"]
-            weighted_sum = 0.02 * df[side + "Weight"].sum()
             label_widths["bottom"] = bottom_width + weighted_sum
             label_widths["top"] = label_widths["bottom"] + label_widths[side]
         topEdge = label_widths["top"]

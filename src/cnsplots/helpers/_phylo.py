@@ -16,11 +16,23 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+from cnsplots._validation import (
+    validate_adata_layer,
+    validate_adata_obs_columns,
+    validate_adata_uns_keys,
+    validate_anndata,
+)
+
 
 def phyloplot(adata: AnnData) -> None:
     import io
 
     import Bio.Phylo
+
+    validate_anndata(adata, "adata", "phyloplot")
+    validate_adata_layer(adata, "trisicell_output", "phyloplot")
+    validate_adata_obs_columns(adata, "group", "phyloplot")
+    validate_adata_uns_keys(adata, "tree", "phyloplot")
 
     tree = Bio.Phylo.read(io.StringIO(adata.uns["tree"]), "newick")
     cell_ids: list[str] = [

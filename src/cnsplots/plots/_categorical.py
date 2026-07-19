@@ -13,6 +13,7 @@ import seaborn as sns
 from matplotlib.patches import Patch
 
 import cnsplots as cns
+from cnsplots._utils import _legend_fontsize, _resize_legend_markers
 from cnsplots._validation import (
     validate_column_exists,
     validate_columns_exist,
@@ -23,11 +24,138 @@ from cnsplots._validation import (
 LollipopPair = Union[tuple[str, str], tuple[tuple[str, str], tuple[str, str]]]
 
 
-def _legend_fontsize() -> int | float:
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        return cns.settings.title_fontsize
-    return legend_fontsize
+def _resolve_palette_column(
+    data: pd.DataFrame,
+    category_column: str,
+    palette_column: str,
+) -> tuple[dict[Any, Any], list[Patch]]:
+    """Map categories to colors through a palette-label column."""
+    unique_labels = data[palette_column].unique()
+    palette_colors = sns.color_palette(n_colors=len(unique_labels))
+    label_to_color = dict(zip(unique_labels, palette_colors))
+    category_labels = data[[category_column, palette_column]].drop_duplicates()
+    ambiguous = category_labels[category_column].duplicated(keep=False)
+    if ambiguous.any():
+        ambiguous_categories = category_labels.loc[ambiguous, category_column].unique()
+        raise ValueError(
+            f"Palette column '{palette_column}' must map each category to one label; "
+            f"multiple labels found for {list(ambiguous_categories)}."
+        )
+    category_to_label = category_labels.set_index(category_column)[
+        palette_column
+    ].to_dict()
+    category_to_color = {
+        category: label_to_color[label] for category, label in category_to_label.items()
+    }
+    legend_handles = [
+        Patch(facecolor=resolved_color, label=label)
+        for label, resolved_color in label_to_color.items()
+    ]
+    return category_to_color, legend_handles
+
+
+def _compute_lollipop_error(group_values: pd.Series, errorbar: str) -> float:
+    """Compute the requested lollipop error magnitude for one group."""
+    sem = group_values.std() / np.sqrt(len(group_values))
+    if errorbar == "se":
+        return sem
+    if errorbar == "sd":
+        return group_values.std()
+    if errorbar == "ci":
+        return 1.96 * sem
+    return 0
+
+
+def _lollipop_errors(
+    grouped: Any,
+    categories: list[str],
+    errorbar: str | None,
+    *,
+    require_multiple: bool,
+) -> pd.Series | None:
+    """Aggregate lollipop errors once for each category."""
+    if errorbar is None:
+        return None
+    errors = grouped.apply(
+        lambda values: _compute_lollipop_error(values, errorbar)
+    ).reindex(categories)
+    if require_multiple:
+        counts = grouped.count().reindex(categories)
+        errors = errors.where(counts > 1)
+    return errors
+
+
+def _draw_lollipop_series(
+    ax: Axes,
+    *,
+    orient: str,
+    positions: np.ndarray,
+    values: pd.Series,
+    colors: Any,
+    baseline: float,
+    linewidth: float,
+    markersize: float,
+    marker: str,
+    errors: pd.Series | None,
+    addtip: bool,
+    tip_offset: float,
+    label: Any = None,
+) -> None:
+    """Draw one lollipop series using orientation-independent inputs."""
+    line_function = ax.vlines if orient == "v" else ax.hlines
+    line_function(
+        positions,
+        baseline,
+        values,
+        linewidth=linewidth,
+        alpha=0.4,
+        colors=colors,
+        zorder=2,
+    )
+    scatter_x, scatter_y = (positions, values) if orient == "v" else (values, positions)
+    ax.scatter(
+        scatter_x,
+        scatter_y,
+        s=markersize,
+        marker=marker,
+        color=colors,
+        zorder=3,
+        label=label,
+    )
+
+    if errors is not None:
+        for position, value, error in zip(positions, values, errors):
+            if pd.isna(error):
+                continue
+            error_kwargs = {"yerr" if orient == "v" else "xerr": error}
+            point = (position, value) if orient == "v" else (value, position)
+            ax.errorbar(
+                *point,
+                **error_kwargs,
+                fmt="none",
+                ecolor="black",
+                elinewidth=0.7,
+                capsize=2,
+            )
+
+    if addtip:
+        for position, value in zip(positions, values):
+            if pd.isna(value):
+                continue
+            text_x, text_y = (
+                (position, value + tip_offset)
+                if orient == "v"
+                else (value + tip_offset, position)
+            )
+            ax.text(
+                text_x,
+                text_y,
+                f"{value:.2f}",
+                color="black",
+                ha="center" if orient == "v" else "left",
+                va="bottom" if orient == "v" else "center",
+                fontsize=_legend_fontsize(),
+            )
 
 
 def barplot(
@@ -104,26 +232,13 @@ def barplot(
     legend_handles = []
     if isinstance(palette, str) and palette in data.columns:
         group_col = palette
-        unique_labels = data[palette].unique()
-        palette_colors = sns.color_palette(n_colors=len(unique_labels))
-        label_to_color = dict(zip(unique_labels, palette_colors))
-        target_column = palette
-        which_numeric = x if not pd.api.types.is_numeric_dtype(data[x]) else y
-        mapping_index = (
-            data[[which_numeric, target_column]]
-            .drop_duplicates()
-            .set_index(which_numeric)[target_column]
-            .to_dict()
+        category_column = x if not pd.api.types.is_numeric_dtype(data[x]) else y
+        palette, legend_handles = _resolve_palette_column(
+            data,
+            category_column,
+            group_col,
         )
-        palette = {k: label_to_color[v] for k, v in mapping_index.items()}
         show_legend = True
-        unique_groups = data[group_col].unique()
-        color_list = sns.color_palette(n_colors=len(unique_groups))
-        group_to_color = dict(zip(unique_groups, color_list))
-        legend_handles = [
-            Patch(facecolor=color, label=label)
-            for label, color in group_to_color.items()
-        ]
     plotting = {"data": data, "x": x, "y": y, "palette": palette}
     plotting.update(args)
     plotting.update(kwargs)
@@ -247,6 +362,15 @@ def lollipopplot(
     validate_dataframe(data, "data", "lollipopplot")
     validate_columns_exist(data, [x, y], "lollipopplot")
     validate_dataframe_not_empty(data, "lollipopplot")
+    if hue is not None:
+        validate_column_exists(data, hue, "hue", "lollipopplot")
+
+    palette_is_column = isinstance(palette, str) and palette in data.columns
+    if hue is not None and palette_is_column and palette != hue:
+        raise ValueError(
+            "[lollipopplot] A palette column cannot be combined with a different "
+            "'hue' column. Pass a palette name, list, or dict instead."
+        )
 
     # Detect orientation
     x_is_numeric = pd.api.types.is_numeric_dtype(data[x])
@@ -271,22 +395,15 @@ def lollipopplot(
 
     if color is not None:
         resolved_colors = [color] * len(categories)
-    elif isinstance(palette, str) and palette in data.columns:
+    elif palette_is_column and hue is None:
         group_col = palette
-        unique_labels = data[palette].unique()
-        palette_colors = sns.color_palette(n_colors=len(unique_labels))
-        label_to_color = dict(zip(unique_labels, palette_colors))
-        cat_col_vals = (
-            data[[cat_col, palette]]
-            .drop_duplicates()
-            .set_index(cat_col)[palette]
-            .to_dict()
+        category_colors, legend_handles = _resolve_palette_column(
+            data,
+            cat_col,
+            palette,
         )
-        resolved_colors = [label_to_color[cat_col_vals[c]] for c in categories]
+        resolved_colors = [category_colors[category] for category in categories]
         show_legend = True
-        legend_handles = [
-            Patch(facecolor=clr, label=label) for label, clr in label_to_color.items()
-        ]
     elif palette is not None:
         resolved_colors = sns.color_palette(palette, n_colors=len(categories))
     else:
@@ -294,111 +411,25 @@ def lollipopplot(
 
     agg_func = np.median if estimator == "median" else np.mean
 
-    def _compute_error(group_values, err_type):
-        sem = group_values.std() / np.sqrt(len(group_values))
-        if err_type == "se":
-            return sem
-        if err_type == "sd":
-            return group_values.std()
-        if err_type == "ci":
-            return 1.96 * sem
-        return 0
-
     if hue is None:
-        # Simple: one stem per category
         grouped = data.groupby(cat_col, sort=False)[val_col]
         means = grouped.agg(agg_func).reindex(categories)
-
-        if orient == "v":
-            ax.vlines(
-                cat_positions,
-                baseline,
-                means,
-                linewidth=linewidth,
-                alpha=0.4,
-                colors=resolved_colors,
-                zorder=2,
-            )
-            ax.scatter(
-                cat_positions,
-                means,
-                s=markersize,
-                marker=marker,
-                c=resolved_colors,
-                zorder=3,
-            )
-            if errorbar is not None:
-                for i, cat in enumerate(categories):
-                    vals = data.loc[data[cat_col] == cat, val_col]
-                    err = _compute_error(vals, errorbar)
-                    ax.errorbar(
-                        cat_positions[i],
-                        means.iloc[i],
-                        yerr=err,
-                        fmt="none",
-                        ecolor="black",
-                        elinewidth=0.7,
-                        capsize=2,
-                    )
-            ax.set_xticks(cat_positions)
-            ax.set_xticklabels(categories)
-            if addtip:
-                for i, val in enumerate(means):
-                    ax.text(
-                        float(cat_positions[i]),
-                        val + (means.max() - baseline) * 0.02,
-                        f"{val:.2f}",
-                        color="black",
-                        ha="center",
-                        va="bottom",
-                        fontsize=_legend_fontsize(),
-                    )
-        else:
-            ax.hlines(
-                cat_positions,
-                baseline,
-                means,
-                linewidth=linewidth,
-                alpha=0.4,
-                colors=resolved_colors,
-                zorder=2,
-            )
-            ax.scatter(
-                means,
-                cat_positions,
-                s=markersize,
-                marker=marker,
-                c=resolved_colors,
-                zorder=3,
-            )
-            if errorbar is not None:
-                for i, cat in enumerate(categories):
-                    vals = data.loc[data[cat_col] == cat, val_col]
-                    err = _compute_error(vals, errorbar)
-                    ax.errorbar(
-                        means.iloc[i],
-                        cat_positions[i],
-                        xerr=err,
-                        fmt="none",
-                        ecolor="black",
-                        elinewidth=0.7,
-                        capsize=2,
-                    )
-            ax.set_yticks(cat_positions)
-            ax.set_yticklabels(categories)
-            if addtip:
-                for i, val in enumerate(means):
-                    ax.text(
-                        val + (means.max() - baseline) * 0.02,
-                        float(cat_positions[i]),
-                        f"{val:.2f}",
-                        color="black",
-                        ha="left",
-                        va="center",
-                        fontsize=_legend_fontsize(),
-                    )
+        errors = _lollipop_errors(grouped, categories, errorbar, require_multiple=False)
+        _draw_lollipop_series(
+            ax,
+            orient=orient,
+            positions=cat_positions,
+            values=means,
+            colors=resolved_colors,
+            baseline=baseline,
+            linewidth=linewidth,
+            markersize=markersize,
+            marker=marker,
+            errors=errors,
+            addtip=addtip,
+            tip_offset=(means.max() - baseline) * 0.02,
+        )
     else:
-        # Grouped: multiple stems per category
         hue_levels = hue_order if hue_order is not None else list(data[hue].unique())
         n_hue = len(hue_levels)
         width = dodge / n_hue
@@ -406,9 +437,7 @@ def lollipopplot(
 
         if color is not None:
             hue_colors = [color] * n_hue
-        elif palette is not None and not (
-            isinstance(palette, str) and palette in data.columns
-        ):
+        elif palette is not None and not palette_is_column:
             hue_colors = sns.color_palette(palette, n_colors=n_hue)
         else:
             hue_colors = sns.color_palette(n_colors=n_hue)
@@ -418,115 +447,31 @@ def lollipopplot(
             grouped = subset.groupby(cat_col, sort=False)[val_col]
             means = grouped.agg(agg_func).reindex(categories)
             positions = cat_positions + offsets[i]
-            color = hue_colors[i]
+            errors = _lollipop_errors(
+                grouped, categories, errorbar, require_multiple=True
+            )
+            _draw_lollipop_series(
+                ax,
+                orient=orient,
+                positions=positions,
+                values=means,
+                colors=hue_colors[i],
+                baseline=baseline,
+                linewidth=linewidth,
+                markersize=markersize,
+                marker=marker,
+                errors=errors,
+                addtip=addtip,
+                tip_offset=means.max() * 0.02,
+                label=hue_val,
+            )
 
-            if orient == "v":
-                ax.vlines(
-                    positions,
-                    baseline,
-                    means,
-                    linewidth=linewidth,
-                    alpha=0.4,
-                    colors=color,
-                    zorder=2,
-                )
-                ax.scatter(
-                    positions,
-                    means,
-                    s=markersize,
-                    marker=marker,
-                    color=color,
-                    zorder=3,
-                    label=hue_val,
-                )
-                if errorbar is not None:
-                    for j, cat in enumerate(categories):
-                        vals = subset.loc[subset[cat_col] == cat, val_col]
-                        if len(vals) > 1:
-                            err = _compute_error(vals, errorbar)
-                            ax.errorbar(
-                                positions[j],
-                                means.iloc[j],
-                                yerr=err,
-                                fmt="none",
-                                ecolor="black",
-                                elinewidth=0.7,
-                                capsize=2,
-                            )
-            else:
-                ax.hlines(
-                    positions,
-                    baseline,
-                    means,
-                    linewidth=linewidth,
-                    alpha=0.4,
-                    colors=color,
-                    zorder=2,
-                )
-                ax.scatter(
-                    means,
-                    positions,
-                    s=markersize,
-                    marker=marker,
-                    color=color,
-                    zorder=3,
-                    label=hue_val,
-                )
-                if errorbar is not None:
-                    for j, cat in enumerate(categories):
-                        vals = subset.loc[subset[cat_col] == cat, val_col]
-                        if len(vals) > 1:
-                            err = _compute_error(vals, errorbar)
-                            ax.errorbar(
-                                means.iloc[j],
-                                positions[j],
-                                xerr=err,
-                                fmt="none",
-                                ecolor="black",
-                                elinewidth=0.7,
-                                capsize=2,
-                            )
-
-        if orient == "v":
-            ax.set_xticks(cat_positions)
-            ax.set_xticklabels(categories)
-            if addtip:
-                for i, hue_val in enumerate(hue_levels):
-                    subset = data[data[hue] == hue_val]
-                    grouped = subset.groupby(cat_col, sort=False)[val_col]
-                    means = grouped.agg(agg_func).reindex(categories)
-                    positions = cat_positions + offsets[i]
-                    for j, val in enumerate(means):
-                        if not np.isnan(val):
-                            ax.text(
-                                positions[j],
-                                val + means.max() * 0.02,
-                                f"{val:.2f}",
-                                color="black",
-                                ha="center",
-                                va="bottom",
-                                fontsize=_legend_fontsize(),
-                            )
-        else:
-            ax.set_yticks(cat_positions)
-            ax.set_yticklabels(categories)
-            if addtip:
-                for i, hue_val in enumerate(hue_levels):
-                    subset = data[data[hue] == hue_val]
-                    grouped = subset.groupby(cat_col, sort=False)[val_col]
-                    means = grouped.agg(agg_func).reindex(categories)
-                    positions = cat_positions + offsets[i]
-                    for j, val in enumerate(means):
-                        if not np.isnan(val):
-                            ax.text(
-                                val + means.max() * 0.02,
-                                positions[j],
-                                f"{val:.2f}",
-                                color="black",
-                                ha="left",
-                                va="center",
-                                fontsize=_legend_fontsize(),
-                            )
+    if orient == "v":
+        ax.set_xticks(cat_positions)
+        ax.set_xticklabels(categories)
+    else:
+        ax.set_yticks(cat_positions)
+        ax.set_yticklabels(categories)
 
     # Statistical annotations
     if pairs is not None:
@@ -563,6 +508,8 @@ def lollipopplot(
             bbox_to_anchor=(1.05, 1),
             loc="upper left",
         )
+    elif hue is not None and ax.get_legend() is None:
+        ax.legend(title=hue)
 
     return ax
 
@@ -785,12 +732,7 @@ def stripplot(
     if addcount:
         cns.utils._addcount_helper(data, x, ax)
 
-    if ax.get_legend() is not None:
-        for handle in ax.get_legend().legend_handles:
-            if hasattr(handle, "set_sizes"):
-                handle.set_sizes([size**2])
-            elif hasattr(handle, "set_markersize"):
-                handle.set_markersize(size * 2)
+    _resize_legend_markers(ax.get_legend(), size**2, marker_size=size * 2)
 
     return ax
 

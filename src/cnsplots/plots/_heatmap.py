@@ -24,6 +24,7 @@ from scipy.stats import fisher_exact
 
 import cnsplots as cns
 import cnsplots.helpers._heatmap as helper_heatmap
+from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_adata_layer,
     validate_adata_obs_columns,
@@ -33,13 +34,6 @@ from cnsplots._validation import (
     validate_dataframe,
     validate_dataframe_not_empty,
 )
-
-
-def _legend_fontsize() -> int | float:
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        return cns.settings.title_fontsize
-    return legend_fontsize
 
 
 def _style_plotter_colorbars(cbars: list[Any]) -> None:

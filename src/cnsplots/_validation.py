@@ -248,6 +248,21 @@ def validate_adata_var_columns(
         )
 
 
+def validate_adata_uns_keys(
+    adata, keys: Union[str, List[str]], function_name: str
+) -> None:
+    """Validate that keys exist in ``adata.uns``."""
+    if isinstance(keys, str):
+        keys = [keys]
+
+    missing = [key for key in keys if key not in adata.uns]
+    if missing:
+        raise ValueError(
+            f"[{function_name}] Key(s) {missing} not found in adata.uns. "
+            f"Available keys: {list(adata.uns.keys())}"
+        )
+
+
 # ============================================================================
 # Data Quality Validation
 # ============================================================================
@@ -365,9 +380,11 @@ def validate_column_type(
         or "string" in expected_types
         or "categorical" in expected_types
     ):
-        if not pd.api.types.is_object_dtype(
-            dtype
-        ) and not pd.api.types.is_categorical_dtype(dtype):
+        if (
+            not pd.api.types.is_object_dtype(dtype)
+            and not pd.api.types.is_string_dtype(dtype)
+            and not pd.api.types.is_categorical_dtype(dtype)
+        ):
             raise ValueError(
                 f"[{function_name}] Column '{column}' must be categorical/string, "
                 f"got {dtype}"

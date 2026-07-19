@@ -97,6 +97,11 @@ def test_public_validation_contract(heatmap_adata: object) -> None:
     with pytest.raises(ValueError, match="adata.var"):
         cns.validation.validate_adata_var_columns(heatmap_adata, ["missing"], "func")
 
+    getattr(heatmap_adata, "uns")["tree"] = "(cell1);"
+    cns.validation.validate_adata_uns_keys(heatmap_adata, "tree", "func")
+    with pytest.raises(ValueError, match="adata.uns"):
+        cns.validation.validate_adata_uns_keys(heatmap_adata, ["missing"], "func")
+
     cns.validation.validate_dataframe_not_empty(df, "func")
     with pytest.raises(ValueError, match="Data is empty"):
         cns.validation.validate_dataframe_not_empty(df.iloc[0:0], "func")
@@ -115,6 +120,12 @@ def test_public_validation_contract(heatmap_adata: object) -> None:
 
     cns.validation.validate_column_type(df, "a", ["numeric"], "func")
     cns.validation.validate_column_type(df, "b", ["string"], "func")
+    cns.validation.validate_column_type(
+        pd.DataFrame({"text": pd.Series(["x", "y"], dtype="string")}),
+        "text",
+        ["string"],
+        "func",
+    )
     with pytest.raises(ValueError, match="must be numeric"):
         cns.validation.validate_column_type(df, "b", ["numeric"], "func")
     with pytest.raises(ValueError, match="must be categorical"):

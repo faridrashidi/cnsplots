@@ -12,18 +12,12 @@ import numpy as np
 import seaborn as sns
 
 import cnsplots as cns
+from cnsplots._utils import _legend_fontsize, _resize_legend_markers
 from cnsplots._validation import (
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
 )
-
-
-def _legend_fontsize() -> int | float:
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        return cns.settings.title_fontsize
-    return legend_fontsize
 
 
 def volcanoplot(
@@ -164,13 +158,7 @@ def volcanoplot(
         dashes=(8, 5),
     )
     cns.take_legend_out()
-    if ax.get_legend() is not None:
-        for handle in ax.get_legend().legend_handles:
-            legend_dot_size = 20
-            if hasattr(handle, "set_sizes"):
-                handle.set_sizes([legend_dot_size])
-            elif hasattr(handle, "set_markersize"):
-                handle.set_markersize(2 * np.sqrt(legend_dot_size / np.pi))
+    _resize_legend_markers(ax.get_legend(), 20)
 
     return ax
 

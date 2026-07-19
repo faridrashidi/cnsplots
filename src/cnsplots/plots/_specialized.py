@@ -14,9 +14,9 @@ import seaborn as sns
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 from sklearn.metrics import auc, roc_curve
 
-import cnsplots as cns
 import cnsplots.helpers._phylo as helper_phylo
 import cnsplots.helpers._sankey as helper_sankey
+from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_anndata,
     validate_binary_column,
@@ -24,13 +24,6 @@ from cnsplots._validation import (
     validate_dataframe,
     validate_dataframe_not_empty,
 )
-
-
-def _legend_fontsize() -> int | float:
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        return cns.settings.title_fontsize
-    return legend_fontsize
 
 
 def placeholderplot(description: str) -> Axes:

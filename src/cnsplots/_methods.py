@@ -19,6 +19,14 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+from cnsplots._validation import (
+    validate_column_type,
+    validate_columns_exist,
+    validate_dataframe,
+    validate_dataframe_not_empty,
+    validate_no_nulls,
+)
+
 
 class CoxModel:
     """
@@ -150,24 +158,30 @@ class CoxModel:
         >>> model.fit()
         >>> print(model.results[["display_label", "exp(coef)", "p"]])
         """
+        self.results = None
+        validate_dataframe(self.data, "data", "CoxModel.fit")
+        validate_dataframe_not_empty(self.data, "CoxModel.fit")
+        required_columns = [self.duration, self.event]
+        if self.hue is not None:
+            required_columns.append(self.hue)
+        validate_columns_exist(self.data, required_columns, "CoxModel.fit")
+        validate_no_nulls(self.data, required_columns, "CoxModel.fit")
+        validate_column_type(self.data, self.duration, ["numeric"], "CoxModel.fit")
+
         df = self.data.copy()
         all_results = []
 
         if self.hue is None:
-            for var in self.variates:
-                cph = ll.CoxPHFitter()
-                cph.fit(
-                    df, duration_col=self.duration, event_col=self.event, formula=var
-                )
-                summary = cph.summary.iloc[[0]].reset_index()
-                summary["analysis"] = var
-                summary["hue_group"] = "All"
-                all_results.append(summary)
+            hue_groups = [("All", df)]
         else:
-            hue_groups = df[self.hue].unique()
-            for hue_group in hue_groups:
-                hue_data = df[df[self.hue] == hue_group].copy()
-                for var in self.variates:
+            hue_groups = [
+                (str(hue_group), df[df[self.hue] == hue_group].copy())
+                for hue_group in df[self.hue].unique()
+            ]
+
+        for hue_group, hue_data in hue_groups:
+            for var in self.variates:
+                try:
                     cph = ll.CoxPHFitter()
                     cph.fit(
                         hue_data,
@@ -177,8 +191,18 @@ class CoxModel:
                     )
                     summary = cph.summary.iloc[[0]].reset_index()
                     summary["analysis"] = var
-                    summary["hue_group"] = str(hue_group)
+                    summary["hue_group"] = hue_group
                     all_results.append(summary)
+                except Exception as exc:
+                    warnings.warn(
+                        f"Error fitting {var} for hue group {hue_group}: {exc}",
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
+
+        if not all_results:
+            warnings.warn("No successful model fits", RuntimeWarning, stacklevel=2)
+            return
 
         df = pd.concat(all_results, ignore_index=True)
         df = df.sort_values(["exp(coef)", "hue_group"], ascending=False).copy()
@@ -382,88 +406,68 @@ class LogisticModel:
         >>> model.fit()
         >>> print(model.results[["predictor", "auc", "hue_group"]])
         """
+        self.results = None
+        validate_dataframe(self.data, "data", "LogisticModel.fit")
+        validate_dataframe_not_empty(self.data, "LogisticModel.fit")
+        required_columns = [self.event]
+        if self.hue is not None:
+            required_columns.append(self.hue)
+        validate_columns_exist(self.data, required_columns, "LogisticModel.fit")
+        validate_no_nulls(self.data, required_columns, "LogisticModel.fit")
+
         df = self.data.copy()
         all_results = []
 
         if self.hue is None:
-            for var in self.variates:
-                X = patsy.dmatrix(var, df, return_type="dataframe").drop(
-                    "Intercept", axis=1
-                )
-                y = df[self.event].values
-
-                model = make_pipeline(
-                    StandardScaler(),
-                    LogisticRegressionCV(
-                        cv=5,
-                        penalty="l1",
-                        solver="liblinear",
-                        random_state=42,
-                        scoring="roc_auc",
-                    ),
-                )
-                y_pred_proba = cross_val_predict(
-                    model, X, y, cv=5, method="predict_proba"
-                )[:, 1]
-                auc, auc_lower, auc_upper = self._compute_auc_ci(y, y_pred_proba)
-
-                model_result = {
-                    "predictor": var,
-                    "auc": auc,
-                    "auc_lower": auc_lower,
-                    "auc_upper": auc_upper,
-                    "hue_group": "All",
-                }
-                all_results.append(model_result)
+            hue_groups = [("All", df)]
         else:
-            hue_groups = df[self.hue].unique()
-            for hue_group in hue_groups:
-                hue_data = df[df[self.hue] == hue_group].copy()
+            hue_groups = [
+                (str(hue_group), df[df[self.hue] == hue_group].copy())
+                for hue_group in df[self.hue].unique()
+            ]
 
-                for var in self.variates:
-                    try:
-                        X = patsy.dmatrix(var, hue_data, return_type="dataframe").drop(
-                            "Intercept", axis=1
-                        )
-                        y = hue_data[self.event].values
-                        if len(np.unique(y)) < 2:
-                            warnings.warn(
-                                f"No variance in outcome for {var} in hue group {hue_group}",
-                                RuntimeWarning,
-                                stacklevel=2,
-                            )
-                            continue
-                        model = make_pipeline(
-                            StandardScaler(),
-                            LogisticRegressionCV(
-                                cv=5,
-                                penalty="l1",
-                                solver="liblinear",
-                                random_state=42,
-                                scoring="roc_auc",
-                            ),
-                        )
-                        y_pred_proba = cross_val_predict(
-                            model, X, y, cv=5, method="predict_proba"
-                        )[:, 1]
-                        auc, auc_lower, auc_upper = self._compute_auc_ci(
-                            y, y_pred_proba
-                        )
-                        model_result = {
-                            "predictor": var,
-                            "auc": auc,
-                            "auc_lower": auc_lower,
-                            "auc_upper": auc_upper,
-                            "hue_group": str(hue_group),
-                        }
-                        all_results.append(model_result)
-                    except Exception as e:
+        for hue_group, hue_data in hue_groups:
+            for var in self.variates:
+                try:
+                    X = patsy.dmatrix(var, hue_data, return_type="dataframe").drop(
+                        "Intercept", axis=1
+                    )
+                    y = hue_data[self.event].values
+                    if len(np.unique(y)) < 2:
                         warnings.warn(
-                            f"Error fitting {var} for hue group {hue_group}: {e}",
+                            f"No variance in outcome for {var} in hue group {hue_group}",
                             RuntimeWarning,
                             stacklevel=2,
                         )
                         continue
+                    model = make_pipeline(
+                        StandardScaler(),
+                        LogisticRegressionCV(
+                            cv=5,
+                            penalty="l1",
+                            solver="liblinear",
+                            random_state=42,
+                            scoring="roc_auc",
+                        ),
+                    )
+                    y_pred_proba = cross_val_predict(
+                        model, X, y, cv=5, method="predict_proba"
+                    )[:, 1]
+                    auc, auc_lower, auc_upper = self._compute_auc_ci(y, y_pred_proba)
+                    model_result = {
+                        "predictor": var,
+                        "auc": auc,
+                        "auc_lower": auc_lower,
+                        "auc_upper": auc_upper,
+                        "hue_group": hue_group,
+                    }
+                    all_results.append(model_result)
+                except Exception as exc:
+                    warnings.warn(
+                        f"Error fitting {var} for hue group {hue_group}: {exc}",
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
 
         results_df = pd.DataFrame(all_results)
         if len(results_df) == 0:
@@ -570,6 +574,17 @@ def prerank(
     >>> # Visualize results
     >>> cns.gseaplot(gsea_results, y="Clean_Term", top_term=20)
     """
+    validate_dataframe(data, "data", "prerank")
+    validate_dataframe_not_empty(data, "prerank")
+    if name_gene is None or name_rank is None:
+        raise ValueError(
+            "[prerank] Parameters 'name_gene' and 'name_rank' must be provided."
+        )
+    validate_columns_exist(data, [name_gene, name_rank], "prerank")
+    validate_no_nulls(data, [name_gene, name_rank], "prerank")
+    validate_column_type(data, name_gene, ["string"], "prerank")
+    validate_column_type(data, name_rank, ["numeric"], "prerank")
+
     try:
         import gseapy as gp
     except ImportError as exc:

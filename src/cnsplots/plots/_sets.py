@@ -16,13 +16,7 @@ import numpy as np
 import seaborn as sns
 
 import cnsplots as cns
-
-
-def _legend_fontsize() -> int | float:
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        return cns.settings.title_fontsize
-    return legend_fontsize
+from cnsplots._utils import _legend_fontsize
 
 
 def _normalize_text_position(text: Any) -> None:

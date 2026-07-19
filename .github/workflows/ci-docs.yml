@@ -28,7 +28,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
       - name: Sync docs dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
       - name: Prepare multiversion refs
         run: |
           git fetch --force --tags origin +refs/heads/main:refs/remotes/origin/main
