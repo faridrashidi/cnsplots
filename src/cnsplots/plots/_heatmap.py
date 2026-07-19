@@ -279,7 +279,7 @@ def heatmapplot(
     col_split_val: Any = col_split
     if row_split is not None and not isinstance(row_split, int):
         row_split_val = adata.obs[row_split]
-    if col_split is not None and not isinstance(row_split, int):
+    if col_split is not None and not isinstance(col_split, int):
         col_split_val = adata.var[col_split]
 
     df = adata.to_df() if layer is None else adata.to_df(layer=layer)

@@ -386,7 +386,7 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
                 ha="right",
                 va="top",
             )
-            logger.info("P-value was determined by Anderson-Darling test.")
+            logger.info("P-value was determined by two-sided Kolmogorov-Smirnov test.")
     else:
         if add_mode and ax.get_lines():
             kde_data = ax.get_lines()[-1].get_data()

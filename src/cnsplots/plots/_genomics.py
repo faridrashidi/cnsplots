@@ -261,7 +261,8 @@ def gseaplot(
     cbar_ax.yaxis.labelpad = 1
     cbar_ax.set_ylabel("")
     legend = ax.get_legend()
-    assert legend is not None
+    if legend is None:
+        raise RuntimeError("[gseaplot] GSEA plot did not produce a legend")
     handles = [h for h in legend.legend_handles if h is not None]
     labels = [t.get_text() for t in legend.get_texts()]
     title = legend.get_title().get_text()

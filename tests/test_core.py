@@ -1216,9 +1216,9 @@ def test_utils_helpers_and_showcase_data(
     assert len(_utils.palettes("Nature")) == 10
     assert len(_utils.palettes("Science")) == 10
     assert _utils.palettes("BuRd_custom").name == "BuRd_custom"
-    assert isinstance(_utils.palettes("NPG"), RuntimeError)
-    assert isinstance(_utils.palettes("AAAS"), RuntimeError)
-    assert isinstance(_utils.palettes("Wrong Choice!"), RuntimeError)
+    for invalid_palette in ["NPG", "AAAS", "Wrong Choice!"]:
+        with pytest.raises(RuntimeError, match="Wrong Choice!"):
+            _utils.palettes(invalid_palette)
 
     fake_sns = types.SimpleNamespace(
         load_dataset=lambda name: (
