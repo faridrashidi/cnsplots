@@ -14,7 +14,9 @@ if TYPE_CHECKING:
 import matplotlib.pyplot as plt
 from matplotlib import transforms as mtransforms
 
-import cnsplots as cns
+import cnsplots._utils as utils
+from cnsplots._settings import settings
+from cnsplots._setup import setup_matplotlib
 
 _LEFT_DECORATION_TOLERANCE_PX = 0.5
 _RELAYOUT_MAX_PASSES = 3
@@ -124,9 +126,9 @@ class multipanel:
         title_fontweight: str | int = "bold",
     ) -> None:
         if max_width is None:
-            max_width = cns.settings.multipanel_max_width
+            max_width = settings.multipanel_max_width
         if loc is None:
-            loc = cns.settings.multipanel_title_loc
+            loc = settings.multipanel_title_loc
         self._max_width = max_width
         self._title = title
         self._title_loc = _validate_title_loc(loc)
@@ -152,8 +154,8 @@ class multipanel:
         if self._title is None:
             return 0
         return max(
-            cns.settings.multipanel_title_height_min,
-            cns.settings.title_fontsize + cns.settings.multipanel_title_height_pad,
+            settings.multipanel_title_height_min,
+            settings.title_fontsize + settings.multipanel_title_height_pad,
         )
 
     def _get_left_decoration_width_px(self, panel: dict) -> float:
@@ -174,7 +176,7 @@ class multipanel:
 
     def _get_layout_scale(self) -> float:
         """Get the display-to-layout pixel scale used by multipanel geometry."""
-        dpi = self.fig.dpi if self.fig is not None else cns.settings.figure_dpi
+        dpi = self.fig.dpi if self.fig is not None else settings.figure_dpi
         return dpi / 72
 
     def _display_px_to_layout_px(self, value: float) -> float:
@@ -452,7 +454,7 @@ class multipanel:
             linked_axes = list(self._iter_linked_helper_axes(ax, panel))
             if not linked_axes:
                 continue
-            if cns.utils._capture_detached_axes_layout(ax, detached_axes=linked_axes):
+            if utils._capture_detached_axes_layout(ax, detached_axes=linked_axes):
                 captured = True
 
         if captured:
@@ -632,7 +634,7 @@ class multipanel:
 
         if self.fig is None:
             self.fig = plt.figure(
-                figsize=(fig_width, fig_height), dpi=cns.settings.figure_dpi
+                figsize=(fig_width, fig_height), dpi=settings.figure_dpi
             )
         else:
             self.fig.set_size_inches(fig_width, fig_height)
@@ -658,7 +660,7 @@ class multipanel:
                     x_positions[self._title_loc],
                     title_y_fig,
                     self._title,
-                    fontsize=cns.settings.title_fontsize,
+                    fontsize=settings.title_fontsize,
                     fontweight=self._title_fontweight,
                     va="center",
                     ha=self._title_loc,
@@ -670,7 +672,7 @@ class multipanel:
                 self._title_text.set_text(self._title)
                 self._title_text.set_ha(self._title_loc)
                 self._title_text.set_va("center")
-                self._title_text.set_fontsize(cns.settings.title_fontsize)
+                self._title_text.set_fontsize(settings.title_fontsize)
                 self._title_text.set_fontweight(self._title_fontweight)
 
         # Create or update axes for all panels
@@ -716,9 +718,9 @@ class multipanel:
                     1,
                     label,
                     transform=label_transform,
-                    fontsize=cns.settings.title_fontsize,
-                    fontweight=cns.settings.panel_label_fontweight,
-                    fontname=cns.settings.panel_label_fontname,
+                    fontsize=settings.title_fontsize,
+                    fontweight=settings.panel_label_fontweight,
+                    fontname=settings.panel_label_fontname,
                     ha="right",
                     va="bottom",
                 )
@@ -727,9 +729,9 @@ class multipanel:
                 label_text.set_position((0, 1))
                 label_text.set_text(label)
                 label_text.set_transform(label_transform)
-                label_text.set_fontsize(cns.settings.title_fontsize)
-                label_text.set_fontweight(cns.settings.panel_label_fontweight)
-                label_text.set_fontname(cns.settings.panel_label_fontname)
+                label_text.set_fontsize(settings.title_fontsize)
+                label_text.set_fontweight(settings.panel_label_fontweight)
+                label_text.set_fontname(settings.panel_label_fontname)
                 label_text.set_ha("right")
                 label_text.set_va("bottom")
 
@@ -845,26 +847,26 @@ class multipanel:
         multipanel may do one guarded relayout pass before display or save.
         """
         if color_cycle is None:
-            color_cycle = cns.settings.palette_qual
+            color_cycle = settings.palette_qual
         if color_map is None:
-            color_map = cns.settings.palette_seq
+            color_map = settings.palette_seq
         if height is None:
-            height = cns.settings.panel_height
+            height = settings.panel_height
         if width is None:
-            width = cns.settings.panel_width
+            width = settings.panel_width
         if pad_left is None:
-            pad_left = cns.settings.panel_pad_left
+            pad_left = settings.panel_pad_left
         if pad_top is None:
-            pad_top = cns.settings.panel_pad_top
+            pad_top = settings.panel_pad_top
         if margin_left is None:
-            margin_left = cns.settings.panel_margin_left
+            margin_left = settings.panel_margin_left
         if margin_top is None:
-            margin_top = cns.settings.panel_margin_top
+            margin_top = settings.panel_margin_top
         if margin_right is None:
-            margin_right = cns.settings.panel_margin_right
+            margin_right = settings.panel_margin_right
         if margin_bottom is None:
-            margin_bottom = cns.settings.panel_margin_bottom
-        cns.setup_matplotlib(color_cycle, color_map)
+            margin_bottom = settings.panel_margin_bottom
+        setup_matplotlib(color_cycle, color_map)
 
         if label is None:
             label = self._labels[self._panel_index]

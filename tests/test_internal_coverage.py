@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import anndata as ad
+import lifelines as ll
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -46,7 +47,7 @@ def test_methods_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
         ) -> None:
             return None
 
-    monkeypatch.setattr(_methods.ll, "CoxPHFitter", FakeCoxPHFitter)
+    monkeypatch.setattr(ll, "CoxPHFitter", FakeCoxPHFitter)
     model = cns.CoxModel(
         pd.DataFrame({"time": [1, 2], "event": [1, 0], "x": [0, 1]}),
         duration="time",
@@ -378,7 +379,7 @@ def test_upsetplot_clears_white_figure_patch(monkeypatch: pytest.MonkeyPatch) ->
         UpSet=FakeUpSet,
     )
     monkeypatch.setattr(sets_mod, "_import_upsetplot_module", lambda: fake_module)
-    monkeypatch.setattr(cns, "setup_ax", lambda ax: None)
+    monkeypatch.setattr(sets_mod, "setup_ax", lambda ax: None)
 
     axes = cns.upsetplot({"A": {"x"}, "B": {"x", "y"}})
 
@@ -1262,7 +1263,7 @@ def test_remaining_visual_internal_coverage(
         lambda self: volcano_legend,
         raising=False,
     )
-    monkeypatch.setattr(genomics_mod.cns, "take_legend_out", lambda: None)
+    monkeypatch.setattr(genomics_mod.utils, "take_legend_out", lambda: None)
     cns.figure(120, 120)
     cns.volcanoplot(volcano_df)
     assert volcano_legend.legend_handles[0].sizes == [20]

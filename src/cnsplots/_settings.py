@@ -658,7 +658,8 @@ class CNSSettings:
 
     def __init__(self) -> None:
         """Initialize settings with default values."""
-        self.reset()
+        for name, spec in type(self)._setting_specs.items():
+            object.__setattr__(self, f"_{name}", deepcopy(spec.default))
 
     def reset(self) -> None:
         """Reset all settings to their package defaults.

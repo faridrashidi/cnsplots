@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 import re
 import warnings
 
-import lifelines as ll
 import numpy as np
 import pandas as pd
 import patsy
@@ -158,6 +157,8 @@ class CoxModel:
         >>> model.fit()
         >>> print(model.results[["display_label", "exp(coef)", "p"]])
         """
+        import lifelines as ll
+
         self.results = None
         validate_dataframe(self.data, "data", "CoxModel.fit")
         validate_dataframe_not_empty(self.data, "CoxModel.fit")

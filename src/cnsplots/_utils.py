@@ -29,7 +29,8 @@ from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
 
-import cnsplots as cns
+from cnsplots._settings import settings
+from cnsplots._setup import setup_matplotlib
 from cnsplots._svg import _save_svg
 
 logger = logging.getLogger(__name__)
@@ -49,9 +50,9 @@ CHOCOLATE = "#662506"
 
 def _legend_fontsize() -> int | float:
     """Return the configured legend font size, falling back to title size."""
-    legend_fontsize = cns.settings.legend_fontsize
+    legend_fontsize = settings.legend_fontsize
     if legend_fontsize is None:
-        return cns.settings.title_fontsize
+        return settings.title_fontsize
     return legend_fontsize
 
 
@@ -78,7 +79,7 @@ def _resize_legend_markers(
 
 def _annotation_text_color(color: Any) -> str:
     """Return a readable annotation color for a background fill."""
-    if not cns.settings.annotation_auto_contrast:
+    if not settings.annotation_auto_contrast:
         return "white"
 
     r, g, b, _ = mcolors.to_rgba(color)
@@ -224,15 +225,15 @@ def figure(height=None, width=None, color_cycle=None, color_map=None):
     >>> cns.heatmapplot(adata)
     """
     if height is None:
-        height = cns.settings.figure_height
+        height = settings.figure_height
     if width is None:
-        width = cns.settings.figure_width
+        width = settings.figure_width
     if color_cycle is None:
-        color_cycle = cns.settings.palette_qual
+        color_cycle = settings.palette_qual
     if color_map is None:
-        color_map = cns.settings.palette_seq
-    cns.setup_matplotlib(color_cycle, color_map)
-    plt.figure(figsize=(width / 72, height / 72), dpi=cns.settings.figure_dpi)
+        color_map = settings.palette_seq
+    setup_matplotlib(color_cycle, color_map)
+    plt.figure(figsize=(width / 72, height / 72), dpi=settings.figure_dpi)
 
 
 def savefig(filepath):
@@ -288,7 +289,7 @@ def savefig(filepath):
     fig = plt.gcf()
     for ax in fig.get_axes():
         apply_unicode_font(ax)
-    target_dpi = float(cns.settings.savefig_dpi)
+    target_dpi = float(settings.savefig_dpi)
     original_dpi = fig.dpi
     root, ext = os.path.splitext(filepath)
     try:
@@ -312,7 +313,7 @@ def savefig(filepath):
 
 def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
     """Return a shared export bbox so raster and vector outputs align."""
-    if cns.settings.savefig_bbox != "tight":
+    if settings.savefig_bbox != "tight":
         return None
 
     original_canvas = fig.canvas
@@ -322,8 +323,8 @@ def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
         bbox_inches = fig.get_tightbbox(agg_canvas.get_renderer())
         if bbox_inches is None:
             return None
-        if cns.settings.savefig_pad_inches:
-            bbox_inches = bbox_inches.padded(float(cns.settings.savefig_pad_inches))
+        if settings.savefig_pad_inches:
+            bbox_inches = bbox_inches.padded(float(settings.savefig_pad_inches))
         return mtransforms.Bbox.from_extents(*bbox_inches.extents)
     finally:
         fig.set_canvas(original_canvas)
@@ -386,10 +387,10 @@ def take_legend_out(title=None):
     plt.legend(
         handles=handles,
         labels=labels,
-        bbox_to_anchor=cns.settings.legend_out_bbox_to_anchor,
-        loc=cns.settings.legend_out_loc,
+        bbox_to_anchor=settings.legend_out_bbox_to_anchor,
+        loc=settings.legend_out_loc,
         title=title,
-        markerscale=cns.settings.legend_out_markerscale,
+        markerscale=settings.legend_out_markerscale,
     )
 
 
@@ -448,9 +449,9 @@ def add_panel_label(name="A", pad_left=None, pad_top=None):
     >>> cns.add_panel_label("B", pad_left=24, pad_top=6)
     """
     if pad_left is None:
-        pad_left = cns.settings.panel_pad_left
+        pad_left = settings.panel_pad_left
     if pad_top is None:
-        pad_top = cns.settings.panel_pad_top
+        pad_top = settings.panel_pad_top
 
     ax = plt.gca()
     fig = ax.figure
@@ -465,9 +466,9 @@ def add_panel_label(name="A", pad_left=None, pad_top=None):
         1,
         name,
         transform=transform,
-        fontsize=cns.settings.title_fontsize,
-        fontname=cns.settings.panel_label_fontname,
-        fontweight=cns.settings.panel_label_fontweight,
+        fontsize=settings.title_fontsize,
+        fontname=settings.panel_label_fontname,
+        fontweight=settings.panel_label_fontweight,
         ha="right",
         va="bottom",
     )
@@ -616,11 +617,11 @@ def _addcount_helper(data, attr, ax, axis="x"):
 
 
 def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=None):
-    resolved_format = cns.settings.pvalue_format if format is None else format
+    resolved_format = settings.pvalue_format if format is None else format
     if resolved_format not in {"star", "threshold", "full"}:
         raise ValueError("format must be one of: 'star', 'threshold', 'full'")
 
-    pvalue_fontsize = cns.settings.pvalue_fontsize
+    pvalue_fontsize = settings.pvalue_fontsize
 
     class PValueFormatNew(PValueFormat):
         def __init__(self):
@@ -703,7 +704,7 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
     annotator.configure(
         test=test if contingency is None else None,
         text_format="full" if resolved_format == "full" else "star",
-        loc=cns.settings.pvalue_loc,
+        loc=settings.pvalue_loc,
         line_width=0.5,
         line_offset=0,
         line_offset_to_group=0,

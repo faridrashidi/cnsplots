@@ -14,7 +14,6 @@ import num2tex
 import numpy as np
 import pandas as pd
 
-import cnsplots.helpers._cmprsk as helper_cmprsk
 from cnsplots._validation import (
     validate_binary_column,
     validate_column_type,
@@ -377,6 +376,7 @@ def cumulativeincidenceplot(
             f"non-negative, got {censor_mark_length!r}"
         )
 
+    import cnsplots.helpers._cmprsk as helper_cmprsk
     import lifelines as ll
     from lifelines.plotting import add_at_risk_counts
 

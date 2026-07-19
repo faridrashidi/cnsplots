@@ -102,6 +102,9 @@ cns.scatterplot(data=df2, x="x", y="y")
 pip install cnsplots
 ```
 
+This installs every supported plotting and scientific integration. Imports
+remain lazy, so those backends are loaded only when their APIs are first used.
+
 ### For Development
 
 First install [uv](https://docs.astral.sh/uv/), then:
@@ -112,9 +115,7 @@ cd cnsplots
 make install
 ```
 
-This installs the package with its development and documentation extras. Core
-scientific integrations such as `scanpy`, `lifelines`, and `gseapy` remain
-runtime dependencies of `cnsplots` itself.
+This installs the package with its development and documentation dependencies.
 
 ## Quick Start
 

@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-import cnsplots as cns
+import cnsplots._utils as utils
+from cnsplots._setup import setup_ax
 from cnsplots._utils import _legend_fontsize, _resize_legend_markers
 from cnsplots._validation import (
     validate_columns_exist,
@@ -115,8 +116,8 @@ def volcanoplot(
         de.loc[de[symbol].isin(show_list) & down, hue] = "Down"
     de = de.sort_values(hue)
 
-    blue = cns.get_hexcolors_from_apalette([0], "BlueRed")
-    red = cns.get_hexcolors_from_apalette([1], "BlueRed")
+    blue = utils.get_hexcolors_from_apalette([0], "BlueRed")
+    red = utils.get_hexcolors_from_apalette([1], "BlueRed")
     ax = sns.scatterplot(
         data=de,
         x=x,
@@ -157,7 +158,7 @@ def volcanoplot(
         linewidth=0.8,
         dashes=(8, 5),
     )
-    cns.take_legend_out()
+    utils.take_legend_out()
     _resize_legend_markers(ax.get_legend(), 20)
 
     return ax
@@ -262,6 +263,6 @@ def gseaplot(
         labelspacing=0.2,
         markerscale=1.5,
     )
-    cns.setup_ax(ax, colorbar_label="")
+    setup_ax(ax, colorbar_label="")
     plt.xlabel("Normalized Enrichment Score (NES)")
     return ax

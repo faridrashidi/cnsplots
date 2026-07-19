@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-import cnsplots as cns
+import cnsplots._utils as utils
+from cnsplots._setup import setup_ax
 from cnsplots._utils import _legend_fontsize
 
 
@@ -146,17 +147,17 @@ def upsetplot(
         plot_fig.patch.set_facecolor("none")
         plot_fig.patch.set_alpha(0)
     ax_tot = axes.get("totals")
-    cns.setup_ax(axes["matrix"])
-    cns.setup_ax(axes["shading"])
+    setup_ax(axes["matrix"])
+    setup_ax(axes["shading"])
     axes["shading"].tick_params(axis="y", which="both", length=0, left=False)
-    cns.setup_ax(axes["intersections"])
+    setup_ax(axes["intersections"])
     axes["matrix"].tick_params(axis="both", which="both", length=0)
     legend_fontsize = _legend_fontsize()
     for txt in axes["intersections"].texts:
         _normalize_text_position(txt)
         txt.set_size(legend_fontsize)
     if ax_tot is not None:
-        cns.setup_ax(ax_tot)
+        setup_ax(ax_tot)
         for txt in ax_tot.texts:
             _normalize_text_position(txt)
             txt.set_size(legend_fontsize)
@@ -245,7 +246,7 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
             patch.set_linewidth(0.5)
             get_facecolor = getattr(patch, "get_facecolor", None)
             if callable(get_facecolor):
-                label.set_color(cns.utils._annotation_text_color(get_facecolor()))
+                label.set_color(utils._annotation_text_color(get_facecolor()))
         except AttributeError:
             pass
     for area in names:

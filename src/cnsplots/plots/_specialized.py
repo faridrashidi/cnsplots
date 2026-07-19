@@ -14,7 +14,6 @@ import seaborn as sns
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 from sklearn.metrics import auc, roc_curve
 
-import cnsplots.helpers._phylo as helper_phylo
 import cnsplots.helpers._sankey as helper_sankey
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
@@ -231,6 +230,8 @@ def phyloplot(adata: AnnData) -> None:
     """
     # Validate inputs
     validate_anndata(adata, "adata", "phyloplot")
+
+    import cnsplots.helpers._phylo as helper_phylo
 
     helper_phylo.phyloplot(adata)
 
