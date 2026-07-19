@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, cast
+import math
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from matplotlib.backend_bases import DrawEvent, Event, RendererBase
 
@@ -20,6 +22,200 @@ from cnsplots._setup import setup_matplotlib
 
 _LEFT_DECORATION_TOLERANCE_PX = 0.5
 _RELAYOUT_MAX_PASSES = 3
+
+
+def _validate_positive_finite_dimension(
+    name: str,
+    value: int | float,
+) -> int | float:
+    """Validate a dimension used to construct a matplotlib figure or axes."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"{name} must be a number")
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"{name} must be a positive finite number")
+    return value
+
+
+@dataclass
+class _Panel:
+    """Typed panel state with compatibility for legacy mapping-style access."""
+
+    label: str
+    width: int | float
+    height: int | float
+    pad_left: int | float
+    pad_top: int | float
+    margin_left: int | float
+    margin_top: int | float
+    margin_right: int | float
+    margin_bottom: int | float
+    left_decoration_width_px: float = 0.0
+    label_width_px: float = 0.0
+    label_height_px: float = 0.0
+    top_decoration_height_px: float = 0.0
+    _below: str | None = None
+    _is_spacer: bool = False
+    known_figure_axes_ids: set[int] | None = None
+
+    def __getitem__(self, key: str) -> Any:
+        """Support existing private consumers that index panel state as a dict."""
+        return getattr(self, key)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Support existing private consumers that update panel measurements."""
+        setattr(self, key, value)
+
+    def __contains__(self, key: object) -> bool:
+        """Report whether a legacy mapping key currently has a value."""
+        return isinstance(key, str) and getattr(self, key, None) is not None
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """Return a legacy mapping value without exposing storage details."""
+        if key == "known_figure_axes_ids" and self.known_figure_axes_ids is None:
+            return default
+        return getattr(self, key, default)
+
+    def pop(self, key: str, default: Any = None) -> Any:
+        """Clear the optional axes snapshot used by legacy private consumers."""
+        if key != "known_figure_axes_ids":
+            return default
+        value = self.known_figure_axes_ids
+        self.known_figure_axes_ids = None
+        if value is None:
+            return default
+        return value
+
+
+@dataclass(frozen=True)
+class _PanelGeometry:
+    """Immutable inputs needed by the pure layout phase."""
+
+    label: str
+    width: float
+    height: float
+    margin_left: float
+    margin_top: float
+    left_reserve: float
+    top_reserve: float
+    total_width: float
+    total_height: float
+    below: str | None
+    is_spacer: bool
+
+
+@dataclass(frozen=True)
+class _PanelLayout:
+    """Calculated rows, heights, and axes positions for a panel collection."""
+
+    rows: tuple[tuple[int, ...], ...]
+    row_heights: tuple[float, ...]
+    positions: tuple[tuple[float, float], ...]
+
+
+def _layout_panels(
+    panels: tuple[_PanelGeometry, ...],
+    max_width: float,
+    title_height: float,
+) -> _PanelLayout:
+    """Calculate panel layout without mutating panel or multipanel state."""
+    label_to_index: dict[str, int] = {}
+    for idx, panel in enumerate(panels):
+        if panel.label in label_to_index:
+            raise ValueError(f"Panel label {panel.label!r} already exists")
+        label_to_index[panel.label] = idx
+
+    children: list[list[int]] = [[] for _ in panels]
+    for idx, panel in enumerate(panels):
+        if panel.below is None:
+            continue
+        parent_idx = label_to_index.get(panel.below)
+        if parent_idx is None:
+            raise ValueError(
+                f"below must reference an existing panel label: {panel.below!r}"
+            )
+        children[parent_idx].append(idx)
+
+    states = [0] * len(panels)
+
+    def validate_acyclic(panel_idx: int) -> None:
+        if states[panel_idx] == 1:
+            raise ValueError("Panel below relationships must not contain cycles")
+        if states[panel_idx] == 2:
+            return
+        states[panel_idx] = 1
+        for child_idx in children[panel_idx]:
+            validate_acyclic(child_idx)
+        states[panel_idx] = 2
+
+    for idx in range(len(panels)):
+        validate_acyclic(idx)
+
+    subtree_sizes: list[tuple[float, float] | None] = [None] * len(panels)
+
+    def get_subtree_size(panel_idx: int) -> tuple[float, float]:
+        cached_size = subtree_sizes[panel_idx]
+        if cached_size is not None:
+            return cached_size
+        panel = panels[panel_idx]
+        subtree_width = panel.total_width
+        subtree_height = panel.total_height
+        for child_idx in children[panel_idx]:
+            child_width, child_height = get_subtree_size(child_idx)
+            subtree_width = max(subtree_width, child_width)
+            subtree_height += child_height
+        subtree_sizes[panel_idx] = (subtree_width, subtree_height)
+        return subtree_width, subtree_height
+
+    rows: list[list[int]] = []
+    row_heights: list[float] = []
+    current_row: list[int] = []
+    current_row_width = 0.0
+    current_row_height = 0.0
+
+    root_indices = [idx for idx, panel in enumerate(panels) if panel.below is None]
+    for panel_idx in root_indices:
+        subtree_width, subtree_height = get_subtree_size(panel_idx)
+        if current_row and current_row_width + subtree_width > max_width:
+            rows.append(current_row)
+            row_heights.append(current_row_height)
+            current_row = [panel_idx]
+            current_row_width = subtree_width
+            current_row_height = subtree_height
+        else:
+            current_row.append(panel_idx)
+            current_row_width += subtree_width
+            current_row_height = max(current_row_height, subtree_height)
+
+    if current_row:
+        rows.append(current_row)
+        row_heights.append(current_row_height)
+
+    positions = [(0.0, 0.0)] * len(panels)
+
+    def place_subtree(panel_idx: int, column_x: float, outer_y: float) -> float:
+        panel = panels[panel_idx]
+        positions[panel_idx] = (
+            column_x + panel.margin_left + panel.left_reserve,
+            outer_y + panel.margin_top + panel.top_reserve,
+        )
+        next_y = outer_y + panel.total_height
+        for child_idx in children[panel_idx]:
+            next_y = place_subtree(child_idx, column_x, next_y)
+        return next_y
+
+    row_y = title_height
+    for row_idx, row in enumerate(rows):
+        column_x = 0.0
+        for panel_idx in row:
+            place_subtree(panel_idx, column_x, row_y)
+            column_x += get_subtree_size(panel_idx)[0]
+        row_y += row_heights[row_idx]
+
+    return _PanelLayout(
+        rows=tuple(tuple(row) for row in rows),
+        row_heights=tuple(row_heights),
+        positions=tuple(positions),
+    )
 
 
 def _validate_title_loc(loc: str) -> str:
@@ -129,11 +325,14 @@ class multipanel:
             max_width = settings.multipanel_max_width
         if loc is None:
             loc = settings.multipanel_title_loc
-        self._max_width = max_width
+        self._max_width = _validate_positive_finite_dimension(
+            "max_width",
+            max_width,
+        )
         self._title = title
         self._title_loc = _validate_title_loc(loc)
         self._title_fontweight = _validate_title_fontweight(title_fontweight)
-        self._panels = []  # List of panel info dicts
+        self._panels: list[_Panel] = []
         self.fig = None
         self.axes = []
         self._created_axes = {}
@@ -146,6 +345,7 @@ class multipanel:
         # Each row is a list of panel indices
         self._rows = []
         self._row_heights = []  # Max total height in each row
+        self._panel_positions: list[tuple[float, float]] = []
         self._draw_event_cid: int | None = None
         self._is_relayout_in_draw = False
 
@@ -158,19 +358,25 @@ class multipanel:
             settings.title_fontsize + settings.multipanel_title_height_pad,
         )
 
-    def _get_left_decoration_width_px(self, panel: dict) -> float:
+    def _get_left_decoration_width_px(
+        self,
+        panel: _Panel | dict[str, Any],
+    ) -> float:
         """Get the cached rendered width of left-side axis decorations."""
         return float(panel.get("left_decoration_width_px", 0.0))
 
-    def _get_label_width_px(self, panel: dict) -> float:
+    def _get_label_width_px(self, panel: _Panel | dict[str, Any]) -> float:
         """Get the cached rendered width of the panel label."""
         return float(panel.get("label_width_px", 0.0))
 
-    def _get_label_height_px(self, panel: dict) -> float:
+    def _get_label_height_px(self, panel: _Panel | dict[str, Any]) -> float:
         """Get the cached rendered height of the panel label."""
         return float(panel.get("label_height_px", 0.0))
 
-    def _get_top_decoration_height_px(self, panel: dict) -> float:
+    def _get_top_decoration_height_px(
+        self,
+        panel: _Panel | dict[str, Any],
+    ) -> float:
         """Get the cached rendered height of top-side axis decorations."""
         return float(panel.get("top_decoration_height_px", 0.0))
 
@@ -183,23 +389,23 @@ class multipanel:
         """Convert rendered pixels into multipanel layout pixels."""
         return value / self._get_layout_scale()
 
-    def _get_label_gap_px(self, panel: dict) -> float:
+    def _get_label_gap_px(self, panel: _Panel | dict[str, Any]) -> float:
         """Get the rendered-pixel gap between the label and left decorations."""
         return self._get_left_decoration_width_px(panel) + panel.get("pad_left", 0)
 
-    def _get_left_reserve_px(self, panel: dict) -> float:
+    def _get_left_reserve_px(self, panel: _Panel | dict[str, Any]) -> float:
         """Get total left reserve in layout pixels for panel geometry."""
         return self._display_px_to_layout_px(
             self._get_label_width_px(panel) + self._get_label_gap_px(panel)
         )
 
-    def _get_top_label_offset_px(self, panel: dict) -> float:
+    def _get_top_label_offset_px(self, panel: _Panel | dict[str, Any]) -> float:
         """Get the rendered-pixel offset from axes top to label bottom."""
         return self._get_top_decoration_height_px(panel) + float(
             panel.get("pad_top", 0)
         )
 
-    def _get_top_reserve_px(self, panel: dict) -> float:
+    def _get_top_reserve_px(self, panel: _Panel | dict[str, Any]) -> float:
         """Get total top reserve in layout pixels for panel geometry."""
         return self._display_px_to_layout_px(
             self._get_label_height_px(panel) + self._get_top_label_offset_px(panel)
@@ -227,7 +433,10 @@ class multipanel:
             return 0.0, float(self._max_width)
         return left_bound, right_bound
 
-    def _get_panel_total_size(self, panel: dict) -> tuple[float, float]:
+    def _get_panel_total_size(
+        self,
+        panel: _Panel | dict[str, Any],
+    ) -> tuple[float, float]:
         """Get the total width and height of a panel including margins."""
         total_width = (
             panel["margin_left"]
@@ -411,7 +620,11 @@ class multipanel:
                 continue
             panel["known_figure_axes_ids"] = set(figure_axes_ids)
 
-    def _iter_linked_helper_axes(self, ax: Axes, panel: dict):
+    def _iter_linked_helper_axes(
+        self,
+        ax: Axes,
+        panel: _Panel | dict[str, Any],
+    ):
         """Yield new helper axes that are directly linked to a host axes."""
         known_axes_ids = set(panel.get("known_figure_axes_ids", {id(ax)}))
         seen_ids = set()
@@ -498,126 +711,49 @@ class multipanel:
         finally:
             self._is_relayout_in_draw = False
 
-    def _get_stacked_height(self, panel_idx: int) -> float:
-        """Get total height of a panel plus any panels stacked below it."""
-        panel = self._panels[panel_idx]
-        _, total_height = self._get_panel_total_size(panel)
-        # Add heights of children stacked below
-        for p in self._panels:
-            if p.get("_below") == panel["label"]:
-                _, child_height = self._get_panel_total_size(p)
-                total_height += child_height
-        return total_height
+    def _get_panel_geometry(
+        self,
+        panel: _Panel | dict[str, Any],
+    ) -> _PanelGeometry:
+        """Create immutable layout input from mutable rendered panel state."""
+        total_width, total_height = self._get_panel_total_size(panel)
+        return _PanelGeometry(
+            label=panel["label"],
+            width=float(panel["width"]),
+            height=float(panel["height"]),
+            margin_left=float(panel.get("margin_left", 0)),
+            margin_top=float(panel.get("margin_top", 0)),
+            left_reserve=self._get_left_reserve_px(panel),
+            top_reserve=self._get_top_reserve_px(panel),
+            total_width=float(total_width),
+            total_height=float(total_height),
+            below=panel.get("_below"),
+            is_spacer=bool(panel.get("_is_spacer")),
+        )
 
     def _calculate_layout(self) -> None:
         """Calculate row assignments and positions for all panels."""
-        self._rows = []
-        self._row_heights = []
-
-        current_row = []
-        current_row_x = 0
-        current_row_max_height = 0
-
-        for idx, panel in enumerate(self._panels):
-            # Skip panels that are stacked below another panel
-            if panel.get("_below"):
+        for panel in self._panels:
+            if panel.get("_is_spacer"):
                 continue
+            _validate_positive_finite_dimension("width", panel["width"])
+            _validate_positive_finite_dimension("height", panel["height"])
 
-            total_width, _ = self._get_panel_total_size(panel)
-            # Use stacked height (parent + children) for row height
-            stacked_height = self._get_stacked_height(idx)
-
-            # Check if panel fits in current row
-            if current_row and current_row_x + total_width > self._max_width:
-                # Start new row
-                self._rows.append(current_row)
-                self._row_heights.append(current_row_max_height)
-                current_row = [idx]
-                current_row_x = total_width
-                current_row_max_height = stacked_height
-            else:
-                # Add to current row
-                current_row.append(idx)
-                current_row_x += total_width
-                current_row_max_height = max(current_row_max_height, stacked_height)
-
-        # Don't forget the last row
-        if current_row:
-            self._rows.append(current_row)
-            self._row_heights.append(current_row_max_height)
+        geometry = tuple(self._get_panel_geometry(panel) for panel in self._panels)
+        layout = _layout_panels(
+            geometry,
+            float(self._max_width),
+            float(self._get_title_height_px()),
+        )
+        self._rows = [list(row) for row in layout.rows]
+        self._row_heights = list(layout.row_heights)
+        self._panel_positions = list(layout.positions)
 
     def _get_panel_position(self, panel_idx: int) -> tuple[float, float]:
         """Get the x, y position (top-left of axes content area) for a panel."""
-        panel = self._panels[panel_idx]
-
-        # Handle panels stacked below another panel
-        if panel.get("_below"):
-            # Find the parent panel index
-            parent_idx = None
-            for i, p in enumerate(self._panels):
-                if p["label"] == panel["_below"]:
-                    parent_idx = i
-                    break
-            if parent_idx is None:
-                return 0, 0
-
-            parent = self._panels[parent_idx]
-            parent_x, parent_y = self._get_panel_position(parent_idx)
-
-            # x: align to the parent's column origin, then apply this panel's
-            # own left spacing. This keeps stacked panels in the same column
-            # instead of reapplying the parent's left margin as an offset.
-            x = (
-                parent_x
-                - parent["margin_left"]
-                - self._get_left_reserve_px(parent)
-                + panel["margin_left"]
-                + self._get_left_reserve_px(panel)
-            )
-
-            # y: below parent's total height
-            y = (
-                parent_y
-                + parent["height"]
-                + parent["margin_bottom"]
-                + panel["margin_top"]
-                + self._get_top_reserve_px(panel)
-            )
-
-            return x, y
-
-        # Find which row this panel is in
-        row_idx = None
-        col_in_row = None
-        for r_idx, row in enumerate(self._rows):
-            if panel_idx in row:
-                row_idx = r_idx
-                col_in_row = row.index(panel_idx)
-                break
-
-        if row_idx is None or col_in_row is None:
-            return 0, 0
-
-        # Calculate y position (from top of figure)
-        y = self._get_title_height_px() + sum(self._row_heights[:row_idx])
-
-        # Calculate x position
-        x = 0
-        for i in range(col_in_row):
-            prev_idx = self._rows[row_idx][i]
-            prev_panel = self._panels[prev_idx]
-            x += (
-                prev_panel["margin_left"]
-                + self._get_left_reserve_px(prev_panel)
-                + prev_panel["width"]
-                + prev_panel["margin_right"]
-            )
-
-        # Add this panel's left margin and padding
-        x += panel["margin_left"] + self._get_left_reserve_px(panel)
-        y += panel["margin_top"] + self._get_top_reserve_px(panel)
-
-        return x, y
+        if len(self._panel_positions) == len(self._panels):
+            return self._panel_positions[panel_idx]
+        return 0, 0
 
     def _create_or_update_figure(self) -> None:
         """Create or update the figure and all axes based on current layout."""
@@ -866,30 +1002,46 @@ class multipanel:
             margin_right = settings.panel_margin_right
         if margin_bottom is None:
             margin_bottom = settings.panel_margin_bottom
-        setup_matplotlib(color_cycle, color_map)
+
+        width = _validate_positive_finite_dimension("width", width)
+        height = _validate_positive_finite_dimension("height", height)
 
         if label is None:
+            if self._panel_index >= len(self._labels):
+                raise ValueError(
+                    "Automatic panel labels are limited to 26; "
+                    "provide an explicit unique label"
+                )
             label = self._labels[self._panel_index]
+        if not isinstance(label, str):
+            raise TypeError("label must be a string or None")
+        if any(panel.get("label") == label for panel in self._panels):
+            raise ValueError(f"Panel label {label!r} already exists")
+
+        if below is not None:
+            if not isinstance(below, str):
+                raise TypeError("below must be a string or None")
+            if not any(panel.get("label") == below for panel in self._panels):
+                raise ValueError(
+                    f"below must reference an existing panel label: {below!r}"
+                )
+
+        setup_matplotlib(color_cycle, color_map)
 
         self._capture_linked_helper_axes()
 
-        # Store panel info
-        panel_info = {
-            "label": label,
-            "width": width,
-            "height": height,
-            "pad_left": pad_left,
-            "left_decoration_width_px": 0.0,
-            "label_width_px": 0.0,
-            "label_height_px": 0.0,
-            "top_decoration_height_px": 0.0,
-            "pad_top": pad_top,
-            "margin_left": margin_left,
-            "margin_top": margin_top,
-            "margin_right": margin_right,
-            "margin_bottom": margin_bottom,
-            "_below": below,
-        }
+        panel_info = _Panel(
+            label=label,
+            width=width,
+            height=height,
+            pad_left=pad_left,
+            pad_top=pad_top,
+            margin_left=margin_left,
+            margin_top=margin_top,
+            margin_right=margin_right,
+            margin_bottom=margin_bottom,
+            _below=below,
+        )
         self._panels.append(panel_info)
 
         # Create or update figure
@@ -955,16 +1107,16 @@ class multipanel:
                 if remaining > 0:
                     # Add invisible spacer
                     self._panels.append(
-                        {
-                            "label": f"_spacer_{len(self._panels)}",
-                            "width": 0,
-                            "height": 0,
-                            "pad_left": 0,
-                            "pad_top": 0,
-                            "margin_left": 0,
-                            "margin_top": 0,
-                            "margin_right": 0,
-                            "margin_bottom": 0,
-                            "_is_spacer": True,
-                        }
+                        _Panel(
+                            label=f"_spacer_{len(self._panels)}",
+                            width=0,
+                            height=0,
+                            pad_left=0,
+                            pad_top=0,
+                            margin_left=0,
+                            margin_top=0,
+                            margin_right=0,
+                            margin_bottom=0,
+                            _is_spacer=True,
+                        )
                     )
