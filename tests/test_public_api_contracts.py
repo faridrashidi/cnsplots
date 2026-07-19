@@ -455,6 +455,33 @@ def test_public_prerank_and_gseaplot_use_real_gseapy_backend() -> None:
     assert rendered_nes == pytest.approx(expected_nes)
 
 
+def test_gseaplot_direct_call_resolves_default_colormap_locally() -> None:
+    src_path = Path(__file__).parents[1] / "src"
+    script = f"""
+import sys
+sys.path.insert(0, {str(src_path)!r})
+
+import matplotlib
+matplotlib.use("Agg", force=True)
+import pandas as pd
+
+import cnsplots as cns
+
+assert "BuRd_custom" not in matplotlib.colormaps
+data = pd.DataFrame(
+    {{
+        "Term": ["Significant", "Not significant"],
+        "NES": [2.0, -1.5],
+        "FDR q-val": [0.01, 0.2],
+    }}
+)
+ax = cns.gseaplot(data, y="Term")
+assert [label.get_text() for label in ax.get_yticklabels()] == ["Significant"]
+assert "BuRd_custom" not in matplotlib.colormaps
+"""
+    subprocess.run([sys.executable, "-c", script], check=True)
+
+
 def test_public_prerank_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
     real_import = builtins.__import__
 
