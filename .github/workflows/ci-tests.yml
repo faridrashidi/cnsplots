@@ -23,7 +23,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Run lint
         run: make lint
@@ -48,7 +48,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Install mutool
         run: |
@@ -75,7 +75,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Build docs
         run: make doc
@@ -106,4 +106,5 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install dist/*.whl
           python -c "import cnsplots; print(cnsplots.__version__)"
+          python -c "from importlib.resources import files; assert files('cnsplots').joinpath('py.typed').is_file()"
           python -m pip check

@@ -7,7 +7,7 @@ license = { text = "BSD-3-Clause" }
 requires-python = ">=3.10,<4.0"
 keywords = ["plotting", "visualization", "bioinformatics"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
@@ -25,9 +25,9 @@ dependencies = [
     "biopython",
     "glasbey",
     "gseapy",
-    "lifelines",
+    "lifelines>=0.30,<0.31",
     "lxml",
-    "matplotlib",
+    "matplotlib>=3.10,<3.11",
     "matplotlib-venn",
     "natsort",
     "num2tex",
@@ -36,12 +36,12 @@ dependencies = [
     "palettable",
     "pandas",
     "patsy",
-    "pycomplexheatmap",
+    "pycomplexheatmap>=1.8.4,<1.9",
     "scanpy",
     "scikit-learn",
     "scipy",
-    "seaborn",
-    "statannotations",
+    "seaborn>=0.13.2,<0.14",
+    "statannotations>=0.7.2,<0.8",
     "statsmodels",
     "upsetplot",
 ]
@@ -78,6 +78,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+cnsplots = ["py.typed"]
 
 [tool.ruff]
 target-version = "py310"
