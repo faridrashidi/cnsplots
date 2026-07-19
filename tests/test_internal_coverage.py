@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from matplotlib.patches import PathPatch
+from matplotlib.collections import PathCollection, QuadMesh
+from matplotlib.patches import PathPatch, Wedge
 
 import cnsplots as cns
 from cnsplots import _methods, _setup, _svg, _utils, _validation
@@ -761,10 +762,27 @@ def test_plot_internal_coverage(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cns.figure(120, 120)
-    cns.lollipopplot(categorical_df, x="group", y="value", addtip=True, errorbar="bad")
+    lollipop_ax = cns.lollipopplot(
+        categorical_df, x="group", y="value", addtip=True, errorbar="bad"
+    )
+    lollipop_points = [
+        collection
+        for collection in lollipop_ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    assert len(lollipop_points) == 1
+    np.testing.assert_allclose(
+        np.asarray(lollipop_points[0].get_offsets(), dtype=float),
+        [[0, 1.2], [1, 2.15], [2, 3.15]],
+    )
+    assert [text.get_text() for text in lollipop_ax.texts] == [
+        "1.20",
+        "2.15",
+        "3.15",
+    ]
 
     cns.figure(120, 120)
-    cns.lollipopplot(
+    grouped_lollipop_ax = cns.lollipopplot(
         categorical_df,
         x="group",
         y="value",
@@ -774,9 +792,23 @@ def test_plot_internal_coverage(
         hue_order=["H1", "H2"],
         pairs=[(("A", "H1"), ("A", "H2"))],
     )
+    grouped_lollipop_points = [
+        collection
+        for collection in grouped_lollipop_ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    assert len(grouped_lollipop_points) == 2
+    np.testing.assert_allclose(
+        np.asarray(grouped_lollipop_points[0].get_offsets(), dtype=float),
+        [[-0.2, 1.15], [0.8, 2.1], [1.8, 3.05]],
+    )
+    np.testing.assert_allclose(
+        np.asarray(grouped_lollipop_points[1].get_offsets(), dtype=float),
+        [[0.2, 1.25], [1.2, 2.2], [2.2, 3.25]],
+    )
 
     cns.figure(120, 120)
-    cns.lollipopplot(
+    horizontal_lollipop_ax = cns.lollipopplot(
         categorical_df.rename(columns={"group": "cat", "value": "num"}),
         x="num",
         y="cat",
@@ -784,17 +816,46 @@ def test_plot_internal_coverage(
         addtip=True,
         errorbar="se",
     )
+    horizontal_lollipop_points = [
+        collection
+        for collection in horizontal_lollipop_ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    assert len(horizontal_lollipop_points) == 2
+    np.testing.assert_allclose(
+        np.asarray(horizontal_lollipop_points[0].get_offsets(), dtype=float),
+        [[1.15, -0.2], [2.1, 0.8], [3.05, 1.8]],
+    )
+    np.testing.assert_allclose(
+        np.asarray(horizontal_lollipop_points[1].get_offsets(), dtype=float),
+        [[1.25, 0.2], [2.2, 1.2], [3.25, 2.2]],
+    )
+    assert [text.get_text() for text in horizontal_lollipop_ax.texts] == [
+        "1.15",
+        "2.10",
+        "3.05",
+        "1.25",
+        "2.20",
+        "3.25",
+    ]
 
     cns.figure(120, 120)
-    cns.stackplot(
+    stack_ax = cns.stackplot(
         stack_df,
         x="treatment",
         y="response",
         horizontal=True,
         normalize=True,
         addcount=True,
-        bar_order=["A", "B", "C"],
+        bar_order=["Yes", "No"],
     )
+    assert [patch.get_width() for patch in stack_ax.patches] == pytest.approx(
+        [1 / 3] * 6
+    )
+    assert [tick.get_text() for tick in stack_ax.get_yticklabels()] == [
+        "Yes\n(n=6)",
+        "No\n(n=6)",
+    ]
 
     class SizeHandle:
         def __init__(self) -> None:
@@ -812,48 +873,126 @@ def test_plot_internal_coverage(
     )
 
     cns.figure(120, 120)
-    cns.stripplot(categorical_df, x="group", y="value", hue="hue")
+    strip_ax = cns.stripplot(categorical_df, x="group", y="value", hue="hue")
+    strip_points = [
+        collection
+        for collection in strip_ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    np.testing.assert_allclose(
+        np.sort(
+            np.concatenate(
+                [
+                    np.asarray(points.get_offsets(), dtype=float)[:, 1]
+                    for points in strip_points
+                ]
+            )
+        ),
+        np.sort(categorical_df["value"].to_numpy()),
+    )
+    assert fake_legend.legend_handles[0].sizes == [4]
+
     cns.figure(120, 120)
-    cns.scatterplot(
-        categorical_df.rename(columns={"value": "x"}).assign(y=lambda df: df["x"] * 2),
+    scatter_data = categorical_df.rename(columns={"value": "x"}).assign(
+        y=lambda df: df["x"] * 2
+    )
+    scatter_ax = cns.scatterplot(
+        scatter_data,
         x="x",
         y="y",
         hue="hue",
     )
+    scatter_points = [
+        collection
+        for collection in scatter_ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    assert len(scatter_points) == 1
+    np.testing.assert_allclose(
+        np.asarray(scatter_points[0].get_offsets(), dtype=float),
+        scatter_data[["x", "y"]].to_numpy(),
+    )
+    assert fake_legend.legend_handles[0].sizes == [7]
+
     cns.figure(120, 120)
-    cns.regplot(
-        categorical_df.rename(columns={"value": "x"}).assign(
-            y=lambda df: df["x"] * 2, color_col=["A"] * 12
-        ),
+    regression_data = scatter_data.assign(color_col=["A"] * 12)
+    regression_ax = cns.regplot(
+        regression_data,
         x="x",
         y="y",
         color="color_col",
     )
+    regression_points = [
+        collection
+        for collection in regression_ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    assert len(regression_points) == 1
+    np.testing.assert_allclose(
+        np.asarray(regression_points[0].get_offsets(), dtype=float),
+        regression_data[["x", "y"]].to_numpy(),
+    )
+    np.testing.assert_allclose(
+        np.asarray(regression_ax.lines[0].get_ydata(), dtype=float),
+        2 * np.asarray(regression_ax.lines[0].get_xdata(), dtype=float),
+    )
+    assert [text.get_text() for text in regression_ax.texts] == [r"$\rho$=1.00, $P=0$"]
+    assert fake_legend.legend_handles[0].sizes == [6]
 
     monkeypatch.undo()
 
     cns.figure(120, 120)
-    cns.pieplot(categorical_df, x="group")
+    pie_ax = cns.pieplot(categorical_df, x="group")
+    pie_wedges = [patch for patch in pie_ax.patches if isinstance(patch, Wedge)]
+    assert len(pie_wedges) == 3
+    np.testing.assert_allclose(
+        [wedge.theta2 - wedge.theta1 for wedge in pie_wedges], [120] * 3
+    )
+    assert [text.get_text() for text in pie_ax.texts] == ["33%"] * 3
+
     cns.figure(120, 120)
-    cns.donutplot(categorical_df, x="group")
+    donut_ax = cns.donutplot(categorical_df, x="group")
+    donut_wedges = [patch for patch in donut_ax.patches if isinstance(patch, Wedge)]
+    assert len(donut_wedges) == 3
+    np.testing.assert_allclose(
+        [wedge.theta2 - wedge.theta1 for wedge in donut_wedges], [120] * 3
+    )
+    assert [wedge.width for wedge in donut_wedges] == pytest.approx([0.4] * 3)
+
+    class FakeArtist:
+        def __init__(self) -> None:
+            self.facecolor: object = (1, 0, 0, 1)
+            self.edgecolor: object = None
+
+        def get_facecolor(self) -> object:
+            return self.facecolor
+
+        def set_edgecolor(self, value: object) -> None:
+            self.edgecolor = value
+
+        def set_facecolor(self, value: object) -> None:
+            self.facecolor = value
+
+    class FakeLine:
+        def __init__(self) -> None:
+            self.color: object = None
+            self.marker_facecolor: object = None
+            self.marker_edgecolor: object = None
+
+        def set_color(self, value: object) -> None:
+            self.color = value
+
+        def set_mfc(self, value: object) -> None:
+            self.marker_facecolor = value
+
+        def set_mec(self, value: object) -> None:
+            self.marker_edgecolor = value
 
     class FakeAxes:
         def __init__(self) -> None:
             self.patches: list[PathPatch] = []
-            self.artists = [
-                types.SimpleNamespace(
-                    get_facecolor=lambda: (1, 0, 0, 1),
-                    set_edgecolor=lambda x: None,
-                    set_facecolor=lambda x: None,
-                )
-            ]
-            self.lines = [
-                types.SimpleNamespace(
-                    set_color=lambda x: None,
-                    set_mfc=lambda x: None,
-                    set_mec=lambda x: None,
-                )
-            ] * 5
+            self.artists = [FakeArtist()]
+            self.lines = [FakeLine() for _ in range(5)]
 
         def get_legend_handles_labels(self) -> tuple[list[object], list[str]]:
             return [], []
@@ -863,11 +1002,23 @@ def test_plot_internal_coverage(
 
     monkeypatch.setattr(dist_mod.sns, "boxplot", lambda **kwargs: FakeAxes())
     monkeypatch.setattr(cns.utils, "_remove_edge_from_legend_items", lambda ax: None)
-    cns.boxplot(categorical_df, x="group", y="value")
+    box_ax = cns.boxplot(categorical_df, x="group", y="value")
+    assert box_ax.artists[0].edgecolor == "None"
+    assert box_ax.artists[0].facecolor == (1, 0, 0, 1)
+    assert [line.color for line in box_ax.lines] == [
+        (1, 0, 0, 1),
+        (1, 0, 0, 1),
+        "white",
+        (1, 0, 0, 1),
+        (1, 0, 0, 1),
+    ]
 
     cns.figure(120, 120)
-    cns.histplot(
+    hist_ax = cns.histplot(
         data=categorical_df.rename(columns={"value": "x", "group": "y"}), y="x"
+    )
+    assert sum(patch.get_width() for patch in hist_ax.patches) == pytest.approx(
+        len(categorical_df)
     )
 
     adata_nan = heatmap_adata.copy()
@@ -875,7 +1026,8 @@ def test_plot_internal_coverage(
         ["A", None, "B"], index=adata_nan.obs_names, dtype=object
     )
     cns.figure(120, 120)
-    cns.heatmapplot(adata_nan, row_annotation=["cluster"], cmap=None)
+    heatmap = cns.heatmapplot(adata_nan, row_annotation=["cluster"], cmap=None)
+    pd.testing.assert_frame_equal(heatmap.data2d, adata_nan.to_df())
 
     with pytest.raises(ValueError, match="required cell for stats"):
         cns.confusionplot(
@@ -972,33 +1124,41 @@ def test_plot_internal_coverage(
 
     cns.figure(120, 120)
     cns.phyloplot(phylo_adata)
+    phylo_matrices = [
+        np.asarray(collection.get_array())
+        for axis in plt.gcf().axes
+        for collection in axis.collections
+        if isinstance(collection, QuadMesh)
+        and np.asarray(collection.get_array()).shape == phylo_adata.shape
+    ]
+    assert len(phylo_matrices) == 1
+    np.testing.assert_array_equal(
+        phylo_matrices[0], phylo_adata.layers["trisicell_output"]
+    )
 
-    fake_venn_obj = types.SimpleNamespace(
-        get_label_by_id=lambda area: (
-            (_ for _ in ()).throw(AttributeError())
-            if area in {"100", "110"}
-            else types.SimpleNamespace(set_fontsize=lambda size: None)
-        ),
-        get_patch_by_id=lambda area: (
-            (_ for _ in ()).throw(AttributeError())
-            if area in {"100", "110"}
-            else types.SimpleNamespace(
-                set_edgecolor=lambda color: None, set_linewidth=lambda width: None
-            )
-        ),
-    )
-    monkeypatch.setitem(
-        sys.modules,
-        "matplotlib_venn",
-        types.SimpleNamespace(
-            venn2=lambda *args, **kwargs: fake_venn_obj,
-            venn3=lambda *args, **kwargs: fake_venn_obj,
-        ),
-    )
     cns.figure(120, 120)
-    assert (
-        cns.vennplot([{1, 2}, {2, 3}, {3, 4}], labels=["A", "B", "C"]) is fake_venn_obj
-    )
+    venn = cns.vennplot([{1, 2}, {2, 3}, {3, 4}], labels=["A", "B", "C"])
+    assert {
+        area: (
+            None
+            if venn.get_label_by_id(area) is None
+            else venn.get_label_by_id(area).get_text()
+        )
+        for area in ["100", "010", "001", "110", "101", "011", "111"]
+    } == {
+        "100": "1",
+        "010": "0",
+        "001": "1",
+        "110": "1",
+        "101": None,
+        "011": "1",
+        "111": None,
+    }
+    assert [venn.get_label_by_id(name).get_text() for name in ["A", "B", "C"]] == [
+        "A",
+        "B",
+        "C",
+    ]
 
 
 def test_remaining_visual_internal_coverage(

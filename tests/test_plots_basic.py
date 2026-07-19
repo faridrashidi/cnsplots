@@ -4,13 +4,21 @@ import logging
 from typing import Any, cast
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pytest
 from cycler import cycler
 from matplotlib.colors import to_hex, to_rgba
-from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Wedge
+from matplotlib.patches import Circle, FancyBboxPatch, PathPatch, Polygon, Wedge
 
 import cnsplots as cns
+
+
+def _line_xy(line: Any) -> tuple[np.ndarray, np.ndarray]:
+    return (
+        np.asarray(line.get_xdata(), dtype=float),
+        np.asarray(line.get_ydata(), dtype=float),
+    )
 
 
 def test_boxplot_and_violinplot(
@@ -39,6 +47,21 @@ def test_boxplot_and_violinplot(
     assert ax.get_xticklabels()[0].get_text().startswith("A")
     assert "minimum and maximum values" in caplog.text
     assert calls
+    box_patches = [patch for patch in ax.patches if isinstance(patch, PathPatch)]
+    box_quartiles = []
+    for patch in box_patches:
+        vertices = np.asarray(patch.get_path().vertices, dtype=float)
+        box_quartiles.append([vertices[:, 1].min(), vertices[:, 1].max()])
+    np.testing.assert_allclose(
+        box_quartiles,
+        [[1.075, 1.325], [2.075, 2.225], [3.075, 3.225]],
+    )
+    median_values = []
+    for line in ax.lines:
+        x_data, y_data = _line_xy(line)
+        if len(x_data) == 2 and np.ptp(x_data) > 0 and np.ptp(y_data) == 0:
+            median_values.append(float(y_data[0]))
+    np.testing.assert_allclose(median_values, [1.2, 2.15, 3.15])
 
     cns.figure(120, 120)
     ax2 = cns.violinplot(
@@ -81,6 +104,10 @@ def test_barplot_and_lollipopplot(
     )
     assert ax.get_legend() is not None
     assert ax.get_legend().get_title().get_text() == "palette_group"
+    np.testing.assert_allclose(
+        [patch.get_height() for patch in ax.patches], [1.2, 2.15, 3.15]
+    )
+    assert [text.get_text() for text in ax.texts] == ["1.2", "2.15", "3.15"]
 
     cns.figure(120, 120)
     ax2 = cns.lollipopplot(
@@ -178,6 +205,7 @@ def test_stack_strip_pie_and_donut_plots(
         "B\n(n=4)",
         "C\n(n=4)",
     ]
+    np.testing.assert_allclose([patch.get_height() for patch in ax.patches], [0.5] * 6)
     assert not ax.texts
 
     cns.figure(120, 120)
@@ -188,10 +216,11 @@ def test_stack_strip_pie_and_donut_plots(
         horizontal=True,
         normalize=False,
         pairs=[("A", "B")],
-        bar_order=["A", "B", "C"],
+        bar_order=["No", "Yes"],
         stack_order=["No", "Yes"],
     )
     assert ax2.get_xlabel() == "Count"
+    np.testing.assert_allclose([patch.get_width() for patch in ax2.patches], [2.0] * 6)
 
     cns.figure(120, 120)
     ax2b = cns.stackplot(
@@ -224,6 +253,10 @@ def test_stack_strip_pie_and_donut_plots(
         categorical_df, x="group", legend="left", hue_order=["C", "B", "A"]
     )
     assert ax4.get_legend() is not None
+    pie_wedges = [patch for patch in ax4.patches if isinstance(patch, Wedge)]
+    np.testing.assert_allclose(
+        [patch.theta2 - patch.theta1 for patch in pie_wedges], [120.0] * 3
+    )
 
     cns.figure(120, 120)
     ax5 = cns.donutplot(
@@ -232,7 +265,9 @@ def test_stack_strip_pie_and_donut_plots(
     assert ax5.get_legend() is not None
     assert any(text.get_text() == "group" for text in ax5.texts)
     donut_wedges = [patch for patch in ax5.patches if isinstance(patch, Wedge)]
-    assert donut_wedges
+    np.testing.assert_allclose(
+        [patch.theta2 - patch.theta1 for patch in donut_wedges], [120.0] * 3
+    )
     assert all(patch.width == pytest.approx(0.4) for patch in donut_wedges)
     assert calls
 
@@ -260,7 +295,9 @@ def test_distribution_wrappers(
 
     cns.figure(120, 120)
     ax4 = cns.histplot(data=numeric_df, x="x", kde=True)
-    assert ax4 is plt.gca()
+    assert sum(patch.get_height() for patch in ax4.patches) == pytest.approx(
+        len(numeric_df)
+    )
 
     cns.figure(120, 120)
     ax5 = cns.ridgeplot(categorical_df, x="value", y="group", cmap="viridis")
@@ -436,7 +473,6 @@ def test_placeholderplot_requires_string_description() -> None:
 def test_sets_and_specialized_plots(
     sets_fixture: dict[str, set[int]],
     sankey_df: pd.DataFrame,
-    roc_df: pd.DataFrame,
 ) -> None:
     cns.figure(120, 120)
     axes = cns.upsetplot(sets_fixture, min_subset_size=1)
@@ -469,7 +505,13 @@ def test_sets_and_specialized_plots(
 
     cns.figure(120, 120)
     venn = cns.vennplot(list(sets_fixture.values())[:2], labels=["A", "B"])
-    assert venn is not None
+    assert {
+        area: venn.get_label_by_id(area).get_text() for area in ["10", "01", "11"]
+    } == {"10": "1", "01": "1", "11": "2"}
+    assert [venn.get_label_by_id(area).get_text() for area in ["A", "B"]] == [
+        "A",
+        "B",
+    ]
 
     cns.figure(120, 120)
     ax = cns.sankeyplot(sankey_df, x="source", y="target")
@@ -485,13 +527,38 @@ def test_sets_and_specialized_plots(
     assert len(ax_rotated.texts) == len(ax.texts)
     assert all(text.get_rotation() == 90 for text in ax_rotated.texts)
 
+    roc_df = pd.DataFrame(
+        {
+            "truth": [0, 0, 1, 1],
+            "model_a": [0.1, 0.4, 0.35, 0.8],
+            "model_b": [0.1, 0.8, 0.4, 0.7],
+        }
+    )
     cns.figure(120, 120)
     ax2 = cns.rocplot(roc_df, "truth", "model_a")
-    assert len(ax2.lines) == 2
+    model_a_x, model_a_y = _line_xy(ax2.lines[0])
+    diagonal_x, diagonal_y = _line_xy(ax2.lines[1])
+    np.testing.assert_allclose(model_a_x, [0, 0, 0.5, 0.5, 1])
+    np.testing.assert_allclose(model_a_y, [0, 0.5, 0.5, 1, 1])
+    assert ax2.lines[0].get_label() == "model_a (AUC=0.75)"
+    np.testing.assert_allclose(diagonal_x, [0, 1])
+    np.testing.assert_allclose(diagonal_y, [0, 1])
 
     cns.figure(120, 120)
     ax3 = cns.rocplot(roc_df, "truth", ["model_a", "model_b"])
-    assert len(ax3.lines) == 3
+    assert [line.get_label() for line in ax3.lines[:2]] == [
+        "model_a (AUC=0.75)",
+        "model_b (AUC=0.50)",
+    ]
+    model_a_x, model_a_y = _line_xy(ax3.lines[0])
+    model_b_x, model_b_y = _line_xy(ax3.lines[1])
+    diagonal_x, diagonal_y = _line_xy(ax3.lines[2])
+    np.testing.assert_allclose(model_a_x, [0, 0, 0.5, 0.5, 1])
+    np.testing.assert_allclose(model_a_y, [0, 0.5, 0.5, 1, 1])
+    np.testing.assert_allclose(model_b_x, [0, 0.5, 0.5, 1])
+    np.testing.assert_allclose(model_b_y, [0, 0, 1, 1])
+    np.testing.assert_allclose(diagonal_x, [0, 1])
+    np.testing.assert_allclose(diagonal_y, [0, 1])
 
 
 def test_sankey_annotations_use_legend_fontsize(sankey_df: pd.DataFrame) -> None:
