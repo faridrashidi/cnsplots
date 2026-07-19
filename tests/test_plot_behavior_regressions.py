@@ -162,3 +162,59 @@ def test_gseaplot_raises_when_backend_does_not_create_legend(
     cns.figure(120, 120)
     with pytest.raises(RuntimeError, match="did not produce a legend"):
         cns.gseaplot(gsea_plot_df, y="Clean_Term")
+
+
+def test_gseaplot_filters_significance_independently_from_color(
+    monkeypatch: pytest.MonkeyPatch,
+    gsea_plot_df: pd.DataFrame,
+) -> None:
+    captured_data: list[pd.DataFrame] = []
+    captured_options: dict[str, object] = {}
+
+    def fake_dotplot(
+        data: pd.DataFrame,
+        cmap: object,
+        y: str,
+        x: str,
+        cutoff: float,
+        column: str,
+        ax: plt.Axes,
+        top_term: int,
+        size: float,
+    ) -> None:
+        captured_data.append(data.copy())
+        captured_options.update(cmap=cmap, cutoff=cutoff, column=column)
+        scatter = ax.scatter(data[x], np.arange(len(data)), c=data[column])
+        plt.gcf().colorbar(scatter, ax=ax)
+        handle = plt.Line2D([], [], marker="o", linestyle="none", color="black")
+        ax.legend([handle], ["20"], title="size")
+
+    monkeypatch.setitem(
+        sys.modules, "gseapy", types.SimpleNamespace(dotplot=fake_dotplot)
+    )
+    data = gsea_plot_df.assign(score=[10.0, 20.0, 30.0])
+    data.loc[data["Clean_Term"] == "Pathway B", "FDR q-val"] = 0.2
+
+    cns.gseaplot(
+        data,
+        y="Clean_Term",
+        color="score",
+        cutoff=0.05,
+        cmap="viridis",
+        significance_column="FDR q-val",
+    )
+
+    assert captured_data[0]["Clean_Term"].tolist() == ["Pathway A", "Pathway C"]
+    assert captured_data[0]["score"].tolist() == [10.0, 30.0]
+    assert captured_options == {
+        "cmap": "viridis",
+        "cutoff": np.inf,
+        "column": "score",
+    }
+
+
+def test_gseaplot_validates_significance_column(
+    gsea_plot_df: pd.DataFrame,
+) -> None:
+    with pytest.raises(ValueError, match="FDR q-val"):
+        cns.gseaplot(gsea_plot_df.drop(columns="FDR q-val"), y="Clean_Term")

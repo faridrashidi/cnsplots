@@ -20,6 +20,14 @@ from cnsplots._validation import (
     validate_dataframe_not_empty,
 )
 
+_CNS_CONTINUOUS_CMAPS = {
+    "BuRd_custom",
+    "OrBu_custom",
+    "WhYlOrRd_custom",
+    "YlGnBu_custom",
+    "parula",
+}
+
 
 def volcanoplot(
     data: pd.DataFrame,
@@ -172,6 +180,7 @@ def gseaplot(
     cmap: str = "BuRd_custom",
     top_term: int = 20,
     size: float = 1.8,
+    significance_column: str = "FDR q-val",
 ) -> Axes:
     """
     Create a Gene Set Enrichment Analysis (GSEA) dot plot.
@@ -189,13 +198,17 @@ def gseaplot(
     color : str, default: 'NES'
         Column name for the variable to use for dot color encoding.
     cutoff : float, default: 0.05
-        Significance cutoff for filtering gene sets.
+        Significance cutoff applied to ``significance_column`` when filtering
+        gene sets.
     cmap : str, default: 'BuRd_custom'
         Colormap for encoding the color variable.
     top_term : int, default: 20
         Maximum number of top gene sets to display.
     size : float, default: 1.8
         Scaling factor for dot sizes.
+    significance_column : str, default: 'FDR q-val'
+        Column containing significance values used to filter gene sets by
+        ``cutoff``. This is independent of the ``color`` encoding.
 
     Returns
     -------
@@ -227,18 +240,21 @@ def gseaplot(
     """
     # Validate inputs
     validate_dataframe(data, "data", "gseaplot")
-    validate_columns_exist(data, [y, "NES", color], "gseaplot")
+    validate_columns_exist(data, [y, "NES", color, significance_column], "gseaplot")
     validate_dataframe_not_empty(data, "gseaplot")
 
     import gseapy as gp
 
+    plot_data = data.loc[data[significance_column] <= cutoff].copy()
+    resolved_cmap = utils.palettes(cmap) if cmap in _CNS_CONTINUOUS_CMAPS else cmap
+
     ax = plt.gca()
     gp.dotplot(
-        data,
-        cmap=cmap,
+        plot_data,
+        cmap=resolved_cmap,
         y=y,
         x="NES",
-        cutoff=cutoff,
+        cutoff=np.inf,
         column=color,
         ax=ax,
         top_term=top_term,
