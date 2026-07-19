@@ -23,6 +23,7 @@ from cnsplots._validation import (
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
+    validate_no_nulls,
 )
 
 logger = logging.getLogger(__name__)
@@ -522,8 +523,24 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
     validate_dataframe(data, "data", "ridgeplot")
     validate_columns_exist(data, [x, y], "ridgeplot")
     validate_dataframe_not_empty(data, "ridgeplot")
+    validate_no_nulls(data, [x, y], "ridgeplot")
 
     categories = data[y].unique()
+    grouped_values: list[tuple[Any, np.ndarray]] = []
+    for category in categories:
+        values = data.loc[data[y] == category, x].to_numpy()
+        if values.size < 2:
+            raise ValueError(
+                f"[ridgeplot] Group {category!r} must contain at least two "
+                "observations."
+            )
+        if pd.Series(values).nunique() < 2:
+            raise ValueError(
+                f"[ridgeplot] Group {category!r} is constant; kernel density "
+                "estimation requires varying values."
+            )
+        grouped_values.append((category, values))
+
     n = len(categories)
     colors = utils._get_hex_colors_from_colorbar(cmap, n)
     ax = plt.gca()
@@ -534,8 +551,7 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
     x_min, x_max = data[x].min(), data[x].max()
     x_grid = np.linspace(x_min, x_max, 200)
 
-    for i, cat in enumerate(categories):
-        x_v = np.array(data[data[y] == cat][x])
+    for i, (cat, x_v) in enumerate(grouped_values):
         kde = gaussian_kde(x_v)
         y_vals = kde(x_grid)
         y_vals = y_vals / y_vals.max()

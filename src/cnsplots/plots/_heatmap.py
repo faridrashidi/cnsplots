@@ -19,7 +19,9 @@ import numpy as np
 import pandas as pd
 import PyComplexHeatmap as pch
 import seaborn as sns
+from anndata.abc import CSCDataset, CSRDataset
 from natsort import natsort_keygen
+from scipy import sparse
 from scipy.stats import fisher_exact
 
 import cnsplots._utils as utils
@@ -35,6 +37,34 @@ from cnsplots._validation import (
     validate_dataframe,
     validate_dataframe_not_empty,
 )
+
+
+_MAX_DENSE_HEATMAP_BYTES = 512 * 1024**2
+
+
+def _anndata_to_heatmap_dataframe(adata: AnnData, layer: str | None) -> pd.DataFrame:
+    if layer is None and adata.X is None:
+        raise ValueError("X is None, cannot convert to dataframe.")
+
+    matrix = adata.X if layer is None else adata.layers[layer]
+    is_backed_sparse = isinstance(matrix, (CSRDataset, CSCDataset))
+    if sparse.issparse(matrix) or is_backed_sparse:
+        dense_nbytes = (
+            int(matrix.shape[0])
+            * int(matrix.shape[1])
+            * np.dtype(matrix.dtype).itemsize
+        )
+        if dense_nbytes > _MAX_DENSE_HEATMAP_BYTES:
+            dense_mib = dense_nbytes / 1024**2
+            raise ValueError(
+                "Sparse heatmap data would require approximately "
+                f"{dense_mib:.1f} MiB when densified; subset AnnData before plotting."
+            )
+        if is_backed_sparse:
+            matrix = matrix.to_memory()
+        matrix = matrix.toarray()
+
+    return pd.DataFrame(matrix, index=adata.obs_names, columns=adata.var_names)
 
 
 def _style_plotter_colorbars(cbars: list[Any]) -> None:
@@ -242,7 +272,7 @@ def heatmapplot(
             else:
                 rc_dict[annot] = pch.anno_simple(
                     series,
-                    cmap=cont_palettes[cont_counter],
+                    cmap=cont_palettes[cont_counter % len(cont_palettes)],
                     height=3,
                     rasterized=True,
                     linewidth=0,
@@ -277,7 +307,7 @@ def heatmapplot(
     if col_split is not None and not isinstance(col_split, int):
         col_split_val = adata.var[col_split]
 
-    df = adata.to_df() if layer is None else adata.to_df(layer=layer)
+    df = _anndata_to_heatmap_dataframe(adata, layer)
     cmp = helper_heatmap.ClusterMapPlotterNew(
         data=df,
         left_annotation=left_annotation,
