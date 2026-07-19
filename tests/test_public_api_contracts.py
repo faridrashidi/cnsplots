@@ -320,6 +320,44 @@ def test_public_prerank_contract(
     ]
 
 
+def test_public_prerank_and_gseaplot_use_real_gseapy_backend() -> None:
+    genes = [f"G{index:02d}" for index in range(60)]
+    ranked = pd.DataFrame(
+        {
+            "gene": [gene.lower() for gene in genes],
+            "rank": np.linspace(5, -5, len(genes)),
+        }
+    )
+    gene_sets = {
+        "HALLMARK_TOP_PATHWAY": genes[:20],
+        "GO_BOTTOM_PATHWAY": genes[-20:],
+    }
+
+    result = cns.prerank(
+        ranked,
+        gene_sets,
+        name_gene="gene",
+        name_rank="rank",
+        permutation_num=10,
+    )
+
+    assert set(result["Clean_Term"]) == {"Top Pathway", "Bottom Pathway"}
+    nes_by_term = result.set_index("Term")["NES"].astype(float)
+    assert nes_by_term["HALLMARK_TOP_PATHWAY"] > 1.5
+    assert nes_by_term["GO_BOTTOM_PATHWAY"] < -1.5
+    assert (result["FDR q-val"].astype(float) < 0.25).all()
+
+    cns.figure(160, 140)
+    ax = cns.gseaplot(result, y="Clean_Term", top_term=2)
+    offsets = np.asarray(ax.collections[0].get_offsets(), dtype=float)
+    rendered_nes = {
+        label.get_text(): offset[0]
+        for label, offset in zip(ax.get_yticklabels(), offsets, strict=True)
+    }
+    expected_nes = result.set_index("Clean_Term")["NES"].astype(float).to_dict()
+    assert rendered_nes == pytest.approx(expected_nes)
+
+
 def test_public_prerank_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
     real_import = builtins.__import__
 

@@ -52,6 +52,13 @@ def _line_y_at_x(line: Any, x: float) -> float:
     return float(ydata[matches[-1]])
 
 
+def _line_xy(line: Any) -> tuple[np.ndarray, np.ndarray]:
+    return (
+        np.asarray(line.get_xdata(), dtype=float),
+        np.asarray(line.get_ydata(), dtype=float),
+    )
+
+
 def _relative_axes_bounds(
     host_ax: Axes, helper_ax: Axes
 ) -> tuple[float, float, float, float]:
@@ -132,7 +139,6 @@ def test_survival_plots(
     survival_df: pd.DataFrame,
     survival_three_group_df: pd.DataFrame,
     competing_risk_df: pd.DataFrame,
-    monkeypatch: pytest.MonkeyPatch,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     cns.figure(120, 120)
@@ -141,7 +147,27 @@ def test_survival_plots(
             survival_df, "time", "event", "group", hue_order=["Treatment", "Control"]
         )
     assert ax.get_ylabel() == "Overall survival probability"
-    assert "HR =" in ax.texts[0].get_text()
+    survival_lines = {
+        line.get_label(): line
+        for line in ax.lines
+        if line.get_drawstyle() == "steps-post"
+    }
+    treatment_x, treatment_y = _line_xy(survival_lines["Treatment (n=6)"])
+    control_x, control_y = _line_xy(survival_lines["Control (n=6)"])
+    np.testing.assert_allclose(
+        treatment_x,
+        [0, 4, 5, 6, 8, 9, 11],
+    )
+    np.testing.assert_allclose(
+        treatment_y,
+        [1, 5 / 6, 5 / 6, 5 / 8, 5 / 12, 5 / 12, 0],
+    )
+    np.testing.assert_allclose(control_x, [0, 5, 6, 7, 8, 10, 12])
+    np.testing.assert_allclose(
+        control_y,
+        [1, 5 / 6, 2 / 3, 2 / 3, 4 / 9, 4 / 9, 0],
+    )
+    assert ax.texts[0].get_text() == "HR = 0.68 (0.15-3.06)\nP = $0.6$"
     assert "multivariate log-rank test" in caplog.text
 
     cns.figure(120, 120)
@@ -151,14 +177,6 @@ def test_survival_plots(
     assert ax2.get_xlabel() == "Time (Years)"
     assert "trend" in caplog.text
 
-    added: dict[str, object] = {}
-    import lifelines.plotting as lifelines_plotting
-
-    monkeypatch.setattr(
-        lifelines_plotting,
-        "add_at_risk_counts",
-        lambda *fitters, **kwargs: added.update({"fitters": fitters, **kwargs}),
-    )
     cns.figure(120, 120)
     caplog.clear()
     with caplog.at_level(logging.INFO, logger="cnsplots"):
@@ -171,7 +189,25 @@ def test_survival_plots(
             xticks=[0, 2, 4, 6, 8],
         )
     assert list(ax3.get_xticks()) == [0, 2, 4, 6, 8]
-    assert added["rows_to_show"] == ["At risk"]
+    cif_lines = {line.get_label(): line for line in ax3.lines}
+    cif_a_x, cif_a_y = _line_xy(cif_lines["A"])
+    cif_b_x, cif_b_y = _line_xy(cif_lines["B"])
+    np.testing.assert_allclose(cif_a_x, [0, 1, 2, 3, 4, 5, 6])
+    np.testing.assert_allclose(
+        cif_a_y,
+        [0, 1 / 6, 1 / 6, 1 / 6, 3 / 8, 3 / 8, 3 / 8],
+    )
+    np.testing.assert_allclose(cif_b_x, [0, 2, 3, 4, 5, 6, 7])
+    np.testing.assert_allclose(
+        cif_b_y,
+        [0, 1 / 6, 1 / 6, 1 / 6, 7 / 18, 7 / 18, 7 / 18],
+    )
+    assert len(ax3.figure.axes) == 2
+    risk_table_labels = [
+        label.get_text() for label in ax3.figure.axes[1].get_xticklabels()
+    ]
+    assert risk_table_labels[0].split() == ["At", "risk", "A", "6", "B", "6"]
+    assert risk_table_labels[-1].split() == ["0", "0"]
     assert "Gray's test" in caplog.text
 
     cns.figure(120, 120)
@@ -343,10 +379,25 @@ def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
         positive_y="pos",
     )
     assert ax.get_xlabel() == "pred"
+    np.testing.assert_array_equal(ax.images[0].get_array(), [[3, 1], [1, 3]])
+    assert {
+        tuple(int(coord) for coord in text.get_position()): text.get_text()
+        for text in ax.texts
+    } == {(0, 0): "3", (1, 0): "1", (0, 1): "1", (1, 1): "3"}
     assert len(plt.gcf().axes) == 2
     stats_ax = plt.gcf().axes[1]
     assert len(stats_ax.texts) == 1
     assert stats_ax.texts[0].get_position() == pytest.approx((-0.25, -1.5))
+    assert stats_ax.texts[0].get_text() == (
+        "\n        Specificity: 0.75\n"
+        "        Sensitivity: 0.75\n"
+        "        PPV: 0.75\n"
+        "        NPV: 0.75\n"
+        "        Cohen's kappa: 0.50\n"
+        "        Fisher's exact test: $0.49$\n"
+        "        Odds ratio: 9.00\n"
+        "        "
+    )
     text_colors = {
         tuple(int(coord) for coord in text.get_position()): text.get_color()
         for text in ax.texts
@@ -451,6 +502,10 @@ def test_heatmap_and_dotplot(
         cmap="parula",
     )
     assert cmp.ax_heatmap is not None
+    np.testing.assert_allclose(
+        np.sort(cmp.data2d.to_numpy().ravel()),
+        np.sort(np.asarray(heatmap_adata.layers["scaled"]).ravel()),
+    )
     heatmap_colorbars = [cbar for cbar in cmp.cbars if isinstance(cbar, Colorbar)]
     heatmap_legends = [obj for obj in cmp.cbars if isinstance(obj, Legend)]
     assert len(heatmap_colorbars) == 3
@@ -482,6 +537,25 @@ def test_heatmap_and_dotplot(
     assert dp.hm_ax is dp.heatmap_axes[-1, 0]
     assert dp.legend_ax is not None
     assert dp.cbar_ax is not None
+    pd.testing.assert_frame_equal(
+        dp.data2d,
+        pd.DataFrame(
+            [[1.0, 2.0], [3.0, 4.0]],
+            index=pd.Index(["G1", "G2"], name="gene"),
+            columns=pd.Index(["S1", "S2"], name="sample"),
+        ),
+    )
+    dots = dp.hm_ax.collections[0]
+    np.testing.assert_allclose(
+        np.asarray(dots.get_offsets(), dtype=float),
+        [[1, 1], [2, 1], [1, 2], [2, 2]],
+    )
+    np.testing.assert_allclose(
+        np.asarray(dots.get_array(), dtype=float), [0.2, 0.5, 0.7, 0.1]
+    )
+    np.testing.assert_array_equal(
+        np.argsort(dots.get_sizes()), np.argsort([10, 50, 80, 30])
+    )
 
     cns.figure(160, 160)
     with pytest.raises(ValueError, match="Length mismatch"):
@@ -988,30 +1062,22 @@ def test_genomics_plots(
     with pytest.raises(TypeError, match="Parameter 'n_show' must be an integer"):
         cns.volcanoplot(volcano_df, n_show=True)
 
-    def fake_dotplot(
-        data: pd.DataFrame,
-        cmap: str,
-        y: str,
-        x: str,
-        cutoff: float,
-        column: str,
-        ax: Axes,
-        top_term: int,
-        size: float,
-    ) -> None:
-        scatter = ax.scatter(data[x], np.arange(len(data)), c=data[column], s=20)
-        fig = plt.gcf()
-        cbar = fig.colorbar(scatter, ax=ax)
-        cbar.set_label(column)
-        handles = [plt.Line2D([], [], marker="o", linestyle="none", color="black")]
-        ax.legend(handles, ["20"], title="size")
-
-    monkeypatch.setitem(
-        sys.modules, "gseapy", types.SimpleNamespace(dotplot=fake_dotplot)
-    )
     cns.figure(160, 140)
-    ax5 = cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=2)
+    ax5 = cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=3)
     assert ax5.get_xlabel() == "Normalized Enrichment Score (NES)"
+    assert [tick.get_text() for tick in ax5.get_yticklabels()] == [
+        "Pathway B",
+        "Pathway C",
+        "Pathway A",
+    ]
+    gsea_dots = ax5.collections[0]
+    np.testing.assert_allclose(
+        np.asarray(gsea_dots.get_offsets(), dtype=float),
+        [[-1.8, 0], [1.6, 1], [2.1, 2]],
+    )
+    np.testing.assert_allclose(
+        np.asarray(gsea_dots.get_array(), dtype=float), [-1.8, 1.6, 2.1]
+    )
 
 
 def test_volcanoplot_annotations_use_legend_fontsize(
