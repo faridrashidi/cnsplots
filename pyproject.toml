@@ -22,8 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "adjustText",
+    "anndata",
     "biopython",
-    "glasbey",
     "gseapy",
     "lifelines>=0.30,<0.31",
     "lxml",
@@ -31,7 +31,6 @@ dependencies = [
     "matplotlib-venn",
     "natsort",
     "num2tex",
-    "numba>=0.58.1",
     "numpy",
     "palettable",
     "pandas",
@@ -50,6 +49,7 @@ dependencies = [
 dev = [
     "bump-my-version",
     "fastcluster",
+    "glasbey",
     "ipykernel",
     "pre-commit",
     "pytest",

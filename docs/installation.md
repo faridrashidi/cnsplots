@@ -13,6 +13,9 @@ Install cnsplots using pip:
 pip install cnsplots
 ```
 
+This installs every supported plotting and scientific integration. Imports
+remain lazy, so those backends are loaded only when their APIs are first used.
+
 ## Verify Installation
 
 After installation, verify that cnsplots is correctly installed:
@@ -49,14 +52,9 @@ hooks.
 
 ## Dependencies
 
-cnsplots relies on the following main packages (installed automatically):
-
-- matplotlib, seaborn - Visualization
-- pandas, numpy - Data manipulation
-- scipy, scikit-learn - Statistical analysis
-- scanpy - Single-cell analysis
-- lifelines - Survival analysis
-- gseapy - Gene set enrichment analysis
+cnsplots installs Matplotlib, seaborn, pandas, NumPy, SciPy, Scanpy, Lifelines,
+GSEApy, Biopython, PyComplexHeatmap, and the set-plotting libraries
+automatically.
 
 For Illustrator-optimized SVG post-processing, you can optionally install
 MuPDF's `mutool`. Without it, `cns.savefig("figure.svg")` still works and
