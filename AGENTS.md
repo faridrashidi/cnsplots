@@ -48,7 +48,7 @@ Use this file as the repo-specific operating manual for branch, validation, comm
 - When multiple edits exist, describe only the dominant change.
 - Write in imperative mood.
 - Capitalize the first word unless syntax or style requires otherwise.
-- Keep the subject under 72 characters.
+- For subject use at most five words, excluding the emoji.
 - Add a body only when it meaningfully explains why, highlights follow-up work, or calls out a breaking change.
 - If you add a body, leave one blank line after the subject and keep the body concise.
 
@@ -128,7 +128,7 @@ Clients must switch to the new export path before upgrading.
 - Prefer the smallest accurate claim and make the PR title more specific than the commit subject by naming the dominant change and affected area or behavior in a single phrase.
 - Write in imperative mood.
 - Capitalize the first word unless syntax or style requires otherwise.
-- Keep the title under 72 characters.
+- For title use at most five words, excluding the emoji.
 - Use the same Gitmoji selection and tie-break rules as commit subjects.
 - Use the same `<emoji> <subject>` format as commit subjects.
 - PR body must include:
