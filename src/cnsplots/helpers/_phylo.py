@@ -174,6 +174,8 @@ def _heatmap(
 
     if isinstance(data, pd.DataFrame):
         numerical_data = data.applymap(mapper)
+    elif isinstance(data, pd.Series):
+        numerical_data = data.map(mapper).to_frame()
     elif isinstance(data, np.ndarray):
         numerical_data = vfunc(data)
 

@@ -509,7 +509,7 @@ def _is_qualitative_cmap(cmap_name):
 
 
 def _get_hex_colors_from_colorbar(cmap_name, n_colors):
-    cmap = plt.cm.get_cmap(cmap_name)
+    cmap = mpl.colormaps[cmap_name]
     if _is_qualitative_cmap(cmap_name):
         colors = [mcolors.to_hex(cmap(i)) for i in range(0, n_colors)]
     else:
@@ -1462,4 +1462,4 @@ def palettes(color):
             ]
             return mpl.colors.LinearSegmentedColormap.from_list("parula", cm_data)
         else:
-            return RuntimeError("Wrong Choice!")
+            raise RuntimeError("Wrong Choice!")

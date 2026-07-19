@@ -408,7 +408,7 @@ def _get_positions_and_total_widths(
             weighted_sum = 0.02 * df[side + "Weight"].sum()
             label_widths["bottom"] = bottom_width + weighted_sum
             label_widths["top"] = label_widths["bottom"] + label_widths[side]
-            topEdge = label_widths["top"]
+        topEdge = label_widths["top"]
         widths[label] = label_widths
 
     return widths, topEdge

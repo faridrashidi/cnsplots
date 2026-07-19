@@ -176,6 +176,7 @@ def survivalplot(
     import lifelines as ll
     from lifelines.statistics import multivariate_logrank_test
 
+    data = data.copy()
     ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
@@ -379,6 +380,7 @@ def cumulativeincidenceplot(
     import lifelines as ll
     from lifelines.plotting import add_at_risk_counts
 
+    data = data.copy()
     ax: Any = None
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())

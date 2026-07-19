@@ -256,7 +256,7 @@ def test_distribution_wrappers(
             categorical_df.rename(columns={"value": "score"}), x="score", hue="hue"
         )
     assert ax3.get_legend() is not None
-    assert "Anderson-Darling test" in caplog.text
+    assert "Kolmogorov-Smirnov test" in caplog.text
 
     cns.figure(120, 120)
     ax4 = cns.histplot(data=numeric_df, x="x", kde=True)
@@ -338,13 +338,13 @@ def test_distribution_logging_respects_settings_verbosity(
         caplog.clear()
         cns.figure(120, 120)
         cns.kdeplot(data, x="score", hue="hue")
-        assert "Anderson-Darling test" not in caplog.text
+        assert "Kolmogorov-Smirnov test" not in caplog.text
 
     with cns.settings.context(verbosity=1):
         caplog.clear()
         cns.figure(120, 120)
         cns.kdeplot(data, x="score", hue="hue")
-        assert "Anderson-Darling test" in caplog.text
+        assert "Kolmogorov-Smirnov test" in caplog.text
 
 
 def test_line_scatter_reg_and_slope_plots(

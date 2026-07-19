@@ -15,6 +15,9 @@ import pandas as pd
 import patsy
 import sklearn as skl
 from sklearn.linear_model import LogisticRegressionCV
+from sklearn.model_selection import cross_val_predict
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 class CoxModel:
@@ -325,22 +328,22 @@ class LogisticModel:
         Returns
         -------
         tuple of float
-            (auc_mean, lower_bound, upper_bound)
+            (auc_median, lower_bound, upper_bound)
         """
         aucs = []
-        np.random.seed(42)
+        rng = np.random.default_rng(42)
         n = len(y_true)
         for _ in range(n_bootstrap):
-            indices = np.random.choice(n, n, replace=True)
+            indices = rng.choice(n, n, replace=True)
             if len(np.unique(y_true[indices])) < 2:
                 continue
             auc = skl.metrics.roc_auc_score(y_true[indices], y_pred_proba[indices])
             aucs.append(auc)
         aucs = np.array(aucs)
-        auc_mean = skl.metrics.roc_auc_score(y_true, y_pred_proba)
+        auc_median = np.median(aucs)
         lower = np.percentile(aucs, 100 * alpha / 2)
         upper = np.percentile(aucs, 100 * (1 - alpha / 2))
-        return auc_mean, float(lower), float(upper)
+        return float(auc_median), float(lower), float(upper)
 
     def fit(self) -> None:
         """
@@ -366,8 +369,9 @@ class LogisticModel:
 
         For each model:
         1. Design matrix is created using Patsy (supports formulas)
-        2. LogisticRegressionCV fits with L1 penalty and 5-fold CV
-        3. AUC and 95% CI are computed via bootstrap (1000 iterations)
+        2. Predictors are standardized within each cross-validation fold
+        3. LogisticRegressionCV fits with L1 penalty and 5-fold CV
+        4. AUC and 95% CI are computed from out-of-fold predictions via bootstrap
 
         Runtime warnings are emitted for hue groups with no outcome variance.
         Errors during fitting are caught and surfaced as warnings.
@@ -388,16 +392,19 @@ class LogisticModel:
                 )
                 y = df[self.event].values
 
-                model = LogisticRegressionCV(
-                    cv=5,
-                    penalty="l1",
-                    solver="liblinear",
-                    random_state=42,
-                    scoring="roc_auc",
+                model = make_pipeline(
+                    StandardScaler(),
+                    LogisticRegressionCV(
+                        cv=5,
+                        penalty="l1",
+                        solver="liblinear",
+                        random_state=42,
+                        scoring="roc_auc",
+                    ),
                 )
-                model.fit(X, y)
-
-                y_pred_proba = model.predict_proba(X)[:, 1]
+                y_pred_proba = cross_val_predict(
+                    model, X, y, cv=5, method="predict_proba"
+                )[:, 1]
                 auc, auc_lower, auc_upper = self._compute_auc_ci(y, y_pred_proba)
 
                 model_result = {
@@ -426,15 +433,19 @@ class LogisticModel:
                                 stacklevel=2,
                             )
                             continue
-                        model = LogisticRegressionCV(
-                            cv=5,
-                            penalty="l1",
-                            solver="liblinear",
-                            random_state=42,
-                            scoring="roc_auc",
+                        model = make_pipeline(
+                            StandardScaler(),
+                            LogisticRegressionCV(
+                                cv=5,
+                                penalty="l1",
+                                solver="liblinear",
+                                random_state=42,
+                                scoring="roc_auc",
+                            ),
                         )
-                        model.fit(X, y)
-                        y_pred_proba = model.predict_proba(X)[:, 1]
+                        y_pred_proba = cross_val_predict(
+                            model, X, y, cv=5, method="predict_proba"
+                        )[:, 1]
                         auc, auc_lower, auc_upper = self._compute_auc_ci(
                             y, y_pred_proba
                         )

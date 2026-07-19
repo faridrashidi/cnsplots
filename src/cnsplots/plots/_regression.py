@@ -110,7 +110,7 @@ def regplot(
                 x=x,
                 y=y,
                 ax=ax,
-                color=palette[idx],
+                color=palette[idx % len(palette)],
                 label=hue_val,
                 **args,
             )
@@ -120,7 +120,7 @@ def regplot(
                 0.95 - 0.08 * idx,
                 rf"{hue_val}: $\rho$={rho:.2f},"
                 rf" P=${num2tex.num2tex(p_value, precision=2):.2g}$",
-                color=palette[idx],
+                color=palette[idx % len(palette)],
                 transform=ax.transAxes,
                 ha="left",
                 va="top",
