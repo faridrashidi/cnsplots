@@ -100,3 +100,78 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
         assert classifier.penalty == "l1"
         assert classifier.solver == "liblinear"
         assert classifier.cv == 5
+
+
+def test_cox_model_warns_for_failed_unstratified_fit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FailingCoxPHFitter:
+        def fit(self, *args: Any, **kwargs: Any) -> None:
+            raise ValueError("invalid formula")
+
+    monkeypatch.setattr(_methods.ll, "CoxPHFitter", FailingCoxPHFitter)
+    model = cns.CoxModel(
+        pd.DataFrame({"time": [1.0, 2.0], "event": [0, 1]}),
+        duration="time",
+        event="event",
+        variates=["missing"],
+    )
+
+    with pytest.warns(RuntimeWarning) as caught:
+        model.fit()
+
+    messages = [str(warning.message) for warning in caught]
+    assert any(
+        "Error fitting missing for hue group All: invalid formula" in message
+        for message in messages
+    )
+    assert "No successful model fits" in messages
+    assert model.results is None
+
+
+def test_logistic_model_warns_for_failed_unstratified_fit() -> None:
+    model = cns.LogisticModel(
+        pd.DataFrame({"event": [0, 1] * 5}),
+        event="event",
+        variates=["missing"],
+    )
+
+    with pytest.warns(RuntimeWarning) as caught:
+        model.fit()
+
+    messages = [str(warning.message) for warning in caught]
+    assert any(
+        "Error fitting missing for hue group All" in message for message in messages
+    )
+    assert "No successful model fits" in messages
+    assert model.results is None
+
+
+@pytest.mark.parametrize(
+    "model",
+    [
+        cns.CoxModel(
+            pd.DataFrame({"time": [1.0, 2.0]}),
+            duration="time",
+            event="event",
+            variates=["1"],
+        ),
+        cns.LogisticModel(
+            pd.DataFrame({"score": [1.0, 2.0]}),
+            event="event",
+            variates=["score"],
+        ),
+    ],
+)
+def test_models_validate_required_columns(model: Any) -> None:
+    model.results = pd.DataFrame({"stale": [True]})
+    with pytest.raises(ValueError, match=r"Column\(s\).*event"):
+        model.fit()
+    assert model.results is None
+
+
+def test_prerank_requires_gene_and_rank_column_names() -> None:
+    data = pd.DataFrame({"gene": ["A"], "rank": [1.0]})
+
+    with pytest.raises(ValueError, match="name_gene.*name_rank"):
+        cns.prerank(data, {"set": ["A"]})

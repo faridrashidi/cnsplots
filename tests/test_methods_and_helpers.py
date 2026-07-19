@@ -27,6 +27,36 @@ def test_competing_risk_helper(competing_risk_df: pd.DataFrame) -> None:
     assert 0 <= pvalue <= 1
 
 
+def test_competing_risk_helper_validates_inputs() -> None:
+    with pytest.raises(ValueError, match="matching lengths"):
+        _cmprsk.cuminc(
+            pd.Series([1.0, 2.0]),
+            pd.Series([0]),
+            pd.Series(["A", "B"]),
+        )
+
+    with pytest.raises(ValueError, match="at least 2"):
+        _cmprsk.cuminc(
+            pd.Series([1.0, 2.0]),
+            pd.Series([0, 1]),
+            pd.Series(["A", "A"]),
+        )
+
+    with pytest.raises(ValueError, match="Null values"):
+        _cmprsk.cuminc(
+            pd.Series([1.0, None]),
+            pd.Series([0, 1]),
+            pd.Series(["A", "B"]),
+        )
+
+    with pytest.raises(ValueError, match="must be numeric"):
+        _cmprsk.cuminc(
+            pd.Series(["early", "late"]),
+            pd.Series([0, 1]),
+            pd.Series(["A", "B"]),
+        )
+
+
 def test_sankey_helpers(sankey_df: pd.DataFrame) -> None:
     _sankey.check_data_matches_labels(
         ["Start", "Middle", "End"], sankey_df["source"], "left"
@@ -108,11 +138,25 @@ def test_sankey_helpers(sankey_df: pd.DataFrame) -> None:
     )
     assert ax_plot.axison is False
 
-    with pytest.raises(ValueError, match="null values"):
+    with pytest.raises(ValueError, match="Null values"):
         _sankey._create_dataframe(
             pd.Series(["A", None]),
             pd.Series([1, 1]),
             pd.Series(["B", "C"]),
+            pd.Series([1, 1]),
+        )
+    with pytest.raises(ValueError, match="matching lengths"):
+        _sankey._create_dataframe(
+            pd.Series(["A", "B"]),
+            pd.Series([1]),
+            pd.Series(["C", "D"]),
+            pd.Series([1, 1]),
+        )
+    with pytest.raises(ValueError, match="must be numeric"):
+        _sankey._create_dataframe(
+            pd.Series(["A", "B"]),
+            pd.Series(["bad", "weights"]),
+            pd.Series(["C", "D"]),
             pd.Series([1, 1]),
         )
 
@@ -182,6 +226,20 @@ def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
         cast(Any, _phylo._gen_colors)(1, 2)
 
 
+def test_phylo_helper_validates_required_layer(phylo_adata: ad.AnnData) -> None:
+    adata = phylo_adata.copy()
+    del adata.layers["trisicell_output"]
+
+    with pytest.raises(ValueError, match="Available layers"):
+        _phylo.phyloplot(adata)
+
+    adata = phylo_adata.copy()
+    del adata.uns["tree"]
+
+    with pytest.raises(ValueError, match="adata.uns"):
+        _phylo.phyloplot(adata)
+
+
 def test_cluster_map_plotter_new_collect_legends() -> None:
     import PyComplexHeatmap as pch
 
@@ -240,6 +298,47 @@ def test_cluster_map_plotter_new_collect_legends() -> None:
         "blobs",
         "Z-score",
     ]
+
+
+def test_cluster_map_plotter_delegates_initialization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+    post_processing_calls: list[object] = []
+
+    def fake_parent_init(self: object, **kwargs: Any) -> None:
+        captured.update(kwargs)
+
+    monkeypatch.setattr(
+        helper_heatmap.ClusterMapPlotter,
+        "__init__",
+        fake_parent_init,
+    )
+    monkeypatch.setattr(
+        helper_heatmap.ClusterMapPlotterNew,
+        "post_processing",
+        lambda self: post_processing_calls.append(self),
+    )
+    data = pd.DataFrame([[1.0]])
+
+    plotter = helper_heatmap.ClusterMapPlotterNew(
+        data,
+        plot=False,
+        legend_gap=9,
+        legend_hgap=3,
+        row_cluster_method="single",
+        vmax=2,
+    )
+
+    assert captured["data"] is data
+    assert captured["plot"] is False
+    assert captured["legend_vgap"] == 9
+    assert captured["legend_hgap"] == 3
+    assert captured["row_cluster_method"] == "single"
+    assert captured["vmax"] == 2
+    assert plotter.data is data
+    assert plotter.legend_gap == 9
+    assert post_processing_calls == [plotter]
 
 
 def test_stabilize_detached_legends_guard_branches(

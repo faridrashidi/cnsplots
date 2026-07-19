@@ -8,6 +8,14 @@ if TYPE_CHECKING:
 import pandas as pd
 from lifelines.statistics import multivariate_logrank_test
 
+from cnsplots._validation import (
+    validate_categorical_has_levels,
+    validate_column_type,
+    validate_dataframe_not_empty,
+    validate_length_match,
+    validate_no_nulls,
+)
+
 
 def cuminc(
     durations: Series,
@@ -38,8 +46,16 @@ def cuminc(
     - p_value: The p-value testing the null hypothesis that CIFs are identical.
     """
 
+    validate_length_match(durations, events, "durations", "events", "cuminc")
+    validate_length_match(durations, group, "durations", "group", "cuminc")
+
     # 1. Create a working dataframe
     df = pd.DataFrame({"T": durations, "E": events, "group": group})
+    validate_dataframe_not_empty(df, "cuminc")
+    validate_no_nulls(df, ["T", "E", "group"], "cuminc")
+    validate_column_type(df, "T", ["numeric"], "cuminc")
+    validate_column_type(df, "E", ["numeric"], "cuminc")
+    validate_categorical_has_levels(df, "group", min_levels=2, function_name="cuminc")
 
     # 2. Pre-process for Subdistribution Hazard (Fine-Gray approach)
     # The trick: Subjects with the *competing* event are treated as if
