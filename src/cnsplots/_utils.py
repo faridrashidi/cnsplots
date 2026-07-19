@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
 import itertools
+import math
 import operator
 import os
 import re
@@ -44,6 +45,35 @@ PINK = "#E787E5"
 GRAY = "#A3A3A3"
 VIOLET = "#442288"
 CHOCOLATE = "#662506"
+
+
+def _legend_fontsize() -> int | float:
+    """Return the configured legend font size, falling back to title size."""
+    legend_fontsize = cns.settings.legend_fontsize
+    if legend_fontsize is None:
+        return cns.settings.title_fontsize
+    return legend_fontsize
+
+
+def _resize_legend_markers(
+    legend: Any,
+    scatter_size: float,
+    *,
+    marker_size: float | None = None,
+) -> None:
+    """Resize scatter and line-marker handles in a legend when supported."""
+    if legend is None:
+        return
+    if marker_size is None:
+        marker_size = 2 * math.sqrt(scatter_size / math.pi)
+    for handle in legend.legend_handles:
+        set_sizes = getattr(handle, "set_sizes", None)
+        if callable(set_sizes):
+            set_sizes([scatter_size])
+            continue
+        set_markersize = getattr(handle, "set_markersize", None)
+        if callable(set_markersize):
+            set_markersize(marker_size)
 
 
 def _annotation_text_color(color: Any) -> str:

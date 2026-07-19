@@ -13,6 +13,7 @@ import palettable.colorbrewer.qualitative  # noqa: F401  # ensure submodule is i
 import scipy as sp
 import seaborn as sns
 
+from cnsplots._utils import _resize_legend_markers
 from cnsplots._validation import (
     validate_column_type,
     validate_columns_exist,
@@ -160,11 +161,9 @@ def regplot(
             va="top",
         )
         ax.legend(title=color)
-        for handle in ax.get_legend().legend_handles:
-            if hasattr(handle, "set_sizes"):
-                handle.set_sizes([2 * s])
-            elif hasattr(handle, "set_markersize"):
-                handle.set_markersize(2 * np.sqrt(s / np.pi))
+        _resize_legend_markers(
+            ax.get_legend(), 2 * s, marker_size=2 * np.sqrt(s / np.pi)
+        )
     else:
         ax = sns.regplot(
             data=data,
@@ -237,12 +236,7 @@ def scatterplot(
 
     ax = sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
 
-    if ax.get_legend() is not None:
-        for handle in ax.get_legend().legend_handles:
-            if hasattr(handle, "set_sizes"):
-                handle.set_sizes([s])
-            elif hasattr(handle, "set_markersize"):
-                handle.set_markersize(2 * np.sqrt(s / np.pi))
+    _resize_legend_markers(ax.get_legend(), s)
 
     return ax
 

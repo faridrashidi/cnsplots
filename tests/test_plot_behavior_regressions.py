@@ -7,8 +7,112 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.collections import LineCollection, PathCollection
 
 import cnsplots as cns
+
+
+@pytest.mark.parametrize("horizontal", [False, True])
+@pytest.mark.parametrize("with_hue", [False, True])
+def test_lollipop_geometry_is_consistent_across_orientations_and_hue(
+    horizontal: bool,
+    with_hue: bool,
+) -> None:
+    data = pd.DataFrame(
+        {
+            "category": ["A", "A", "A", "A", "B", "B", "B", "B"],
+            "value": [1.0, 3.0, 2.0, 4.0, 5.0, 7.0, 6.0, 8.0],
+            "hue": ["H1", "H1", "H2", "H2"] * 2,
+        }
+    )
+    x, y = ("value", "category") if horizontal else ("category", "value")
+
+    cns.figure(120, 120)
+    ax = cns.lollipopplot(data, x=x, y=y, hue="hue" if with_hue else None)
+
+    value_series = [[2.0, 6.0], [3.0, 7.0]] if with_hue else [[2.5, 6.5]]
+    position_series = [[-0.2, 0.8], [0.2, 1.2]] if with_hue else [[0.0, 1.0]]
+    scatter_collections = [
+        collection
+        for collection in ax.collections
+        if isinstance(collection, PathCollection)
+    ]
+    stem_collections = [
+        collection
+        for collection in ax.collections
+        if isinstance(collection, LineCollection)
+    ]
+    assert len(scatter_collections) == len(value_series)
+    assert len(stem_collections) == len(value_series)
+    if with_hue:
+        assert ax.get_legend() is not None
+        assert ax.get_legend().get_title().get_text() == "hue"
+        assert [text.get_text() for text in ax.get_legend().get_texts()] == ["H1", "H2"]
+
+    for scatter, stems, values, positions in zip(
+        scatter_collections, stem_collections, value_series, position_series
+    ):
+        expected_offsets = (
+            np.column_stack((values, positions))
+            if horizontal
+            else np.column_stack((positions, values))
+        )
+        expected_stems = [
+            ([[0.0, position], [value, position]])
+            if horizontal
+            else ([[position, 0.0], [position, value]])
+            for position, value in zip(positions, values)
+        ]
+        np.testing.assert_allclose(
+            np.asarray(scatter.get_offsets(), dtype=float), expected_offsets
+        )
+        np.testing.assert_allclose(stems.get_segments(), expected_stems)
+
+
+def test_lollipop_ignores_missing_order_categories_for_errors_and_tips() -> None:
+    data = pd.DataFrame({"category": ["A", "A", "B", "B"], "value": range(4)})
+
+    cns.figure(120, 120)
+    ax = cns.lollipopplot(
+        data,
+        x="category",
+        y="value",
+        order=["A", "B", "missing"],
+        errorbar="se",
+        addtip=True,
+    )
+
+    assert [text.get_text() for text in ax.texts] == ["0.50", "2.50"]
+
+
+def test_lollipop_rejects_ambiguous_palette_column_combinations() -> None:
+    data = pd.DataFrame(
+        {
+            "category": ["A", "A", "B", "B"],
+            "value": range(4),
+            "hue": ["H1", "H2", "H1", "H2"],
+            "palette_group": ["P1", "P1", "P2", "P2"],
+        }
+    )
+
+    with pytest.raises(ValueError, match="cannot be combined"):
+        cns.lollipopplot(
+            data,
+            x="category",
+            y="value",
+            hue="hue",
+            palette="palette_group",
+        )
+
+    ambiguous = data.copy()
+    ambiguous.loc[1, "palette_group"] = "P2"
+    with pytest.raises(ValueError, match="must map each category to one label"):
+        cns.lollipopplot(
+            ambiguous,
+            x="category",
+            y="value",
+            palette="palette_group",
+        )
 
 
 def test_survival_plots_do_not_mutate_input_dataframes(

@@ -17,6 +17,7 @@ import scipy as sp
 import seaborn as sns
 
 import cnsplots as cns
+from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_column_exists,
     validate_columns_exist,
@@ -25,13 +26,6 @@ from cnsplots._validation import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _legend_fontsize() -> int | float:
-    legend_fontsize = cns.settings.legend_fontsize
-    if legend_fontsize is None:
-        return cns.settings.title_fontsize
-    return legend_fontsize
 
 
 def boxplot(

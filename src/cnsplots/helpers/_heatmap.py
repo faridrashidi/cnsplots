@@ -364,84 +364,73 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         **kwargs: Any,
     ) -> None:
         self.data = data
-        self.kwargs = kwargs if kwargs is not None else {}
-        self.rasterized = rasterized
-        self.data2d = self.format_data(data, mask, z_score, standard_scale)
-        self.verbose = verbose
-        self._define_kws(xticklabels_kws, yticklabels_kws)
-        self.top_annotation = top_annotation
-        self.bottom_annotation = bottom_annotation
-        self.left_annotation = left_annotation
-        self.right_annotation = right_annotation
-        self.row_dendrogram_size = row_dendrogram_size
-        self.col_dendrogram_size = col_dendrogram_size
-        self.row_cluster = row_cluster
-        self.col_cluster = col_cluster
-        self.row_cluster_method = row_cluster_method
-        self.row_cluster_metric = row_cluster_metric
-        self.col_cluster_method = col_cluster_method
-        self.col_cluster_metric = col_cluster_metric
-        self.show_rownames = show_rownames
-        self.show_colnames = show_colnames
-        self.row_names_side = row_names_side
-        self.col_names_side = col_names_side
-        self.row_dendrogram = row_dendrogram
-        self.col_dendrogram = col_dendrogram
-        self.subplot_gap = subplot_gap
-        self.row_dendrogram_kws = (
-            {} if row_dendrogram_kws is None else row_dendrogram_kws
-        )
-        self.col_dendrogram_kws = (
-            {} if col_dendrogram_kws is None else col_dendrogram_kws
-        )
-        self.bezier = bezier
-        self.dotsize = dotsize
-        self.tree_kws = {} if tree_kws is None else tree_kws
-        self.row_split = row_split
-        self.col_split = col_split
-        self.row_split_gap = row_split_gap
-        self.col_split_gap = col_split_gap
-        self.row_split_order = row_split_order
-        self.col_split_order = col_split_order
-        self.legend = legend
-        self.legend_kws = legend_kws if legend_kws is not None else {}
-        self.legend_side = legend_side
-        self.cmap = cmap
-        self.label = label if label is not None else "heatmap"
         self.legend_gap = legend_gap
-        self.legend_vgap = legend_gap if legend_vgap is None else legend_vgap
-        self.legend_hgap = legend_gap if legend_hgap is None else legend_hgap
-        self.legend_width = legend_width
-        self.legend_hpad = legend_hpad
-        self.legend_vpad = legend_vpad
-        self.legend_anchor = legend_anchor
-        self.legend_order = legend_order
-        self.legend_delta_x = legend_delta_x
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.xlabel_kws = xlabel_kws if xlabel_kws is not None else {}
-        self.ylabel_kws = ylabel_kws if ylabel_kws is not None else {}
-        self.xlabel_side = xlabel_side
-        self.ylabel_side = ylabel_side
-        self.xlabel_bbox_kws = xlabel_bbox_kws
-        self.ylabel_bbox_kws = ylabel_bbox_kws
-        if plot:
-            self.plot()
-            if plot_legend:
-                if legend_anchor == "auto":
-                    if (
-                        self.right_annotation is not None
-                        and self.legend_side == "right"
-                    ):
-                        legend_anchor = "ax"
-                    else:
-                        legend_anchor = "ax_heatmap"
-                if legend_anchor == "ax_heatmap":
-                    self.plot_legends(ax=self.ax_heatmap)
-                else:
-                    self.plot_legends(ax=self.ax)
-
-        self.post_processing()
+        super().__init__(
+            data=data,
+            z_score=z_score,
+            standard_scale=standard_scale,
+            top_annotation=top_annotation,
+            bottom_annotation=bottom_annotation,
+            left_annotation=left_annotation,
+            right_annotation=right_annotation,
+            row_cluster=row_cluster,
+            col_cluster=col_cluster,
+            row_cluster_method=row_cluster_method,
+            row_cluster_metric=row_cluster_metric,
+            col_cluster_method=col_cluster_method,
+            col_cluster_metric=col_cluster_metric,
+            show_rownames=show_rownames,
+            show_colnames=show_colnames,
+            row_names_side=row_names_side,
+            col_names_side=col_names_side,
+            xticklabels_kws=xticklabels_kws,
+            yticklabels_kws=yticklabels_kws,
+            row_dendrogram=row_dendrogram,
+            col_dendrogram=col_dendrogram,
+            row_dendrogram_size=row_dendrogram_size,
+            col_dendrogram_size=col_dendrogram_size,
+            row_split=row_split,
+            col_split=col_split,
+            row_dendrogram_kws=row_dendrogram_kws,
+            col_dendrogram_kws=col_dendrogram_kws,
+            bezier=bezier,
+            dotsize=dotsize,
+            tree_kws=tree_kws,
+            row_split_order=row_split_order,
+            col_split_order=col_split_order,
+            row_split_gap=row_split_gap,
+            col_split_gap=col_split_gap,
+            mask=mask,
+            subplot_gap=subplot_gap,
+            legend=legend,
+            legend_kws=legend_kws,
+            plot=plot,
+            plot_legend=plot_legend,
+            legend_order=legend_order,
+            legend_anchor=legend_anchor,
+            legend_vgap=legend_gap if legend_vgap is None else legend_vgap,
+            legend_hgap=legend_gap if legend_hgap is None else legend_hgap,
+            legend_width=legend_width,
+            legend_hpad=legend_hpad,
+            legend_vpad=legend_vpad,
+            legend_side=legend_side,
+            cmap=cmap,
+            label=label,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            xlabel_kws=xlabel_kws,
+            ylabel_kws=ylabel_kws,
+            xlabel_side=xlabel_side,
+            ylabel_side=ylabel_side,
+            xlabel_bbox_kws=xlabel_bbox_kws,
+            ylabel_bbox_kws=ylabel_bbox_kws,
+            rasterized=rasterized,
+            legend_delta_x=legend_delta_x,
+            verbose=verbose,
+            **kwargs,
+        )
+        if not plot:
+            self.post_processing()
 
     def _define_axes(self, subplot_spec: Any = None) -> None:
         if not _define_axes_within_current_bounds(self, subplot_spec):
