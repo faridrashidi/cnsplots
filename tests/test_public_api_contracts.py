@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import ast
 import builtins
 import inspect
 import re
+import subprocess
 import sys
 import types
 from collections.abc import Mapping, Sequence
@@ -38,6 +40,101 @@ def _svg_view_box_size(path: Path) -> tuple[float, float]:
         raise AssertionError(f"viewBox not found in {path}")
     width, height = (float(value) for value in match.groups())
     return width, height
+
+
+def test_root_import_is_lazy_and_side_effect_free() -> None:
+    script = """
+import logging
+import sys
+import warnings
+
+logger_levels = {
+    "cnsplots": 11,
+    "fontTools": 12,
+    "matplotlib": 13,
+}
+for logger_name, level in logger_levels.items():
+    logging.getLogger(logger_name).setLevel(level)
+warning_filters = list(warnings.filters)
+modules_before = set(sys.modules)
+
+import cnsplots
+
+assert list(warnings.filters) == warning_filters
+assert all(
+    logging.getLogger(name).level == level for name, level in logger_levels.items()
+)
+new_modules = set(sys.modules) - modules_before
+assert not any(name.startswith("cnsplots.") for name in new_modules)
+heavy_modules = {
+    "Bio",
+    "PyComplexHeatmap",
+    "gseapy",
+    "lifelines",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "scanpy",
+    "scipy",
+    "seaborn",
+    "sklearn",
+    "statsmodels",
+}
+assert not ({name.split(".")[0] for name in new_modules} & heavy_modules)
+
+_ = cnsplots.settings
+assert list(warnings.filters) == warning_filters
+assert all(
+    logging.getLogger(name).level == level for name, level in logger_levels.items()
+)
+
+_ = cnsplots.barplot
+assert "cnsplots.plots._categorical" in sys.modules
+assert not {
+    "cnsplots.plots._genomics",
+    "cnsplots.plots._heatmap",
+    "cnsplots.plots._sets",
+    "cnsplots.plots._survival",
+} & set(sys.modules)
+"""
+    subprocess.run([sys.executable, "-c", script], check=True)
+
+    src_path = Path(__file__).parents[1] / "src"
+    no_site_script = (
+        f"import sys; sys.path.insert(0, {str(src_path)!r}); "
+        "import cnsplots; assert len(cnsplots.__all__) == 63"
+    )
+    subprocess.run([sys.executable, "-S", "-c", no_site_script], check=True)
+
+
+def test_lazy_facade_introspection() -> None:
+    import cnsplots.plots as plots
+
+    assert set(cns.__all__) <= set(dir(cns))
+    assert set(plots.__all__) <= set(dir(plots))
+    assert plots.barplot is cns.barplot
+    assert plots.__dict__["barplot"] is plots.barplot
+
+    with pytest.raises(AttributeError, match="missing_public_name"):
+        getattr(cns, "missing_public_name")
+    with pytest.raises(AttributeError, match="missing_plot_name"):
+        getattr(plots, "missing_plot_name")
+
+
+def test_internal_modules_do_not_import_root_facade() -> None:
+    source_root = Path(__file__).parents[1] / "src" / "cnsplots"
+    offenders: list[str] = []
+    for path in source_root.rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import) and any(
+                alias.name == "cnsplots" for alias in node.names
+            ):
+                offenders.append(f"{path.relative_to(source_root)}:{node.lineno}")
+            if isinstance(node, ast.ImportFrom) and node.module == "cnsplots":
+                offenders.append(f"{path.relative_to(source_root)}:{node.lineno}")
+
+    assert offenders == []
 
 
 def test_public_namespace_contract() -> None:

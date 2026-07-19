@@ -12,7 +12,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
 
-import cnsplots as cns
+import cnsplots._utils as utils
 from cnsplots._utils import _legend_fontsize, _resize_legend_markers
 from cnsplots._validation import (
     validate_column_exists,
@@ -256,7 +256,7 @@ def barplot(
                 size=_legend_fontsize(),
             )
     if pairs is not None:
-        cns.utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+        utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
     if show_legend:
         ax.legend(
             handles=legend_handles,
@@ -498,7 +498,7 @@ def lollipopplot(
             plotting["hue"] = hue
         if hue_order is not None:
             plotting["hue_order"] = hue_order
-        cns.utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+        utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
 
     # Legend
     if show_legend:
@@ -621,22 +621,22 @@ def stackplot(
         ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel(value_label)
         ax.set_xlabel("")
-    cns.take_legend_out()
+    utils.take_legend_out()
     if addcount:
         count_attr = y if horizontal else x
         count_axis = "y" if horizontal else "x"
-        cns.utils._addcount_helper(data, count_attr, ax, axis=count_axis)
+        utils._addcount_helper(data, count_attr, ax, axis=count_axis)
     if pairs is not None:
         if horizontal:
             plotting = {"data": data2, "x": "count", "y": y, "order": bar_order}
         else:
             plotting = {"data": data2, "x": x, "y": "count", "order": bar_order}
         if contingency.shape[1] == 2:
-            cns.utils._p_value_helper(
+            utils._p_value_helper(
                 "fisher-exact", data2, ax, plotting, pairs, contingency
             )
         else:
-            cns.utils._p_value_helper(
+            utils._p_value_helper(
                 "chi-squared", data2, ax, plotting, pairs, contingency
             )
 
@@ -730,7 +730,7 @@ def stripplot(
         showmeans=showmeans,
     )
     if addcount:
-        cns.utils._addcount_helper(data, x, ax)
+        utils._addcount_helper(data, x, ax)
 
     _resize_legend_markers(ax.get_legend(), size**2, marker_size=size * 2)
 
@@ -799,7 +799,7 @@ def pieplot(
     )
     percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
     for wedge, text in zip(ax.patches, percent_texts):
-        text.set_color(cns.utils._annotation_text_color(wedge.get_facecolor()))
+        text.set_color(utils._annotation_text_color(wedge.get_facecolor()))
     legend_positions = {
         "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},
         "left": {"loc": "upper right", "bbox_to_anchor": (-0.02, 1.02)},
@@ -868,7 +868,7 @@ def donutplot(
         wedgeprops={"edgecolor": "black", "linewidth": 0.3, "width": 0.4},
     )
     plt.annotate(x, (0, 0), size=_legend_fontsize(), ha="center", va="center")
-    cns.utils._remove_edge_from_legend_items(ax)
+    utils._remove_edge_from_legend_items(ax)
     legend_positions = {
         "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},
         "left": {"loc": "upper right", "bbox_to_anchor": (-0.02, 1.02)},

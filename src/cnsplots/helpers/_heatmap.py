@@ -11,7 +11,7 @@ import pandas as pd
 from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
 from PyComplexHeatmap.clustermap import mm2inch
 
-import cnsplots as cns
+import cnsplots._utils as utils
 
 
 def _get_canvas_renderer(canvas: Any) -> Any | None:
@@ -461,7 +461,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 if annotation.label_max_width > self.label_max_width:
                     self.label_max_width = annotation.label_max_width
         if self.legend:
-            if cns._utils._is_qualitative_cmap(self.cmap):
+            if utils._is_qualitative_cmap(self.cmap):
                 if isinstance(self.data, pd.DataFrame):
                     unique_values = sorted(np.unique(self.data.values.astype(str)))
                 else:
@@ -472,7 +472,7 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 elif isinstance(self.cmap, dict):
                     cmap = {k: v for k, v in self.cmap.items() if k in unique_values}
                 else:
-                    cmap = cns._utils._get_hex_colors_from_colorbar(
+                    cmap = utils._get_hex_colors_from_colorbar(
                         self.cmap, len(unique_values)
                     )
                     cmap = {k: v for k, v in zip(unique_values, cmap)}

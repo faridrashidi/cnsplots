@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import lifelines as ll
 import numpy as np
 import pandas as pd
 import pytest
@@ -109,7 +110,7 @@ def test_cox_model_warns_for_failed_unstratified_fit(
         def fit(self, *args: Any, **kwargs: Any) -> None:
             raise ValueError("invalid formula")
 
-    monkeypatch.setattr(_methods.ll, "CoxPHFitter", FailingCoxPHFitter)
+    monkeypatch.setattr(ll, "CoxPHFitter", FailingCoxPHFitter)
     model = cns.CoxModel(
         pd.DataFrame({"time": [1.0, 2.0], "event": [0, 1]}),
         duration="time",

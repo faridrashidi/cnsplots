@@ -22,7 +22,8 @@ import seaborn as sns
 from natsort import natsort_keygen
 from scipy.stats import fisher_exact
 
-import cnsplots as cns
+import cnsplots._utils as utils
+from cnsplots._settings import settings
 import cnsplots.helpers._heatmap as helper_heatmap
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
@@ -46,8 +47,8 @@ def _style_plotter_colorbars(cbars: list[Any]) -> None:
         cbar.ax.tick_params(
             size=0,
             labelsize=legend_fontsize,
-            colors=cns.settings.ytick_color,
-            pad=cns.settings.ytick_major_pad,
+            colors=settings.ytick_color,
+            pad=settings.ytick_major_pad,
         )
         if font_family:
             for tick_label in cbar.ax.get_yticklabels():
@@ -186,7 +187,7 @@ def heatmapplot(
         validate_adata_var_columns(adata, col_split, "heatmapplot")
 
     if cmap is None:
-        cmap = cns.settings.palette_seq
+        cmap = settings.palette_seq
     cat_palettes = ["Set1", "Set2", "Ecotyper1", "Dark2", "Ecotyper2", "Set3"]
     cont_palettes = ["parula", "gnuplot", "bwr", "hot"]
     cbar_titles = [label]
@@ -316,7 +317,7 @@ def heatmapplot(
     cmp.ax_heatmap.set_axis_on()
     sns.despine(ax=cmp.ax_heatmap, bottom=False, left=False, top=False, right=False)
     for s in ["top", "bottom", "left", "right"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
+        cmp.ax_heatmap.spines[s].set_linewidth(settings.axes_linewidth)
 
     _style_plotter_colorbars(cmp.cbars)
     helper_heatmap._capture_detached_colorbar_layout(cmp)
@@ -466,7 +467,7 @@ def dotplot(
             which="major",
             direction="out",
             length=1.5,
-            width=cns.settings.axes_linewidth,
+            width=settings.axes_linewidth,
             bottom=True,
             left=True,
             top=False,
@@ -480,7 +481,7 @@ def dotplot(
     cmp.ax_heatmap.grid(False)
     sns.despine(ax=cmp.ax_heatmap, top=True, right=True, bottom=False, left=False)
     for s in ["bottom", "left"]:
-        cmp.ax_heatmap.spines[s].set_linewidth(cns.settings.axes_linewidth)
+        cmp.ax_heatmap.spines[s].set_linewidth(settings.axes_linewidth)
 
     _style_plotter_colorbars(cmp.cbars)
     return cmp
@@ -616,7 +617,7 @@ def confusionplot(
                     str(int(cell_value)),
                     ha="center",
                     va="center",
-                    color=cns.utils._annotation_text_color((r, g, b, 1.0)),
+                    color=utils._annotation_text_color((r, g, b, 1.0)),
                 )
 
     # Remove colorbar to match your original style

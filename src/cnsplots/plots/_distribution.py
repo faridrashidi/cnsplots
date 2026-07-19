@@ -16,7 +16,7 @@ import pandas as pd
 import scipy as sp
 import seaborn as sns
 
-import cnsplots as cns
+import cnsplots._utils as utils
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_column_exists,
@@ -141,7 +141,7 @@ def boxplot(
                 line.set_mfc("white")
                 line.set_mec("white")
 
-    cns.utils._remove_edge_from_legend_items(ax)
+    utils._remove_edge_from_legend_items(ax)
     whis_str = (
         "minimum and maximum values"
         if whis == (0, 100)
@@ -156,10 +156,10 @@ def boxplot(
         f" correspond to the {whis_str}."
     )
     if pairs is not None:
-        cns.utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
     if addcount:
-        cns.utils._addcount_helper(data, x, ax)
+        utils._addcount_helper(data, x, ax)
 
     return ax
 
@@ -257,10 +257,10 @@ def violinplot(
     if add_box:
         sns.boxplot(**boxplot_kwargs)
     if pairs is not None:
-        cns.utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
     if addcount:
-        cns.utils._addcount_helper(data, x, ax)
+        utils._addcount_helper(data, x, ax)
 
     return ax
 
@@ -475,7 +475,7 @@ def histplot(**kwargs: Any) -> Axes:
     kwargs.setdefault("edgecolor", None)
     ax = sns.histplot(**kwargs)
     if track_detached_axes:
-        cns.utils._capture_detached_axes_layout(ax, existing_axes)
+        utils._capture_detached_axes_layout(ax, existing_axes)
     return ax
 
 
@@ -525,7 +525,7 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
 
     categories = data[y].unique()
     n = len(categories)
-    colors = cns.utils._get_hex_colors_from_colorbar(cmap, n)
+    colors = utils._get_hex_colors_from_colorbar(cmap, n)
     ax = plt.gca()
 
     from scipy.stats import gaussian_kde
