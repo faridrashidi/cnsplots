@@ -387,7 +387,7 @@ def test_upsetplot_clears_white_figure_patch(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(sets_mod, "_import_upsetplot_module", lambda: fake_module)
     monkeypatch.setattr(sets_mod, "setup_ax", lambda ax: None)
 
-    axes = cns.upsetplot({"A": {"x"}, "B": {"x", "y"}})
+    axes = cast(Any, cns.upsetplot({"A": {"x"}, "B": {"x", "y"}}))
 
     assert axes["matrix"].figure.patch.facecolor == "none"
     assert axes["matrix"].figure.patch.alpha == 0
@@ -1217,7 +1217,7 @@ def test_remaining_visual_internal_coverage(
         lambda self: volcano_legend,
         raising=False,
     )
-    monkeypatch.setattr(genomics_mod.utils, "take_legend_out", lambda: None)
+    monkeypatch.setattr(genomics_mod.utils, "take_legend_out", lambda **kwargs: None)
     cns.figure(120, 120)
     cns.volcanoplot(volcano_df)
     assert volcano_legend.legend_handles[0].sizes == [20]

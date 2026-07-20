@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -8,6 +7,7 @@ import seaborn as sns
 from anndata import AnnData
 from matplotlib.axes import Axes
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.metrics import auc, roc_curve
 
 import cnsplots.helpers._sankey as helper_sankey
@@ -21,7 +21,7 @@ from cnsplots._validation import (
 )
 
 
-def placeholderplot(description: str) -> Axes:
+def placeholderplot(description: str, *, ax: Axes | None = None) -> Axes:
     """
     Create a stylized placeholder panel for figure layout mockups.
 
@@ -33,6 +33,8 @@ def placeholderplot(description: str) -> Axes:
     ----------
     description : str
         Text to display in the center of the placeholder panel.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
@@ -54,7 +56,8 @@ def placeholderplot(description: str) -> Axes:
     if not isinstance(description, str):
         raise TypeError("[placeholderplot] 'description' must be a string.")
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     ax.cla()
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -138,7 +141,14 @@ def placeholderplot(description: str) -> Axes:
     return ax
 
 
-def sankeyplot(data: pd.DataFrame, x: str, y: str, label_rotation: float = 0) -> Axes:
+def sankeyplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    label_rotation: float = 0,
+    *,
+    ax: Axes | None = None,
+) -> Axes:
     """
     Create a Sankey diagram showing flows between two categorical variables.
 
@@ -156,6 +166,8 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str, label_rotation: float = 0) ->
     label_rotation : float, default: 0
         Rotation angle, in degrees, applied to both left and right Sankey
         labels.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
@@ -186,7 +198,8 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str, label_rotation: float = 0) ->
     validate_columns_exist(data, [x, y], "sankeyplot")
     validate_dataframe_not_empty(data, "sankeyplot")
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     keys = np.union1d(data[x].unique(), data[y].unique())
     colors = sns.color_palette(n_colors=len(keys))
     color_dict = dict(zip(keys, colors))
@@ -201,7 +214,7 @@ def sankeyplot(data: pd.DataFrame, x: str, y: str, label_rotation: float = 0) ->
     return ax
 
 
-def phyloplot(adata: AnnData) -> None:
+def phyloplot(adata: AnnData, *, ax: Axes | None = None) -> Axes:
     """
     Create a phylogenetic tree plot with associated heatmaps.
 
@@ -209,11 +222,13 @@ def phyloplot(adata: AnnData) -> None:
     ----------
     adata : AnnData
         Annotated data matrix containing tree structure and annotations.
+    ax : matplotlib.axes.Axes, optional
+        Host axes for the phylogenetic heatmap. If None, uses the current axes.
 
     Returns
     -------
-    None
-        The plot is displayed directly; no Axes object is returned.
+    matplotlib.axes.Axes
+        The host Axes containing the mutation heatmap.
 
     See Also
     --------
@@ -229,11 +244,17 @@ def phyloplot(adata: AnnData) -> None:
 
     import cnsplots.helpers._phylo as helper_phylo
 
-    helper_phylo.phyloplot(adata)
+    if ax is None:
+        ax = plt.gca()
+    return helper_phylo.phyloplot(adata, ax=ax)
 
 
 def forestplot(
-    model: object, bar_width: float | None = None, add_pvalue: bool = True
+    model: object,
+    bar_width: float | None = None,
+    add_pvalue: bool = True,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a forest plot displaying effect sizes from a regression model.
@@ -252,6 +273,9 @@ def forestplot(
     add_pvalue : bool, optional
         Whether to add the p-value bar panel alongside the forest plot
         (Cox models only). Default is True.
+    ax : matplotlib.axes.Axes, optional
+        Axes to use for the primary forest panel. If None, uses the current
+        axes. The optional p-value panel is appended to this axes.
 
     Returns
     -------
@@ -345,13 +369,9 @@ def forestplot(
         x1err = ["lower_ci", "upper_ci"]
         x1label = "AUC (95% CI)"
         x2label = ""
-    fig = plt.gcf()
-
-    if model_name == "cox" and add_pvalue:
-        gs = grid_spec.GridSpec(1, 2, width_ratios=[5, 3])
-    else:
-        gs = grid_spec.GridSpec(1, 1)
-    ax1 = fig.add_subplot(gs[0])
+    if ax is None:
+        ax = plt.gca()
+    ax1 = ax
 
     unique_hue_groups = data["hue_group"].unique()
     colors = sns.color_palette(n_colors=len(unique_hue_groups))
@@ -405,7 +425,8 @@ def forestplot(
         ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
     if model_name == "cox" and add_pvalue:
-        ax2 = fig.add_subplot(gs[1])
+        divider = make_axes_locatable(ax1)
+        ax2 = divider.append_axes("right", size="60%", pad=0.1)
         if bar_width is None:
             bar_width = (
                 0.8 / len(unique_hue_groups) if len(unique_hue_groups) > 1 else 0.6
@@ -441,7 +462,11 @@ def forestplot(
 
 
 def rocplot(
-    data: pd.DataFrame, true_label_col: str, pred_prob_cols: str | list[str]
+    data: pd.DataFrame,
+    true_label_col: str,
+    pred_prob_cols: str | list[str],
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a receiver operating characteristic (ROC) curve plot.
@@ -454,6 +479,8 @@ def rocplot(
         Column name for the true binary labels (0 or 1).
     pred_prob_cols : str or list of str
         Column name(s) for predicted probabilities.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
@@ -494,21 +521,20 @@ def rocplot(
     # Validate binary labels
     validate_binary_column(data, true_label_col, "rocplot")
 
+    if ax is None:
+        ax = plt.gca()
     for col in pred_prob_cols:
         fpr, tpr, _ = roc_curve(data[true_label_col], data[col])
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, label=f"{col} (AUC={roc_auc:.2f})", linewidth=1)
+        ax.plot(fpr, tpr, label=f"{col} (AUC={roc_auc:.2f})", linewidth=1)
 
-    plt.plot(
-        [0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5)
-    )
-    plt.xlim([-0.02, 1.02])
-    plt.ylim([-0.02, 1.02])
-    plt.xticks([0, 0.2, 0.4, 0.6, 0.8, 1])
-    plt.yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    ax = plt.gca()
+    ax.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5))
+    ax.set_xlim((-0.02, 1.02))
+    ax.set_ylim((-0.02, 1.02))
+    ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
     ax.legend(loc="lower right")
 
     legend = ax.get_legend()

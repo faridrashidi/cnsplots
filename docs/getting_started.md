@@ -94,6 +94,12 @@ plt.tight_layout()
 cns.savefig("subplots.svg")
 ```
 
+All plotting functions accept `ax` as a keyword-only argument, so they can be
+composed into an existing Matplotlib layout. Most return the target
+`matplotlib.axes.Axes`. `heatmapplot`, `dotplot`, `upsetplot`, and `vennplot`
+retain their backend-native return objects so callers can access their
+multi-panel layout or diagram elements.
+
 ## Saving Figures
 
 For publication, save figures in vector formats:

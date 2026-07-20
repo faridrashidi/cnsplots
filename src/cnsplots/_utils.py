@@ -147,6 +147,108 @@ def _chain_axes_sync_hook(
     return sync
 
 
+class _HostRelativeAxesLocator:
+    """Locate an axes within a live host while exposing its SubplotSpec."""
+
+    def __init__(
+        self,
+        host_ax: Axes,
+        layout: tuple[float, float, float, float],
+        *,
+        use_original_position: bool = True,
+    ) -> None:
+        self._host_ax = host_ax
+        self._layout = layout
+        self._use_original_position = use_original_position
+
+    def get_subplotspec(self):
+        return self._host_ax.get_subplotspec()
+
+    def __call__(self, _ax: Any, _renderer: Any) -> mtransforms.Bbox:
+        host_pos = self._host_ax.get_position(
+            original=self._use_original_position
+        ).frozen()
+        x0, y0, width, height = self._layout
+        return mtransforms.Bbox.from_bounds(
+            host_pos.x0 + host_pos.width * x0,
+            host_pos.y0 + host_pos.height * y0,
+            host_pos.width * width,
+            host_pos.height * height,
+        )
+
+
+def _anchor_axes_to_host(
+    host_ax: Axes,
+    axes: Sequence[Axes],
+    *,
+    use_original_position: bool = True,
+) -> None:
+    """Keep helper axes at fixed positions relative to a live host axes."""
+    host_pos = host_ax.get_position(original=use_original_position).frozen()
+    if host_pos.width <= 0 or host_pos.height <= 0:
+        return
+
+    child_axes = [
+        child_ax
+        for child_ax in axes
+        if child_ax is not host_ax and child_ax.figure is host_ax.figure
+    ]
+    if not child_axes:
+        return
+
+    child_positions = [
+        child_ax.get_position(original=True).frozen() for child_ax in child_axes
+    ]
+    source_pos = mtransforms.Bbox.union(child_positions)
+    if source_pos.width <= 0 or source_pos.height <= 0:
+        source_pos = host_pos
+
+    host_spec = host_ax.get_subplotspec()
+    layouts = []
+    for child_ax, child_pos in zip(child_axes, child_positions):
+        layout = (
+            float((child_pos.x0 - source_pos.x0) / source_pos.width),
+            float((child_pos.y0 - source_pos.y0) / source_pos.height),
+            float(child_pos.width / source_pos.width),
+            float(child_pos.height / source_pos.height),
+        )
+        locator = _HostRelativeAxesLocator(
+            host_ax,
+            layout,
+            use_original_position=use_original_position,
+        )
+        existing_locator = child_ax.get_axes_locator()
+
+        if host_spec is None:
+            setattr(child_ax, "_subplotspec", None)
+            child_ax.set_in_layout(False)
+        else:
+            child_ax.set_subplotspec(host_spec)
+            child_ax.set_in_layout(True)
+
+        if (
+            existing_locator is not None
+            and type(existing_locator).__name__ == "_ColorbarAxesLocator"
+        ):
+            setattr(existing_locator, "_orig_locator", locator)
+            installed_locator = existing_locator
+        else:
+            installed_locator = locator
+        child_ax.set_axes_locator(installed_locator)
+        layouts.append((child_ax, installed_locator))
+
+    def _sync_axes() -> None:
+        for child_ax, locator in layouts:
+            if child_ax.figure is not host_ax.figure:
+                continue
+            locate = cast(Callable[[Any, Any], mtransforms.Bbox], locator)
+            child_ax.set_position(locate(child_ax, None), which="active")
+            child_ax.set_in_layout(host_spec is not None)
+
+    _chain_axes_sync_hook(host_ax, _sync_axes)
+    _sync_axes()
+
+
 def _capture_detached_axes_layout(
     host_ax: Axes,
     existing_axes: Sequence[Axes] | None = None,
@@ -375,7 +477,11 @@ def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
         fig.set_canvas(original_canvas)
 
 
-def take_legend_out(title: str | None = None) -> None:
+def take_legend_out(
+    title: str | None = None,
+    *,
+    ax: Axes | None = None,
+) -> None:
     """
     Move the legend outside the plot area to the upper-left of the right margin.
 
@@ -387,6 +493,8 @@ def take_legend_out(title: str | None = None) -> None:
     title : str, optional
         Title for the legend. If None, uses the existing legend title from
         the current axes.
+    ax : matplotlib.axes.Axes, optional
+        Axes whose legend should be moved. Defaults to the current Axes.
 
     Returns
     -------
@@ -418,7 +526,8 @@ def take_legend_out(title: str | None = None) -> None:
     >>> cns.barplot(data=df, x="treatment", y="response", hue="batch")
     >>> cns.take_legend_out(title="Batch")
     """
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     legend = ax.get_legend()
     handles = None
     labels = None
@@ -429,7 +538,7 @@ def take_legend_out(title: str | None = None) -> None:
             title = legend.get_title().get_text()
     if title is None:
         title = ""
-    plt.legend(
+    ax.legend(
         handles=handles,
         labels=labels,
         bbox_to_anchor=settings.legend_out_bbox_to_anchor,

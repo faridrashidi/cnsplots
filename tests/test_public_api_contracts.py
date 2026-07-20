@@ -16,10 +16,119 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+import seaborn as sns
+from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.text import Text
 
 import cnsplots as cns
+
+
+_PUBLIC_PLOT_NAMES = frozenset(
+    {
+        "barplot",
+        "boxplot",
+        "confusionplot",
+        "cumulativeincidenceplot",
+        "distplot",
+        "donutplot",
+        "dotplot",
+        "forestplot",
+        "gseaplot",
+        "heatmapplot",
+        "histplot",
+        "kdeplot",
+        "lineplot",
+        "lollipopplot",
+        "phyloplot",
+        "pieplot",
+        "placeholderplot",
+        "qqplot",
+        "regplot",
+        "ridgeplot",
+        "rocplot",
+        "sankeyplot",
+        "scatterplot",
+        "slopeplot",
+        "stackplot",
+        "stripplot",
+        "survivalplot",
+        "upsetplot",
+        "vennplot",
+        "violinplot",
+        "volcanoplot",
+    }
+)
+
+_SEABORN_WRAPPER_PARAMETERS = {
+    "histplot": (
+        "data",
+        "x",
+        "y",
+        "hue",
+        "weights",
+        "stat",
+        "bins",
+        "binwidth",
+        "binrange",
+        "discrete",
+        "cumulative",
+        "common_bins",
+        "common_norm",
+        "multiple",
+        "element",
+        "fill",
+        "shrink",
+        "kde",
+        "kde_kws",
+        "line_kws",
+        "thresh",
+        "pthresh",
+        "pmax",
+        "cbar",
+        "cbar_ax",
+        "cbar_kws",
+        "palette",
+        "hue_order",
+        "hue_norm",
+        "color",
+        "log_scale",
+        "legend",
+        "ax",
+        "kwargs",
+    ),
+    "lineplot": (
+        "data",
+        "x",
+        "y",
+        "hue",
+        "size",
+        "style",
+        "units",
+        "weights",
+        "palette",
+        "hue_order",
+        "hue_norm",
+        "sizes",
+        "size_order",
+        "size_norm",
+        "dashes",
+        "markers",
+        "style_order",
+        "estimator",
+        "errorbar",
+        "n_boot",
+        "seed",
+        "orient",
+        "sort",
+        "err_style",
+        "err_kws",
+        "legend",
+        "ci",
+        "ax",
+        "kwargs",
+    ),
+}
 
 
 def _pdf_media_box_size(path: Path) -> tuple[float, float]:
@@ -187,6 +296,70 @@ def test_public_callable_annotations_resolve() -> None:
 
     assert missing_annotations == {}
     assert unresolved_annotations == {}
+
+
+def test_public_plot_axes_signature_and_return_contract() -> None:
+    import cnsplots.plots as plots
+    from cnsplots.helpers._heatmap import (
+        ClusterMapPlotterNew,
+        DotClustermapPlotterNew,
+    )
+    from matplotlib_venn._common import VennDiagram
+
+    assert set(plots.__all__) == _PUBLIC_PLOT_NAMES
+    assert all(getattr(plots, name) is getattr(cns, name) for name in plots.__all__)
+
+    return_types: dict[str, object] = {}
+    for name in sorted(_PUBLIC_PLOT_NAMES):
+        plotter = getattr(cns, name)
+        ax_parameter = inspect.signature(plotter).parameters["ax"]
+        assert ax_parameter.kind is inspect.Parameter.KEYWORD_ONLY
+        assert ax_parameter.default is None
+
+        hints = get_type_hints(plotter)
+        assert hints["ax"] == Axes | None
+        return_types[name] = hints["return"]
+
+    specialized_returns = {
+        "heatmapplot": ClusterMapPlotterNew,
+        "dotplot": DotClustermapPlotterNew,
+        "upsetplot": dict[str, Axes | None],
+        "vennplot": VennDiagram,
+    }
+    assert {
+        name: return_types.pop(name) for name in specialized_returns
+    } == specialized_returns
+    assert set(return_types.values()) == {Axes}
+
+
+@pytest.mark.parametrize(
+    ("plot_name", "seaborn_plotter"),
+    [("histplot", sns.histplot), ("lineplot", sns.lineplot)],
+)
+def test_public_seaborn_wrapper_signature_contract(
+    plot_name: str,
+    seaborn_plotter: Any,
+) -> None:
+    wrapper_parameters = inspect.signature(getattr(cns, plot_name)).parameters
+    seaborn_parameters = inspect.signature(seaborn_plotter).parameters
+
+    assert tuple(wrapper_parameters) == _SEABORN_WRAPPER_PARAMETERS[plot_name]
+    assert tuple(wrapper_parameters) == tuple(seaborn_parameters)
+    assert {
+        name: (parameter.kind, parameter.default)
+        for name, parameter in wrapper_parameters.items()
+    } == {
+        name: (parameter.kind, parameter.default)
+        for name, parameter in seaborn_parameters.items()
+    }
+
+
+def test_public_vennplot_backend_return_contract() -> None:
+    _, ax = plt.subplots()
+    venn = cns.vennplot([{1, 2}, {2, 3}], ["A", "B"], ax=ax)
+
+    assert venn.get_label_by_id("11").get_text() == "1"
+    assert venn.get_patch_by_id("11").axes is ax
 
 
 def test_public_stackplot_signature_contract() -> None:

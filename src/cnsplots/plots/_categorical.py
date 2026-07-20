@@ -206,6 +206,7 @@ def barplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -234,6 +235,8 @@ def barplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.barplot`.
 
@@ -305,7 +308,9 @@ def barplot(
     }
     plotting.update(args)
     plotting.update(kwargs)
-    ax = sns.barplot(**plotting)
+    if ax is None:
+        ax = plt.gca()
+    ax = sns.barplot(ax=ax, **plotting)
     if add_tip:
         for container in (
             item for item in ax.containers if isinstance(item, BarContainer)
@@ -352,6 +357,8 @@ def lollipopplot(
     color: str | None = None,
     palette: Any = None,
     baseline: float = 0,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a lollipop plot showing values across categories.
@@ -402,6 +409,8 @@ def lollipopplot(
         or a column name in data for palette-as-column mapping.
     baseline : float, default: 0
         Value at which the stems originate.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
 
     Returns
     -------
@@ -458,7 +467,8 @@ def lollipopplot(
     categories = order if order is not None else list(data[cat_col].unique())
     cat_positions = np.arange(len(categories))
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
 
     # Resolve palette and legend
     show_legend = False
@@ -609,6 +619,7 @@ def stackplot(
     pairs: list[tuple[str, str]] | None = None,
     add_count: bool = False,
     n_factor: int | float = 1,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a stacked bar plot showing categorical distributions.
@@ -648,6 +659,8 @@ def stackplot(
         format ``n=...``.
     n_factor : int or float, default: 1
         Scaling factor to divide all values.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
 
     Returns
     -------
@@ -701,7 +714,8 @@ def stackplot(
         value_label = "Count"
     df = df.reindex(index=order)
     df = df / n_factor
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     if y is not None:
         ax = df.plot.barh(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel("")
@@ -710,7 +724,7 @@ def stackplot(
         ax = df.plot.bar(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel(value_label)
         ax.set_xlabel("")
-    utils.take_legend_out()
+    utils.take_legend_out(ax=ax)
     if add_count:
         count_axis = "y" if y is not None else "x"
         utils._add_count_helper(data, bar, ax, axis=count_axis)
@@ -743,6 +757,7 @@ def stripplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -773,6 +788,8 @@ def stripplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.stripplot`.
 
@@ -813,6 +830,8 @@ def stripplot(
             "use 'add_count' instead"
         )
 
+    if ax is None:
+        ax = plt.gca()
     ax = sns.stripplot(
         data=data,
         x=x,
@@ -821,6 +840,7 @@ def stripplot(
         order=order,
         hue_order=hue_order,
         size=size,
+        ax=ax,
         **kwargs,
     )
     sns.boxplot(
@@ -857,6 +877,8 @@ def pieplot(
     x: str,
     legend: str = "bottom",
     order: list[str] | None = None,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a pie chart showing categorical proportions.
@@ -871,6 +893,8 @@ def pieplot(
         Position of the legend relative to the pie chart.
     order : list, optional
         Order of categories to display in the pie chart.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
 
     Returns
     -------
@@ -900,7 +924,8 @@ def pieplot(
     df = data[x].value_counts()
     if order is None:
         order = df.index
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     ax = df.reindex(index=order).plot.pie(
         shadow=False,
         autopct="%1.0f%%",
@@ -931,6 +956,8 @@ def donutplot(
     x: str,
     legend: str = "bottom",
     order: list[str] | None = None,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a donut chart showing categorical proportions.
@@ -945,6 +972,8 @@ def donutplot(
         Position of the legend relative to the pie chart.
     order : list, optional
         Order of categories to display in the donut chart.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
 
     Returns
     -------
@@ -974,7 +1003,8 @@ def donutplot(
     df = data[x].value_counts()
     if order is None:
         order = df.index
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     ax = df.reindex(index=order).plot.pie(
         labeldistance=None,
         ax=ax,
@@ -982,7 +1012,7 @@ def donutplot(
         legend=True,
         wedgeprops={"edgecolor": "black", "linewidth": 0.3, "width": 0.4},
     )
-    plt.annotate(x, (0, 0), size=_legend_fontsize(), ha="center", va="center")
+    ax.annotate(x, (0, 0), size=_legend_fontsize(), ha="center", va="center")
     utils._remove_edge_from_legend_items(ax)
     legend_positions = {
         "right": {"loc": "upper left", "bbox_to_anchor": (1, 1.02)},

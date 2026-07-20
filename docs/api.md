@@ -8,6 +8,13 @@ import cnsplots as cns
 
 ## Plotting Functions
 
+Every plotting function accepts a keyword-only `ax` argument for composition
+inside an existing Matplotlib layout. Most return the target
+`matplotlib.axes.Axes`; `heatmapplot`, `dotplot`, `upsetplot`, and `vennplot`
+instead preserve their backend-native results: `ClusterMapPlotterNew`,
+`DotClustermapPlotterNew`, a dictionary of panel axes, and a matplotlib-venn
+diagram object, respectively.
+
 ### Distribution & Comparison Plots
 
 ```{eval-rst}
