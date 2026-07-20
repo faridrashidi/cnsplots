@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import sys
 import types
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.collections import LineCollection, PathCollection
+from scipy import stats
 
 import cnsplots as cns
 
@@ -112,6 +114,180 @@ def test_lollipop_rejects_ambiguous_palette_column_combinations() -> None:
             x="category",
             y="value",
             palette="palette_group",
+        )
+
+
+def test_lollipop_validates_summary_options() -> None:
+    from cnsplots.plots._categorical import _compute_lollipop_error
+
+    data = pd.DataFrame({"category": ["A", "A"], "value": [1.0, 2.0]})
+
+    with pytest.raises(ValueError, match="estimator must be one of"):
+        cns.lollipopplot(data, x="category", y="value", estimator="mode")
+    with pytest.raises(ValueError, match="errorbar must be one of"):
+        cns.lollipopplot(data, x="category", y="value", errorbar="confidence")
+    with pytest.raises(ValueError, match="errorbar must be one of"):
+        _compute_lollipop_error(data["value"], "confidence")
+    with pytest.raises(ValueError, match="estimator must be one of"):
+        _compute_lollipop_error(data["value"], "ci", "mode")
+    assert np.isnan(_compute_lollipop_error(pd.Series([1.0]), "se"))
+
+
+def test_lollipop_ci_uses_non_null_sample_size_and_t_distribution() -> None:
+    from cnsplots.plots._categorical import _compute_lollipop_error
+
+    values = pd.Series([1.0, 2.0, 3.0, np.nan])
+    expected_sem = values.dropna().std() / np.sqrt(3)
+
+    assert _compute_lollipop_error(values, "se") == pytest.approx(expected_sem)
+    assert _compute_lollipop_error(values, "ci") == pytest.approx(
+        stats.t.ppf(0.975, 2) * expected_sem
+    )
+
+
+def test_lollipop_median_errors_use_deterministic_bootstrap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from cnsplots.plots._categorical import _compute_lollipop_error
+
+    values = pd.Series([1.0, 2.0, 100.0, np.nan])
+    expected_error = _compute_lollipop_error(values, "ci", "median")
+    assert isinstance(expected_error, tuple)
+    assert _compute_lollipop_error(values, "ci", "median") == expected_error
+    median_se = _compute_lollipop_error(values, "se", "median")
+    assert isinstance(median_se, float)
+    assert median_se > 0
+
+    cns.figure(120, 120)
+    ax = plt.gca()
+    errorbar_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        ax,
+        "errorbar",
+        lambda *args, **kwargs: errorbar_calls.append(kwargs),
+    )
+    cns.lollipopplot(
+        pd.DataFrame({"category": ["A"] * 4, "value": values}),
+        x="category",
+        y="value",
+        estimator="median",
+        errorbar="ci",
+    )
+
+    actual_error = errorbar_calls[0]["yerr"]
+    assert isinstance(actual_error, np.ndarray)
+    assert actual_error.shape == (2, 1)
+    actual_values = cast(Any, actual_error).tolist()
+    assert [float(actual_values[0][0]), float(actual_values[1][0])] == pytest.approx(
+        expected_error
+    )
+
+
+def test_stackplot_fills_sparse_cells_before_testing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame(
+        {
+            "group": ["A", "A", "B"],
+            "outcome": ["Yes", "No", "Yes"],
+        }
+    )
+    calls: list[tuple[object, ...]] = []
+    monkeypatch.setattr(
+        cns.utils,
+        "_p_value_helper",
+        lambda *args, **kwargs: calls.append(args),
+    )
+
+    cns.figure(120, 120)
+    cns.stackplot(data, x="group", y="outcome", pairs=[("A", "B")])
+
+    contingency = calls[0][5]
+    assert isinstance(contingency, pd.DataFrame)
+    assert not contingency.isna().any().any()
+    assert contingency.loc["B", "No"] == 0
+
+
+def test_stackplot_tests_sparse_table_with_zero_filled_cells() -> None:
+    data = pd.DataFrame(
+        {
+            "group": ["A", "A", "B", "B"],
+            "outcome": ["Yes", "No", "Yes", "Yes"],
+        }
+    )
+
+    cns.figure(120, 120)
+    ax = cns.stackplot(data, x="group", y="outcome", pairs=[("A", "B")])
+
+    assert ax.texts
+
+
+def test_stackplot_rejects_degenerate_contingency_margins() -> None:
+    data = pd.DataFrame(
+        {
+            "group": ["A", "B", "C"],
+            "outcome": ["Yes", "Yes", "No"],
+        }
+    )
+
+    cns.figure(120, 120)
+    with pytest.raises(ValueError, match="nonzero row and column margins"):
+        cns.stackplot(data, x="group", y="outcome", pairs=[("A", "B")])
+
+
+def test_stackplot_requires_distinct_comparison_levels() -> None:
+    data = pd.DataFrame(
+        {
+            "group": ["A", "A", "B", "B"],
+            "outcome": ["Yes", "No", "Yes", "No"],
+        }
+    )
+
+    cns.figure(120, 120)
+    with pytest.raises(ValueError, match="exactly two distinct levels"):
+        cns.stackplot(data, x="group", y="outcome", pairs=[("A", "A")])
+
+
+@pytest.mark.parametrize(
+    ("contingency", "message"),
+    [
+        (
+            pd.DataFrame(
+                [[1, 1]], index=pd.Index(["A"]), columns=pd.Index(["Yes", "No"])
+            ),
+            "levels absent from the data",
+        ),
+        (
+            pd.DataFrame(
+                [[1], [1]], index=pd.Index(["A", "B"]), columns=pd.Index(["Yes"])
+            ),
+            "at least two rows and two columns",
+        ),
+        (
+            pd.DataFrame(
+                [[1, np.inf], [1, 1]],
+                index=pd.Index(["A", "B"]),
+                columns=pd.Index(["Yes", "No"]),
+            ),
+            "finite, nonnegative counts",
+        ),
+    ],
+)
+def test_contingency_testing_validates_tables(
+    contingency: pd.DataFrame,
+    message: str,
+) -> None:
+    data = pd.DataFrame({"group": ["A", "B"], "value": [1, 1]})
+
+    cns.figure(120, 120)
+    with pytest.raises(ValueError, match=message):
+        cns.utils._p_value_helper(
+            "fisher-exact",
+            data,
+            plt.gca(),
+            {"x": "group", "y": "value"},
+            [("A", "B")],
+            contingency,
         )
 
 

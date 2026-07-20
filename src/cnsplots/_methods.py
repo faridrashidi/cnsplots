@@ -353,8 +353,12 @@ class LogisticModel:
         Returns
         -------
         tuple of float
-            (auc_median, lower_bound, upper_bound)
+            (auc, lower_bound, upper_bound), where ``auc`` is computed from all
+            predictions and bootstrap samples are used only for the bounds.
         """
+        y_true = np.asarray(y_true)
+        y_pred_proba = np.asarray(y_pred_proba)
+        auc = skl.metrics.roc_auc_score(y_true, y_pred_proba)
         aucs = []
         rng = np.random.default_rng(42)
         n = len(y_true)
@@ -362,13 +366,14 @@ class LogisticModel:
             indices = rng.choice(n, n, replace=True)
             if len(np.unique(y_true[indices])) < 2:
                 continue
-            auc = skl.metrics.roc_auc_score(y_true[indices], y_pred_proba[indices])
-            aucs.append(auc)
+            bootstrap_auc = skl.metrics.roc_auc_score(
+                y_true[indices], y_pred_proba[indices]
+            )
+            aucs.append(bootstrap_auc)
         aucs = np.array(aucs)
-        auc_median = np.median(aucs)
         lower = np.percentile(aucs, 100 * alpha / 2)
         upper = np.percentile(aucs, 100 * (1 - alpha / 2))
-        return float(auc_median), float(lower), float(upper)
+        return float(auc), float(lower), float(upper)
 
     def fit(self) -> None:
         """
@@ -396,7 +401,7 @@ class LogisticModel:
         1. Design matrix is created using Patsy (supports formulas)
         2. Predictors are standardized within each cross-validation fold
         3. LogisticRegressionCV fits with L1 penalty and 5-fold CV
-        4. AUC and 95% CI are computed from out-of-fold predictions via bootstrap
+        4. AUC is computed from all out-of-fold predictions, with a bootstrap 95% CI
 
         Runtime warnings are emitted for hue groups with no outcome variance.
         Errors during fitting are caught and surfaced as warnings.
@@ -428,23 +433,46 @@ class LogisticModel:
             ]
 
         for hue_group, hue_data in hue_groups:
+            hue_data = hue_data.reset_index(drop=True)
             for var in self.variates:
                 try:
                     X = patsy.dmatrix(var, hue_data, return_type="dataframe").drop(
                         "Intercept", axis=1
                     )
-                    y = hue_data[self.event].values
-                    if len(np.unique(y)) < 2:
+                    y = hue_data.loc[X.index, self.event].to_numpy()
+                    class_counts = pd.Series(y).value_counts()
+                    if len(class_counts) < 2:
                         warnings.warn(
                             f"No variance in outcome for {var} in hue group {hue_group}",
                             RuntimeWarning,
                             stacklevel=2,
                         )
                         continue
+                    if len(class_counts) > 2:
+                        raise ValueError(
+                            "Logistic regression requires exactly two outcome classes"
+                        )
+
+                    n_splits = 5
+                    if (class_counts < n_splits).any():
+                        raise ValueError(
+                            "Outer 5-fold cross-validation requires at least 5 "
+                            "observations in each outcome class after removing rows "
+                            f"with missing predictor values; got {class_counts.to_dict()}"
+                        )
+                    outer_training_counts = class_counts - np.ceil(
+                        class_counts / n_splits
+                    ).astype(int)
+                    if (outer_training_counts < n_splits).any():
+                        raise ValueError(
+                            "Inner 5-fold cross-validation requires at least 5 "
+                            "observations in each outcome class in every outer training "
+                            "fold; at least 7 observations per class are required"
+                        )
                     model = make_pipeline(
                         StandardScaler(),
                         LogisticRegressionCV(
-                            cv=5,
+                            cv=n_splits,
                             penalty="l1",
                             solver="liblinear",
                             random_state=42,
@@ -452,7 +480,7 @@ class LogisticModel:
                         ),
                     )
                     y_pred_proba = cross_val_predict(
-                        model, X, y, cv=5, method="predict_proba"
+                        model, X, y, cv=n_splits, method="predict_proba"
                     )[:, 1]
                     auc, auc_lower, auc_upper = self._compute_auc_ci(y, y_pred_proba)
                     model_result = {

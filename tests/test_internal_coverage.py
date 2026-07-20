@@ -762,10 +762,13 @@ def test_plot_internal_coverage(
     phylo_adata: ad.AnnData,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    with pytest.raises(ValueError, match="errorbar must be one of"):
+        cns.lollipopplot(
+            categorical_df, x="group", y="value", addtip=True, errorbar="bad"
+        )
+
     cns.figure(120, 120)
-    lollipop_ax = cns.lollipopplot(
-        categorical_df, x="group", y="value", addtip=True, errorbar="bad"
-    )
+    lollipop_ax = cns.lollipopplot(categorical_df, x="group", y="value", addtip=True)
     lollipop_points = [
         collection
         for collection in lollipop_ax.collections
@@ -937,7 +940,7 @@ def test_plot_internal_coverage(
         np.asarray(regression_ax.lines[0].get_ydata(), dtype=float),
         2 * np.asarray(regression_ax.lines[0].get_xdata(), dtype=float),
     )
-    assert [text.get_text() for text in regression_ax.texts] == [r"$\rho$=1.00, $P=0$"]
+    assert [text.get_text() for text in regression_ax.texts] == [r"$r$=1.00, $P=0$"]
     assert fake_legend.legend_handles[0].sizes == [6]
 
     monkeypatch.undo()
@@ -1082,7 +1085,7 @@ def test_plot_internal_coverage(
     bad_survival["time"] = bad_survival["time"] * 20
     cns.figure(120, 120)
     ax = cns.survivalplot(bad_survival, "time", "event", "group")
-    assert ax.get_xlabel() == "Time (Months)"
+    assert ax.get_xlabel() == "Time"
 
     import lifelines
     import lifelines.statistics as lifelines_statistics

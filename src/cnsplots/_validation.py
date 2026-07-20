@@ -423,7 +423,7 @@ def validate_sufficient_data(
 
 def validate_binary_column(data: pd.DataFrame, column: str, function_name: str) -> None:
     """
-    Validate that a column contains only two unique values.
+    Validate that a column contains exactly the binary values 0 and 1.
 
     Parameters
     ----------
@@ -437,13 +437,98 @@ def validate_binary_column(data: pd.DataFrame, column: str, function_name: str) 
     Raises
     ------
     ValueError
-        If the column does not have exactly 2 unique values.
+        If the column does not contain exactly 0 and 1.
     """
     unique_values = data[column].dropna().unique()
-    if len(unique_values) != 2:
+    if np.iscomplexobj(unique_values) or set(unique_values) != {0, 1}:
         raise ValueError(
-            f"[{function_name}] Column '{column}' must have exactly 2 unique values for binary operations, "
-            f"found {len(unique_values)}: {list(unique_values)}"
+            f"[{function_name}] Column '{column}' must have exactly 2 unique values, "
+            f"specifically 0 and 1, found {list(unique_values)}"
+        )
+
+
+def validate_time_to_event_data(
+    data: pd.DataFrame,
+    duration: str,
+    event: str,
+    group: str,
+    function_name: str,
+    *,
+    competing_risks: bool = False,
+    min_groups: int = 1,
+) -> None:
+    """Validate durations, event codes, and per-group sample adequacy."""
+    validate_column_type(data, duration, ["numeric"], function_name)
+    validate_no_nulls(data, [duration, event, group], function_name)
+
+    duration_values = data[duration].to_numpy()
+    if np.iscomplexobj(duration_values) or pd.api.types.is_bool_dtype(
+        data[duration].dtype
+    ):
+        raise ValueError(
+            f"[{function_name}] Column '{duration}' must contain real-valued numeric "
+            "durations."
+        )
+    durations = duration_values.astype(float)
+    if not np.isfinite(durations).all():
+        raise ValueError(
+            f"[{function_name}] Column '{duration}' must contain only finite durations."
+        )
+    if (durations < 0).any():
+        raise ValueError(
+            f"[{function_name}] Column '{duration}' must contain only non-negative "
+            "durations."
+        )
+
+    if competing_risks:
+        validate_column_type(data, event, ["numeric"], function_name)
+        raw_event_values = data[event].to_numpy()
+        if np.iscomplexobj(raw_event_values):
+            raise ValueError(
+                f"[{function_name}] Column '{event}' must contain non-negative integer "
+                "event codes (0 = censored, 1 = event of interest, 2+ = competing "
+                "events)."
+            )
+        event_values = raw_event_values.astype(float)
+        if (
+            not np.isfinite(event_values).all()
+            or (event_values < 0).any()
+            or (event_values != np.floor(event_values)).any()
+        ):
+            raise ValueError(
+                f"[{function_name}] Column '{event}' must contain non-negative integer "
+                "event codes (0 = censored, 1 = event of interest, 2+ = competing "
+                "events)."
+            )
+    else:
+        validate_binary_column(data, event, function_name)
+
+    group_sizes = data.groupby(group, observed=True).size()
+    if len(group_sizes) < min_groups:
+        raise ValueError(
+            f"[{function_name}] Column '{group}' must contain at least {min_groups} "
+            f"groups, found {len(group_sizes)}."
+        )
+
+    small_groups = group_sizes[group_sizes < 2]
+    if not small_groups.empty:
+        raise ValueError(
+            f"[{function_name}] Each group in column '{group}' must contain at least 2 "
+            f"observations; insufficient groups: {list(small_groups.index)}."
+        )
+
+    event_counts = (
+        data.loc[data[event] == 1]
+        .groupby(group, observed=True)
+        .size()
+        .reindex(group_sizes.index, fill_value=0)
+    )
+    groups_without_events = event_counts[event_counts < 1]
+    if not groups_without_events.empty:
+        raise ValueError(
+            f"[{function_name}] Each group in column '{group}' must contain at least one "
+            f"event of interest (event code 1); groups without events: "
+            f"{list(groups_without_events.index)}."
         )
 
 

@@ -19,7 +19,28 @@ from cnsplots._validation import (
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
+    validate_no_nulls,
 )
+
+
+def _finite_xy_data(data: pd.DataFrame, x: str, y: str) -> pd.DataFrame:
+    """Return rows whose x and y values are both finite."""
+    xy_values = data[[x, y]].to_numpy(dtype=float, na_value=np.nan)
+    return data.loc[np.isfinite(xy_values).all(axis=1)]
+
+
+def _validate_pearson_sample_size(
+    data: pd.DataFrame,
+    *,
+    group: Any = None,
+) -> None:
+    """Require enough plotted pairs for Pearson correlation."""
+    if len(data) < 2:
+        group_suffix = "" if group is None else f" in hue group {group!r}"
+        raise ValueError(
+            "[regplot] Pearson correlation requires at least 2 finite paired "
+            f"observations{group_suffix}."
+        )
 
 
 def regplot(
@@ -103,9 +124,17 @@ def regplot(
     args.update(kwargs)
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     color_is_column = isinstance(color, str) and color in data.columns
-    if hue:
-        for idx, hue_val in enumerate(data[hue].unique()):
-            subset = data[data[hue] == hue_val]
+    finite_data = _finite_xy_data(data, x, y)
+    if hue is not None:
+        plot_data = finite_data.loc[finite_data[hue].notna()]
+        _validate_pearson_sample_size(plot_data)
+        hue_subsets = [
+            (hue_val, plot_data[plot_data[hue] == hue_val])
+            for hue_val in plot_data[hue].unique()
+        ]
+        for hue_val, subset in hue_subsets:
+            _validate_pearson_sample_size(subset, group=hue_val)
+        for idx, (hue_val, subset) in enumerate(hue_subsets):
             ax = sns.regplot(
                 data=subset,
                 x=x,
@@ -115,11 +144,11 @@ def regplot(
                 label=hue_val,
                 **args,
             )
-            rho, p_value = sp.stats.pearsonr(subset[x], subset[y])
+            r, p_value = sp.stats.pearsonr(subset[x], subset[y])
             ax.text(
                 0.05,
                 0.95 - 0.08 * idx,
-                rf"{hue_val}: $\rho$={rho:.2f},"
+                rf"{hue_val}: $r$={r:.2f},"
                 rf" P=${num2tex.num2tex(p_value, precision=2):.2g}$",
                 color=palette[idx % len(palette)],
                 transform=ax.transAxes,
@@ -128,9 +157,11 @@ def regplot(
             )
         ax.legend(title=hue)
     elif color_is_column:
+        plot_data = finite_data.loc[finite_data[color].notna()]
+        _validate_pearson_sample_size(plot_data)
         line_args = {k: v for k, v in args.items() if k != "scatter_kws"}
         ax = sns.regplot(
-            data=data,
+            data=plot_data,
             x=x,
             y=y,
             ax=ax,
@@ -138,9 +169,9 @@ def regplot(
             scatter=False,
             **line_args,
         )
-        unique_vals = data[color].unique()
+        unique_vals = plot_data[color].unique()
         for idx, val in enumerate(unique_vals):
-            subset = data[data[color] == val]
+            subset = plot_data[plot_data[color] == val]
             ax.scatter(
                 subset[x],
                 subset[y],
@@ -150,11 +181,11 @@ def regplot(
                 alpha=1,
                 edgecolors="none",
             )
-        rho, p_value = sp.stats.pearsonr(data[x], data[y])
+        r, p_value = sp.stats.pearsonr(plot_data[x], plot_data[y])
         ax.text(
             0.05,
             0.95,
-            rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+            rf"$r$={r:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
             color="black",
             transform=ax.transAxes,
             ha="left",
@@ -165,19 +196,20 @@ def regplot(
             ax.get_legend(), 2 * s, marker_size=2 * np.sqrt(s / np.pi)
         )
     else:
+        _validate_pearson_sample_size(finite_data)
         ax = sns.regplot(
-            data=data,
+            data=finite_data,
             x=x,
             y=y,
             ax=ax,
             color=color,
             **args,
         )
-        rho, p_value = sp.stats.pearsonr(data[x], data[y])
+        r, p_value = sp.stats.pearsonr(finite_data[x], finite_data[y])
         ax.text(
             0.05,
             0.95,
-            rf"$\rho$={rho:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+            rf"$r$={r:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
             color=color,
             transform=ax.transAxes,
             ha="left",
@@ -289,7 +321,7 @@ def lineplot(**kwargs: Any) -> Axes:
     return ax
 
 
-def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
+def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str, pair: str) -> Axes:
     """
     Create a slope plot showing paired changes between two conditions.
 
@@ -298,11 +330,15 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
     data : pd.DataFrame
         The input DataFrame containing paired observations.
     x : str
-        Column name for the categorical variable defining the two conditions.
+        Column name for the categorical variable defining groups along the x-axis.
     y : str
         Column name for the continuous variable to plot.
     hue : str
-        Column name for the grouping variable. Must have exactly two unique values.
+        Column name defining the two conditions. Must have exactly two unique values.
+    pair : str
+        Column containing the subject or observation identifier used to pair values
+        across the two conditions. Each pair must belong to one ``x`` group and have
+        exactly one value per condition.
 
     Returns
     -------
@@ -324,21 +360,52 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
     ...     x="patient_id",
     ...     y="tumor_size",
     ...     hue="timepoint",
+    ...     pair="patient_id",
     ... )
     >>> ax.set_ylabel("Tumor Size (mm)")
 
     >>> # Compare two treatments across sites
-    >>> ax = cns.slopeplot(data=df, x="site", y="response_rate", hue="treatment")
+    >>> ax = cns.slopeplot(
+    ...     data=df,
+    ...     x="site",
+    ...     y="response_rate",
+    ...     hue="treatment",
+    ...     pair="subject_id",
+    ... )
     """
     # Validate inputs
     validate_dataframe(data, "data", "slopeplot")
-    validate_columns_exist(data, [x, y, hue], "slopeplot")
+    validate_columns_exist(data, [x, y, hue, pair], "slopeplot")
     validate_dataframe_not_empty(data, "slopeplot")
+    validate_no_nulls(data, [x, y, hue, pair], "slopeplot")
+
+    hues = data[hue].unique()
+    if len(hues) != 2:
+        raise ValueError(
+            f"[slopeplot] Column '{hue}' must have exactly 2 unique values, "
+            f"found {len(hues)}: {list(hues)}"
+        )
+
+    pair_count = len(data[[pair]].drop_duplicates())
+    pair_x_keys = list(dict.fromkeys((pair, x)))
+    if len(data[pair_x_keys].drop_duplicates()) != pair_count:
+        raise ValueError(
+            f"[slopeplot] Each '{pair}' pair must belong to exactly one '{x}' group."
+        )
+
+    observation_keys = list(dict.fromkeys((pair, hue)))
+    has_duplicates = data.duplicated(observation_keys).any()
+    observed_count = len(data[observation_keys].drop_duplicates())
+    expected_count = 2 * pair_count
+    if has_duplicates or observed_count != expected_count:
+        raise ValueError(
+            f"[slopeplot] Each '{pair}' pair must have exactly one '{y}' value "
+            f"for each '{hue}' level."
+        )
 
     # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
     red = palettable.colorbrewer.qualitative.Set1_9.hex_colors[0]
     blue = palettable.colorbrewer.qualitative.Set1_9.hex_colors[1]
-    hues = data[hue].unique()
 
     ax = plt.gca()
 
@@ -346,8 +413,8 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str) -> Axes:
     i = 1.0
     for site, subdf in data.groupby(x):
         sites.append(str(site))
-        h = subdf[subdf[hue] == hues[0]][y].values
-        d = subdf[subdf[hue] == hues[1]][y].values
+        h = subdf[subdf[hue] == hues[0]].set_index(pair)[y]
+        d = subdf[subdf[hue] == hues[1]].set_index(pair)[y].reindex(h.index)
 
         x1 = i - 0.2
         x2 = i + 0.2
