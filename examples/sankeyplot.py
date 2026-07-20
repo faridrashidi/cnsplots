@@ -32,7 +32,7 @@ data = pd.DataFrame(
 # Basic Sankey diagram
 # ~~~~~~~~~~~~~~~~~~~~
 # Show flows from categories A, B, C to X, Y, Z.
-cns.figure(100, 80)
+cns.figure(80, 100)
 ax = cns.sankeyplot(data=data, x="x", y="y")
 ax.set_title("Basic Sankey")
 
@@ -62,7 +62,7 @@ rotated_label_data = pd.DataFrame(
     }
 )
 
-cns.figure(90, 110)
+cns.figure(110, 90)
 ax = cns.sankeyplot(data=rotated_label_data, x="source", y="target", label_rotation=45)
 ax.set_title("Rotated Labels")
 
@@ -84,7 +84,7 @@ treatment_data = pd.DataFrame(
     }
 )
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.sankeyplot(data=treatment_data, x="treatment", y="outcome")
 ax.set_title("Treatment to Outcome")
 
@@ -106,7 +106,7 @@ stage_data = pd.DataFrame(
     }
 )
 
-cns.figure(140, 100)
+cns.figure(100, 140)
 ax = cns.sankeyplot(data=stage_data, x="baseline", y="followup")
 ax.set_title("Disease Stage Progression")
 
@@ -126,7 +126,7 @@ cell_transition = pd.DataFrame(
     }
 )
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.sankeyplot(data=cell_transition, x="initial", y="final")
 ax.set_title("Cell Differentiation")
 
@@ -146,7 +146,7 @@ cluster_comparison = pd.DataFrame(
     }
 )
 
-cns.figure(140, 100)
+cns.figure(100, 140)
 ax = cns.sankeyplot(data=cluster_comparison, x="method_A", y="method_B")
 ax.set_title("Clustering Comparison")
 
@@ -164,7 +164,7 @@ response_flow = pd.DataFrame(
     }
 )
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.sankeyplot(data=response_flow, x="week_0", y="week_12")
 ax.set_title("Response at Week 0 to Week 12")
 
@@ -180,7 +180,7 @@ binary_data = pd.DataFrame(
     }
 )
 
-cns.figure(100, 80)
+cns.figure(80, 100)
 ax = cns.sankeyplot(data=binary_data, x="before", y="after")
 ax.set_title("Treatment Success")
 
@@ -196,6 +196,6 @@ biomarker_data = pd.DataFrame(
     }
 )
 
-cns.figure(120, 90)
+cns.figure(90, 120)
 ax = cns.sankeyplot(data=biomarker_data, x="biomarker", y="phenotype")
 ax.set_title("Biomarker to Phenotype")

@@ -52,7 +52,7 @@ cns.take_legend_out()
 # Line plot with hue and error bars
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Combine grouping with error visualization.
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", err_style="bars")
 ax.set_title("Grouped with Error Bars")
 cns.take_legend_out()
@@ -62,7 +62,7 @@ cns.take_legend_out()
 # Line plot with style differentiation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different line styles for groups.
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", style="event")
 ax.set_title("Different Line Styles")
 cns.take_legend_out()
@@ -72,7 +72,7 @@ cns.take_legend_out()
 # Multiple grouping levels
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Use both hue and style for complex comparisons.
-cns.figure(180, 120)
+cns.figure(120, 180)
 ax = cns.lineplot(data=fmri, x="timepoint", y="signal", hue="event", style="region")
 ax.set_title("Multiple Grouping Levels")
 cns.take_legend_out()
@@ -107,7 +107,7 @@ ts_data = pd.DataFrame(
     }
 )
 
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.lineplot(data=ts_data, x="date", y="value", hue="group")
 ax.set_title("Time Series Data")
 ax.set_xticklabels(
@@ -168,14 +168,14 @@ ax.set_title("Dose-Response Curve")
 # Side-by-side line plot comparison.
 mp = cns.multipanel(max_width=360)
 
-mp.panel("A", 80, 140)
+mp.panel("A", 140, 80)
 cns.lineplot(
     data=fmri[fmri["region"] == "parietal"], x="timepoint", y="signal", hue="event"
 )
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Parietal Region")
 
-mp.panel("B", 80, 140, margin_right=0)
+mp.panel("B", 140, 80, margin_right=0)
 cns.lineplot(
     data=fmri[fmri["region"] == "frontal"], x="timepoint", y="signal", hue="event"
 )

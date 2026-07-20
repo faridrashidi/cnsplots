@@ -173,7 +173,7 @@ def _capture_detached_axes_layout(
     return new_layouts
 
 
-def figure(height=None, width=None, color_cycle=None, color_map=None):
+def figure(width=None, height=None, color_cycle=None, color_map=None):
     """
     Initialize a new figure with custom size and styling.
 
@@ -182,10 +182,10 @@ def figure(height=None, width=None, color_cycle=None, color_map=None):
 
     Parameters
     ----------
-    height : int, default: 150
-        Height of the figure in pixels.
     width : int, default: 150
         Width of the figure in pixels.
+    height : int, default: 150
+        Height of the figure in pixels.
     color_cycle : str, default: None
         Name of the qualitative color palette to use for the color cycle.
         If None, uses cns.settings.palette_qual.
@@ -216,18 +216,18 @@ def figure(height=None, width=None, color_cycle=None, color_map=None):
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.figure(height=200, width=300)
+    >>> cns.figure(width=300, height=200)
     >>> cns.boxplot(data=df, x="group", y="value")
     >>> cns.savefig("plot.pdf")
 
     >>> # With custom color scheme
-    >>> cns.figure(height=150, width=150, color_cycle="Set2", color_map="parula")
+    >>> cns.figure(width=150, height=150, color_cycle="Set2", color_map="parula")
     >>> cns.heatmapplot(adata)
     """
-    if height is None:
-        height = settings.figure_height
     if width is None:
         width = settings.figure_width
+    if height is None:
+        height = settings.figure_height
     if color_cycle is None:
         color_cycle = settings.palette_qual
     if color_map is None:

@@ -47,7 +47,7 @@ ax.set_title("Basic Confusion Matrix")
 # Confusion matrix with Fisher's exact test
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add p-value from Fisher's exact test.
-cns.figure(100, 80)
+cns.figure(80, 100)
 ax = cns.confusionplot(
     data=data2,
     x="truth",

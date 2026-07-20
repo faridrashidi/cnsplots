@@ -84,11 +84,11 @@ import cnsplots as cns
 mp = cns.multipanel(max_width=540)
 
 # Panel A
-mp.panel("A", height=150, width=150)
+mp.panel("A", width=150, height=150)
 cns.boxplot(data=df1, x="group", y="value")
 
 # Panel B
-mp.panel("B", height=150, width=150)
+mp.panel("B", width=150, height=150)
 cns.scatterplot(data=df2, x="x", y="y")
 
 # Continues...
@@ -127,8 +127,8 @@ import cnsplots as cns
 # Load example data
 df = cns.datasets.load_dataset("tips")
 
-# Create a figure (height, width in pixels)
-cns.figure(height=150, width=100)
+# Create a figure (width, height in pixels)
+cns.figure(width=100, height=150)
 
 # Create a publication-ready boxplot
 cns.boxplot(data=df, x="day", y="total_bill")
@@ -155,7 +155,7 @@ cns.boxplot(
 
 ```python
 # Use custom color palette
-cns.figure(150, 200, color_cycle="Ecotyper1")
+cns.figure(200, 150, color_cycle="Ecotyper1")
 cns.violinplot(data=df, x="day", y="total_bill", hue="sex")
 ```
 
@@ -185,7 +185,7 @@ Full documentation is available at [cnsplots.farid.one](https://cnsplots.farid.o
 Specify sizes in **pixels** for precise control:
 
 ```python
-cns.figure(height=150, width=100)  # Final canvas size is 150px × 100px
+cns.figure(width=100, height=150)  # Final canvas size is 100px × 150px
 ```
 
 ### Color Palettes

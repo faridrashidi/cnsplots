@@ -36,7 +36,7 @@ blobs_annot = blobs[:240, :].copy()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Complete heatmap with clustering, annotations, and dendrograms.
 # Use a display subset to keep the gallery image readable and stable to render.
-cns.figure(300, 250)
+cns.figure(250, 300)
 cmp = cns.heatmapplot(
     blobs_full,
     label="Expression",
@@ -72,7 +72,7 @@ print(f"Row clusters: {len(cmp.row_order)}, Col clusters: {len(cmp.col_order)}")
 # Simple heatmap without clustering
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Basic heatmap showing raw data without reordering.
-cns.figure(250, 200)
+cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:50, :],  # Subset for visibility
     label="Expression",
@@ -93,7 +93,7 @@ cmp = cns.heatmapplot(
 # Heatmap with row clustering only
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Cluster samples but keep gene order fixed.
-cns.figure(250, 200)
+cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:50, :],
     label="Expression",
@@ -112,7 +112,7 @@ cmp = cns.heatmapplot(
 # Heatmap with categorical split
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Split rows by a categorical variable.
-cns.figure(300, 220)
+cns.figure(220, 300)
 cmp = cns.heatmapplot(
     blobs,
     label="Expression",
@@ -134,7 +134,7 @@ cmp = cns.heatmapplot(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add both categorical and continuous annotations.
 # Use a display subset to keep the gallery image readable and stable to render.
-cns.figure(320, 250)
+cns.figure(250, 320)
 cmp = cns.heatmapplot(
     blobs_annot,
     label="Expression",
@@ -155,7 +155,7 @@ cmp = cns.heatmapplot(
 # Heatmap with different colormaps
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Showcase different colormap options.
-cns.figure(250, 200)
+cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:50, :],
     label="Expression",
@@ -177,7 +177,7 @@ cmp = cns.heatmapplot(
 centered_data = blobs.copy()
 centered_data.X = centered_data.X - centered_data.X.mean()
 
-cns.figure(250, 200)
+cns.figure(200, 250)
 cmp = cns.heatmapplot(
     centered_data[:50, :],
     label="Z-score",
@@ -201,7 +201,7 @@ discrete.var["ensemble"] = [
 ]
 discrete.obs["group"] = [f"G{x}" for x in np.random.randint(0, 3, discrete.shape[0])]
 
-cns.figure(250, 180)
+cns.figure(180, 250)
 cmp = cns.heatmapplot(
     discrete,
     label="Category",
@@ -224,7 +224,7 @@ custom_colors = {
     "blobs": {0: "#e41a1c", 1: "#377eb8", 2: "#4daf4a"},
 }
 
-cns.figure(280, 220)
+cns.figure(220, 280)
 cmp = cns.heatmapplot(
     blobs[:60, :],
     label="Expression",
@@ -244,7 +244,7 @@ cmp = cns.heatmapplot(
 # Heatmap with value range limits
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set explicit vmin/vmax for consistent coloring.
-cns.figure(250, 200)
+cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:50, :],
     label="Expression",
@@ -267,7 +267,7 @@ small_data = sc.AnnData(pd.DataFrame(np.random.randn(15, 10)))
 small_data.var["type"] = [f"T{x}" for x in np.random.randint(0, 2, 10)]
 small_data.obs["group"] = [f"G{x}" for x in np.random.randint(0, 3, 15)]
 
-cns.figure(200, 180)
+cns.figure(180, 200)
 cmp = cns.heatmapplot(
     small_data,
     label="Value",
@@ -286,7 +286,7 @@ cmp = cns.heatmapplot(
 # Large heatmap with rasterization
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``rasterized=True`` for large datasets to reduce file size.
-cns.figure(300, 250)
+cns.figure(250, 300)
 cmp = cns.heatmapplot(
     blobs,
     label="Expression",
@@ -305,7 +305,7 @@ cmp = cns.heatmapplot(
 # Heatmap with different clustering methods
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare different linkage methods.
-cns.figure(250, 200)
+cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:60, :],
     label="Expression",

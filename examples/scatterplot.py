@@ -80,11 +80,11 @@ mp.get_axes("C").set_title("s=25 (large)")
 # Use ``alpha`` for overlapping points.
 mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 100, 120)
+mp.panel("A", 120, 100)
 cns.scatterplot(data=tips, x="total_bill", y="tip", s=15, alpha=1.0)
 mp.get_axes("A").set_title("alpha=1.0 (opaque)")
 
-mp.panel("B", 100, 120)
+mp.panel("B", 120, 100)
 cns.scatterplot(data=tips, x="total_bill", y="tip", s=15, alpha=0.4)
 mp.get_axes("B").set_title("alpha=0.4 (transparent)")
 
@@ -125,7 +125,7 @@ cns.take_legend_out()
 # Scatter plot with style by category
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different marker styles with ``style``.
-cns.figure(150, 120)
+cns.figure(120, 150)
 ax = cns.scatterplot(
     data=iris,
     x="sepal_length",
@@ -142,7 +142,7 @@ cns.take_legend_out()
 # Scatter plot with size encoding
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Map a variable to point size using ``size``.
-cns.figure(150, 120)
+cns.figure(120, 150)
 ax = cns.scatterplot(
     data=tips,
     x="total_bill",
@@ -171,7 +171,7 @@ cns.take_legend_out()
 # Scatter plot with quadrant labels
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add annotations to different regions.
-cns.figure(140, 120)
+cns.figure(120, 140)
 ax = cns.scatterplot(data=iris, x="sepal_length", y="sepal_width", s=7, hue="species")
 
 mean_x = iris["sepal_length"].mean()
@@ -199,7 +199,7 @@ labels = ["A", "B", "C", "D"]
 label_idx = 0
 for var_y in ["sepal_width", "petal_width"]:
     for var_x in ["sepal_length", "petal_length"]:
-        mp.panel(labels[label_idx], 100, 120)
+        mp.panel(labels[label_idx], 120, 100)
         cns.scatterplot(data=iris, x=var_x, y=var_y, s=5, hue="species")
         mp.get_axes(labels[label_idx]).set_xlabel(var_x.replace("_", " ").title())
         mp.get_axes(labels[label_idx]).set_ylabel(var_y.replace("_", " ").title())

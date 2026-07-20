@@ -933,11 +933,11 @@ def test_savefig_default_bounds_match_jpg_pdf_and_svg(
     try:
         mp = cns.multipanel(max_width=220, title="Figure 1", loc="left")
 
-        mp.panel("A", 90, 70, color_cycle=[cns.VIOLET])
+        mp.panel("A", 70, 90, color_cycle=[cns.VIOLET])
         ax = cns.boxplot(data=categorical_df, x="group", y="value")
         ax.set_title("Boxplot")
 
-        mp.panel("B", 90, 70, color_cycle="BlueRed")
+        mp.panel("B", 70, 90, color_cycle="BlueRed")
         ax = cns.stripplot(data=categorical_df, x="group", y="value", hue="hue")
         ax.set_title("Stripplot")
 
@@ -1244,7 +1244,7 @@ def test_utils_helpers_and_showcase_data(
 
 
 def test_figure_keeps_fixed_size_with_overflowing_artists() -> None:
-    cns.figure(120, 100)
+    cns.figure(100, 120)
     fig = plt.gcf()
     initial_size = tuple(fig.get_size_inches())
     ax = plt.gca()

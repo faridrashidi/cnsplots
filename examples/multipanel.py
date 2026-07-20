@@ -23,7 +23,7 @@ iris = cns.datasets.load_dataset("iris")
 # Basic 2x2 multi-panel figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create a simple grid layout with different panel sizes.
-# Each panel has explicit size: ``mp.panel(label, height, width)``.
+# Each panel has explicit size: ``mp.panel(label, width, height)``.
 # Labels (A, B, C, D) are automatically added in bold, 8pt font.
 mp = cns.multipanel(max_width=265)
 
@@ -33,10 +33,10 @@ cns.boxplot(data=tips, x="day", y="total_bill")
 mp.panel("B", 100, 100, margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
 
-mp.panel("C", 100, 80)
+mp.panel("C", 80, 100)
 cns.violinplot(data=iris, x="species", y="sepal_width")
 
-mp.panel("D", 120, 80)
+mp.panel("D", 80, 120)
 cns.stripplot(data=tips, x="day", y="tip", hue="sex")
 
 

@@ -38,7 +38,7 @@ plt.title("Kaplan-Meier Survival Curves")
 # Survival plot with legend outside
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Move legend to avoid overlapping curves.
-cns.figure(180, 150)
+cns.figure(150, 180)
 cns.survivalplot(
     data=waltons, duration="T", event="E", hue="group", hue_order=["miR-137", "control"]
 )
@@ -129,7 +129,7 @@ clinical_df = pd.DataFrame(survival_data)
 # Survival plot with three groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare multiple treatment arms.
-cns.figure(180, 150)
+cns.figure(150, 180)
 cns.survivalplot(
     data=clinical_df,
     duration="time",
@@ -146,7 +146,7 @@ plt.xlabel("Time (Months)")
 # Cumulative incidence with three groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show cumulative events for multiple groups.
-cns.figure(180, 150)
+cns.figure(150, 180)
 ax = cns.cumulativeincidenceplot(
     data=clinical_df,
     duration="time",
@@ -167,7 +167,7 @@ plt.title("Cumulative Incidence - Three Arms")
 # Compare survival vs cumulative incidence.
 mp = cns.multipanel(max_width=450)
 
-mp.panel("A", 120, 160)
+mp.panel("A", 160, 120)
 cns.survivalplot(
     data=waltons,
     duration="T",
@@ -177,7 +177,7 @@ cns.survivalplot(
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Survival Probability")
 
-mp.panel("B", 120, 160)
+mp.panel("B", 160, 120)
 cns.cumulativeincidenceplot(
     data=waltons,
     duration="T",
@@ -229,7 +229,7 @@ plt.xlabel("Time (Months)")
 # Cumulative incidence with custom x-axis ticks
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the time axis display.
-cns.figure(180, 150)
+cns.figure(150, 180)
 ax = cns.cumulativeincidenceplot(
     data=waltons,
     duration="T",

@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 # Load example data
 df = cns.datasets.load_dataset("tips")
 
-# Create a figure with specific dimensions (height x width in pixels)
-cns.figure(150, 100)
+# Create a figure with specific dimensions (width x height in pixels)
+cns.figure(100, 150)
 
 # Create a boxplot
 cns.boxplot(data=df, x="day", y="total_bill")
@@ -29,22 +29,22 @@ refer to column names in that DataFrame.
 cnsplots uses **pixels** for figure dimensions:
 
 ```python
-# Small figure: 100 px tall and 80 px wide
-cns.figure(100, 80)
+# Small figure: 80 px wide and 100 px tall
+cns.figure(80, 100)
 
-# Larger figure: 200 px tall and 150 px wide
-cns.figure(200, 150)
+# Larger figure: 150 px wide and 200 px tall
+cns.figure(150, 200)
 ```
 
-`cns.figure(height, width)` uses height first, and those values are the final
-canvas size in pixels.
+`cns.figure(width, height)` uses the conventional width-first order, and those
+values are the final canvas size in pixels.
 
 ## Basic Plot Types
 
 ### Boxplot
 
 ```python
-cns.figure(100, 80)
+cns.figure(80, 100)
 cns.boxplot(data=df, x="day", y="total_bill", hue="sex")
 cns.savefig("boxplot.svg")
 ```
@@ -52,7 +52,7 @@ cns.savefig("boxplot.svg")
 ### Barplot
 
 ```python
-cns.figure(100, 80)
+cns.figure(80, 100)
 cns.barplot(data=df, x="day", y="total_bill", hue="sex")
 cns.savefig("barplot.svg")
 ```
@@ -60,7 +60,7 @@ cns.savefig("barplot.svg")
 ### Scatter Plot
 
 ```python
-cns.figure(100, 80)
+cns.figure(80, 100)
 cns.scatterplot(data=df, x="total_bill", y="tip", hue="day")
 cns.savefig("scatter.svg")
 ```
@@ -70,7 +70,7 @@ cns.savefig("scatter.svg")
 ### Adding Labels
 
 ```python
-cns.figure(100, 80)
+cns.figure(80, 100)
 ax = cns.boxplot(data=df, x="day", y="total_bill")
 ax.set_xlabel("Day of Week")
 ax.set_ylabel("Total Bill ($)")

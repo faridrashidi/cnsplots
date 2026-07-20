@@ -25,7 +25,7 @@ iris = cns.datasets.load_dataset("iris")
 # Basic lollipop plot
 # ~~~~~~~~~~~~~~~~~~~
 # Simple vertical lollipop plot showing mean values per category.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.lollipopplot(data=tips, x="day", y="total_bill")
 ax.set_title("Basic Lollipop Plot")
 
@@ -34,7 +34,7 @@ ax.set_title("Basic Lollipop Plot")
 # Horizontal lollipop plot
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Swap x and y to create a horizontal layout automatically.
-cns.figure(100, 180)
+cns.figure(180, 100)
 ax = cns.lollipopplot(data=tips, x="total_bill", y="day")
 ax.set_title("Horizontal Lollipop")
 
@@ -43,7 +43,7 @@ ax.set_title("Horizontal Lollipop")
 # With error bars
 # ~~~~~~~~~~~~~~~
 # Add standard error bars to show variability.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.lollipopplot(data=tips, x="day", y="total_bill", errorbar="se")
 ax.set_title("With Standard Error")
 
@@ -52,7 +52,7 @@ ax.set_title("With Standard Error")
 # With standard deviation
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Show variability with standard deviation error bars.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.lollipopplot(data=tips, x="day", y="total_bill", errorbar="sd")
 ax.set_title("With Standard Deviation")
 
@@ -61,7 +61,7 @@ ax.set_title("With Standard Deviation")
 # Grouped lollipop plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Split lollipops by a secondary categorical variable.
-cns.figure(180, 100, "BlueRed")
+cns.figure(100, 180, "BlueRed")
 ax = cns.lollipopplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
 
@@ -70,7 +70,7 @@ cns.take_legend_out()
 # Grouped with error bars
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Combine hue grouping with error bars.
-cns.figure(180, 100, "BlueRed")
+cns.figure(100, 180, "BlueRed")
 ax = cns.lollipopplot(data=tips, x="day", y="total_bill", hue="sex", errorbar="se")
 cns.take_legend_out()
 
@@ -79,7 +79,7 @@ cns.take_legend_out()
 # Statistical comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Add significance annotations for specific pairs.
-cns.figure(150, 100, "Set1")
+cns.figure(100, 150, "Set1")
 cns.lollipopplot(
     data=tips,
     x="day",
@@ -92,7 +92,7 @@ cns.lollipopplot(
 # With value labels
 # ~~~~~~~~~~~~~~~~~
 # Display the mean value at each dot.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 cns.lollipopplot(data=tips, x="day", y="total_bill", addtip=True)
 
 
@@ -100,7 +100,7 @@ cns.lollipopplot(data=tips, x="day", y="total_bill", addtip=True)
 # Custom order
 # ~~~~~~~~~~~~
 # Specify the order of categories.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 cns.lollipopplot(
     data=tips,
     x="day",
@@ -113,7 +113,7 @@ cns.lollipopplot(
 # Custom styling
 # ~~~~~~~~~~~~~~
 # Adjust marker size, line width, and marker shape.
-cns.figure(150, 100, "Bold")
+cns.figure(100, 150, "Bold")
 cns.lollipopplot(
     data=tips,
     x="day",
@@ -128,7 +128,7 @@ cns.lollipopplot(
 # Horizontal with hue
 # ~~~~~~~~~~~~~~~~~~~~
 # Horizontal grouped lollipop plot.
-cns.figure(120, 180, "BlueRed")
+cns.figure(180, 120, "BlueRed")
 ax = cns.lollipopplot(
     data=tips,
     x="total_bill",
@@ -143,7 +143,7 @@ cns.take_legend_out()
 # Species comparison
 # ~~~~~~~~~~~~~~~~~~
 # Compare measurements across species with value labels.
-cns.figure(150, 100, "Bold")
+cns.figure(100, 150, "Bold")
 ax = cns.lollipopplot(
     data=iris, x="species", y="sepal_width", addtip=True, errorbar="se"
 )
@@ -171,7 +171,7 @@ gene_data = pd.DataFrame(
     }
 )
 
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.lollipopplot(
     data=gene_data,
     x="gene",
@@ -187,7 +187,7 @@ cns.take_legend_out()
 # Median estimator
 # ~~~~~~~~~~~~~~~~
 # Use median instead of mean for robust estimation.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.lollipopplot(
     data=tips, x="day", y="total_bill", estimator="median", addtip=True
 )

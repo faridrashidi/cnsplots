@@ -51,7 +51,7 @@ def placeholderplot(description: str) -> Axes:
     Examples
     --------
     >>> import cnsplots as cns
-    >>> cns.figure(100, 200)
+    >>> cns.figure(200, 100)
     >>> ax = cns.placeholderplot("A description to be centered in the panel")
     >>> ax.set_title("Placeholder")
     """

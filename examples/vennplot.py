@@ -50,7 +50,7 @@ upregulated_genes = {"TP53", "BRCA1", "MYC", "EGFR", "KRAS", "PIK3CA", "PTEN"}
 mutated_genes = {"TP53", "KRAS", "PIK3CA", "APC", "BRAF", "NRAS"}
 methylated_genes = {"BRCA1", "CDKN2A", "MLH1", "TP53", "MGMT"}
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 cns.vennplot(
     [upregulated_genes, mutated_genes, methylated_genes],
     ["Upregulated", "Mutated", "Methylated"],
@@ -66,7 +66,7 @@ condition_a_degs = set(["gene" + str(i) for i in range(1, 51)])  # 50 genes
 condition_b_degs = set(["gene" + str(i) for i in range(30, 80)])  # 50 genes
 condition_c_degs = set(["gene" + str(i) for i in range(45, 95)])  # 50 genes
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 cns.vennplot(
     [condition_a_degs, condition_b_degs, condition_c_degs],
     ["Condition A", "Condition B", "Condition C"],
@@ -105,7 +105,7 @@ high_coverage = {"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"}
 low_duplication = {"S1", "S3", "S4", "S6", "S7", "S9", "S10"}
 clean_data = {"S1", "S2", "S4", "S5", "S7", "S8", "S10", "S11"}
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 cns.vennplot(
     [high_coverage, low_duplication, clean_data], ["High Cov", "Low Dup", "Clean"]
 )
@@ -132,7 +132,7 @@ apoptosis_genes = {"BAX", "BCL2", "CASP3", "CASP9", "CYCS", "TP53", "BID"}
 cell_cycle_genes = {"CDK1", "CDK2", "CCNA", "CCNB", "TP53", "RB1", "E2F1"}
 dna_repair_genes = {"BRCA1", "BRCA2", "ATM", "ATR", "TP53", "RAD51", "CHEK2"}
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 cns.vennplot(
     [apoptosis_genes, cell_cycle_genes, dna_repair_genes],
     ["Apoptosis", "Cell Cycle", "DNA Repair"],
