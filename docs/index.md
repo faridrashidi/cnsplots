@@ -23,7 +23,7 @@ cnsplots is a Python visualization library built on matplotlib and fully compati
 import cnsplots as cns
 
 df = cns.datasets.load_dataset("tips")
-cns.figure(150, 100)  # Height x Width in pixels
+cns.figure(100, 150)  # Width x Height in pixels
 cns.boxplot(data=df, x="day", y="total_bill")
 cns.savefig("figure.svg")
 ```

@@ -154,7 +154,7 @@ gsea_res.head()
 # Basic GSEA plot - GO Biological Process
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Visualize the strongest enriched terms from prerank-style results.
-cns.figure(180, 130)
+cns.figure(130, 180)
 ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=12, size=1.5)
 ax.set_title("GSEA Plot")
 
@@ -163,7 +163,7 @@ ax.set_title("GSEA Plot")
 # Top 8 enriched terms
 # ~~~~~~~~~~~~~~~~~~~~
 # Display fewer terms for a cleaner plot.
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1.5)
 
 
@@ -171,7 +171,7 @@ cns.gseaplot(gsea_res, y="Clean_Term", top_term=8, size=1.5)
 # All enriched terms
 # ~~~~~~~~~~~~~~~~~~
 # Show the complete result table.
-cns.figure(200, 180)
+cns.figure(180, 200)
 cns.gseaplot(gsea_res, y="Clean_Term", top_term=len(gsea_res), size=1.5)
 
 
@@ -179,7 +179,7 @@ cns.gseaplot(gsea_res, y="Clean_Term", top_term=len(gsea_res), size=1.5)
 # KEGG pathway enrichment
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Use prerank-style KEGG results for pathway analysis.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.gseaplot(gsea_kegg, y="Clean_Term", top_term=10, size=1.5)
 ax.set_title("KEGG Pathways")
 
@@ -188,7 +188,7 @@ ax.set_title("KEGG Pathways")
 # Reactome pathway enrichment
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use prerank-style Reactome results for biological pathways.
-cns.figure(180, 120)
+cns.figure(120, 180)
 ax = cns.gseaplot(gsea_reactome, y="Clean_Term", top_term=10, size=1.5)
 ax.set_title("Reactome Pathways")
 
@@ -197,7 +197,7 @@ ax.set_title("Reactome Pathways")
 # GO Molecular Function
 # ~~~~~~~~~~~~~~~~~~~~~
 # Enrichment analysis for molecular functions.
-cns.figure(250, 100)
+cns.figure(100, 250)
 ax = cns.gseaplot(gsea_mf, y="Clean_Term", top_term=8, size=1.5)
 ax.set_title("GO Molecular Function")
 
@@ -206,7 +206,7 @@ ax.set_title("GO Molecular Function")
 # GO Cellular Component
 # ~~~~~~~~~~~~~~~~~~~~~
 # Enrichment analysis for cellular locations.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.gseaplot(gsea_cc, y="Clean_Term", top_term=8, size=1.5)
 ax.set_title("GO Cellular Component")
 
@@ -215,7 +215,7 @@ ax.set_title("GO Cellular Component")
 # WikiPathways enrichment
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Use prerank-style WikiPathways results.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.gseaplot(gsea_wiki, y="Clean_Term", top_term=8, size=1.5)
 ax.set_title("WikiPathways")
 
@@ -233,7 +233,7 @@ ax.set_title("Larger Dots")
 # Smaller dot size
 # ~~~~~~~~~~~~~~~~
 # Decrease dot size for denser plots.
-cns.figure(180, 150)
+cns.figure(150, 180)
 ax = cns.gseaplot(gsea_res, y="Clean_Term", top_term=12, size=1.2)
 ax.set_title("Smaller Dots")
 

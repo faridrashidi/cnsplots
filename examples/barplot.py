@@ -26,7 +26,7 @@ tips = cns.datasets.load_dataset("tips")
 # Basic barplot
 # ~~~~~~~~~~~~~
 # Simple bar plot with standard error bars.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.barplot(data=tips, x="day", y="total_bill", errorbar="se")
 ax.set_title("Basic Barplot")
 
@@ -38,7 +38,7 @@ ax.set_title("Basic Barplot")
 # Use one palette so both bars and points share the same group colors.
 day_order = ["Thur", "Fri", "Sat", "Sun"]
 overlay_palette = dict(zip(day_order, sns.color_palette("NEJM", len(day_order))))
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.barplot(
     data=tips,
     x="day",
@@ -68,7 +68,7 @@ ax.set_title("Barplot with Stripplot Overlay")
 # Barplot with standard deviation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show variability with standard deviation error bars.
-cns.figure(150, 100)
+cns.figure(100, 150)
 palette = {
     "Sat": cns.BLUE,
     "Fri": cns.BLUE,
@@ -82,7 +82,7 @@ cns.barplot(data=tips, x="day", y="total_bill", errorbar="sd", palette=palette)
 # Barplot with confidence intervals
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Display 95% confidence intervals.
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar="ci")
 
 
@@ -90,7 +90,7 @@ cns.barplot(data=tips, x="day", y="total_bill", errorbar="ci")
 # No error bars
 # ~~~~~~~~~~~~~
 # Clean bars without error indicators.
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.barplot(data=tips, x="day", y="total_bill", errorbar=None)
 
 
@@ -100,7 +100,7 @@ cns.barplot(data=tips, x="day", y="total_bill", errorbar=None)
 # Color bars based on value thresholds.
 mean_bills = tips.groupby("day")["total_bill"].mean()
 cols = ["grey" if x < 21.0 else "orange" for x in mean_bills]
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.barplot(data=tips, x="day", y="total_bill", palette=cols)
 
 
@@ -108,7 +108,7 @@ cns.barplot(data=tips, x="day", y="total_bill", palette=cols)
 # Statistical comparisons (all pairs)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add significance annotations for all pairwise comparisons.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 cns.barplot(data=tips, x="day", y="total_bill", pairs="all", addtip=True)
 
 
@@ -116,7 +116,7 @@ cns.barplot(data=tips, x="day", y="total_bill", pairs="all", addtip=True)
 # Statistical comparisons (specific pairs)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare only selected pairs of groups.
-cns.figure(150, 100, "Set1")
+cns.figure(100, 150, "Set1")
 cns.barplot(
     data=tips,
     x="day",
@@ -130,7 +130,7 @@ cns.barplot(
 # Grouped barplot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Split bars by a secondary categorical variable.
-cns.figure(180, 100, "BlueRed")
+cns.figure(100, 180, "BlueRed")
 cns.barplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
 
@@ -139,7 +139,7 @@ cns.take_legend_out()
 # Grouped barplot with statistical testing
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare specific groups across hue levels.
-cns.figure(180, 100, "BlueRed")
+cns.figure(100, 180, "BlueRed")
 cns.barplot(
     data=tips,
     x="day",
@@ -154,7 +154,7 @@ cns.take_legend_out()
 # Horizontal barplot
 # ~~~~~~~~~~~~~~~~~~
 # Flip axes for horizontal layout.
-cns.figure(100, 180, "Set1")
+cns.figure(180, 100, "Set1")
 cns.barplot(
     data=tips,
     x="total_bill",
@@ -168,7 +168,7 @@ cns.barplot(
 # Custom order
 # ~~~~~~~~~~~~
 # Specify the order of categories.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 cns.barplot(
     data=tips,
     x="day",
@@ -185,7 +185,7 @@ tips_centered = tips.copy()
 tips_centered["bill_deviation"] = (
     tips_centered["total_bill"] - tips_centered["total_bill"].mean()
 )
-cns.figure(100, 150, "Tableau")
+cns.figure(150, 100, "Tableau")
 ax = cns.barplot(data=tips_centered, x="day", y="bill_deviation")
 ax.axhline(0, color="k", clip_on=False, lw=0.8)
 ax.spines["bottom"].set_visible(False)
@@ -195,7 +195,7 @@ ax.spines["bottom"].set_visible(False)
 # Horizontal diverging barplot
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Horizontal layout for diverging bars.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 ax = cns.barplot(data=tips_centered, y="day", x="bill_deviation")
 ax.axvline(0, color="k", clip_on=False, lw=0.8)
 ax.spines["left"].set_visible(False)
@@ -205,7 +205,7 @@ ax.spines["left"].set_visible(False)
 # Barplot with species data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare measurements across species.
-cns.figure(150, 100, "Bold")
+cns.figure(100, 150, "Bold")
 ax = cns.barplot(data=iris, x="species", y="sepal_width", pairs="all", addtip=True)
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
@@ -226,21 +226,21 @@ cns.barplot(data=iris, x="species", y="sepal_length", addtip=True)
 # Compare different measurements using multipanel.
 mp = cns.multipanel(max_width=310)
 
-mp.panel("A", 80, 120, margin_bottom=20)
+mp.panel("A", 120, 80, margin_bottom=20)
 cns.barplot(data=iris, x="species", y="sepal_length")
 mp.get_axes("A").set_title("Sepal Length")
 
-mp.panel("B", 80, 120, margin_right=0)
+mp.panel("B", 120, 80, margin_right=0)
 cns.barplot(data=iris, x="species", y="sepal_width")
 mp.get_axes("B").set_title("Sepal Width")
 
 mp.newline()
 
-mp.panel("C", 80, 120)
+mp.panel("C", 120, 80)
 cns.barplot(data=iris, x="species", y="petal_length")
 mp.get_axes("C").set_title("Petal Length")
 
-mp.panel("D", 80, 120, margin_right=0)
+mp.panel("D", 120, 80, margin_right=0)
 cns.barplot(data=iris, x="species", y="petal_width")
 mp.get_axes("D").set_title("Petal Width")
 
@@ -273,12 +273,12 @@ mp = cns.multipanel(max_width=410)
 lunch = tips[tips["time"] == "Lunch"]
 dinner = tips[tips["time"] == "Dinner"]
 
-mp.panel("A", 100, 150)
+mp.panel("A", 150, 100)
 cns.barplot(data=lunch, x="day", y="total_bill", hue="sex")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Lunch")
 
-mp.panel("B", 100, 150, margin_right=0)
+mp.panel("B", 150, 100, margin_right=0)
 cns.barplot(data=dinner, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
 mp.get_axes("B").set_title("Dinner")
@@ -299,7 +299,7 @@ baseline = pd.DataFrame(
 colors = [
     "gray" if x == 0 else ("green" if x > 0 else "red") for x in baseline["pct_change"]
 ]
-cns.figure(150, 100, color_cycle=colors)
+cns.figure(100, 150, color_cycle=colors)
 ax = cns.barplot(data=baseline, x="treatment", y="pct_change", errorbar=None)
 ax.axhline(0, color="k", lw=0.8)
 ax.set_ylabel("% Change from Baseline")
@@ -327,7 +327,7 @@ gene_data = pd.DataFrame(
     }
 )
 
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.barplot(
     data=gene_data,
     x="gene",
@@ -345,20 +345,20 @@ cns.take_legend_out()
 # Different palettes for the same data.
 mp = cns.multipanel(max_width=310)
 
-mp.panel("A", 80, 120, color_cycle="Set1", margin_bottom=20)
+mp.panel("A", 120, 80, color_cycle="Set1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Set1")
 
-mp.panel("B", 80, 120, color_cycle="Tableau", margin_right=0)
+mp.panel("B", 120, 80, color_cycle="Tableau", margin_right=0)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("Tableau")
 
 mp.newline()
 
-mp.panel("C", 80, 120, color_cycle="Bold")
+mp.panel("C", 120, 80, color_cycle="Bold")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Bold")
 
-mp.panel("D", 80, 120, color_cycle="Pastel1", margin_right=0)
+mp.panel("D", 120, 80, color_cycle="Pastel1", margin_right=0)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Pastel1")

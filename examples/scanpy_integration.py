@@ -98,7 +98,7 @@ sc.pl.dotplot(
 # Dotplot with more genes
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Add additional markers.
-cns.figure(180, 150)
+cns.figure(150, 180)
 cns.setup_scanpy()
 ax = plt.gca()
 sc.pl.dotplot(
@@ -124,7 +124,7 @@ sc.pl.matrixplot(blobs, ["mitf", "axl"], groupby="blobs", ax=ax, show=False)
 # %%
 # Matrix plot with more genes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.setup_scanpy()
 ax = plt.gca()
 sc.pl.matrixplot(

@@ -59,11 +59,11 @@ ax.set_title("Regression by Day")
 # Adjust point size with the ``s`` parameter.
 mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 100, 120)
+mp.panel("A", 120, 100)
 cns.regplot(data=tips, x="tip", y="total_bill", s=2)
 mp.get_axes("A").set_title("s=2 (small)")
 
-mp.panel("B", 100, 120)
+mp.panel("B", 120, 100)
 cns.regplot(data=tips, x="tip", y="total_bill", s=10)
 mp.get_axes("B").set_title("s=10 (large)")
 
@@ -86,7 +86,7 @@ mp = cns.multipanel(max_width=560)
 
 for i, day in enumerate(["Thur", "Fri", "Sat", "Sun"]):
     label = chr(65 + i)  # A, B, C, D
-    mp.panel(label, 80, 100)
+    mp.panel(label, 100, 80)
     subset = tips[tips["day"] == day]
     cns.regplot(data=subset, x="tip", y="total_bill", s=5)
     mp.get_axes(label).set_title(day)
@@ -169,12 +169,12 @@ mp = cns.multipanel(max_width=305)
 male_tips = tips[tips["sex"] == "Male"]
 female_tips = tips[tips["sex"] == "Female"]
 
-mp.panel("A", 100, 120)
+mp.panel("A", 120, 100)
 cns.regplot(data=male_tips, x="total_bill", y="tip", s=5)
 r, p = stats.pearsonr(male_tips["total_bill"], male_tips["tip"])
 mp.get_axes("A").set_title(f"Male (r={r:.2f})")
 
-mp.panel("B", 100, 120, margin_right=0)
+mp.panel("B", 120, 100, margin_right=0)
 cns.regplot(data=female_tips, x="total_bill", y="tip", s=5)
 r, p = stats.pearsonr(female_tips["total_bill"], female_tips["tip"])
 mp.get_axes("B").set_title(f"Female (r={r:.2f})")
@@ -213,17 +213,17 @@ no_corr = pd.DataFrame(
 
 mp = cns.multipanel(max_width=450)
 
-mp.panel("A", 90, 110)
+mp.panel("A", 110, 90)
 cns.regplot(data=strong_pos, x="x", y="y", s=5)
 r = stats.pearsonr(strong_pos["x"], strong_pos["y"])[0]
 mp.get_axes("A").set_title(f"Strong (r={r:.2f})")
 
-mp.panel("B", 90, 110)
+mp.panel("B", 110, 90)
 cns.regplot(data=weak, x="x", y="y", s=5)
 r = stats.pearsonr(weak["x"], weak["y"])[0]
 mp.get_axes("B").set_title(f"Weak (r={r:.2f})")
 
-mp.panel("C", 90, 110)
+mp.panel("C", 110, 90)
 cns.regplot(data=no_corr, x="x", y="y", s=5)
 r = stats.pearsonr(no_corr["x"], no_corr["y"])[0]
 mp.get_axes("C").set_title(f"None (r={r:.2f})")

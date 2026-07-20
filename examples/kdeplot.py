@@ -103,15 +103,15 @@ cns.take_legend_out()
 # Adjust smoothness with ``bw_adjust``.
 mp = cns.multipanel(max_width=480)
 
-mp.panel("A", 80, 100)
+mp.panel("A", 100, 80)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=0.3)
 mp.get_axes("A").set_title("bw_adjust=0.3 (rough)")
 
-mp.panel("B", 80, 100)
+mp.panel("B", 100, 80)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=1.0)
 mp.get_axes("B").set_title("bw_adjust=1.0 (default)")
 
-mp.panel("C", 80, 100)
+mp.panel("C", 100, 80)
 cns.kdeplot(data=tips, x="total_bill", bw_adjust=2.0)
 mp.get_axes("C").set_title("bw_adjust=2.0 (smooth)")
 
@@ -122,11 +122,11 @@ mp.get_axes("C").set_title("bw_adjust=2.0 (smooth)")
 # Customize line width and style.
 mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.kdeplot(data=tips, x="total_bill", linewidth=0.5)
 mp.get_axes("A").set_title("Thin line")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 120, 80)
 cns.kdeplot(data=tips, x="total_bill", linewidth=2)
 mp.get_axes("B").set_title("Thick line")
 
@@ -147,12 +147,12 @@ cns.take_legend_out()
 # Compare distributions across different variables.
 mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.kdeplot(data=iris, x="sepal_length", hue="species")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Sepal Length")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 120, 80)
 cns.kdeplot(data=iris, x="petal_length", hue="species")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Petal Length")

@@ -22,7 +22,7 @@ iris = cns.datasets.load_dataset("iris")
 # Basic strip plot
 # ~~~~~~~~~~~~~~~~
 # Shows individual points with median line (default).
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, rasterized=True)
 ax.set_title("Basic Strip Plot with Median")
 
@@ -31,7 +31,7 @@ ax.set_title("Basic Strip Plot with Median")
 # Horizontal strip plot
 # ~~~~~~~~~~~~~~~~~~~~~
 # Swap x and y for horizontal orientation.
-cns.figure(100, 120)
+cns.figure(120, 100)
 ax = cns.stripplot(data=tips, x="total_bill", y="day", size=2)
 ax.set_title("Horizontal Strip Plot")
 
@@ -40,7 +40,7 @@ ax.set_title("Horizontal Strip Plot")
 # Strip plot without median line
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``showmedian=False`` for points only.
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, showmedian=False)
 ax.set_title("Strip Plot without Median")
 
@@ -49,7 +49,7 @@ ax.set_title("Strip Plot without Median")
 # Strip plot with mean marker
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``showmeans=True`` to show mean instead of median.
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.stripplot(
     data=tips, x="day", y="total_bill", size=2, showmedian=False, showmeans=True
 )
@@ -60,7 +60,7 @@ ax.set_title("Strip Plot with Mean Marker")
 # Strip plot with both median and mean
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show both summary statistics.
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.stripplot(
     data=tips, x="day", y="total_bill", size=2, showmedian=True, showmeans=True
 )
@@ -71,7 +71,7 @@ ax.set_title("Strip Plot with Median and Mean")
 # Strip plot with sample counts
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``addcount=True`` to display sample sizes.
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, addcount=True)
 ax.set_title("Strip Plot with Sample Counts")
 
@@ -80,7 +80,7 @@ ax.set_title("Strip Plot with Sample Counts")
 # Grouped strip plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``hue`` for color-coded subgroups.
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, hue="sex")
 cns.take_legend_out()
 ax.set_title("Grouped Strip Plot")
@@ -90,7 +90,7 @@ ax.set_title("Grouped Strip Plot")
 # Strip plot with dodging
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Points are automatically dodged when using hue.
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.stripplot(data=tips, x="day", y="total_bill", size=3, hue="smoker", dodge=True)
 cns.take_legend_out()
 ax.set_title("Strip Plot with Dodging")
@@ -102,11 +102,11 @@ ax.set_title("Strip Plot with Dodging")
 # Adjust point size for visibility.
 mp = cns.multipanel(max_width=330)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.stripplot(data=iris, x="species", y="sepal_width", size=1)
 mp.get_axes("A").set_title("size=1 (small)")
 
-mp.panel("B", 80, 120, margin_right=0)
+mp.panel("B", 120, 80, margin_right=0)
 cns.stripplot(data=iris, x="species", y="sepal_width", size=5)
 mp.get_axes("B").set_title("size=5 (large)")
 
@@ -115,7 +115,7 @@ mp.get_axes("B").set_title("size=5 (large)")
 # Strip plot with custom palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use built-in color palettes.
-cns.figure(120, 100, "Tableau")
+cns.figure(100, 120, "Tableau")
 ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2)
 ax.set_title("Tableau Palette")
 
@@ -126,11 +126,11 @@ ax.set_title("Tableau Palette")
 # Control the amount of horizontal jitter with the ``jitter`` parameter.
 mp = cns.multipanel(max_width=350)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.stripplot(data=tips, x="day", y="total_bill", size=2, jitter=0.1)
 mp.get_axes("A").set_title("jitter=0.1 (tight)")
 
-mp.panel("B", 80, 120)
+mp.panel("B", 120, 80)
 cns.stripplot(data=tips, x="day", y="total_bill", size=2, jitter=0.4)
 mp.get_axes("B").set_title("jitter=0.4 (spread)")
 
@@ -141,11 +141,11 @@ mp.get_axes("B").set_title("jitter=0.4 (spread)")
 # Adjust transparency for overlapping points.
 mp = cns.multipanel(max_width=330)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.stripplot(data=tips, x="day", y="total_bill", size=4, alpha=1.0)
 mp.get_axes("A").set_title("alpha=1.0 (opaque)")
 
-mp.panel("B", 80, 120, margin_right=0)
+mp.panel("B", 120, 80, margin_right=0)
 cns.stripplot(data=tips, x="day", y="total_bill", size=4, alpha=0.3)
 mp.get_axes("B").set_title("alpha=0.3 (transparent)")
 
@@ -154,7 +154,7 @@ mp.get_axes("B").set_title("alpha=0.3 (transparent)")
 # Strip plot with custom order
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Specify category order with the ``order`` parameter.
-cns.figure(120, 100)
+cns.figure(100, 120)
 ax = cns.stripplot(
     data=tips,
     x="day",
@@ -176,7 +176,7 @@ iris_melted = iris.melt(
     value_name="value",
 )
 
-cns.figure(120, 200)
+cns.figure(200, 120)
 ax = cns.stripplot(
     data=iris_melted,
     x="measurement",

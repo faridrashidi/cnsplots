@@ -23,7 +23,7 @@ iris = cns.datasets.load_dataset("iris")
 # Basic violin plot
 # ~~~~~~~~~~~~~~~~~
 # Simple violin plot with embedded box plot (default).
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.violinplot(data=tips, x="day", y="total_bill")
 ax.set_title("Basic Violin Plot")
 
@@ -32,7 +32,7 @@ ax.set_title("Basic Violin Plot")
 # Violin plot with statistical testing
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``pairs="all"`` for Mann-Whitney U tests between all groups.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 ax = cns.violinplot(data=tips, x="day", y="total_bill", pairs="all")
 ax.set_title("Violin Plot with All Pairwise Comparisons")
 
@@ -41,7 +41,7 @@ ax.set_title("Violin Plot with All Pairwise Comparisons")
 # Violin plot with specific pair comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test only selected pairs.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.violinplot(
     data=iris,
     x="species",
@@ -55,7 +55,7 @@ ax.set_title("Selected Pair Comparisons")
 # Violin plot without embedded box plot
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Set ``add_box=False`` for cleaner violin shapes.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.violinplot(data=tips, x="day", y="total_bill", add_box=False)
 ax.set_title("Violin Plot without Box")
 
@@ -66,11 +66,11 @@ ax.set_title("Violin Plot without Box")
 # Adjust violin body width with the ``width`` parameter.
 mp = cns.multipanel(max_width=330)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.violinplot(data=tips, x="day", y="total_bill", width=0.4)
 mp.get_axes("A").set_title("width=0.4 (narrow)")
 
-mp.panel("B", 80, 120, margin_right=0)
+mp.panel("B", 120, 80, margin_right=0)
 cns.violinplot(data=tips, x="day", y="total_bill", width=0.9)
 mp.get_axes("B").set_title("width=0.9 (wide)")
 
@@ -79,7 +79,7 @@ mp.get_axes("B").set_title("width=0.9 (wide)")
 # Grouped violin plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``hue`` for side-by-side violins within each category.
-cns.figure(120, 180)
+cns.figure(180, 120)
 ax = cns.violinplot(
     data=tips,
     x="day",
@@ -96,7 +96,7 @@ ax.set_title("Grouped Violin Plot")
 # ~~~~~~~~~~~~~~~~~
 # Use ``split=True`` to show two hue levels as halves of the same violin.
 # This is useful for direct comparison of two groups.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.violinplot(
     data=tips,
     x="day",
@@ -116,15 +116,15 @@ ax.set_title("Split Violin Plot")
 # Options: "box" (default), "quart", "point", "stick", None
 mp = cns.multipanel(max_width=450)
 
-mp.panel("A", 80, 110)
+mp.panel("A", 110, 80)
 cns.violinplot(data=tips, x="day", y="total_bill", inner="quart", add_box=False)
 mp.get_axes("A").set_title("inner='quart'")
 
-mp.panel("B", 80, 110)
+mp.panel("B", 110, 80)
 cns.violinplot(data=tips, x="day", y="total_bill", inner="point", add_box=False)
 mp.get_axes("B").set_title("inner='point'")
 
-mp.panel("C", 80, 110)
+mp.panel("C", 110, 80)
 cns.violinplot(data=tips, x="day", y="total_bill", inner="stick", add_box=False)
 mp.get_axes("C").set_title("inner='stick'")
 
@@ -133,7 +133,7 @@ mp.get_axes("C").set_title("inner='stick'")
 # Horizontal violin plot
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Swap x and y for horizontal orientation.
-cns.figure(100, 150)
+cns.figure(150, 100)
 ax = cns.violinplot(
     data=iris,
     x="sepal_width",
@@ -147,7 +147,7 @@ ax.set_title("Horizontal Violin Plot")
 # Violin plot with custom palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use built-in palettes or custom colors.
-cns.figure(150, 100, "Bold")
+cns.figure(100, 150, "Bold")
 ax = cns.violinplot(data=tips, x="day", y="total_bill")
 ax.set_title("Bold Palette")
 
@@ -179,7 +179,7 @@ ax.set_title("Setosa Measurements Distribution")
 # Violin plot with grouped comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Statistical testing across hue groups.
-cns.figure(120, 150)
+cns.figure(150, 120)
 ax = cns.violinplot(
     data=tips,
     x="day",

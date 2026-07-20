@@ -32,8 +32,8 @@ gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))
 
 
-def plot_palettes(cmap_list, height, width, title="", ncols=1):
-    cns.figure(height, width)
+def plot_palettes(cmap_list, width, height, title="", ncols=1):
+    cns.figure(width, height)
     fig = plt.gcf()
     nrows = (len(cmap_list) + ncols - 1) // ncols
     axes = fig.subplots(nrows=nrows, ncols=ncols, squeeze=False)
@@ -102,8 +102,8 @@ plot_palettes(
         "OrBu_custom",
         "YlGnBu_custom",
     ],
-    1020,
     1200,
+    1020,
     ncols=2,
 )
 
@@ -154,8 +154,8 @@ plot_palettes(
         "Science",
         "JAMA",
     ],
-    540,
     600,
+    540,
 )
 
 
@@ -172,8 +172,8 @@ plot_palettes(
         "WhYlOrRd_custom",
         "YlGnBu_custom",
     ],
-    300,
     600,
+    300,
 )
 
 
@@ -188,8 +188,8 @@ plot_palettes(
         "OrBu_custom",
         "BlueRed",
     ],
-    180,
     600,
+    180,
 )
 
 
@@ -197,7 +197,7 @@ plot_palettes(
 # Using palettes with figure()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Pass palette name as third argument to ``figure()``.
-cns.figure(150, 100, "Set1")
+cns.figure(100, 150, "Set1")
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Set1 Palette")
 
@@ -205,7 +205,7 @@ ax.set_title("Set1 Palette")
 # %%
 # Tableau palette
 # ~~~~~~~~~~~~~~~
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Tableau Palette")
 
@@ -213,7 +213,7 @@ ax.set_title("Tableau Palette")
 # %%
 # Bold palette
 # ~~~~~~~~~~~~
-cns.figure(150, 100, "Bold")
+cns.figure(100, 150, "Bold")
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Bold Palette")
 
@@ -222,7 +222,7 @@ ax.set_title("Bold Palette")
 # Using palettes() function
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get palette colors programmatically.
-cns.figure(150, 100, color_cycle="Ecotyper1")
+cns.figure(100, 150, color_cycle="Ecotyper1")
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Ecotyper1 Palette")
 
@@ -230,7 +230,7 @@ ax.set_title("Ecotyper1 Palette")
 # %%
 # Ecotyper2 palette
 # ~~~~~~~~~~~~~~~~~
-cns.figure(150, 100, color_cycle="Ecotyper2")
+cns.figure(100, 150, color_cycle="Ecotyper2")
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Ecotyper2 Palette")
 
@@ -238,7 +238,7 @@ ax.set_title("Ecotyper2 Palette")
 # %%
 # Ecotyper3 palette
 # ~~~~~~~~~~~~~~~~~
-cns.figure(150, 100, color_cycle="Ecotyper3")
+cns.figure(100, 150, color_cycle="Ecotyper3")
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Ecotyper3 Palette")
 
@@ -279,7 +279,7 @@ ax.set_title("Reversed Accent Palette")
 # ~~~~~~~~~~~~~~~~~
 # Define your own color sequence.
 custom_colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"]
-cns.figure(150, 100, color_cycle=custom_colors)
+cns.figure(100, 150, color_cycle=custom_colors)
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Custom Color List")
 
@@ -306,7 +306,7 @@ print(f"  CHOCOLATE: {cns.CHOCOLATE}")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Apply color constants to plots.
 custom_colors = [cns.RED, cns.BLUE, cns.GREEN, cns.ORANGE]
-cns.figure(150, 100, color_cycle=custom_colors)
+cns.figure(100, 150, color_cycle=custom_colors)
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Using Color Constants")
 
@@ -317,19 +317,19 @@ ax.set_title("Using Color Constants")
 # Use multipanel to compare different palettes.
 mp = cns.multipanel(max_width=330)
 
-mp.panel("A", 80, 120, color_cycle="Set1", margin_bottom=20)
+mp.panel("A", 120, 80, color_cycle="Set1", margin_bottom=20)
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("A").set_title("Set1")
 
-mp.panel("B", 80, 120, color_cycle="Tableau")
+mp.panel("B", 120, 80, color_cycle="Tableau")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("B").set_title("Tableau")
 
-mp.panel("C", 80, 120, color_cycle="Bold")
+mp.panel("C", 120, 80, color_cycle="Bold")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("C").set_title("Bold")
 
-mp.panel("D", 80, 120, color_cycle="Set2")
+mp.panel("D", 120, 80, color_cycle="Set2")
 cns.barplot(data=tips, x="day", y="total_bill")
 mp.get_axes("D").set_title("Set2")
 

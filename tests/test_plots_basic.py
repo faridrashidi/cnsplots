@@ -421,7 +421,7 @@ def test_line_scatter_reg_and_slope_plots(
 
 def test_placeholderplot_renders_centered_placeholder() -> None:
     with cns.settings.context(title_fontsize=11, title_fontweight="normal"):
-        cns.figure(120, 180)
+        cns.figure(180, 120)
         plt.plot([0, 1], [0, 1])
         ax = cns.placeholderplot("A description to be centered in the panel")
 

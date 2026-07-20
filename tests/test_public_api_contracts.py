@@ -449,7 +449,7 @@ def test_public_prerank_and_gseaplot_use_real_gseapy_backend() -> None:
     assert nes_by_term["GO_BOTTOM_PATHWAY"] < -1.5
     assert (result["FDR q-val"].astype(float) < 0.25).all()
 
-    cns.figure(160, 140)
+    cns.figure(140, 160)
     ax = cns.gseaplot(result, y="Clean_Term", top_term=2)
     offsets = np.asarray(ax.collections[0].get_offsets(), dtype=float)
     rendered_nes = {
@@ -511,12 +511,21 @@ def test_public_prerank_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
         )
 
 
+def test_public_figure_uses_width_first_order() -> None:
+    parameters = list(inspect.signature(cns.figure).parameters)
+    assert parameters[:2] == ["width", "height"]
+
+    cns.figure(96, 72)
+
+    assert tuple(plt.gcf().get_size_inches()) == pytest.approx((96 / 72, 72 / 72))
+
+
 def test_public_figure_and_save_alias_contract(output_dir: Path) -> None:
     png_path = output_dir / "nested" / "plot.png"
     pdf_path = output_dir / "nested" / "plot.pdf"
     svg_path = output_dir / "nested" / "plot.svg"
 
-    cns.figure(72, 96)
+    cns.figure(96, 72)
     plt.plot([0, 1], [0, 1])
     plt.title("Contract Export")
 
@@ -611,12 +620,15 @@ def test_public_multipanel_layout_contract(
     categorical_df: pd.DataFrame,
     numeric_df: pd.DataFrame,
 ) -> None:
+    parameters = list(inspect.signature(cns.multipanel.panel).parameters)
+    assert parameters[2:4] == ["width", "height"]
+
     mp = cns.multipanel(max_width=120, title="Overview", loc="left")
 
-    mp.panel("A", width=70, height=60)
+    mp.panel("A", 70, 60)
     ax1 = cns.boxplot(categorical_df, x="group", y="value")
 
-    mp.panel("B", width=70, height=60)
+    mp.panel("B", 70, 60)
     ax2 = cns.scatterplot(numeric_df, x="x", y="y")
 
     fig = plt.gcf()
@@ -627,6 +639,13 @@ def test_public_multipanel_layout_contract(
 
     ax1_bbox = ax1.get_window_extent(renderer=renderer)
     ax2_bbox = ax2.get_window_extent(renderer=renderer)
+    display_scale = fig.dpi / 72
+    assert (ax1_bbox.width, ax1_bbox.height) == pytest.approx(
+        (70 * display_scale, 60 * display_scale)
+    )
+    assert (ax2_bbox.width, ax2_bbox.height) == pytest.approx(
+        (70 * display_scale, 60 * display_scale)
+    )
     title = next(text for text in fig.findobj(Text) if text.get_text() == "Overview")
     title_bbox = title.get_window_extent(renderer=renderer)
 

@@ -34,7 +34,7 @@ flights = cns.datasets.load_dataset("flights")
 # Scatter plot with seaborn
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # cnsplots prepares the canvas while seaborn handles the plot.
-cns.figure(160, 220)
+cns.figure(220, 160)
 ax = plt.gca()
 sns.scatterplot(
     data=penguins,
@@ -54,7 +54,7 @@ ax.set_title("Seaborn with cns.figure")
 # Two seaborn plots on one cnsplots canvas
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Axes-level seaborn functions work naturally with matplotlib subplots.
-cns.figure(170, 320)
+cns.figure(320, 170)
 fig = plt.gcf()
 ax_left, ax_right = fig.subplots(1, 2)
 
@@ -97,7 +97,7 @@ monthly_passengers = (
 export_dir = Path(os.environ.get("CNSPLOTS_GALLERY_OUTPUT_DIR", "."))
 export_dir.mkdir(parents=True, exist_ok=True)
 
-cns.figure(150, 200)
+cns.figure(200, 150)
 ax = plt.gca()
 sns.lineplot(
     data=monthly_passengers,

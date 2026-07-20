@@ -65,12 +65,12 @@ cns.take_legend_out()
 # Compare different variables.
 mp = cns.multipanel(max_width=400)
 
-mp.panel("A", 80, 140)
+mp.panel("A", 140, 80)
 cns.distplot(data=iris, x="sepal_length", hue="species")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Sepal Length")
 
-mp.panel("B", 80, 140)
+mp.panel("B", 140, 80)
 cns.distplot(data=iris, x="petal_length", hue="species")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Petal Length")
@@ -82,12 +82,12 @@ mp.get_axes("B").set_title("Petal Length")
 # Showcase color palette options.
 mp = cns.multipanel(max_width=400)
 
-mp.panel("A", 80, 140, color_cycle="Set2")
+mp.panel("A", 140, 80, color_cycle="Set2")
 cns.distplot(data=tips, x="total_bill", hue="sex")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Set2 Palette")
 
-mp.panel("B", 80, 140, color_cycle="Bold")
+mp.panel("B", 140, 80, color_cycle="Bold")
 cns.distplot(data=tips, x="total_bill", hue="sex")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Bold Palette")
@@ -120,7 +120,7 @@ synthetic = pd.DataFrame(
     }
 )
 
-cns.figure(180, 100)
+cns.figure(100, 180)
 ax = cns.distplot(data=synthetic, x="value", hue="group")
 ax.set_title("Comparing Two Distributions")
 cns.take_legend_out()

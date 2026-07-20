@@ -876,8 +876,8 @@ class multipanel:
     def panel(
         self,
         label: str | None = None,
-        height: int | float | None = None,
         width: int | float | None = None,
+        height: int | float | None = None,
         pad_left: int | float | None = None,
         pad_top: int | float | None = None,
         *,
@@ -897,10 +897,10 @@ class multipanel:
         label : str or None, optional
             Panel label (e.g., "A", "B", "C"). If None, uses automatic
             sequential labeling (A, B, C, ...).
-        height : int, optional
-            Axes height in pixels. If None, uses cns.settings.panel_height.
         width : int, optional
             Axes width in pixels. If None, uses cns.settings.panel_width.
+        height : int, optional
+            Axes height in pixels. If None, uses cns.settings.panel_height.
         pad_left : int, optional
             Extra horizontal gap in pixels between the panel label and the
             leftmost visible left-side axis decoration. The layout reserves the
@@ -986,10 +986,10 @@ class multipanel:
             color_cycle = settings.palette_qual
         if color_map is None:
             color_map = settings.palette_seq
-        if height is None:
-            height = settings.panel_height
         if width is None:
             width = settings.panel_width
+        if height is None:
+            height = settings.panel_height
         if pad_left is None:
             pad_left = settings.panel_pad_left
         if pad_top is None:

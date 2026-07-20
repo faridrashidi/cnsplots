@@ -134,7 +134,7 @@ cns.volcanoplot(
 # Wide volcano plot
 # ~~~~~~~~~~~~~~~~~
 # Emphasize fold change axis.
-cns.figure(280, 180)
+cns.figure(180, 280)
 cns.volcanoplot(
     de,
     x="log2FoldChange",
@@ -148,7 +148,7 @@ cns.volcanoplot(
 # Tall volcano plot
 # ~~~~~~~~~~~~~~~~~
 # Emphasize significance axis.
-cns.figure(180, 250)
+cns.figure(250, 180)
 cns.volcanoplot(
     de,
     x="log2FoldChange",

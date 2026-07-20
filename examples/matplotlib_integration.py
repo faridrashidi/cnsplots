@@ -35,7 +35,7 @@ observed = signal_a + rng.normal(0, 0.12, size=time.size)
 # Line plot with confidence band
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # cnsplots handles the figure setup while matplotlib draws everything.
-cns.figure(160, 220)
+cns.figure(220, 160)
 ax = plt.gca()
 ax.plot(time, signal_a, color="#1f77b4", linewidth=2, label="Condition A")
 ax.plot(time, signal_b, color="#d62728", linewidth=2, label="Condition B")
@@ -57,7 +57,7 @@ ax.legend(frameon=False, loc="upper right")
 # Two-panel matplotlib layout
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The cnsplots canvas also works with matplotlib's subplot helpers.
-cns.figure(160, 300)
+cns.figure(300, 160)
 fig = plt.gcf()
 ax_left, ax_right = fig.subplots(1, 2)
 
@@ -93,7 +93,7 @@ fig.tight_layout()
 export_dir = Path(os.environ.get("CNSPLOTS_GALLERY_OUTPUT_DIR", "."))
 export_dir.mkdir(parents=True, exist_ok=True)
 
-cns.figure(140, 180)
+cns.figure(180, 140)
 ax = plt.gca()
 ax.plot(time, signal_a, color="#1f77b4", linewidth=2, label="Condition A")
 ax.plot(time, observed, color="#7f7f7f", linewidth=1.2, alpha=0.85, label="Observed")

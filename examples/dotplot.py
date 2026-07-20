@@ -29,7 +29,7 @@ tips_agg = tips.groupby(["day", "sex"]).agg({"total_bill": ["mean", "count"]})
 tips_agg.columns = ["mean_bill", "count"]
 tips_agg = tips_agg.reset_index()
 
-cns.figure(80, 50)
+cns.figure(50, 80)
 dp = cns.dotplot(
     tips_agg,
     x="sex",
@@ -50,7 +50,7 @@ tips_minmax = tips.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
 
-cns.figure(80, 50)
+cns.figure(50, 80)
 cns.dotplot(
     tips_minmax,
     x="sex",
@@ -79,7 +79,7 @@ for gene in genes:
         )
 gene_df = pd.DataFrame(gene_expr)
 
-cns.figure(120, 100)
+cns.figure(100, 120)
 dp = cns.dotplot(
     gene_df,
     x="gene",
@@ -117,7 +117,7 @@ for gene in genes:
         )
 gene_df = pd.DataFrame(gene_expr)
 
-cns.figure(150, 120)
+cns.figure(120, 150)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -134,7 +134,7 @@ cns.dotplot(
 # Dotplot with custom colormap
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use a different colormap for color encoding.
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -153,7 +153,7 @@ cns.dotplot(
 # Dotplot with size encoding only
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Display dots with size encoding.
-cns.figure(150, 100)
+cns.figure(100, 150)
 cns.dotplot(
     gene_df,
     x="gene",
@@ -180,7 +180,7 @@ cox_summary = pd.DataFrame(
     }
 )
 
-cns.figure(80, 100)
+cns.figure(100, 80)
 dp = cns.dotplot(
     cox_summary,
     x="covariate",
@@ -253,7 +253,7 @@ for tp in timepoints:
         )
 time_df = pd.DataFrame(time_data)
 
-cns.figure(100, 80)
+cns.figure(80, 100)
 dp = cns.dotplot(
     time_df,
     x="timepoint",

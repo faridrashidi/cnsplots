@@ -42,7 +42,7 @@ ax.set_title("Total Bill by Day (plasma cmap)")
 # Ridge plot for iris data
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare species distributions.
-cns.figure(150, 120)
+cns.figure(120, 150)
 ax = cns.ridgeplot(data=iris, x="sepal_length", y="species")
 ax.set_title("Sepal Length by Species")
 
@@ -51,7 +51,7 @@ ax.set_title("Sepal Length by Species")
 # Ridge plot with different measurements
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare petal measurements.
-cns.figure(150, 120)
+cns.figure(120, 150)
 ax = cns.ridgeplot(data=iris, x="petal_length", y="species")
 ax.set_title("Petal Length by Species")
 
@@ -62,11 +62,11 @@ ax.set_title("Petal Length by Species")
 # Side-by-side comparison.
 mp = cns.multipanel(max_width=400)
 
-mp.panel("A", 100, 150, pad_left=100, margin_right=20)
+mp.panel("A", 150, 100, pad_left=100, margin_right=20)
 cns.ridgeplot(data=iris, x="sepal_length", y="species")
 mp.get_axes("A").set_title("Sepal Length")
 
-mp.panel("B", 100, 150, pad_left=100, margin_right=0)
+mp.panel("B", 150, 100, pad_left=100, margin_right=0)
 cns.ridgeplot(data=iris, x="sepal_width", y="species")
 mp.get_axes("B").set_title("Sepal Width")
 
@@ -75,7 +75,7 @@ mp.get_axes("B").set_title("Sepal Width")
 # Ridge plot with tips by time
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare lunch and dinner distributions.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.ridgeplot(data=tips, x="tip", y="time")
 ax.set_title("Tip by Time")
 
@@ -94,7 +94,7 @@ for month in ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]:
 
 temporal_df = pd.DataFrame(temporal_data)
 
-cns.figure(150, 180)
+cns.figure(180, 150)
 ax = cns.ridgeplot(data=temporal_df, x="value", y="month")
 ax.set_title("Value Distribution Over Months")
 

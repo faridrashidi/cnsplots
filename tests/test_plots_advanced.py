@@ -604,7 +604,7 @@ def test_heatmap_and_dotplot(
 
 def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:
     mp = cns.multipanel(max_width=180)
-    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    host_ax = mp.panel("A", width=80, height=80, pad_left=5, pad_top=5)
     host_box = host_ax.get_position().frozen()
 
     dp = cns.dotplot(
@@ -643,7 +643,7 @@ def test_dotplot_respects_multipanel_bounds(dotplot_df: pd.DataFrame) -> None:
 
 def test_dotplot_tracks_multipanel_relayout(dotplot_df: pd.DataFrame) -> None:
     mp = cns.multipanel(max_width=220)
-    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    host_ax = mp.panel("A", width=80, height=80, pad_left=5, pad_top=5)
     initial_host_box = host_ax.get_position().frozen()
 
     dp = cns.dotplot(
@@ -662,7 +662,7 @@ def test_dotplot_tracks_multipanel_relayout(dotplot_df: pd.DataFrame) -> None:
     assert dp.ax_heatmap is not None
 
     mp.newline()
-    mp.panel("B", height=200, width=100)
+    mp.panel("B", width=100, height=200)
 
     resized_host_box = host_ax.get_position().frozen()
     heatmap_box = dp.ax_heatmap.get_position().frozen()
@@ -673,7 +673,7 @@ def test_dotplot_tracks_multipanel_relayout(dotplot_df: pd.DataFrame) -> None:
 
 def test_heatmapplot_tracks_multipanel_relayout(heatmap_adata: ad.AnnData) -> None:
     mp = cns.multipanel(max_width=220)
-    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    host_ax = mp.panel("A", width=80, height=80, pad_left=5, pad_top=5)
     initial_host_box = host_ax.get_position().frozen()
 
     cmp = cns.heatmapplot(
@@ -685,7 +685,7 @@ def test_heatmapplot_tracks_multipanel_relayout(heatmap_adata: ad.AnnData) -> No
     assert cmp.ax_heatmap is not None
 
     mp.newline()
-    mp.panel("B", height=200, width=100)
+    mp.panel("B", width=100, height=200)
 
     resized_host_box = host_ax.get_position().frozen()
     heatmap_box = cmp.ax_heatmap.get_position().frozen()
@@ -698,11 +698,11 @@ def test_histplot_colorbars_align_in_multipanel() -> None:
     data = _bivariate_hist_df()
     mp = cns.multipanel(max_width=400)
 
-    ax_a = mp.panel("A", 120, 140)
+    ax_a = mp.panel("A", 140, 120)
     cns.histplot(data=data, x="x", y="y", cbar=True, cmap="hot")
     ax_a.set_title("hot colormap")
 
-    ax_b = mp.panel("B", 120, 140)
+    ax_b = mp.panel("B", 140, 120)
     cns.histplot(data=data, x="x", y="y", cbar=True, cmap="BuRd_custom")
     ax_b.set_title("BuRd_custom colormap")
 
@@ -725,7 +725,7 @@ def test_histplot_colorbars_align_in_multipanel() -> None:
 def test_histplot_colorbar_tracks_multipanel_relayout() -> None:
     data = _bivariate_hist_df()
     mp = cns.multipanel(max_width=220)
-    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    host_ax = mp.panel("A", width=80, height=80, pad_left=5, pad_top=5)
     cns.histplot(data=data, x="x", y="y", cbar=True, cmap="hot")
 
     colorbar = host_ax.collections[0].colorbar
@@ -739,7 +739,7 @@ def test_histplot_colorbar_tracks_multipanel_relayout() -> None:
     initial_cbar_box = colorbar.ax.get_position().frozen()
 
     mp.newline()
-    mp.panel("B", height=200, width=100)
+    mp.panel("B", width=100, height=200)
     fig.canvas.draw()
 
     resized_host_box = host_ax.get_position().frozen()
@@ -755,7 +755,7 @@ def test_histplot_colorbar_tracks_multipanel_relayout() -> None:
 def test_histplot_with_explicit_cbar_ax_leaves_it_untouched() -> None:
     data = _bivariate_hist_df()
     mp = cns.multipanel(max_width=220)
-    host_ax = mp.panel("A", height=80, width=80, pad_left=5, pad_top=5)
+    host_ax = mp.panel("A", width=80, height=80, pad_left=5, pad_top=5)
     fig = mp.fig
     assert fig is not None
     cbar_ax = fig.add_axes((0.8, 0.2, 0.05, 0.5))
@@ -772,7 +772,7 @@ def test_histplot_with_explicit_cbar_ax_leaves_it_untouched() -> None:
     )
 
     mp.newline()
-    mp.panel("B", height=200, width=100)
+    mp.panel("B", width=100, height=200)
     fig.canvas.draw()
 
     assert host_ax.collections[0].colorbar is not None
@@ -858,7 +858,7 @@ def test_scanpy_umap_colorbar_tracks_multipanel_relayout(
     sc, blobs = scanpy_blobs
     mp = cns.multipanel(max_width=220)
     cns.setup_scanpy()
-    host_ax = mp.panel("A", height=90, width=90, pad_left=5, pad_top=5)
+    host_ax = mp.panel("A", width=90, height=90, pad_left=5, pad_top=5)
     sc.pl.umap(blobs, color="mitf", size=8, ax=host_ax, show=False, cmap="gnuplot")
 
     colorbar = _linked_colorbar(host_ax)
@@ -876,7 +876,7 @@ def test_scanpy_umap_colorbar_tracks_multipanel_relayout(
     assert cbar_box.x0 >= host_box.x1 - 1e-9
 
     mp.newline()
-    mp.panel("B", height=160, width=100)
+    mp.panel("B", width=100, height=160)
     fig.canvas.draw()
 
     assert _relative_axes_bounds(host_ax, colorbar.ax) == pytest.approx(
@@ -890,7 +890,7 @@ def test_scanpy_categorical_umap_does_not_capture_detached_axes(
     sc, blobs = scanpy_blobs
     mp = cns.multipanel(max_width=220)
     cns.setup_scanpy()
-    host_ax = mp.panel("A", height=90, width=90)
+    host_ax = mp.panel("A", width=90, height=90)
     sc.pl.umap(blobs, color="blobs", size=8, ax=host_ax, show=False)
 
     fig = mp.fig
@@ -903,7 +903,7 @@ def test_scanpy_categorical_umap_does_not_capture_detached_axes(
 
 def test_multipanel_linked_colorbar_tracks_relayout() -> None:
     mp = cns.multipanel(max_width=220)
-    host_ax = mp.panel("A", height=90, width=90)
+    host_ax = mp.panel("A", width=90, height=90)
     fig = mp.fig
     assert fig is not None
 
@@ -911,7 +911,7 @@ def test_multipanel_linked_colorbar_tracks_relayout() -> None:
     colorbar = fig.colorbar(scatter, ax=host_ax)
 
     mp.newline()
-    mp.panel("B", height=160, width=100)
+    mp.panel("B", width=100, height=160)
     fig.canvas.draw()
     rendered_relative_box = _relative_axes_bounds(host_ax, colorbar.ax)
 
@@ -922,7 +922,7 @@ def test_multipanel_linked_colorbar_tracks_relayout() -> None:
     assert cbar_box.x0 >= host_box.x1 - 1e-9
 
     mp.newline()
-    mp.panel("C", height=120, width=80)
+    mp.panel("C", width=80, height=120)
     fig.canvas.draw()
 
     assert _relative_axes_bounds(host_ax, colorbar.ax) == pytest.approx(
@@ -933,7 +933,7 @@ def test_multipanel_linked_colorbar_tracks_relayout() -> None:
 
 def test_multipanel_linked_colorbar_ignores_explicit_cbar_axes() -> None:
     mp = cns.multipanel(max_width=220)
-    host_ax = mp.panel("A", height=90, width=90)
+    host_ax = mp.panel("A", width=90, height=90)
     fig = mp.fig
     assert fig is not None
 
@@ -943,7 +943,7 @@ def test_multipanel_linked_colorbar_ignores_explicit_cbar_axes() -> None:
     initial_cbar_box = colorbar.ax.get_position().frozen()
 
     mp.newline()
-    mp.panel("B", height=160, width=100)
+    mp.panel("B", width=100, height=160)
     fig.canvas.draw()
 
     assert colorbar.ax.get_position().bounds == pytest.approx(initial_cbar_box.bounds)
@@ -977,7 +977,7 @@ def test_gseaplot_colorbar_aligns_with_host_axes_in_multipanel(
     )
 
     mp = cns.multipanel(max_width=240)
-    host_ax = mp.panel("A", height=90, width=100)
+    host_ax = mp.panel("A", width=100, height=90)
     plt.sca(host_ax)
     cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=2)
 
@@ -998,7 +998,7 @@ def test_gseaplot_colorbar_aligns_with_host_axes_in_multipanel(
     assert cbar_box.x0 - host_box.x1 < host_box.width * 0.2
 
     mp.newline()
-    mp.panel("B", height=120, width=100)
+    mp.panel("B", width=100, height=120)
     fig.canvas.draw()
 
     assert _relative_axes_bounds(host_ax, colorbar.ax) == pytest.approx(
@@ -1048,7 +1048,7 @@ def test_genomics_plots(
     with pytest.raises(TypeError, match="Parameter 'n_show' must be an integer"):
         cns.volcanoplot(volcano_df, n_show=True)
 
-    cns.figure(160, 140)
+    cns.figure(140, 160)
     ax5 = cns.gseaplot(gsea_plot_df, y="Clean_Term", color="NES", top_term=3)
     assert ax5.get_xlabel() == "Normalized Enrichment Score (NES)"
     assert [tick.get_text() for tick in ax5.get_yticklabels()] == [

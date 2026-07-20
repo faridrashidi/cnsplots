@@ -88,7 +88,7 @@ mp = cns.multipanel(
 )
 
 # Panel A: boxplot
-mp.panel("A", 100, 45, color_cycle=[cns.VIOLET])
+mp.panel("A", 45, 100, color_cycle=[cns.VIOLET])
 ax = cns.boxplot(
     data=tips_df, x="day", y="total_bill", pairs=[("Thur", "Sun"), ("Thur", "Fri")]
 )
@@ -99,7 +99,7 @@ ax.set_xticklabels(
 )
 
 # Panel B: violinplot
-mp.panel("B", 100, 45, color_cycle=[cns.CHOCOLATE])
+mp.panel("B", 45, 100, color_cycle=[cns.CHOCOLATE])
 ax = cns.violinplot(data=iris_df, x="species", y="sepal_width", pairs="all")
 ax.set_title("Violinplot")
 ax.set_xlabel("")
@@ -108,7 +108,7 @@ ax.set_xticklabels(
 )
 
 # Panel C: stripplot
-mp.panel("C", 100, 60, color_cycle="BlueRed")
+mp.panel("C", 60, 100, color_cycle="BlueRed")
 ax = cns.stripplot(data=tips_df, x="day", y="tip", hue="sex")
 legend = ax.get_legend()
 ax.legend(
@@ -123,13 +123,13 @@ ax.legend(
 ax.set_title("Stripplot")
 
 # Panel D: stackplot
-mp.panel("D", 100, 50, color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"))
+mp.panel("D", 50, 100, color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"))
 ax = cns.stackplot(data=tips_df, x="day", stack="sex", pairs=[("Thur", "Sun")])
 ax.set_title("Stackplot")
 ax.get_legend().set_title(None)
 
 # Panel E: barplot
-mp.panel("E", 40, 80, margin_left=35, margin_right=0, color_cycle=[cns.VIOLET])
+mp.panel("E", 80, 40, margin_left=35, margin_right=0, color_cycle=[cns.VIOLET])
 ax = cns.barplot(
     data=tips_df,
     y="day",
@@ -208,17 +208,17 @@ for text in ax.get_legend().get_texts():
 ax.set_title("Rocplot")
 
 # Panel N: sankeyplot
-mp.panel("N", 100, 30, pad_left=-30, color_cycle="Ecotyper4")
+mp.panel("N", 30, 100, pad_left=-30, color_cycle="Ecotyper4")
 ax = cns.sankeyplot(tips_df, x="day", y="sex", label_rotation=90)
 ax.set_title("Sankeyplot")
 
 # Panel O: ridgeplot
-mp.panel("O", 35, 80, pad_left=110, margin_right=0)
+mp.panel("O", 80, 35, pad_left=110, margin_right=0)
 ax = cns.ridgeplot(data=iris_df, x="petal_length", y="species")
 ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
-mp.panel("P", 65, 80, below="O", margin_top=10, pad_top=-5, margin_right=0)
+mp.panel("P", 80, 65, below="O", margin_top=10, pad_top=-5, margin_right=0)
 ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label", pair="pair")
 ax.set_title("Slopeplot")
 
@@ -254,7 +254,7 @@ ax.axvline(
 cns.take_legend_out()
 
 # Panel R: heatmapplot
-mp.panel("R", 90, 190, margin_top=-10, margin_right=0)
+mp.panel("R", 190, 90, margin_top=-10, margin_right=0)
 cmp = cns.heatmapplot(
     blobs,
     label="Z-score",
@@ -296,19 +296,19 @@ mp = cns.multipanel(
 detached_panel_layouts = []
 
 # Panel A: load pathology image
-ax = mp.panel("A", 237, 149, pad_left=-70)
+ax = mp.panel("A", 149, 237, pad_left=-70)
 ax.imshow(_read_showcase_image("image1.webp"))
 ax.set_title("Pathology Image")
 ax.set_axis_off()
 
 # Panel B: load immunofluorescence image
-ax = mp.panel("B", 102, 116, pad_left=-50)
+ax = mp.panel("B", 116, 102, pad_left=-50)
 ax.imshow(_read_showcase_image("image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
 # Panel C: dotplot
-host_c = mp.panel("C", 90, 80, pad_top=20, pad_left=40, margin_right=20)
+host_c = mp.panel("C", 80, 90, pad_top=20, pad_left=40, margin_right=20)
 tips_minmax = tips_df.groupby(["day", "sex"]).agg({"total_bill": ["min", "size"]})
 tips_minmax.columns = ["min", "size"]
 tips_minmax = tips_minmax.reset_index()
@@ -364,7 +364,7 @@ ax.set_ylabel("Incidence")
 ax.set_title("Cumulative Incidence")
 
 # Panel E: load western blot image
-ax = mp.panel("E", 102, 116, below="B", pad_left=-50)
+ax = mp.panel("E", 116, 102, below="B", pad_left=-50)
 ax.imshow(_read_showcase_image("image4.webp"))
 ax.set_title("Western Blot")
 ax.set_axis_off()
@@ -392,20 +392,20 @@ ax.set_title("Qqplot")
 mp.newline()
 
 # Panel H: h&e histology image
-ax = mp.panel("H", 160, 319, pad_left=-60)
+ax = mp.panel("H", 319, 160, pad_left=-60)
 ax.imshow(_read_showcase_image("image3.webp"))
 ax.set_title("H&E Histology")
 ax.set_axis_off()
 
 # Panel I: placeholder plot
-ax = mp.panel("I", 155, 175, margin_right=0)
+ax = mp.panel("I", 175, 155, margin_right=0)
 cns.placeholderplot("A placeholder plot (155⨯175)\nYou can use to fill it up later.")
 ax.set_title("Placeholder")
 
 mp.newline()
 
 # Panel J: lollipopplot
-ax = mp.panel("J", 80, 40, color_cycle="NEJM", margin_right=15, margin_bottom=20)
+ax = mp.panel("J", 40, 80, color_cycle="NEJM", margin_right=15, margin_bottom=20)
 ax = cns.lollipopplot(data=tips_df, x="day", y="total_bill", pairs="all")
 ax.set_title("Lollipopplot")
 ax.set_xticklabels(
@@ -448,7 +448,7 @@ forest_ax.set_title("Forestplot")
 detached_panel_layouts.append((host_l, [forest_ax], 0.03, 0.04))
 
 # Panel M: upsetplot
-host_m = mp.panel("M", 120, 200, margin_right=0, pad_left=-100, pad_top=10)
+host_m = mp.panel("M", 200, 120, margin_right=0, pad_left=-100, pad_top=10)
 upset_axes = cns.upsetplot(
     upset_sets,
     fig=mp.fig,

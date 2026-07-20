@@ -25,7 +25,7 @@ tips = cns.datasets.load_dataset("tips")
 # Basic boxplot
 # ~~~~~~~~~~~~~
 # Simple boxplot showing distribution of total bills across days.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
@@ -40,7 +40,7 @@ ax.set_title("Basic Boxplot")
 # Use one palette so both boxes and points share the same group colors.
 day_order = ["Thur", "Fri", "Sat", "Sun"]
 overlay_palette = dict(zip(day_order, sns.color_palette("NEJM", len(day_order))))
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.boxplot(
     data=tips,
     x="day",
@@ -74,7 +74,7 @@ ax.set_title("Boxplot with Stripplot Overlay")
 # Boxplot with rotated and colored labels
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Customize x-axis tick labels with rotation and conditional coloring.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
@@ -94,7 +94,7 @@ for index in range(tips["day"].nunique()):
 # Use ``pairs="all"`` to perform Mann-Whitney U tests between all groups.
 # The ``addcount=True`` parameter adds sample sizes below each box.
 with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
-    cns.figure(150, 100)
+    cns.figure(100, 150)
     ax = cns.boxplot(
         data=iris,
         x="species",
@@ -110,7 +110,7 @@ ax.set_title("All Pairwise Comparisons\nwith Sample Counts")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Test only specific pairs by providing a list of tuples.
 with cns.settings.context(pvalue_format="full", pvalue_fontsize=8):
-    cns.figure(150, 100)
+    cns.figure(100, 150)
     ax = cns.boxplot(
         data=iris,
         x="species",
@@ -126,7 +126,7 @@ ax.set_title("Selected Pair Comparisons")
 # Use ``hue`` parameter to create side-by-side boxes for subgroups.
 # Statistical testing works across hue groups as well.
 with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
-    cns.figure(180, 100)
+    cns.figure(100, 180)
     ax = cns.boxplot(
         data=tips,
         x="day",
@@ -144,7 +144,7 @@ ax.set_title("Grouped Boxplot with\nCross-Group Comparison")
 # Create horizontal boxplots by swapping x and y.
 # Use ``order`` to specify the display order of categories.
 with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
-    cns.figure(100, 150)
+    cns.figure(150, 100)
     ax = cns.boxplot(
         data=iris,
         x="sepal_width",
@@ -159,7 +159,7 @@ ax.set_title("Horizontal Boxplot")
 # Boxplot with outliers displayed
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``showoutliers=True`` to display outlier points.
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.boxplot(
     data=tips,
     x="day",
@@ -176,11 +176,11 @@ ax.set_title("Boxplot with Outliers")
 # Default is 1.5 (1.5×IQR). Use larger values for fewer outliers.
 mp = cns.multipanel(max_width=310)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.boxplot(data=tips, x="day", y="total_bill", whis=1.0, showoutliers=True)
 mp.get_axes("A").set_title("whis=1.0 (more outliers)")
 
-mp.panel("B", 80, 120, margin_right=0)
+mp.panel("B", 120, 80, margin_right=0)
 cns.boxplot(data=tips, x="day", y="total_bill", whis=3.0, showoutliers=True)
 mp.get_axes("B").set_title("whis=3.0 (fewer outliers)")
 
@@ -189,7 +189,7 @@ mp.get_axes("B").set_title("whis=3.0 (fewer outliers)")
 # Boxplot with custom palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``palette`` parameter for custom colors.
-cns.figure(150, 100, "Tableau")
+cns.figure(100, 150, "Tableau")
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("Tableau Palette")
 
@@ -199,7 +199,7 @@ ax.set_title("Tableau Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Pass a list of colors to ``palette``.
 custom_colors = [cns.RED, cns.BLUE, cns.GREEN, cns.ORANGE]
-cns.figure(150, 100)
+cns.figure(100, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill", palette=custom_colors)
 ax.set_title("Custom Color List")
 
@@ -215,7 +215,7 @@ iris_melted = iris.melt(
     value_name="value",
 )
 
-cns.figure(120, 200)
+cns.figure(200, 120)
 ax = cns.boxplot(
     data=iris_melted,
     x="measurement",
@@ -235,7 +235,7 @@ plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # When using hue, you can compare all subgroups within a category.
 with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
-    cns.figure(120, 180)
+    cns.figure(180, 120)
     ax = cns.boxplot(
         data=tips,
         x="day",

@@ -35,15 +35,15 @@ ax.set_title("Basic Histogram")
 # Control the number of bins.
 mp = cns.multipanel(max_width=420)
 
-mp.panel("A", 80, 100)
+mp.panel("A", 100, 80)
 cns.histplot(data=tips, x="total_bill", bins=10)
 mp.get_axes("A").set_title("10 bins")
 
-mp.panel("B", 80, 100)
+mp.panel("B", 100, 80)
 cns.histplot(data=tips, x="total_bill", bins=20)
 mp.get_axes("B").set_title("20 bins")
 
-mp.panel("C", 80, 100)
+mp.panel("C", 100, 80)
 cns.histplot(data=tips, x="total_bill", bins=30)
 mp.get_axes("C").set_title("30 bins")
 
@@ -141,7 +141,7 @@ ax.set_ylabel("Probability")
 # 2D histogram (heatmap)
 # ~~~~~~~~~~~~~~~~~~~~~~
 # Visualize joint distribution of two variables.
-cns.figure(100, 150)
+cns.figure(150, 100)
 ax = cns.histplot(
     data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="gnuplot"
 )
@@ -152,7 +152,7 @@ ax.set_title("2D Histogram (gnuplot)")
 # 2D histogram with parula colormap
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use cnsplots parula colormap.
-cns.figure(100, 150)
+cns.figure(150, 100)
 ax = cns.histplot(
     data=iris, x="sepal_length", y="sepal_width", cbar=True, cmap="parula"
 )
@@ -202,7 +202,7 @@ cns.take_legend_out()
 # Horizontal histogram
 # ~~~~~~~~~~~~~~~~~~~~
 # Swap x and y for horizontal orientation.
-cns.figure(100, 150)
+cns.figure(150, 100)
 ax = cns.histplot(data=tips, y="total_bill", bins=15)
 ax.set_title("Horizontal Histogram")
 
@@ -226,10 +226,10 @@ log_data = pd.DataFrame({"value": np.random.lognormal(3, 1, 1000)})
 
 mp = cns.multipanel(max_width=320)
 
-mp.panel("A", 80, 120)
+mp.panel("A", 120, 80)
 cns.histplot(data=log_data, x="value", bins=30)
 mp.get_axes("A").set_title("Linear Scale")
 
-mp.panel("B", 80, 120, margin_right=0)
+mp.panel("B", 120, 80, margin_right=0)
 cns.histplot(data=log_data, x="value", bins=30, log_scale=True)
 mp.get_axes("B").set_title("Log Scale")

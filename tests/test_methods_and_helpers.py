@@ -180,7 +180,7 @@ def test_sankey_helpers(sankey_df: pd.DataFrame) -> None:
 
 
 def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
-    cns.figure(150, 120)
+    cns.figure(120, 150)
     _phylo.phyloplot(phylo_adata)
     assert len(plt.gcf().axes) == 5
 
