@@ -124,7 +124,7 @@ ax.set_title("Stripplot")
 
 # Panel D: stackplot
 mp.panel("D", 100, 50, color_cycle=cns.get_hexcolors_from_apalette([2, 4], "Bold"))
-ax = cns.stackplot(data=tips_df, x="day", y="sex", pairs=[("Thur", "Sun")])
+ax = cns.stackplot(data=tips_df, x="day", stack="sex", pairs=[("Thur", "Sun")])
 ax.set_title("Stackplot")
 ax.get_legend().set_title(None)
 

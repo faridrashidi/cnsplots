@@ -27,7 +27,7 @@ tips = cns.datasets.load_dataset("tips")
 # Use ``addcount=True`` to display total counts in the tick labels.
 cns.figure(120, 100)
 ax = cns.stackplot(
-    data=tips, x="sex", y="day", width=0.4, normalize=True, addcount=True
+    data=tips, x="sex", stack="day", width=0.4, normalize=True, addcount=True
 )
 ax.set_title("Basic Stacked Plot")
 
@@ -38,7 +38,11 @@ ax.set_title("Basic Stacked Plot")
 # Set ``normalize=False`` to show actual counts instead of proportions.
 cns.figure(120, 100)
 ax = cns.stackplot(
-    data=tips, x="day", y="sex", stack_order=["Female", "Male"], normalize=False
+    data=tips,
+    x="day",
+    stack="sex",
+    stack_order=["Female", "Male"],
+    normalize=False,
 )
 ax.set_title("Stacked Bar with Counts")
 
@@ -52,7 +56,7 @@ cns.figure(120, 100)
 ax = cns.stackplot(
     data=tips,
     x="day",
-    y="sex",
+    stack="sex",
     normalize=True,
     pairs=[("Thur", "Fri"), ("Fri", "Sat")],
 )
@@ -67,7 +71,7 @@ cns.figure(120, 100)
 ax = cns.stackplot(
     data=tips,
     x="sex",
-    y="day",
+    stack="day",
     normalize=True,
     stack_order=["Sun", "Sat", "Fri", "Thur"],
     pairs=[("Male", "Female")],
@@ -80,20 +84,19 @@ ax.set_title("Custom Stack Order")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``pairs="all"`` to test all possible pairs.
 cns.figure(150, 100, "Tableau")
-ax = cns.stackplot(data=tips, x="day", y="sex", normalize=True, pairs="all")
+ax = cns.stackplot(data=tips, x="day", stack="sex", normalize=True, pairs="all")
 ax.set_title("All Pairwise Comparisons")
 
 
 # %%
 # Horizontal stacked bar plot
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Set ``horizontal=True`` for horizontal orientation.
+# Pass the bar variable to ``y`` for horizontal orientation.
 cns.figure(100, 120)
 ax = cns.stackplot(
     data=tips,
-    x="sex",
     y="day",
-    horizontal=True,
+    stack="sex",
     normalize=True,
     pairs=[("Thur", "Fri"), ("Fri", "Sat")],
     bar_order=["Fri", "Sat", "Sun", "Thur"],
@@ -109,7 +112,7 @@ cns.figure(120, 100)
 ax = cns.stackplot(
     data=tips,
     x="day",
-    y="sex",
+    stack="sex",
     normalize=True,
     bar_order=["Sun", "Sat", "Fri", "Thur"],
 )
@@ -123,11 +126,11 @@ ax.set_title("Custom Bar Order")
 mp = cns.multipanel(max_width=250)
 
 mp.panel("A", 80, 100)
-cns.stackplot(data=tips, x="day", y="sex", normalize=True, width=0.3)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=True, width=0.3)
 mp.get_axes("A").set_title("width=0.3 (narrow)")
 
 mp.panel("B", 80, 100, margin_right=0)
-cns.stackplot(data=tips, x="day", y="sex", normalize=True, width=0.8)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=True, width=0.8)
 mp.get_axes("B").set_title("width=0.8 (wide)")
 
 
@@ -136,7 +139,7 @@ mp.get_axes("B").set_title("width=0.8 (wide)")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use different color palettes for visual variety.
 cns.figure(120, 100, "Set2")
-ax = cns.stackplot(data=tips, x="day", y="sex", normalize=True)
+ax = cns.stackplot(data=tips, x="day", stack="sex", normalize=True)
 ax.set_title("Set2 Palette")
 
 
@@ -147,20 +150,20 @@ ax.set_title("Set2 Palette")
 mp = cns.multipanel(max_width=250)
 
 mp.panel("A", 80, 100, color_cycle="Bold")
-cns.stackplot(data=tips, x="day", y="sex", normalize=True)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=True)
 mp.get_axes("A").set_title("Bold")
 
 mp.panel("B", 80, 100, color_cycle="BlueRed", margin_right=0)
-cns.stackplot(data=tips, x="day", y="sex", normalize=True)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=True)
 mp.get_axes("B").set_title("BlueRed")
 
 
 # %%
 # Stacked bar plot with more than two categories
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Stack plots work with multiple categories in the y variable.
+# Stack plots work with multiple categories in the stack variable.
 cns.figure(150, 100, "Ecotyper1")
-ax = cns.stackplot(data=tips, x="sex", y="time", normalize=True, addcount=True)
+ax = cns.stackplot(data=tips, x="sex", stack="time", normalize=True, addcount=True)
 ax.set_title("Multiple Stack Categories")
 
 
@@ -187,7 +190,7 @@ cns.figure(180, 120, "Ecotyper2")
 ax = cns.stackplot(
     data=cell_data,
     x="sample",
-    y="cell_type",
+    stack="cell_type",
     normalize=True,
     pairs=[("Control", "Treatment A"), ("Control", "Treatment B")],
     stack_order=["CD4+ T", "CD8+ T", "B cell", "NK cell", "Monocyte"],
@@ -206,9 +209,8 @@ ax.set_ylabel("Proportion")
 cns.figure(120, 100, "Pastel1")
 ax = cns.stackplot(
     data=tips,
-    x="day",
-    y="sex",
-    horizontal=True,
+    y="day",
+    stack="sex",
     normalize=True,
     addcount=True,
     width=0.6,
@@ -223,13 +225,13 @@ ax.set_title("Horizontal with Labels")
 mp = cns.multipanel(max_width=160)
 
 mp.panel("A", 80, 130)
-cns.stackplot(data=tips, x="day", y="sex", normalize=False)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=False)
 mp.get_axes("A").set_title("Absolute Counts")
 mp.get_axes("A").set_ylabel("Count")
 
 mp.newline()
 
 mp.panel("B", 80, 130, margin_top=10)
-cns.stackplot(data=tips, x="day", y="sex", normalize=True, addcount=True)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=True, addcount=True)
 mp.get_axes("B").set_title("Normalized Proportions")
 mp.get_axes("B").set_ylabel("Proportion")

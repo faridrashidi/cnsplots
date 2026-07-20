@@ -221,7 +221,7 @@ cns.boxplot(data=df, x="group", y="value", pairs="all")
 cns.barplot(data=df, x="group", y="value", pairs=[("A", "B")])
 
 # Stackplot with Fisher's exact test
-cns.stackplot(data=df, x="group", y="category", pairs=[("A", "B")])
+cns.stackplot(data=df, x="group", stack="category", pairs=[("A", "B")])
 ```
 
 ### Export for Publication

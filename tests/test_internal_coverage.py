@@ -826,19 +826,17 @@ def test_plot_internal_coverage(
     cns.figure(120, 120)
     stack_ax = cns.stackplot(
         stack_df,
-        x="treatment",
-        y="response",
-        horizontal=True,
+        y="treatment",
+        stack="response",
         normalize=True,
         addcount=True,
-        bar_order=["Yes", "No"],
+        bar_order=["C", "B", "A"],
     )
-    assert [patch.get_width() for patch in stack_ax.patches] == pytest.approx(
-        [1 / 3] * 6
-    )
+    assert [patch.get_width() for patch in stack_ax.patches] == pytest.approx([0.5] * 6)
     assert [tick.get_text() for tick in stack_ax.get_yticklabels()] == [
-        "Yes\n(n=6)",
-        "No\n(n=6)",
+        "C\n(n=4)",
+        "B\n(n=4)",
+        "A\n(n=4)",
     ]
 
     class SizeHandle:

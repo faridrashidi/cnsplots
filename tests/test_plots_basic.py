@@ -192,7 +192,7 @@ def test_stack_strip_pie_and_donut_plots(
     ax = cns.stackplot(
         stack_df,
         x="treatment",
-        y="response",
+        stack="response",
         normalize=True,
         addcount=True,
         pairs=[("A", "B")],
@@ -211,12 +211,11 @@ def test_stack_strip_pie_and_donut_plots(
     cns.figure(120, 120)
     ax2 = cns.stackplot(
         categorical_df.rename(columns={"group": "treatment", "binary": "response"}),
-        x="treatment",
-        y="response",
-        horizontal=True,
+        y="treatment",
+        stack="response",
         normalize=False,
         pairs=[("A", "B")],
-        bar_order=["No", "Yes"],
+        bar_order=["A", "B", "C"],
         stack_order=["No", "Yes"],
     )
     assert ax2.get_xlabel() == "Count"
@@ -225,15 +224,15 @@ def test_stack_strip_pie_and_donut_plots(
     cns.figure(120, 120)
     ax2b = cns.stackplot(
         stack_df,
-        x="treatment",
-        y="response",
-        horizontal=True,
+        y="treatment",
+        stack="response",
         normalize=False,
         addcount=True,
     )
     assert {tick.get_text() for tick in ax2b.get_yticklabels()} == {
-        "No\n(n=6)",
-        "Yes\n(n=6)",
+        "A\n(n=4)",
+        "B\n(n=4)",
+        "C\n(n=4)",
     }
     assert not ax2b.texts
 
