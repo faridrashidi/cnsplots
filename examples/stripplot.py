@@ -11,12 +11,11 @@ small-to-medium datasets where you want to show the actual data distribution.
 # %%
 # Load data
 # ~~~~~~~~~
-import seaborn as sns
 
 import cnsplots as cns
 
-tips = sns.load_dataset("tips")
-iris = sns.load_dataset("iris")
+tips = cns.datasets.load_dataset("tips")
+iris = cns.datasets.load_dataset("iris")
 
 
 # %%

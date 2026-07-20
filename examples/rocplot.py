@@ -14,7 +14,6 @@ calculates AUC values and displays them in the legend.
 # ~~~~~~~~~~~~~
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 import cnsplots as cns
 
@@ -23,7 +22,7 @@ import cnsplots as cns
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create synthetic predictions from multiple models.
 np.random.seed(42)
-iris = sns.load_dataset("iris")
+iris = cns.datasets.load_dataset("iris")
 iris["true_labels"] = (iris["species"] == "setosa").astype(int)
 n_samples = len(iris)
 iris["model1_prob"] = np.clip(

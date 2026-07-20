@@ -6,11 +6,10 @@ This guide will help you create your first publication-ready figure with cnsplot
 
 ```python
 import cnsplots as cns
-import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load example data
-df = sns.load_dataset("tips")
+df = cns.datasets.load_dataset("tips")
 
 # Create a figure with specific dimensions (height x width in pixels)
 cns.figure(150, 100)

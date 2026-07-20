@@ -13,12 +13,11 @@ a direct view of the underlying distribution shape.
 # ~~~~~~~~~
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 import cnsplots as cns
 
-iris = sns.load_dataset("iris")
-tips = sns.load_dataset("tips")
+iris = cns.datasets.load_dataset("iris")
+tips = cns.datasets.load_dataset("tips")
 
 
 # %%

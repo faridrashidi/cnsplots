@@ -6,6 +6,7 @@ __version__ = "0.4.0"
 
 _LAZY_IMPORTS = {
     "utils": ("cnsplots._utils", None),
+    "datasets": ("cnsplots.datasets", None),
     "settings": ("cnsplots._settings", "settings"),
     "validation": ("cnsplots._validation", None),
     "BLUE": ("cnsplots._utils", "BLUE"),
@@ -39,7 +40,6 @@ _LAZY_IMPORTS = {
         "cnsplots._utils",
         "get_hexcolors_from_apalette",
     ),
-    "get_showcase_data": ("cnsplots._utils", "get_showcase_data"),
     "barplot": ("cnsplots.plots._categorical", "barplot"),
     "boxplot": ("cnsplots.plots._distribution", "boxplot"),
     "confusionplot": ("cnsplots.plots._heatmap", "confusionplot"),

@@ -11,6 +11,9 @@ focused per-feature examples in the rest of the gallery.
 # %%
 # Load data
 # ~~~~~~~~~
+import os
+from pathlib import Path
+
 import matplotlib.image as mpimg
 from scipy import stats
 
@@ -31,9 +34,14 @@ import cnsplots as cns
     forest_df,
     upset_sets,
     showcase_images,
-) = cns.get_showcase_data(
+) = cns.datasets.get_showcase_data(
     include_showcase_images=True,
 )
+
+
+def _read_showcase_image(filename):
+    with (showcase_images / filename).open("rb") as image_file:
+        return mpimg.imread(image_file)
 
 
 def _embed_detached_axes(host_ax, detached_axes, *, xpad=0.0, ypad=0.0):
@@ -272,7 +280,9 @@ cmp = cns.heatmapplot(
 cmp.ax.set_title("Heatmapplot")
 
 # Save final figure
-cns.savefig("~/Desktop/Figure1.svg")
+gallery_output_dir = Path(os.environ.get("CNSPLOTS_GALLERY_OUTPUT_DIR", "."))
+gallery_output_dir.mkdir(parents=True, exist_ok=True)
+cns.savefig(gallery_output_dir / "Figure1.svg")
 
 
 # %%
@@ -287,13 +297,13 @@ detached_panel_layouts = []
 
 # Panel A: load pathology image
 ax = mp.panel("A", 237, 149, pad_left=-70)
-ax.imshow(mpimg.imread(showcase_images / "image1.webp"))
+ax.imshow(_read_showcase_image("image1.webp"))
 ax.set_title("Pathology Image")
 ax.set_axis_off()
 
 # Panel B: load immunofluorescence image
 ax = mp.panel("B", 102, 116, pad_left=-50)
-ax.imshow(mpimg.imread(showcase_images / "image2.webp"))
+ax.imshow(_read_showcase_image("image2.webp"))
 ax.set_title("Immunofluorescence")
 ax.set_axis_off()
 
@@ -355,7 +365,7 @@ ax.set_title("Cumulative Incidence")
 
 # Panel E: load western blot image
 ax = mp.panel("E", 102, 116, below="B", pad_left=-50)
-ax.imshow(mpimg.imread(showcase_images / "image4.webp"))
+ax.imshow(_read_showcase_image("image4.webp"))
 ax.set_title("Western Blot")
 ax.set_axis_off()
 
@@ -383,7 +393,7 @@ mp.newline()
 
 # Panel H: h&e histology image
 ax = mp.panel("H", 160, 319, pad_left=-60)
-ax.imshow(mpimg.imread(showcase_images / "image3.webp"))
+ax.imshow(_read_showcase_image("image3.webp"))
 ax.set_title("H&E Histology")
 ax.set_axis_off()
 
@@ -487,4 +497,4 @@ if mp.fig is not None:
     mp.fig.canvas.draw()
 
 # Save final figure
-cns.savefig("~/Desktop/Figure2.svg")
+cns.savefig(gallery_output_dir / "Figure2.svg")

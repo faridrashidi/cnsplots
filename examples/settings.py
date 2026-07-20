@@ -14,11 +14,10 @@ them or override them inside ``settings.context()``.
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
-import seaborn as sns
 
 import cnsplots as cns
 
-tips = sns.load_dataset("tips")
+tips = cns.datasets.load_dataset("tips")
 
 
 # %%

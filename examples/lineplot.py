@@ -14,11 +14,10 @@ and any sequential data.
 # ~~~~~~~~~
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 import cnsplots as cns
 
-fmri = sns.load_dataset("fmri")
+fmri = cns.datasets.load_dataset("fmri")
 
 
 # %%

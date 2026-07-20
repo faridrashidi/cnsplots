@@ -14,22 +14,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-ShowcaseBundle = tuple[
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
-    ad.AnnData,
-    pd.DataFrame,
-    list[set[int]],
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
-    pd.DataFrame,
-    dict[str, set[str]],
-]
-
 
 @pytest.fixture(autouse=True)
 def _seed_and_close_figures() -> Iterator[None]:
@@ -257,94 +241,6 @@ def phylo_adata() -> ad.AnnData:
     adata.layers["trisicell_output"] = np.array([[0, 1], [1, 0], [0, 1]], dtype=float)
     adata.uns["tree"] = "((cell1:1,cell2:1):1,cell3:1);"
     return adata
-
-
-@pytest.fixture
-def showcase_bundle(
-    categorical_df: pd.DataFrame,
-    survival_df: pd.DataFrame,
-    heatmap_adata: ad.AnnData,
-    volcano_df: pd.DataFrame,
-    sets_fixture: dict[str, set[int]],
-    roc_df: pd.DataFrame,
-) -> ShowcaseBundle:
-    slope_df = pd.DataFrame(
-        {
-            "value": [1.0, 2.0, 1.2, 2.2, 0.8, 1.8],
-            "site": ["site1", "site1", "site2", "site2", "site3", "site3"],
-            "label": ["healthy", "disease"] * 3,
-        }
-    )
-    confusion_df = pd.DataFrame(
-        {
-            "truth": ["Neg"] * 18 + ["Pos"] * 12,
-            "pred": ["Neg"] * 15 + ["Pos"] * 3 + ["Neg"] * 2 + ["Pos"] * 10,
-        }
-    )
-    line_df = pd.DataFrame(
-        {
-            "timepoint": list(range(6)) * 2,
-            "signal": [
-                0.15,
-                0.22,
-                0.38,
-                0.55,
-                0.64,
-                0.72,
-                0.12,
-                0.18,
-                0.29,
-                0.36,
-                0.43,
-                0.50,
-            ],
-            "condition": ["Control"] * 6 + ["Treatment"] * 6,
-        }
-    )
-    cumulative_incidence_df = pd.DataFrame(
-        {
-            "time": [3.0, 6.0, 8.0, 5.0, 9.0, 12.0],
-            "event": [1, 0, 2, 1, 2, 0],
-            "group": ["Control"] * 3 + ["Treatment"] * 3,
-        }
-    )
-    forest_df = pd.DataFrame(
-        {
-            "time": [5.0, 8.0, 13.0, 21.0, 7.0, 15.0],
-            "event": [1, 0, 1, 1, 0, 1],
-            "risk": ["Low", "Low", "High", "High", "Low", "High"],
-            "stage": ["I", "II", "I", "II", "I", "II"],
-            "age": [56.0, 62.0, 68.0, 71.0, 59.0, 65.0],
-            "marker": [2.1, 2.5, 3.8, 4.2, 2.3, 3.4],
-        }
-    )
-    upset_sets = {
-        "RNA": {"Gene1", "Gene2", "Gene3", "Gene4"},
-        "ATAC": {"Gene2", "Gene3", "Gene5"},
-        "WES": {"Gene1", "Gene3", "Gene6"},
-        "CRISPR": {"Gene3", "Gene4", "Gene6"},
-    }
-    return (
-        categorical_df.rename(columns={"group": "species", "value": "sepal_length"})[
-            ["species", "sepal_length"]
-        ],
-        categorical_df.rename(columns={"group": "day", "value": "total_bill"})[
-            ["day", "total_bill", "hue"]
-        ],
-        survival_df[["time", "event", "group", "age", "stage"]],
-        heatmap_adata,
-        volcano_df,
-        list(sets_fixture.values()),
-        roc_df.rename(
-            columns={"truth": "label", "model_a": "Model A", "model_b": "Model B"}
-        ),
-        slope_df,
-        confusion_df,
-        line_df,
-        cumulative_incidence_df,
-        forest_df,
-        upset_sets,
-    )
 
 
 @pytest.fixture
