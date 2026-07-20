@@ -5,8 +5,8 @@ Survival Analysis
 Create Kaplan-Meier survival curves and cumulative incidence plots.
 
 Survival plots are essential for time-to-event analysis in clinical and
-biological research. cnsplots provides automatic statistical testing
-(log-rank test) and hazard ratio calculation.
+biological research. cnsplots provides automatic omnibus log-rank testing and
+optional, explicitly selected pairwise hazard-ratio inference.
 """
 
 # %%
@@ -128,7 +128,8 @@ clinical_df = pd.DataFrame(survival_data)
 # %%
 # Survival plot with three groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Compare multiple treatment arms.
+# Compare multiple treatment arms with an omnibus test and an explicitly
+# requested Cox contrast. Pair tuples are (reference, comparison).
 cns.figure(150, 180)
 cns.survivalplot(
     data=clinical_df,
@@ -136,6 +137,7 @@ cns.survivalplot(
     event="event",
     hue="group",
     hue_order=["Control", "Treatment A", "Treatment B"],
+    pairs=[("Control", "Treatment B")],
 )
 cns.take_legend_out()
 plt.title("Three-Arm Clinical Trial")

@@ -112,13 +112,16 @@ def survivalplot(
     hue: str,
     hue_order: list[str] | None = None,
     time_label: str = "Time",
+    *,
+    overall_test: Literal["logrank", "trend"] = "logrank",
+    pairs: list[tuple[str, str]] | None = None,
 ) -> Axes:
     """
     Create a Kaplan-Meier survival plot with statistical comparisons.
 
     This function generates Kaplan-Meier survival curves comparing survival
-    probabilities across groups, with automatic statistical testing and
-    hazard ratio calculation.
+    probabilities across groups, with an overall statistical test and optional
+    pairwise Cox proportional hazards inference.
 
     Parameters
     ----------
@@ -134,6 +137,18 @@ def survivalplot(
         Order of groups from hue to display and compare.
     time_label : str, default: "Time"
         Label for the time axis, including units when applicable.
+    overall_test : {'logrank', 'trend'}, default: 'logrank'
+        Test used for the overall p-value. ``'logrank'`` performs a categorical
+        omnibus log-rank test. ``'trend'`` performs a one-degree-of-freedom Cox
+        trend test using equally spaced scores in ``hue_order`` and requires a
+        complete, explicitly supplied ``hue_order``.
+    pairs : list of tuple of str, optional
+        Pairwise Cox contrasts written as ``(reference, comparison)``. Each
+        contrast reports the hazard ratio for comparison versus reference, its
+        95% confidence interval, and an unadjusted two-sided Cox Wald p-value.
+        When omitted, the sole contrast is reported automatically for two groups;
+        no contrast is inferred for three or more groups. Pass an empty list to
+        suppress pairwise inference.
 
     Returns
     -------
@@ -155,6 +170,7 @@ def survivalplot(
     ...     hue="treatment",
     ...     hue_order=["control", "drug_a", "drug_b"],
     ...     time_label="Time (months)",
+    ...     pairs=[("control", "drug_b")],
     ... )
     >>> ax.set_title("Overall Survival by Treatment")
     """
@@ -176,9 +192,49 @@ def survivalplot(
     from lifelines.statistics import multivariate_logrank_test
 
     data = data.copy()
+    observed_groups = list(data[hue].unique())
+    has_explicit_order = (
+        hue_order is not None
+        and len(hue_order) == len(observed_groups)
+        and set(hue_order) == set(observed_groups)
+    )
+    if overall_test not in {"logrank", "trend"}:
+        raise ValueError(
+            "[survivalplot] Parameter 'overall_test' must be one of "
+            "'logrank' or 'trend'."
+        )
+    if overall_test == "trend" and not has_explicit_order:
+        raise ValueError(
+            "[survivalplot] The trend test requires a complete explicit 'hue_order' "
+            "because category order defines the trend scores."
+        )
+    if not has_explicit_order:
+        hue_order = observed_groups
+    assert hue_order is not None
+
+    resolved_pairs = (
+        [(hue_order[0], hue_order[1])]
+        if pairs is None and len(hue_order) == 2
+        else ([] if pairs is None else pairs)
+    )
+    for pair in resolved_pairs:
+        if not isinstance(pair, tuple) or len(pair) != 2:
+            raise ValueError(
+                "[survivalplot] Each item in 'pairs' must contain exactly two groups "
+                "as a (reference, comparison) tuple."
+            )
+        if pair[0] == pair[1]:
+            raise ValueError(
+                "[survivalplot] Pairwise contrasts must contain two distinct groups."
+            )
+        missing_groups = [group for group in pair if group not in observed_groups]
+        if missing_groups:
+            raise ValueError(
+                "[survivalplot] Pairwise contrast contains group(s) not present in "
+                f"'{hue}': {missing_groups}."
+            )
+
     ax: Any = None
-    if hue_order is None or set(data[hue].unique()) != set(hue_order):
-        hue_order = list(data[hue].unique())
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
     kmf = ll.KaplanMeierFitter()
@@ -203,29 +259,36 @@ def survivalplot(
     ax.set_xlabel(time_label)
     ax.set_ylabel("Survival probability")
 
-    df = data[[duration, hue, event]].copy()
-    df[hue] = df[hue].cat.codes
-
-    if len(hue_order) == 2:
+    if overall_test == "logrank":
         try:
-            logrank_test = multivariate_logrank_test(df[duration], df[hue], df[event])
-            p = num2tex.num2tex(logrank_test.p_value, precision=2)
-            logger.info(
-                "P-value was determined by two-sided multivariate log-rank test."
+            logrank_result = multivariate_logrank_test(
+                data[duration], data[hue], data[event]
             )
+            overall_p = num2tex.num2tex(logrank_result.p_value, precision=2)
+            overall_label = "Omnibus log-rank"
+            logger.info("P-value was determined by two-sided omnibus log-rank test.")
         except Exception as e:
             raise RuntimeError(
                 "[survivalplot] Log-rank test failed. This may indicate insufficient data "
                 f"or invalid event/duration values. Details: {e}"
             ) from e
     else:
+        trend_data = pd.DataFrame(
+            {
+                "_duration": data[duration].to_numpy(),
+                "_event": data[event].to_numpy(),
+                "_group_score": data[hue].cat.codes.to_numpy(),
+            }
+        )
         try:
             cph = ll.CoxPHFitter()
-            cph.fit(df, duration_col=duration, event_col=event)
-            trend_test = cph.log_likelihood_ratio_test()
-            p = num2tex.num2tex(trend_test.p_value, precision=2)
+            cph.fit(trend_data, duration_col="_duration", event_col="_event")
+            trend_result = cph.log_likelihood_ratio_test()
+            overall_p = num2tex.num2tex(trend_result.p_value, precision=2)
+            overall_label = "Cox trend"
             logger.info(
-                "P-value was determined by two-sided multivariate log-rank test for trend."
+                "P-value was determined by a one-degree-of-freedom Cox proportional "
+                "hazards trend test using hue_order scores."
             )
         except Exception as e:
             raise RuntimeError(
@@ -233,26 +296,40 @@ def survivalplot(
                 f"insufficient data or model convergence issues. Details: {e}"
             ) from e
 
-    df = data[[duration, hue, event]].copy()
-    df = df[df[hue].isin([hue_order[0], hue_order[-1]])]
-    df[hue] = pd.Categorical(
-        df[hue], categories=[hue_order[0], hue_order[-1]], ordered=True
-    )
-    df[hue] = df[hue].cat.codes
-    try:
-        cph = ll.CoxPHFitter()
-        cph.fit(df, duration_col=duration, event_col=event)
-        hazard_ratio = cph.hazard_ratios_.iloc[0]
-        ci1 = cph.summary["exp(coef) lower 95%"].iloc[0]
-        ci2 = cph.summary["exp(coef) upper 95%"].iloc[0]
-    except Exception as e:
-        raise RuntimeError(
-            "[survivalplot] Could not compute hazard ratios. This may indicate "
-            f"insufficient data or model convergence issues. Details: {e}"
-        ) from e
-    ax.text(
-        0, 0, f"HR = {hazard_ratio:.2f} ({ci1:.2f}-{ci2:.2f})\nP = " + rf"${p:.2g}$"
-    )
+    annotation_lines = [f"{overall_label} P = " + rf"${overall_p:.2g}$"]
+    for reference, comparison in resolved_pairs:
+        pair_data = data[data[hue].isin([reference, comparison])]
+        cox_data = pd.DataFrame(
+            {
+                "_duration": pair_data[duration].to_numpy(),
+                "_event": pair_data[event].to_numpy(),
+                "_comparison": (pair_data[hue] == comparison).astype(int).to_numpy(),
+            }
+        )
+        try:
+            cph = ll.CoxPHFitter()
+            cph.fit(cox_data, duration_col="_duration", event_col="_event")
+            summary = cph.summary.loc["_comparison"]
+            hazard_ratio = summary["exp(coef)"]
+            ci1 = summary["exp(coef) lower 95%"]
+            ci2 = summary["exp(coef) upper 95%"]
+            pair_p = num2tex.num2tex(summary["p"], precision=2)
+        except Exception as e:
+            raise RuntimeError(
+                "[survivalplot] Could not compute hazard ratios for contrast "
+                f"{comparison!r} vs {reference!r}. This may indicate insufficient "
+                f"data or model convergence issues. Details: {e}"
+            ) from e
+        annotation_lines.append(
+            f"{comparison} vs {reference}: HR = {hazard_ratio:.2f} "
+            f"(95% CI {ci1:.2f}-{ci2:.2f}), Cox P = " + rf"${pair_p:.2g}$"
+        )
+    if resolved_pairs:
+        logger.info(
+            "Pairwise hazard ratios and unadjusted two-sided P-values were determined "
+            "by Cox proportional hazards models."
+        )
+    ax.text(0, 0, "\n".join(annotation_lines))
 
     if ax.get_legend() is not None:
         for handle in ax.get_legend().legend_handles:
