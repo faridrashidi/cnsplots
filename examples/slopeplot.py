@@ -5,7 +5,7 @@ Slope Plot
 Create slope plots for visualizing changes between conditions.
 
 Slope plots (also called slopegraphs) show how values change between
-two or more conditions, making them ideal for paired data comparisons
+two conditions, making them ideal for paired data comparisons
 and before/after analyses.
 """
 
@@ -39,6 +39,12 @@ data = np.concatenate(
 )
 data = pd.DataFrame(columns=["value", "site", "label"], data=data.T)
 data["value"] = data["value"].astype(float)
+data["subject"] = [
+    f"{site}_{subject}"
+    for _condition in ("healthy", "disease")
+    for site in ("site1", "site2", "site3")
+    for subject in range(15)
+]
 
 
 # %%
@@ -46,7 +52,7 @@ data["value"] = data["value"].astype(float)
 # ~~~~~~~~~~~~~~~
 # Visualize changes between healthy and disease states.
 cns.figure(150, 150)
-ax = cns.slopeplot(data=data, x="site", y="value", hue="label")
+ax = cns.slopeplot(data=data, x="site", y="value", hue="label", pair="subject")
 ax.set_title("Basic Slope Plot", pad=15)
 
 
@@ -55,21 +61,21 @@ ax.set_title("Basic Slope Plot", pad=15)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Apply different color schemes.
 cns.figure(150, 150, "Set1")
-cns.slopeplot(data=data, x="site", y="value", hue="label")
+cns.slopeplot(data=data, x="site", y="value", hue="label", pair="subject")
 
 
 # %%
 # Tableau palette
 # ~~~~~~~~~~~~~~~
 cns.figure(150, 150, "Tableau")
-cns.slopeplot(data=data, x="site", y="value", hue="label")
+cns.slopeplot(data=data, x="site", y="value", hue="label", pair="subject")
 
 
 # %%
 # Bold palette
 # ~~~~~~~~~~~~
 cns.figure(150, 150, "Bold")
-cns.slopeplot(data=data, x="site", y="value", hue="label")
+cns.slopeplot(data=data, x="site", y="value", hue="label", pair="subject")
 
 
 # %%
@@ -78,7 +84,7 @@ cns.slopeplot(data=data, x="site", y="value", hue="label")
 # Compare only two sites for cleaner visualization.
 data_2sites = data[data["site"].isin(["site1", "site2"])]
 cns.figure(120, 150)
-cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
+cns.slopeplot(data=data_2sites, x="site", y="value", hue="label", pair="subject")
 
 
 # %%
@@ -102,7 +108,13 @@ treatment_data = pd.DataFrame(
 )
 
 cns.figure(120, 150)
-ax = cns.slopeplot(data=treatment_data, x="patient", y="value", hue="timepoint")
+ax = cns.slopeplot(
+    data=treatment_data,
+    x="patient",
+    y="value",
+    hue="timepoint",
+    pair="patient",
+)
 ax.set_title("Treatment Response", pad=12)
 
 
@@ -118,17 +130,35 @@ for gene in genes:
     treated = baseline + np.random.normal(1.5, 0.5, 10)
     for i, (b, t) in enumerate(zip(baseline, treated)):
         gene_data.append(
-            {"sample": i, "condition": "Control", "expression": b, "gene": gene}
+            {
+                "sample": i,
+                "pair": f"{gene}_{i}",
+                "condition": "Control",
+                "expression": b,
+                "gene": gene,
+            }
         )
         gene_data.append(
-            {"sample": i, "condition": "Treatment", "expression": t, "gene": gene}
+            {
+                "sample": i,
+                "pair": f"{gene}_{i}",
+                "condition": "Treatment",
+                "expression": t,
+                "gene": gene,
+            }
         )
 
 gene_df = pd.DataFrame(gene_data)
 gene_df_tp53 = gene_df[gene_df["gene"] == "TP53"]
 
 cns.figure(120, 150)
-ax = cns.slopeplot(data=gene_df_tp53, x="sample", y="expression", hue="condition")
+ax = cns.slopeplot(
+    data=gene_df_tp53,
+    x="sample",
+    y="expression",
+    hue="condition",
+    pair="pair",
+)
 ax.set_title("TP53 Expression", pad=12)
 
 
@@ -137,7 +167,13 @@ ax.set_title("TP53 Expression", pad=12)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare expression changes for multiple genes.
 cns.figure(150, 150)
-ax = cns.slopeplot(data=gene_df, x="condition", y="expression", hue="gene")
+ax = cns.slopeplot(
+    data=gene_df,
+    x="gene",
+    y="expression",
+    hue="condition",
+    pair="pair",
+)
 ax.set_title("Gene Expression Changes")
 cns.take_legend_out()
 
@@ -165,15 +201,28 @@ for subj in subjects:
 time_df = pd.DataFrame(time_data)
 
 cns.figure(180, 150)
-ax = cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
+two_timepoints = time_df[time_df["timepoint"].isin(["Day 0", "Day 14"])]
+ax = cns.slopeplot(
+    data=two_timepoints,
+    x="group",
+    y="value",
+    hue="timepoint",
+    pair="subject",
+)
 ax.set_title("Time Course", pad=20)
 
 
 # %%
-# Wider figure for more timepoints
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Wider figure for grouped comparisons
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cns.figure(220, 150)
-ax = cns.slopeplot(data=time_df, x="timepoint", y="value", hue="group")
+ax = cns.slopeplot(
+    data=two_timepoints,
+    x="group",
+    y="value",
+    hue="timepoint",
+    pair="subject",
+)
 ax.set_title("Time Course (Wide)", pad=20)
 
 
@@ -198,7 +247,13 @@ paired_data = pd.DataFrame(
 )
 
 cns.figure(120, 150)
-ax = cns.slopeplot(data=paired_data, x="patient", y="expression", hue="tissue")
+ax = cns.slopeplot(
+    data=paired_data,
+    x="patient",
+    y="expression",
+    hue="tissue",
+    pair="patient",
+)
 ax.set_title("Tumor vs Normal", pad=12)
 
 
@@ -211,14 +266,14 @@ mp = cns.multipanel(max_width=260)
 # Early stage
 early = paired_data[paired_data["stage"] == "Early"]
 mp.panel("A", 120, 100)
-cns.slopeplot(data=early, x="patient", y="expression", hue="tissue")
+cns.slopeplot(data=early, x="patient", y="expression", hue="tissue", pair="patient")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Early Stage")
 
 # Late stage
 late = paired_data[paired_data["stage"] == "Late"]
 mp.panel("B", 120, 100, margin_right=0)
-cns.slopeplot(data=late, x="patient", y="expression", hue="tissue")
+cns.slopeplot(data=late, x="patient", y="expression", hue="tissue", pair="patient")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Late Stage")
 
@@ -254,7 +309,13 @@ for site in sites:
 drug_df = pd.DataFrame(drug_data)
 
 cns.figure(150, 150)
-ax = cns.slopeplot(data=drug_df, x="condition", y="value", hue="site")
+ax = cns.slopeplot(
+    data=drug_df,
+    x="site",
+    y="value",
+    hue="condition",
+    pair="sample",
+)
 ax.set_title("Drug Response by Site")
 cns.take_legend_out()
 
@@ -265,16 +326,16 @@ cns.take_legend_out()
 mp = cns.multipanel(max_width=410)
 
 mp.panel("A", 120, 100, color_cycle="Set1")
-cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
+cns.slopeplot(data=data_2sites, x="site", y="value", hue="label", pair="subject")
 mp.get_axes("A").legend().remove()
 mp.get_axes("A").set_title("Set1")
 
 mp.panel("B", 120, 100, color_cycle="Tableau")
-cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
+cns.slopeplot(data=data_2sites, x="site", y="value", hue="label", pair="subject")
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Tableau")
 
 mp.panel("C", 120, 100, color_cycle="Bold", margin_right=0)
-cns.slopeplot(data=data_2sites, x="site", y="value", hue="label")
+cns.slopeplot(data=data_2sites, x="site", y="value", hue="label", pair="subject")
 mp.get_axes("C").legend().remove()
 mp.get_axes("C").set_title("Bold")

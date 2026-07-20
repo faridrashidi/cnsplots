@@ -390,7 +390,7 @@ def test_line_scatter_reg_and_slope_plots(
 ) -> None:
     cns.figure(120, 120)
     ax = cns.regplot(numeric_df, x="x", y="y")
-    assert "\\rho" in ax.texts[0].get_text()
+    assert "$r$" in ax.texts[0].get_text()
 
     cns.figure(120, 120)
     ax2 = cns.regplot(numeric_df, x="x", y="y", hue="group", s=5)
@@ -416,7 +416,7 @@ def test_line_scatter_reg_and_slope_plots(
         }
     )
     cns.figure(120, 120)
-    ax6 = cns.slopeplot(slope_df, x="site", y="value", hue="label")
+    ax6 = cns.slopeplot(slope_df, x="site", y="value", hue="label", pair="site")
     assert ax6.get_legend() is not None
 
 

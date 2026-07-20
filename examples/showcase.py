@@ -211,7 +211,7 @@ ax.set_title("Ridgeplot")
 
 # Panel P: slopeplot
 mp.panel("P", 65, 80, below="O", margin_top=10, pad_top=-5, margin_right=0)
-ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label")
+ax = cns.slopeplot(data=slope_df, x="site", y="value", hue="label", pair="pair")
 ax.set_title("Slopeplot")
 
 # Panel Q: scatterplot

@@ -1232,6 +1232,19 @@ def test_utils_helpers_and_showcase_data(
     monkeypatch.setitem(sys.modules, "scanpy", fake_sc)
     data = _utils.get_showcase_data()
     assert len(data) == 13
+    slope_data = data[7]
+    assert isinstance(slope_data, pd.DataFrame)
+    with monkeypatch.context() as slope_context:
+        slope_context.setitem(sys.modules, "seaborn", sns)
+        cns.figure(120, 120)
+        slope_ax = cns.slopeplot(
+            slope_data,
+            x="site",
+            y="value",
+            hue="label",
+            pair="pair",
+        )
+    assert len(slope_ax.lines) == 45
     assert isinstance(data[10], pd.DataFrame)
     assert isinstance(data[11], pd.DataFrame)
     assert isinstance(data[12], dict)

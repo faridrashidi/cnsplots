@@ -121,13 +121,21 @@ def test_slopeplot_keeps_requested_figure_size() -> None:
                 2.8,
             ],
             "label": ["healthy", "disease"] * 15,
+            "pair": np.repeat(
+                [
+                    f"{site}_{replicate}"
+                    for replicate in range(5)
+                    for site in ("site1", "site2", "site3")
+                ],
+                2,
+            ),
         }
     )
 
     cns.figure(150, 150)
     fig = plt.gcf()
     initial_size = tuple(fig.get_size_inches())
-    ax = cns.slopeplot(slope_df, x="site", y="value", hue="label")
+    ax = cns.slopeplot(slope_df, x="site", y="value", hue="label", pair="pair")
     ax.set_title("Basic Slope Plot", pad=15)
 
     fig.canvas.draw()
@@ -146,7 +154,7 @@ def test_survival_plots(
         ax = cns.survivalplot(
             survival_df, "time", "event", "group", hue_order=["Treatment", "Control"]
         )
-    assert ax.get_ylabel() == "Overall survival probability"
+    assert ax.get_ylabel() == "Survival probability"
     survival_lines = {
         line.get_label(): line
         for line in ax.lines
@@ -174,7 +182,7 @@ def test_survival_plots(
     caplog.clear()
     with caplog.at_level(logging.INFO, logger="cnsplots"):
         ax2 = cns.survivalplot(survival_three_group_df, "time", "event", "group")
-    assert ax2.get_xlabel() == "Time (Years)"
+    assert ax2.get_xlabel() == "Time"
     assert "trend" in caplog.text
 
     cns.figure(120, 120)

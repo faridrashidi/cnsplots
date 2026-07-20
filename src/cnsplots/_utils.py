@@ -847,11 +847,18 @@ def get_showcase_data(
         (1, "site2", "disease"),
         (3, "site3", "disease"),
     ]:
-        for value in np.random.normal(loc=mean, size=15):
-            slope_rows.append({"value": float(value), "site": site, "label": label})
+        for subject, value in enumerate(np.random.normal(loc=mean, size=15)):
+            slope_rows.append(
+                {
+                    "value": float(value),
+                    "site": site,
+                    "label": label,
+                    "pair": f"{site}_{subject}",
+                }
+            )
     slope_df = pd.DataFrame(
         slope_rows,
-        columns=pd.Index(["value", "site", "label"]),
+        columns=pd.Index(["value", "site", "label", "pair"]),
     )
 
     # ROC data
