@@ -11,7 +11,9 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib_venn._common import VennDiagram
 
 import cnsplots._utils as utils
 from cnsplots._setup import setup_ax
@@ -67,9 +69,10 @@ def _import_upsetplot_module() -> Any:
 def upsetplot(
     sets: Mapping[str, AbstractSet[Any] | list[Any]],
     *,
+    ax: Axes | None = None,
     fig: Figure | None = None,
     **kwargs: Any,
-) -> dict:
+) -> dict[str, Axes | None]:
     """
     Create an UpSet plot for visualizing set intersections.
 
@@ -80,6 +83,9 @@ def upsetplot(
     ----------
     sets : dict
         Dictionary mapping set names (str) to sets or array-like collections.
+    ax : matplotlib.axes.Axes or None, optional
+        Host axes to embed the UpSet layout within. ``element_size`` is not
+        supported when embedding because the host axes fixes the available size.
     fig : matplotlib.figure.Figure or None, optional
         Figure to draw the UpSet plot into. Defaults to a new figure.
     **kwargs
@@ -115,6 +121,12 @@ def upsetplot(
         )
     if not sets:
         raise ValueError("[upsetplot] Parameter 'sets' cannot be empty")
+    if ax is not None and fig is not None:
+        raise ValueError("[upsetplot] Pass either 'ax' or 'fig', not both")
+    if ax is not None and kwargs.get("element_size") is not None:
+        raise ValueError(
+            "[upsetplot] Parameter 'element_size' cannot be used together with 'ax'"
+        )
 
     usp = _import_upsetplot_module()
 
@@ -130,17 +142,48 @@ def upsetplot(
     # Set defaults for compact, publication-style UpSet plots while allowing
     # callers to override them when a different layout is needed.
     kwargs.setdefault("subset_size", "count")
-    kwargs.setdefault("element_size", 17)
     kwargs.setdefault("show_counts", "{:,}")
-    upset = usp.UpSet(data, **kwargs)
-    axes = upset.plot(fig=fig)
-    plt.grid(False)
-    for ax in axes.values():
-        if ax is not None:
-            ax.set_facecolor("none")
-    plot_fig = next((ax.figure for ax in axes.values() if ax is not None), None)
-    if plot_fig is not None and np.allclose(
-        plot_fig.patch.get_facecolor(), (1.0, 1.0, 1.0, 1.0)
+    if ax is None:
+        kwargs.setdefault("element_size", 17)
+        upset = usp.UpSet(data, **kwargs)
+        axes = upset.plot(fig=fig)
+    else:
+        kwargs.setdefault("element_size", None)
+
+        class _EmbeddedUpSet(usp.UpSet):
+            def _sync_to_host(self) -> None:
+                pos = ax.get_position()
+                self._host_gridspec.update(
+                    left=pos.x0,
+                    right=pos.x1,
+                    top=pos.y1,
+                    bottom=pos.y0,
+                )
+
+            def make_grid(self, fig: Figure | None = None) -> dict[str, Any]:
+                specs = super().make_grid(fig)
+                self._host_gridspec = specs["gs"]
+                self._sync_to_host()
+                return specs
+
+        upset = _EmbeddedUpSet(data, **kwargs)
+        axes = upset.plot(fig=ax.figure)
+        ax.set_axis_off()
+        utils._chain_axes_sync_hook(ax, upset._sync_to_host)
+
+    for plot_ax in axes.values():
+        if plot_ax is not None:
+            grid = getattr(plot_ax, "grid", None)
+            if callable(grid):
+                grid(False)
+            plot_ax.set_facecolor("none")
+    plot_fig = next(
+        (plot_ax.figure for plot_ax in axes.values() if plot_ax is not None), None
+    )
+    if (
+        ax is None
+        and plot_fig is not None
+        and np.allclose(plot_fig.patch.get_facecolor(), (1.0, 1.0, 1.0, 1.0))
     ):
         plot_fig.patch.set_facecolor("none")
         plot_fig.patch.set_alpha(0)
@@ -164,10 +207,21 @@ def upsetplot(
         new_pos = [pos_mat.x0 + dx, pos_mat.y0, pos_mat.width, pos_mat.height]
         ax_tot.set_position(new_pos)
 
+    if ax is not None:
+        utils._anchor_axes_to_host(
+            ax,
+            [plot_ax for plot_ax in axes.values() if plot_ax is not None],
+        )
+
     return axes
 
 
-def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
+def vennplot(
+    lists: list[set],
+    labels: tuple[str, ...] | list[str],
+    *,
+    ax: Axes | None = None,
+) -> VennDiagram:
     """
     Create a Venn diagram for 2 or 3 sets.
 
@@ -180,10 +234,12 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
         List of 2 or 3 sets or array-like collections to compare.
     labels : tuple or list of str
         Labels for each set, in the same order as lists.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
-    matplotlib_venn.VennDiagram
+    VennDiagram
         The Venn diagram object containing the plot elements.
 
     See Also
@@ -219,6 +275,8 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
 
     import matplotlib_venn as venn
 
+    if ax is None:
+        ax = plt.gca()
     lists = [s if isinstance(s, AbstractSet) else set(s) for s in lists]
     if len(lists) == 2:
         areas = ["10", "01", "11"]
@@ -226,20 +284,20 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
         colors = tuple(sns.color_palette(n_colors=2))
         subsets = (lists[0], lists[1])
         label_tuple = (labels[0], labels[1])
-        ax = venn.venn2(subsets, label_tuple, set_colors=colors, alpha=0.8)
+        diagram = venn.venn2(subsets, label_tuple, set_colors=colors, alpha=0.8, ax=ax)
     else:
         areas = ["100", "010", "001", "110", "101", "011", "111"]
         names = ["A", "B", "C"]
         colors = tuple(sns.color_palette(n_colors=3))
         subsets = (lists[0], lists[1], lists[2])
         label_tuple = (labels[0], labels[1], labels[2])
-        ax = venn.venn3(subsets, label_tuple, set_colors=colors, alpha=0.8)
+        diagram = venn.venn3(subsets, label_tuple, set_colors=colors, alpha=0.8, ax=ax)
     legend_fontsize = _legend_fontsize()
     for area in areas:
         try:
-            label = ax.get_label_by_id(area)
+            label = diagram.get_label_by_id(area)
             label.set_fontsize(legend_fontsize)
-            patch = ax.get_patch_by_id(area)
+            patch = diagram.get_patch_by_id(area)
             patch.set_edgecolor("black")
             patch.set_linewidth(0.5)
             get_facecolor = getattr(patch, "get_facecolor", None)
@@ -248,6 +306,6 @@ def vennplot(lists: list[set], labels: tuple[str, ...] | list[str]) -> Any:
         except AttributeError:
             pass
     for area in names:
-        ax.get_label_by_id(area).set_fontsize(legend_fontsize)
+        diagram.get_label_by_id(area).set_fontsize(legend_fontsize)
 
-    return ax
+    return diagram

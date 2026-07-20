@@ -14,6 +14,7 @@ import seaborn as sns
 from anndata import AnnData
 from anndata.abc import CSCDataset, CSRDataset
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from natsort import natsort_keygen
 from scipy import sparse
 from scipy.stats import fisher_exact
@@ -108,6 +109,8 @@ def heatmapplot(
     yticklabels_fontsize: int = 7,
     xlabel_labelpad: float = 5,
     ylabel_labelpad: float = 3,
+    *,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> ClusterMapPlotterNew:
     """
@@ -164,6 +167,8 @@ def heatmapplot(
         Padding between the x-axis label and the tick labels.
     ylabel_labelpad : float, default: 3
         Padding between the y-axis label and the tick labels.
+    ax : matplotlib.axes.Axes, optional
+        Host axes for the heatmap layout. If None, uses the current axes.
     **kwargs
         Additional keyword arguments passed to `ClusterMapPlotterNew`.
 
@@ -305,37 +310,52 @@ def heatmapplot(
         col_split_val = adata.var[col_split]
 
     df = _anndata_to_heatmap_dataframe(adata, layer)
-    cmp = helper_heatmap.ClusterMapPlotterNew(
-        data=df,
-        left_annotation=left_annotation,
-        top_annotation=top_annotation,
-        row_cluster=row_cluster,
-        col_cluster=col_cluster,
-        row_split=row_split_val,
-        col_split=col_split_val,
-        cmap=cmap,
-        rasterized=rasterized,
-        label=label,
-        xlabel=xlabel,
-        ylabel=ylabel,
-        legend_hpad=legend_hpad,
-        legend_vpad=legend_vpad,
-        row_dendrogram_size=10,
-        col_dendrogram_size=10,
-        linewidth=linewidth,
-        xticklabels_kws={
-            "labelrotation": xticklabels_rotation,
-            "labelsize": xticklabels_fontsize,
-        },
-        yticklabels_kws={"labelsize": yticklabels_fontsize},
-        ylabel_kws={"labelpad": ylabel_labelpad},
-        xlabel_kws={"labelpad": xlabel_labelpad},
-        verbose=0,
-        row_names_side="left" if left_annotation is None else "right",
-        xticklabels=True,
-        yticklabels=True,
-        **kwargs,
+    host_ax = ax
+    fig = None if host_ax is None else host_ax.figure
+    layout_fig = (
+        None if host_ax is None else cast(Figure, host_ax.get_figure(root=True))
     )
+    layout_engine = None if layout_fig is None else layout_fig.get_layout_engine()
+    existing_axes = set() if fig is None else set(fig.axes)
+    if layout_fig is not None:
+        layout_fig.set_layout_engine("none")
+    try:
+        cmp = helper_heatmap.ClusterMapPlotterNew(
+            data=df,
+            left_annotation=left_annotation,
+            top_annotation=top_annotation,
+            row_cluster=row_cluster,
+            col_cluster=col_cluster,
+            row_split=row_split_val,
+            col_split=col_split_val,
+            cmap=cmap,
+            rasterized=rasterized,
+            label=label,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            legend_hpad=legend_hpad,
+            legend_vpad=legend_vpad,
+            row_dendrogram_size=10,
+            col_dendrogram_size=10,
+            linewidth=linewidth,
+            xticklabels_kws={
+                "labelrotation": xticklabels_rotation,
+                "labelsize": xticklabels_fontsize,
+            },
+            yticklabels_kws={"labelsize": yticklabels_fontsize},
+            ylabel_kws={"labelpad": ylabel_labelpad},
+            xlabel_kws={"labelpad": xlabel_labelpad},
+            verbose=0,
+            ax=ax,
+            row_names_side="left" if left_annotation is None else "right",
+            xticklabels=True,
+            yticklabels=True,
+            **kwargs,
+        )
+
+    finally:
+        if layout_fig is not None:
+            layout_fig.set_layout_engine(layout_engine)
 
     plt.setp(
         cmp.heatmap_axes[-1, 0].get_xticklabels(), rotation_mode="anchor", ha="right"
@@ -346,8 +366,14 @@ def heatmapplot(
     for s in ["top", "bottom", "left", "right"]:
         cmp.ax_heatmap.spines[s].set_linewidth(settings.axes_linewidth)
 
+    cmp.cbars = getattr(cmp, "cbars", [])
     _style_plotter_colorbars(cmp.cbars)
     helper_heatmap._capture_detached_colorbar_layout(cmp)
+    if fig is not None and host_ax is not None:
+        utils._anchor_axes_to_host(
+            host_ax,
+            [plot_ax for plot_ax in fig.axes if plot_ax not in existing_axes],
+        )
     return cmp
 
 
@@ -364,6 +390,8 @@ def dotplot(
     xticklabels_rotation: int = 45,
     xticklabels_fontsize: int = 7,
     yticklabels_fontsize: int = 7,
+    *,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> DotClustermapPlotterNew:
     """
@@ -399,12 +427,14 @@ def dotplot(
         Font size for x-axis tick labels.
     yticklabels_fontsize : int, default: 7
         Font size for y-axis tick labels.
+    ax : matplotlib.axes.Axes, optional
+        Host axes for the dot plot layout. If None, uses the current axes.
     **kwargs
         Additional keyword arguments passed to `DotClustermapPlotter`.
 
     Returns
     -------
-    DotClustermapPlotter
+    DotClustermapPlotterNew
         The dot plot plotter object containing axes and layout information.
 
     See Also
@@ -466,12 +496,26 @@ def dotplot(
         },
         "yticklabels_kws": {"labelsize": yticklabels_fontsize},
         "dot_legend_kws": {"frameon": False},
+        "ax": ax,
     }
     if value is not None:
         plotter_kwargs["value"] = value
     plotter_kwargs.update(kwargs)
     plotter_kwargs.setdefault("plot_legend", plotter_kwargs.get("legend", True))
-    cmp = helper_heatmap.DotClustermapPlotterNew(**plotter_kwargs)
+    host_ax = ax
+    fig = None if host_ax is None else host_ax.figure
+    layout_fig = (
+        None if host_ax is None else cast(Figure, host_ax.get_figure(root=True))
+    )
+    layout_engine = None if layout_fig is None else layout_fig.get_layout_engine()
+    existing_axes = set() if fig is None else set(fig.axes)
+    if layout_fig is not None:
+        layout_fig.set_layout_engine("none")
+    try:
+        cmp = helper_heatmap.DotClustermapPlotterNew(**plotter_kwargs)
+    finally:
+        if layout_fig is not None:
+            layout_fig.set_layout_engine(layout_engine)
     cmp.cbars = getattr(cmp, "cbars", [])
 
     hm_ax = cmp.heatmap_axes[-1, 0]
@@ -511,6 +555,11 @@ def dotplot(
         cmp.ax_heatmap.spines[s].set_linewidth(settings.axes_linewidth)
 
     _style_plotter_colorbars(cmp.cbars)
+    if fig is not None and host_ax is not None:
+        utils._anchor_axes_to_host(
+            host_ax,
+            [plot_ax for plot_ax in fig.axes if plot_ax not in existing_axes],
+        )
     return cmp
 
 
@@ -552,6 +601,8 @@ def confusionplot(
     cmap: Any = "Blues",
     pvalue_x_pad: float = 0.25,
     pvalue_y_pad: float = 1.5,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a confusion matrix heatmap with optional classification metrics.
@@ -591,6 +642,9 @@ def confusionplot(
     pvalue_y_pad : float, default: 1.5
         Vertical padding for positioning the statistics text below the plot.
         Larger values move the statistics block farther down.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes. The optional statistics
+        overlay is anchored to this axes.
 
     Returns
     -------
@@ -643,8 +697,9 @@ def confusionplot(
         )
 
     # Plot
-    ax = plt.gca()
-    fig = plt.gcf()
+    if ax is None:
+        ax = plt.gca()
+    fig = ax.figure
     im = ax.imshow(cm_df.values, interpolation="nearest", cmap=cmap)
     ax.set_xlabel(x)
     ax.set_ylabel(y)
@@ -739,6 +794,7 @@ def confusionplot(
         # Overlay the stats block
         pos = ax.get_position()
         ax2 = fig.add_axes((pos.x0, pos.y0, pos.width, pos.height), frameon=False)
+        utils._anchor_axes_to_host(ax, [ax2], use_original_position=False)
         ax2.tick_params(
             labelcolor="none", top=False, bottom=False, left=False, right=False
         )

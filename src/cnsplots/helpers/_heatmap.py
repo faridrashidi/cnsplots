@@ -362,10 +362,12 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         ylabel_bbox_kws: dict[str, Any] | None = None,
         legend_delta_x: float | None = None,
         verbose: int = 1,
+        ax: Axes | None = None,
         **kwargs: Any,
     ) -> None:
         self.data = data
         self.legend_gap = legend_gap
+        self._host_ax = ax
         super().__init__(
             data=data,
             z_score=z_score,
@@ -432,6 +434,22 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         )
         if not plot:
             self.post_processing()
+
+    def plot(
+        self,
+        ax: Axes | None = None,
+        subplot_spec: Any = None,
+        row_order: Any = None,
+        col_order: Any = None,
+    ) -> Axes:
+        if ax is None:
+            ax = self._host_ax
+        return super().plot(
+            ax=ax,
+            subplot_spec=subplot_spec,
+            row_order=row_order,
+            col_order=col_order,
+        )
 
     def _define_axes(self, subplot_spec: Any = None) -> None:
         if not _define_axes_within_current_bounds(self, subplot_spec):
@@ -530,6 +548,31 @@ class DotClustermapPlotterNew(DotClustermapPlotter):
     dot_legend: mlegend.Legend | None
     cbar_ax: Axes | None
     legend_ax: Axes | None
+
+    def __init__(
+        self,
+        *args: Any,
+        ax: Axes | None = None,
+        **kwargs: Any,
+    ) -> None:
+        self._host_ax = ax
+        super().__init__(*args, **kwargs)
+
+    def plot(
+        self,
+        ax: Axes | None = None,
+        subplot_spec: Any = None,
+        row_order: Any = None,
+        col_order: Any = None,
+    ) -> Axes:
+        if ax is None:
+            ax = self._host_ax
+        return super().plot(
+            ax=ax,
+            subplot_spec=subplot_spec,
+            row_order=row_order,
+            col_order=col_order,
+        )
 
     def _define_axes(self, subplot_spec: Any = None) -> None:
         if not _define_axes_within_current_bounds(self, subplot_spec):

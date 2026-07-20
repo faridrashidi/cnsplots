@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from cnsplots._validation import (
     validate_adata_layer,
@@ -24,7 +25,7 @@ from cnsplots._validation import (
 )
 
 
-def phyloplot(adata: AnnData) -> None:
+def phyloplot(adata: AnnData, *, ax: Axes | None = None) -> Axes:
     import io
 
     import Bio.Phylo
@@ -40,20 +41,15 @@ def phyloplot(adata: AnnData) -> None:
     ]
     adata = cast(Any, adata)[cell_ids].copy()
 
-    fig = plt.gcf()
-    axes = fig.subplots(
-        nrows=1,
-        ncols=5,
-        sharey=True,
-        width_ratios=[0.2, 0.6, 0.05, 0.05, 0.1],
-        squeeze=False,
-        gridspec_kw=dict(hspace=0, wspace=0.1),
-    )[0]
-    tree_ax = cast(matplotlib.axes.Axes, axes[0])
-    heatmap_ax = cast(matplotlib.axes.Axes, axes[1])
-    group_ax_1 = cast(matplotlib.axes.Axes, axes[2])
-    group_ax_2 = cast(matplotlib.axes.Axes, axes[3])
-    legend_ax = cast(matplotlib.axes.Axes, axes[4])
+    if ax is None:
+        ax = plt.gca()
+    heatmap_ax = ax
+    divider = make_axes_locatable(heatmap_ax)
+    tree_ax = divider.append_axes("left", size="33.333%", pad=0.01, sharey=ax)
+    group_ax_1 = divider.append_axes("right", size="8.333%", pad=0.01, sharey=ax)
+    group_ax_2 = divider.append_axes("right", size="8.333%", pad=0.01, sharey=ax)
+    legend_ax = divider.append_axes("right", size="16.667%", pad=0.01)
+    axes = [tree_ax, heatmap_ax, group_ax_1, group_ax_2, legend_ax]
     for ax in axes:
         ax.set_axis_off()
     with plt.rc_context({"lines.linewidth": 0.5}):
@@ -85,6 +81,7 @@ def phyloplot(adata: AnnData) -> None:
         rasterized=True,
         palette="Set2",
     )
+    return heatmap_ax
 
 
 def _heatmap(

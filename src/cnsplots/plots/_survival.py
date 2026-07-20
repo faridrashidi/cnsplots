@@ -111,6 +111,7 @@ def survivalplot(
     *,
     overall_test: Literal["logrank", "trend"] = "logrank",
     pairs: list[tuple[str, str]] | None = None,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a Kaplan-Meier survival plot with statistical comparisons.
@@ -145,6 +146,8 @@ def survivalplot(
         When omitted, the sole contrast is reported automatically for two groups;
         no contrast is inferred for three or more groups. Pass an empty list to
         suppress pairwise inference.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
@@ -230,28 +233,23 @@ def survivalplot(
                 f"'{hue}': {missing_groups}."
             )
 
-    ax: Any = None
+    if ax is None:
+        ax = plt.gca()
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
     kmf = ll.KaplanMeierFitter()
-    for i, group in enumerate(hue_order):
+    for group in hue_order:
         df = data[data[hue] == group]
         label = f"{group} (n={df.shape[0]})"
         kmf.fit(df[duration], df[event], label=label)
-        if i != 0:
-            ax = kmf.plot_survival_function(
-                linewidth=1, ci_show=False, show_censors=True, censor_styles={"ms": 3}
-            )
-        else:
-            ax = kmf.plot_survival_function(
-                ax=ax,
-                linewidth=1,
-                ci_show=False,
-                show_censors=True,
-                censor_styles={"ms": 3},
-            )
-    assert ax is not None
-    plt.ylim(-0.05, 1.01)
+        kmf.plot_survival_function(
+            ax=ax,
+            linewidth=1,
+            ci_show=False,
+            show_censors=True,
+            censor_styles={"ms": 3},
+        )
+    ax.set_ylim(-0.05, 1.01)
     ax.set_xlabel(time_label)
     ax.set_ylabel("Survival probability")
 
@@ -327,10 +325,12 @@ def survivalplot(
         )
     ax.text(0, 0, "\n".join(annotation_lines))
 
-    if ax.get_legend() is not None:
-        for handle in ax.get_legend().legend_handles:
-            if hasattr(handle, "set_linewidth"):
-                handle.set_linewidth(1.7)
+    legend = ax.get_legend()
+    if legend is not None:
+        for handle in legend.legend_handles:
+            set_linewidth = getattr(handle, "set_linewidth", None)
+            if callable(set_linewidth):
+                set_linewidth(1.7)
 
     return ax
 
@@ -350,6 +350,8 @@ def cumulativeincidenceplot(
     censor_mark_length: float = _DEFAULT_CENSOR_MARK_LENGTH,
     time_label: str = "Time",
     seed: int | None = 0,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a cumulative incidence plot for competing risks analysis.
@@ -397,6 +399,9 @@ def cumulativeincidenceplot(
         Seed used by lifelines when tied event times require jittering. The default
         makes tied-data plots deterministic. The caller's NumPy random state is
         restored after fitting.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes. Any risk table is linked
+        to this axes and created on the same figure.
 
     Returns
     -------
@@ -456,7 +461,8 @@ def cumulativeincidenceplot(
     from lifelines.plotting import add_at_risk_counts
 
     data = data.copy()
-    ax: Any = None
+    if ax is None:
+        ax = plt.gca()
     if hue_order is None or set(data[hue].unique()) != set(hue_order):
         hue_order = list(data[hue].unique())
     _validate_censor_mark_position(censor_mark_position, hue_order)
@@ -483,10 +489,7 @@ def cumulativeincidenceplot(
             right_on=duration,
         )
         df = df.loc[df[event] == 0].copy()
-        if i == 0:
-            ax = fitter.plot(linewidth=1, ci_show=False)
-        else:
-            ax = fitter.plot(ax=ax, linewidth=1, ci_show=False)
+        fitter.plot(ax=ax, linewidth=1, ci_show=False)
         line_color = ax.get_lines()[-1].get_color()
         group_censor_mark_position = _resolve_censor_mark_position(
             censor_mark_position, i
@@ -507,7 +510,6 @@ def cumulativeincidenceplot(
                     colors=line_color,
                     linewidth=1,
                 )
-    assert ax is not None
     ax.set_ylim(_CIF_Y_LIMITS)
     ax.set_ylabel("Cumulative incidence probability")
     ax.set_xlabel(time_label)
@@ -542,5 +544,6 @@ def cumulativeincidenceplot(
             rows_to_show=rows,
             ypos=risk_table_ypos,
             xticks=xticks.tolist(),
+            fig=ax.figure,
         )
     return ax

@@ -558,10 +558,13 @@ def test_sets_and_specialized_plots(
     axes = cns.upsetplot(sets_fixture, min_subset_size=1)
     assert set(axes) >= {"matrix", "intersections"}
     assert all(ax is None or ax.get_facecolor()[-1] == 0 for ax in axes.values())
-    assert axes["matrix"].figure.patch.get_facecolor()[-1] == 0
+    matrix_ax = axes["matrix"]
+    shading_ax = axes["shading"]
+    assert matrix_ax is not None
+    assert shading_ax is not None
+    assert matrix_ax.figure.patch.get_facecolor()[-1] == 0
     assert all(
-        not tick.tick1line.get_visible()
-        for tick in axes["shading"].yaxis.get_major_ticks()
+        not tick.tick1line.get_visible() for tick in shading_ax.yaxis.get_major_ticks()
     )
 
     fig = plt.figure()
@@ -572,10 +575,10 @@ def test_sets_and_specialized_plots(
     with cns.settings.context(legend_fontsize=None, title_fontsize=12):
         cns.figure(120, 120)
         inherited_axes = cns.upsetplot(sets_fixture, min_subset_size=1)
-        assert inherited_axes["intersections"].texts
-        assert {
-            text.get_fontsize() for text in inherited_axes["intersections"].texts
-        } == {12}
+        intersections_ax = inherited_axes["intersections"]
+        assert intersections_ax is not None
+        assert intersections_ax.texts
+        assert {text.get_fontsize() for text in intersections_ax.texts} == {12}
 
     custom_fig = plt.figure()
     custom_fig.patch.set_facecolor("red")

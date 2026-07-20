@@ -35,6 +35,8 @@ if TYPE_CHECKING:
         assert_type(cns.palettes("Set1"), list[tuple[float, float, float]])
         assert_type(cns.palettes("parula"), Colormap)
         assert_type(cns.boxplot(data, x="group", y="value"), Axes)
+        assert_type(cns.histplot(data, x="x", ax=ax), Axes)
+        assert_type(cns.lineplot(data, x="x", y="y", ax=ax), Axes)
         assert_type(cns.regplot(data, x="x", y="y", color=(0.1, 0.2, 0.3)), Axes)
 
         panels = cns.multipanel()

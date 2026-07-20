@@ -34,6 +34,8 @@ def volcanoplot(
     symbol: str = "symbol",
     show_list: list[str] | None = None,
     n_show: int = 10,
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a volcano plot for differential expression analysis.
@@ -58,6 +60,8 @@ def volcanoplot(
         Number of top upregulated and downregulated genes to label automatically
         when ``show_list`` is ``None``. If ``show_list`` is provided, it takes
         precedence and ``n_show`` is ignored.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
@@ -124,6 +128,8 @@ def volcanoplot(
 
     blue = utils.get_hexcolors_from_apalette([0], "BlueRed")[0]
     red = utils.get_hexcolors_from_apalette([1], "BlueRed")[0]
+    if ax is None:
+        ax = plt.gca()
     ax = sns.scatterplot(
         data=de,
         x=x,
@@ -134,13 +140,14 @@ def volcanoplot(
         edgecolor=None,
         palette={"Down": blue, "NS": "grey", "Up": red, "p_adj < 0.05": "black"},
         rasterized=True,
+        ax=ax,
     )
 
     annotations = []
     for mode, color in [("Up", red), ("Down", blue)]:
         for _, (x0, y0, t) in de.loc[de[hue] == mode, [x, y, symbol]].iterrows():
             annotations.append(
-                plt.annotate(
+                ax.annotate(
                     t,
                     (x0, y0),
                     color=color,
@@ -149,14 +156,16 @@ def volcanoplot(
                 )
             )
     at.adjust_text(
-        annotations, arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5}
+        annotations,
+        arrowprops={"arrowstyle": "-", "color": "black", "lw": 0.5},
+        ax=ax,
     )
 
     ax.spines["right"].set_visible(True)
     ax.spines["top"].set_visible(True)
     ax.set_xlabel("log2(fold change)")
     ax.set_ylabel("\u2013log10(adjusted p-value)")
-    plt.plot(
+    ax.plot(
         [0, 0],
         [0, max(de[y])],
         color="black",
@@ -164,7 +173,7 @@ def volcanoplot(
         linewidth=0.8,
         dashes=(8, 5),
     )
-    utils.take_legend_out()
+    utils.take_legend_out(ax=ax)
     _resize_legend_markers(ax.get_legend(), 20)
 
     return ax
@@ -179,6 +188,8 @@ def gseaplot(
     top_term: int = 20,
     size: float = 1.8,
     significance_column: str = "FDR q-val",
+    *,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a Gene Set Enrichment Analysis (GSEA) dot plot.
@@ -207,6 +218,8 @@ def gseaplot(
     significance_column : str, default: 'FDR q-val'
         Column containing significance values used to filter gene sets by
         ``cutoff``. This is independent of the ``color`` encoding.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes.
 
     Returns
     -------
@@ -246,7 +259,8 @@ def gseaplot(
     plot_data = data.loc[data[significance_column] <= cutoff].copy()
     resolved_cmap = utils.palettes(cmap) if cmap in _CNS_CONTINUOUS_CMAPS else cmap
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     gp.dotplot(
         plot_data,
         cmap=cast(Any, resolved_cmap),
@@ -258,7 +272,7 @@ def gseaplot(
         top_term=top_term,
         size=size,
     )
-    fig = plt.gcf()
+    fig = ax.figure
     cbar_ax = fig.axes[-1]
     cbar_ax.yaxis.set_label_position("left")
     cbar_ax.yaxis.labelpad = 1
@@ -278,5 +292,5 @@ def gseaplot(
         markerscale=1.5,
     )
     setup_ax(ax, colorbar_label="")
-    plt.xlabel("Normalized Enrichment Score (NES)")
+    ax.set_xlabel("Normalized Enrichment Score (NES)")
     return ax

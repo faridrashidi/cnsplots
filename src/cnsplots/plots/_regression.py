@@ -51,6 +51,7 @@ def regplot(
     color: ColorType = "black",
     *,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -81,6 +82,8 @@ def regplot(
         and *color* is ignored.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.regplot`.
 
@@ -119,7 +122,8 @@ def regplot(
     validate_column_type(data, x, ["numeric"], "regplot")
     validate_column_type(data, y, ["numeric"], "regplot")
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     args = {
         "line_kws": {"lw": 1.2},
         "scatter_kws": {"s": s, "alpha": 1, "edgecolor": None},
@@ -230,6 +234,7 @@ def scatterplot(
     *,
     hue: str | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -249,6 +254,8 @@ def scatterplot(
         Column name for grouping points by color.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.scatterplot`.
 
@@ -281,6 +288,8 @@ def scatterplot(
     validate_columns_exist(data, columns, "scatterplot")
     validate_dataframe_not_empty(data, "scatterplot")
 
+    if ax is None:
+        ax = plt.gca()
     ax = sns.scatterplot(
         data=data,
         x=x,
@@ -289,6 +298,7 @@ def scatterplot(
         hue_order=hue_order,
         s=s,
         edgecolor=None,
+        ax=ax,
         **kwargs,
     )
 
@@ -298,9 +308,35 @@ def scatterplot(
 
 
 def lineplot(
+    data: pd.DataFrame | None = None,
     *,
-    hue: str | None = None,
-    hue_order: list[str] | None = None,
+    x: Any = None,
+    y: Any = None,
+    hue: Any = None,
+    size: Any = None,
+    style: Any = None,
+    units: Any = None,
+    weights: Any = None,
+    palette: Any = None,
+    hue_order: list[Any] | None = None,
+    hue_norm: Any = None,
+    sizes: Any = None,
+    size_order: list[Any] | None = None,
+    size_norm: Any = None,
+    dashes: Any = True,
+    markers: Any = None,
+    style_order: list[Any] | None = None,
+    estimator: Any = "mean",
+    errorbar: Any = ("ci", 95),
+    n_boot: int = 1000,
+    seed: Any = None,
+    orient: str = "x",
+    sort: bool = True,
+    err_style: str = "band",
+    err_kws: dict[str, Any] | None = None,
+    legend: Any = "auto",
+    ci: Any = "deprecated",
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -308,10 +344,38 @@ def lineplot(
 
     Parameters
     ----------
-    hue : str, optional
-        Column name for grouping lines by color.
-    hue_order : list of str, optional
-        Order of hue levels.
+    data : pd.DataFrame, optional
+        Input data in long or wide form.
+    x, y, hue, size, style, units, weights : str or vector, optional
+        Variables that define positions, grouping, and observation units or weights.
+    palette, hue_order, hue_norm
+        Parameters controlling hue color mapping.
+    sizes, size_order, size_norm
+        Parameters controlling line-width mapping.
+    dashes, markers, style_order
+        Parameters controlling line-style and marker mapping.
+    estimator : str, callable, or None, default: "mean"
+        Method used to aggregate repeated observations.
+    errorbar
+        Error-bar method and confidence level.
+    n_boot : int, default: 1000
+        Number of bootstrap samples used for uncertainty estimates.
+    seed : int, random generator, or None
+        Seed or generator for reproducible bootstrapping.
+    orient : {"x", "y"}, default: "x"
+        Axis along which observations are sorted and aggregated.
+    sort : bool, default: True
+        Whether to sort observations by the orient variable.
+    err_style : {"band", "bars"}, default: "band"
+        Visual representation used for uncertainty.
+    err_kws : dict, optional
+        Additional keyword arguments for uncertainty artists.
+    legend : "auto", "brief", "full", or bool, default: "auto"
+        How to draw semantic variable legends.
+    ci
+        Deprecated compatibility parameter forwarded to Seaborn.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Keyword arguments passed directly to `seaborn.lineplot`.
 
@@ -338,21 +402,49 @@ def lineplot(
     ... )
     >>> ax.set_ylabel("Gene Expression")
     """
-    # Validate inputs if provided in kwargs
-    if "data" in kwargs:
-        validate_dataframe(kwargs["data"], "data", "lineplot")
-        data = kwargs["data"]
-        columns_to_check = []
-        if "x" in kwargs:
-            columns_to_check.append(kwargs["x"])
-        if "y" in kwargs:
-            columns_to_check.append(kwargs["y"])
-        if hue is not None:
-            columns_to_check.append(hue)
+    if data is not None:
+        validate_dataframe(data, "data", "lineplot")
+        columns_to_check = [
+            value
+            for value in (x, y, hue, size, style, units, weights)
+            if isinstance(value, str)
+        ]
         if columns_to_check:
             validate_columns_exist(data, columns_to_check, "lineplot")
 
-    ax = sns.lineplot(hue=hue, hue_order=hue_order, **kwargs)
+    if ax is None:
+        ax = plt.gca()
+    ax = sns.lineplot(
+        data=data,
+        x=x,
+        y=y,
+        hue=hue,
+        size=size,
+        style=style,
+        units=units,
+        weights=weights,
+        palette=palette,
+        hue_order=hue_order,
+        hue_norm=hue_norm,
+        sizes=sizes,
+        size_order=size_order,
+        size_norm=size_norm,
+        dashes=dashes,
+        markers=markers,
+        style_order=style_order,
+        estimator=estimator,
+        errorbar=errorbar,
+        n_boot=n_boot,
+        seed=seed,
+        orient=orient,
+        sort=sort,
+        err_style=err_style,
+        err_kws=err_kws,
+        legend=legend,
+        ci=ci,
+        ax=ax,
+        **kwargs,
+    )
     return ax
 
 
@@ -364,6 +456,7 @@ def slopeplot(
     pair: str,
     *,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
 ) -> Axes:
     """
     Create a slope plot showing paired changes between two conditions.
@@ -384,6 +477,8 @@ def slopeplot(
         exactly one value per condition.
     hue_order : list of str, optional
         Order of the two hue levels from left to right within each x group.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
 
     Returns
     -------
@@ -460,7 +555,8 @@ def slopeplot(
     set1 = _get_brewer_map("Set1", "qualitative", 9)
     red, blue = set1.hex_colors[:2]
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
 
     sites: list[str] = []
     i = 1.0

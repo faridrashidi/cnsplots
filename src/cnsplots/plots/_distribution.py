@@ -38,6 +38,7 @@ def boxplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -71,6 +72,8 @@ def boxplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.boxplot`.
 
@@ -138,7 +141,9 @@ def boxplot(
     }
     plotting.update(args)
     plotting.update(kwargs)
-    ax = sns.boxplot(**plotting)
+    if ax is None:
+        ax = plt.gca()
+    ax = sns.boxplot(ax=ax, **plotting)
 
     box_patches = [
         patch for patch in ax.patches if isinstance(patch, mpl.patches.PathPatch)
@@ -198,6 +203,7 @@ def violinplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -229,6 +235,8 @@ def violinplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.violinplot`.
 
@@ -295,13 +303,15 @@ def violinplot(
         "hue_order": hue_order,
     }
     plotting.update(kwargs)
-    ax = sns.violinplot(linewidth=0.001, width=width, **plotting)
+    if ax is None:
+        ax = plt.gca()
+    ax = sns.violinplot(ax=ax, linewidth=0.001, width=width, **plotting)
     plotting.update(args)
     plotting.update(kwargs)
     # Remove violin-only arguments that boxplot doesn't support
     boxplot_kwargs = {k: v for k, v in plotting.items() if k not in ("split", "inner")}
     if add_box:
-        sns.boxplot(**boxplot_kwargs)
+        sns.boxplot(ax=ax, **boxplot_kwargs)
     if pairs is not None:
         utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
@@ -317,6 +327,7 @@ def distplot(
     *,
     hue: str | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -335,6 +346,8 @@ def distplot(
         Column name for grouping distributions.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.histplot`.
 
@@ -367,11 +380,14 @@ def distplot(
 
     args = {"kde": True, "edgecolor": None}
     args.update(kwargs)
+    if ax is None:
+        ax = plt.gca()
     ax = sns.histplot(
         data=data,
         x=x,
         hue=hue,
         hue_order=hue_order,
+        ax=ax,
         **args,
     )
     return ax
@@ -384,6 +400,7 @@ def kdeplot(
     *,
     hue: str | None = None,
     hue_order: list[str] | None = None,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -405,6 +422,8 @@ def kdeplot(
         Column name for grouping density estimates.
     hue_order : list of str, optional
         Order of hue levels.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `seaborn.kdeplot`.
 
@@ -436,22 +455,23 @@ def kdeplot(
     validate_dataframe_not_empty(data, "kdeplot")
 
     linewidth = kwargs.pop("linewidth", 1)
+    if ax is None:
+        ax = plt.gca()
     ax = sns.kdeplot(
         data=data,
         x=x,
         hue=hue,
         hue_order=hue_order,
         linewidth=linewidth,
+        ax=ax,
         **kwargs,
     )
-    ax = plt.gca()
     modes = []
     if hue is not None:
         if data[hue].nunique() == 2:
             grouped = data.groupby(hue)
             args = [group_df[x].values for _, group_df in grouped]
             p_value = sp.stats.ks_2samp(*args)
-            ax = plt.gca()
             x_lim = ax.get_xlim()
             y_lim = ax.get_ylim()
             ax.text(
@@ -505,9 +525,40 @@ def kdeplot(
 
 
 def histplot(
+    data: pd.DataFrame | None = None,
     *,
-    hue: str | None = None,
-    hue_order: list[str] | None = None,
+    x: Any = None,
+    y: Any = None,
+    hue: Any = None,
+    weights: Any = None,
+    stat: str = "count",
+    bins: Any = "auto",
+    binwidth: float | None = None,
+    binrange: tuple[float, float] | None = None,
+    discrete: bool | None = None,
+    cumulative: bool = False,
+    common_bins: bool = True,
+    common_norm: bool = True,
+    multiple: str = "layer",
+    element: str = "bars",
+    fill: bool = True,
+    shrink: float = 1,
+    kde: bool = False,
+    kde_kws: dict[str, Any] | None = None,
+    line_kws: dict[str, Any] | None = None,
+    thresh: float | None = 0,
+    pthresh: float | None = None,
+    pmax: float | None = None,
+    cbar: bool = False,
+    cbar_ax: Axes | None = None,
+    cbar_kws: dict[str, Any] | None = None,
+    palette: Any = None,
+    hue_order: list[Any] | None = None,
+    hue_norm: Any = None,
+    color: Any = None,
+    log_scale: Any = None,
+    legend: bool = True,
+    ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -518,10 +569,38 @@ def histplot(
 
     Parameters
     ----------
-    hue : str, optional
-        Column name for grouping histograms.
-    hue_order : list of str, optional
-        Order of hue levels.
+    data : pd.DataFrame, optional
+        Input data in long or wide form.
+    x, y, hue, weights : str or vector, optional
+        Variables that define positions, grouping, and observation weights.
+    stat : str, default: "count"
+        Aggregate statistic shown by each bin.
+    bins, binwidth, binrange, discrete
+        Parameters controlling how histogram bins are defined.
+    cumulative, common_bins, common_norm : bool
+        Parameters controlling cumulative and shared histogram calculations.
+    multiple, element, fill, shrink
+        Parameters controlling how histogram marks are drawn.
+    kde : bool, default: False
+        Whether to add a kernel density estimate.
+    kde_kws, line_kws : dict, optional
+        Additional keyword arguments for the KDE and its line artists.
+    thresh, pthresh, pmax : float, optional
+        Thresholds used when drawing a bivariate histogram.
+    cbar : bool, default: False
+        Whether to add a colorbar for a bivariate histogram.
+    cbar_ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the colorbar.
+    cbar_kws : dict, optional
+        Additional keyword arguments for the colorbar.
+    palette, hue_order, hue_norm, color
+        Parameters controlling color mapping.
+    log_scale : bool, number, or pair, optional
+        Log scaling configuration for the plot axes.
+    legend : bool, default: True
+        Whether to draw a legend.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Keyword arguments passed directly to `seaborn.histplot`.
 
@@ -546,32 +625,69 @@ def histplot(
     >>> ax = cns.histplot(data=df, x="expression", kde=True, hue="treatment")
     >>> ax.set_xlabel("Gene Expression")
     """
-    # Validate inputs if provided in kwargs
-    if "data" in kwargs:
-        validate_dataframe(kwargs["data"], "data", "histplot")
-        data = kwargs["data"]
-        columns_to_check = []
-        if "x" in kwargs:
-            columns_to_check.append(kwargs["x"])
-        if "y" in kwargs:
-            columns_to_check.append(kwargs["y"])
-        if hue is not None:
-            columns_to_check.append(hue)
+    if data is not None:
+        validate_dataframe(data, "data", "histplot")
+        columns_to_check = [
+            value for value in (x, y, hue, weights) if isinstance(value, str)
+        ]
         if columns_to_check:
             validate_columns_exist(data, columns_to_check, "histplot")
 
-    track_detached_axes = bool(kwargs.get("cbar")) and kwargs.get("cbar_ax") is None
-    host_ax = kwargs.get("ax", plt.gca())
-    existing_axes = list(host_ax.figure.axes) if track_detached_axes else []
+    if ax is None:
+        ax = plt.gca()
+    track_detached_axes = cbar and cbar_ax is None
+    existing_axes = list(ax.figure.axes) if track_detached_axes else []
 
     kwargs.setdefault("edgecolor", None)
-    ax = sns.histplot(hue=hue, hue_order=hue_order, **kwargs)
+    ax = sns.histplot(
+        data=data,
+        x=x,
+        y=y,
+        hue=hue,
+        weights=weights,
+        stat=stat,
+        bins=bins,
+        binwidth=binwidth,
+        binrange=binrange,
+        discrete=discrete,
+        cumulative=cumulative,
+        common_bins=common_bins,
+        common_norm=common_norm,
+        multiple=multiple,
+        element=element,
+        fill=fill,
+        shrink=shrink,
+        kde=kde,
+        kde_kws=kde_kws,
+        line_kws=line_kws,
+        thresh=thresh,
+        pthresh=pthresh,
+        pmax=pmax,
+        cbar=cbar,
+        cbar_ax=cbar_ax,
+        cbar_kws=cbar_kws,
+        palette=palette,
+        hue_order=hue_order,
+        hue_norm=hue_norm,
+        color=color,
+        log_scale=log_scale,
+        legend=legend,
+        ax=ax,
+        **kwargs,
+    )
     if track_detached_axes:
         utils._capture_detached_axes_layout(ax, existing_axes)
     return ax
 
 
-def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes:
+def ridgeplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    cmap: str = "viridis",
+    *,
+    ax: Axes | None = None,
+) -> Axes:
     """
     Create a ridge plot (joyplot) showing distributions across categories.
 
@@ -589,6 +705,8 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
     cmap : str, optional
         Name of a matplotlib colormap to use for coloring the ridges.
         Default is ``"viridis"``.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
 
     Returns
     -------
@@ -604,11 +722,11 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
     Examples
     --------
     >>> import cnsplots as cns
-    >>> axes = cns.ridgeplot(data=df, x="expression", y="tissue_type")
-    >>> axes[-1].set_xlabel("Gene Expression")
+    >>> ax = cns.ridgeplot(data=df, x="expression", y="tissue_type")
+    >>> ax.set_xlabel("Gene Expression")
 
     >>> # Time series data with a custom colormap
-    >>> axes = cns.ridgeplot(data=df, x="temperature", y="month", cmap="plasma")
+    >>> ax = cns.ridgeplot(data=df, x="temperature", y="month", cmap="plasma")
     """
     # Validate inputs
     validate_dataframe(data, "data", "ridgeplot")
@@ -634,7 +752,8 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
 
     n = len(categories)
     colors = utils._get_hex_colors_from_colorbar(cmap, n)
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
 
     from scipy.stats import gaussian_kde
 
@@ -674,7 +793,13 @@ def ridgeplot(data: pd.DataFrame, x: str, y: str, cmap: str = "viridis") -> Axes
     return ax
 
 
-def qqplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
+def qqplot(
+    data: pd.DataFrame,
+    x: str,
+    *,
+    ax: Axes | None = None,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a quantile-quantile (Q-Q) plot to assess normality.
 
@@ -687,6 +812,8 @@ def qqplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
         The input DataFrame containing the data to plot.
     x : str
         Column name for the variable to test for normality.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
         Additional keyword arguments passed to `statsmodels.api.qqplot`.
 
@@ -717,7 +844,8 @@ def qqplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
 
     import statsmodels.api as sm
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
     sm.qqplot(
         data[x],
         ax=ax,
