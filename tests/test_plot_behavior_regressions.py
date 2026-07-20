@@ -14,6 +14,62 @@ from scipy import stats
 import cnsplots as cns
 
 
+@pytest.mark.parametrize(
+    ("order_name", "order", "expected_detail"),
+    [
+        ("x_order", ["a", "b"], "Missing labels: ['c']"),
+        ("x_order", ["a", "b", "c", "extra"], "Extra labels: ['extra']"),
+        ("y_order", ["a", "b"], "Missing labels: ['c']"),
+        ("y_order", ["a", "b", "c", "extra"], "Extra labels: ['extra']"),
+        ("x_order", ["a", "b", "c", "c"], "Duplicate labels: ['c']"),
+    ],
+)
+def test_confusionplot_rejects_non_exact_orders(
+    order_name: str,
+    order: list[str],
+    expected_detail: str,
+) -> None:
+    data = pd.DataFrame({"pred": ["a", "b", "c"], "truth": ["a", "b", "c"]})
+
+    with pytest.raises(ValueError, match=order_name) as exc_info:
+        cns.confusionplot(data, x="pred", y="truth", **{order_name: order})
+
+    assert expected_detail in str(exc_info.value)
+
+
+def test_confusionplot_ordering_preserves_all_rows() -> None:
+    data = pd.DataFrame({"pred": ["a", "b", "c"], "truth": ["a", "b", "c"]})
+
+    cns.figure(120, 120)
+    ax = cns.confusionplot(
+        data,
+        x="pred",
+        y="truth",
+        x_order=["c", "b", "a"],
+        y_order=["c", "b", "a"],
+    )
+
+    matrix = np.asarray(ax.images[0].get_array())
+    assert int(matrix.sum()) == len(data)
+    np.testing.assert_array_equal(matrix, np.eye(3, dtype=int))
+    assert [tick.get_text() for tick in ax.get_xticklabels()] == ["c", "b", "a"]
+    assert [tick.get_text() for tick in ax.get_yticklabels()] == ["c", "b", "a"]
+
+
+def test_confusionplot_checks_count_conservation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame({"pred": ["a", "a", "b"], "truth": ["a", "b", "b"]})
+    monkeypatch.setattr(
+        pd,
+        "crosstab",
+        lambda *args, **kwargs: pd.DataFrame([[1, 0], [0, 1]]),
+    )
+
+    with pytest.raises(RuntimeError, match="expected 3 input rows, counted 2"):
+        cns.confusionplot(data, x="pred", y="truth", annot=False)
+
+
 @pytest.mark.parametrize("horizontal", [False, True])
 @pytest.mark.parametrize("with_hue", [False, True])
 def test_lollipop_geometry_is_consistent_across_orientations_and_hue(

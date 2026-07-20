@@ -36,6 +36,7 @@ from cnsplots._validation import (
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
+    validate_no_nulls,
 )
 
 
@@ -517,6 +518,31 @@ def dotplot(
     return cmp
 
 
+def _resolve_confusion_order(
+    values: pd.Series,
+    order: list[str] | None,
+    order_name: str,
+) -> list[Any]:
+    observed = list(pd.unique(values))
+    if order is None:
+        return observed
+
+    resolved = list(order)
+    observed_index = pd.Index(observed)
+    order_index = pd.Index(resolved)
+    missing = observed_index[~observed_index.isin(order_index)].tolist()
+    extra = order_index[~order_index.isin(observed_index)].tolist()
+    duplicates = order_index[order_index.duplicated()].unique().tolist()
+    if missing or extra or duplicates:
+        raise ValueError(
+            f"[confusionplot] {order_name} must contain each observed label exactly "
+            f"once and no other labels. Missing labels: {missing}; Extra labels: "
+            f"{extra}; Duplicate labels: {duplicates}."
+        )
+
+    return resolved
+
+
 def confusionplot(
     data: pd.DataFrame,
     x: str,
@@ -550,9 +576,11 @@ def confusionplot(
         Whether to compute and display classification metrics. Only applicable
         for 2x2 confusion matrices.
     x_order : list, optional
-        Explicit ordering of prediction labels (columns).
+        Display ordering of prediction labels (columns). Must contain each
+        observed label exactly once; it does not filter observations.
     y_order : list, optional
-        Explicit ordering of true labels (rows).
+        Display ordering of true labels (rows). Must contain each observed
+        label exactly once; it does not filter observations.
     positive_x : hashable, optional
         The label to treat as 'positive' class in predictions.
     positive_y : hashable, optional
@@ -602,16 +630,21 @@ def confusionplot(
     validate_dataframe(data, "data", "confusionplot")
     validate_columns_exist(data, [x, y], "confusionplot")
     validate_dataframe_not_empty(data, "confusionplot")
+    validate_no_nulls(data, [x, y], "confusionplot")
 
-    if y_order is None:
-        y_order = pd.unique(data[y])
-    if x_order is None:
-        x_order = pd.unique(data[x])
+    x_order = _resolve_confusion_order(data[x], x_order, "x_order")
+    y_order = _resolve_confusion_order(data[y], y_order, "y_order")
 
     y_cat = pd.Categorical(data[y], categories=y_order, ordered=True)
     x_cat = pd.Categorical(data[x], categories=x_order, ordered=True)
 
     cm_df = pd.crosstab(y_cat, x_cat, dropna=False)
+    counted_rows = cm_df.to_numpy().sum()
+    if pd.isna(counted_rows) or counted_rows != len(data):
+        raise RuntimeError(
+            "[confusionplot] Confusion matrix count mismatch: "
+            f"expected {len(data)} input rows, counted {counted_rows}."
+        )
 
     # Plot
     ax = plt.gca()
@@ -635,11 +668,6 @@ def confusionplot(
         for i in range(cm_df.shape[0]):
             for j in range(cm_df.shape[1]):
                 cell_value = cm_df.iat[i, j]
-                if pd.isna(cell_value):
-                    raise ValueError(
-                        f"[confusionplot] Confusion matrix contains NaN at position [{i},{j}]. "
-                        "All values must be valid numbers."
-                    )
                 r, g, b, _ = im.cmap(im.norm(cell_value))
                 ax.text(
                     j,
@@ -664,22 +692,10 @@ def confusionplot(
 
         # Decide which labels are positive/negative on each axis
         pos_y = y_order[-1] if positive_y is None else positive_y
-        neg_y_list = [lbl for lbl in y_order if lbl != pos_y]
-        if not neg_y_list:
-            raise ValueError(
-                f"[confusionplot] Could not find negative label in y_order. "
-                f"positive_y='{pos_y}', y_order={list(y_order)}"
-            )
-        neg_y = neg_y_list[0]
+        neg_y = next(lbl for lbl in y_order if lbl != pos_y)
 
         pos_x = x_order[-1] if positive_x is None else positive_x
-        neg_x_list = [lbl for lbl in x_order if lbl != pos_x]
-        if not neg_x_list:
-            raise ValueError(
-                f"[confusionplot] Could not find negative label in x_order. "
-                f"positive_x='{pos_x}', x_order={list(x_order)}"
-            )
-        neg_x = neg_x_list[0]
+        neg_x = next(lbl for lbl in x_order if lbl != pos_x)
 
         # Extract counts in tn/fp/fn/tp layout
         try:
@@ -692,19 +708,6 @@ def confusionplot(
                 "[confusionplot] Could not find a required cell for stats. "
                 f"Check x_order/y_order and positive_x/positive_y. Missing: {e}"
             ) from e
-
-        # Validate no NaN values
-        for name, val in [
-            ("TN", tn_val),
-            ("FP", fp_val),
-            ("FN", fn_val),
-            ("TP", tp_val),
-        ]:
-            if pd.isna(val):
-                raise ValueError(
-                    f"[confusionplot] {name} cell contains NaN. All confusion matrix cells "
-                    "must have valid numeric values for statistics computation."
-                )
 
         tn = int(tn_val)
         fp = int(fp_val)

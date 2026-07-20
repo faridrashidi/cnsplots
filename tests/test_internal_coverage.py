@@ -1034,7 +1034,7 @@ def test_plot_internal_coverage(
             columns=pd.Index(["neg", "pos"]),
         ),
     )
-    with pytest.raises(ValueError, match="TN cell contains NaN"):
+    with pytest.raises(RuntimeError, match="count mismatch"):
         cns.confusionplot(
             confusion_df,
             x="pred",
@@ -1168,51 +1168,6 @@ def test_remaining_visual_internal_coverage(
         cmap="parula",
     )
     assert cmp.ax_heatmap is not None
-
-    monkeypatch.setattr(
-        heatmap_mod.pd,
-        "crosstab",
-        lambda *args, **kwargs: pd.DataFrame(
-            [[np.nan, 1], [1, 1]],
-            index=pd.Index(["neg", "pos"]),
-            columns=pd.Index(["neg", "pos"]),
-        ),
-    )
-    with pytest.raises(ValueError, match="contains NaN at position \\[0,0\\]"):
-        cns.confusionplot(
-            confusion_df,
-            x="pred",
-            y="truth",
-            x_order=["neg", "pos"],
-            y_order=["neg", "pos"],
-            annot=True,
-        )
-
-    monkeypatch.setattr(
-        heatmap_mod.pd,
-        "Categorical",
-        lambda values, categories, ordered: values,
-    )
-    monkeypatch.setattr(
-        heatmap_mod.pd,
-        "crosstab",
-        lambda *args, **kwargs: pd.DataFrame(
-            [[1, 0], [0, 1]],
-            index=pd.Index(["neg", "pos"]),
-            columns=pd.Index(["pos1", "pos2"]),
-        ),
-    )
-    with pytest.raises(ValueError, match="Could not find negative label in x_order"):
-        cns.confusionplot(
-            confusion_df,
-            x="pred",
-            y="truth",
-            x_order=["pos", "pos"],
-            y_order=["neg", "pos"],
-            positive_x="pos",
-            add_pvalue=True,
-            annot=False,
-        )
 
     class MarkerHandle:
         def __init__(self) -> None:
