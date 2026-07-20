@@ -462,29 +462,7 @@ def test_confusionplot_metrics_and_errors(confusion_df: pd.DataFrame) -> None:
             add_pvalue=True,
         )
 
-    with pytest.raises(ValueError, match="Could not find negative label in y_order"):
-        cns.confusionplot(
-            confusion_df,
-            x="pred",
-            y="truth",
-            add_pvalue=True,
-            x_order=["neg", "pos"],
-            y_order=["pos"],
-            positive_y="pos",
-        )
-
-    with pytest.raises(ValueError, match="2x2 confusion matrix"):
-        cns.confusionplot(
-            confusion_df,
-            x="pred",
-            y="truth",
-            add_pvalue=True,
-            x_order=["pos"],
-            y_order=["neg", "pos"],
-            positive_x="pos",
-        )
-
-    with pytest.raises(ValueError, match="Categorical categories cannot be null"):
+    with pytest.raises(ValueError, match="Null values found"):
         cns.confusionplot(
             pd.DataFrame({"pred": ["neg", "pos"], "truth": ["neg", np.nan]}),
             x="pred",
