@@ -38,6 +38,116 @@ def _read_versions_manifest(root: Path) -> list[dict[str, object]]:
     return json.loads((root / "versions.json").read_text(encoding="utf-8"))
 
 
+def _write_docs_source(repo_root: Path) -> Path:
+    docs_dir = repo_root / "docs"
+    docs_dir.mkdir(parents=True)
+    (docs_dir / "conf.py").write_text(
+        "project = 'test'\n# CNSPLOTS_DOCS_ONLINE\n# CNSPLOTS_DOCS_EXECUTE_GALLERY\n",
+        encoding="utf-8",
+    )
+    (docs_dir / "index.rst").write_text("Test\n====\n", encoding="utf-8")
+    (docs_dir / "examples").mkdir()
+    (docs_dir / "examples" / "generated.rst").write_text("stale\n", encoding="utf-8")
+    (repo_root / "src" / "package").mkdir(parents=True)
+    (repo_root / "src" / "package" / "__init__.py").write_text("", encoding="utf-8")
+    (repo_root / "examples").mkdir()
+    (repo_root / "examples" / "plot.py").write_text("print('plot')\n", encoding="utf-8")
+    return docs_dir
+
+
+def test_sphinx_build_stages_docs_and_repository_inputs(tmp_path, monkeypatch):
+    docs_build = _load_docs_build_script()
+    repo_root = tmp_path / "repo"
+    docs_dir = _write_docs_source(repo_root)
+    output_dir = repo_root / "build" / "html"
+    call = {}
+
+    def fake_run_checked(*args, env, cwd):
+        staged_docs_dir = Path(args[-2])
+        staging_root = staged_docs_dir.parent
+        call["args"] = args
+        call["env"] = env
+        call["cwd"] = cwd
+        call["staging_root"] = staging_root
+        assert (staged_docs_dir / "index.rst").is_file()
+        assert not (staged_docs_dir / "examples").exists()
+        assert (staging_root / "src" / "package" / "__init__.py").is_file()
+        assert (staging_root / "examples" / "plot.py").is_file()
+
+    monkeypatch.setattr(docs_build, "_run_checked", fake_run_checked)
+
+    docs_build._run_sphinx_build(
+        "html",
+        output_dir,
+        docs_dir=docs_dir,
+        cwd=repo_root,
+    )
+
+    assert call["args"][3:8] == ("-W", "--keep-going", "-b", "html", "-d")
+    assert call["args"][-1] == str(output_dir)
+    assert call["cwd"] == repo_root
+    assert call["env"]["CNSPLOTS_DOCS_REPO_ROOT"] == str(call["staging_root"])
+    assert call["env"]["CNSPLOTS_DOCS_ONLINE"] == "0"
+    assert call["env"]["CNSPLOTS_DOCS_EXECUTE_GALLERY"] == "1"
+    assert call["env"]["MPLBACKEND"] == "Agg"
+    assert Path(call["env"]["MPLCONFIGDIR"]).parent == call["staging_root"]
+    assert call["staging_root"].parent == output_dir.parent
+    assert not call["staging_root"].exists()
+
+
+def test_linkcheck_is_online_without_executing_gallery(tmp_path, monkeypatch):
+    docs_build = _load_docs_build_script()
+    repo_root = tmp_path / "repo"
+    docs_dir = _write_docs_source(repo_root)
+    build_env = {}
+
+    def fake_run_checked(*args, env, cwd):
+        del args, cwd
+        build_env.update(env)
+
+    monkeypatch.setattr(docs_build, "_run_checked", fake_run_checked)
+
+    docs_build._run_sphinx_build(
+        "linkcheck",
+        repo_root / "build" / "linkcheck",
+        docs_dir=docs_dir,
+        cwd=repo_root,
+    )
+
+    assert build_env["CNSPLOTS_DOCS_ONLINE"] == "1"
+    assert build_env["CNSPLOTS_DOCS_EXECUTE_GALLERY"] == "0"
+
+
+def test_legacy_docs_disable_network_and_gallery_execution(tmp_path, monkeypatch):
+    docs_build = _load_docs_build_script()
+    repo_root = tmp_path / "repo"
+    docs_dir = _write_docs_source(repo_root)
+    (docs_dir / "conf.py").write_text(
+        "intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}\n"
+        "sphinx_gallery_conf = {'plot_gallery': True}\n",
+        encoding="utf-8",
+    )
+    build_env = {}
+
+    def fake_run_checked(*args, env, cwd):
+        del cwd
+        staged_conf = Path(args[-2]) / "conf.py"
+        assert "Added to staged sources" in staged_conf.read_text(encoding="utf-8")
+        build_env.update(env)
+
+    monkeypatch.setattr(docs_build, "_run_checked", fake_run_checked)
+
+    docs_build._run_sphinx_build(
+        "html",
+        repo_root / "build" / "html",
+        docs_dir=docs_dir,
+        cwd=repo_root,
+    )
+
+    assert build_env["CNSPLOTS_DOCS_ONLINE"] == "0"
+    assert build_env["CNSPLOTS_DOCS_EXECUTE_GALLERY"] == "0"
+
+
 def test_main_build_bootstraps_when_gh_pages_branch_is_missing(tmp_path, monkeypatch):
     docs_build = _load_docs_build_script()
     bootstrap_calls = []

@@ -6,6 +6,7 @@
 SPHINXOPTS    ?=
 # Run Sphinx through uv so `make html` uses the project's development extra.
 SPHINXBUILD   ?= uv run --extra dev sphinx-build
+STAGEDBUILD   ?= uv run --extra dev python _scripts/build_versioned_docs.py
 SOURCEDIR     = .
 BUILDDIR      = build
 
@@ -13,9 +14,17 @@ BUILDDIR      = build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+.PHONY: help clean html linkcheck Makefile
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+clean:
+	rm -rf "$(BUILDDIR)"
+
+html:
+	@$(STAGEDBUILD) --builder html "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
+
+linkcheck:
+	@$(STAGEDBUILD) --builder linkcheck "$(BUILDDIR)/linkcheck" $(SPHINXOPTS) $(O)
+
+# Catch-all target: stage every Sphinx builder so generated sources stay in build.
 %: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(STAGEDBUILD) --builder $@ "$(BUILDDIR)/$@" $(SPHINXOPTS) $(O)

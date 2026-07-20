@@ -7,6 +7,7 @@ help:
 	@echo " - lint         : run linting and flaking"
 	@echo " - test         : run all unit tests"
 	@echo " - doc          : build the documentation"
+	@echo " - doc-linkcheck: check documentation links"
 	@echo " - install      : install the package"
 	@echo " - release      : bump version with [patch|minor|major]"
 
@@ -41,6 +42,9 @@ doc: clean
 ifneq ($(CI),true)
 	cd docs/build/html && python -m http.server 8080
 endif
+
+doc-linkcheck:
+	cd docs && $(MAKE) linkcheck
 
 install:
 	uv sync --extra dev
