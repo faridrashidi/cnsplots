@@ -10,11 +10,13 @@ import types
 from collections.abc import Mapping, Sequence
 from importlib.metadata import version
 from pathlib import Path
+from typing import cast, get_type_hints
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.text import Text
 
 import cnsplots as cns
@@ -155,6 +157,36 @@ def test_public_namespace_contract() -> None:
     assert namespace["savefig"] is cns.savefig
     assert cns.save is cns.savefig
     assert namespace["validation"] is cns.validation
+
+
+def test_public_callable_annotations_resolve() -> None:
+    missing_annotations: dict[str, list[str]] = {}
+    unresolved_annotations: dict[str, str] = {}
+
+    for name in cns.__all__:
+        value = getattr(cns, name)
+        if not (inspect.isfunction(value) or inspect.isclass(value)):
+            continue
+
+        signature = inspect.signature(value)
+        hint_target = value.__init__ if inspect.isclass(value) else value
+        missing = [
+            parameter.name
+            for parameter in signature.parameters.values()
+            if parameter.annotation is inspect.Parameter.empty
+        ]
+        if signature.return_annotation is inspect.Signature.empty:
+            missing.append("return")
+        if missing:
+            missing_annotations[name] = missing
+
+        try:
+            get_type_hints(hint_target)
+        except (NameError, TypeError) as exc:
+            unresolved_annotations[name] = str(exc)
+
+    assert missing_annotations == {}
+    assert unresolved_annotations == {}
 
 
 def test_public_stackplot_signature_contract() -> None:
@@ -321,6 +353,7 @@ def test_public_cox_model_and_forestplot_contract(
         variates=["age", "C(stage)"],
     )
     model.fit()
+    assert model.results is not None
     assert set(model.results.columns) == {
         "display_label",
         "exp(coef)",
@@ -362,6 +395,7 @@ def test_public_logistic_model_contract(roc_df: pd.DataFrame) -> None:
 
     model = cns.LogisticModel(data, event="event", variates=["score"])
     model.fit()
+    assert model.results is not None
     assert list(model.results.columns) == [
         "predictor",
         "auc",
@@ -633,7 +667,7 @@ def test_public_multipanel_layout_contract(
 
     fig = plt.gcf()
     fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
+    renderer = cast(FigureCanvasAgg, fig.canvas).get_renderer()
 
     assert ax2.get_position().y0 < ax1.get_position().y0
 
@@ -668,7 +702,7 @@ def test_public_multipanel_layout_contract(
     label_a_bbox = label_a.get_window_extent(renderer=renderer)
     label_b_bbox = label_b.get_window_extent(renderer=renderer)
 
-    assert title.get_ha() == "left"
+    assert title.get_horizontalalignment() == "left"
     assert title_bbox.y0 > ax1_bbox.y1
     assert label_a_bbox.x1 < ax1_bbox.x0
     assert label_a_bbox.y0 >= ax1_bbox.y1

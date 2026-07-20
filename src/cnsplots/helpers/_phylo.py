@@ -261,7 +261,9 @@ def _is_categorical(
     return False
 
 
-def _gen_colors(pal: str | list | np.ndarray, n: int) -> list:
+def _gen_colors(
+    pal: str | list[Any] | np.ndarray | mcolors.Colormap, n: int
+) -> list[Any]:
     """Generate colours from provided palette."""
     colors: list
 
@@ -275,7 +277,7 @@ def _gen_colors(pal: str | list | np.ndarray, n: int) -> list:
             cmap = plt.get_cmap(pal)
             colors = [cmap(i) for i in np.linspace(0, 1, n)]
     # If palette provided
-    elif isinstance(pal, mcolors.LinearSegmentedColormap):
+    elif isinstance(pal, mcolors.Colormap):
         colors = [pal(i) for i in np.linspace(0, 1, n)]
     # If list of colors
     elif isinstance(pal, (list, np.ndarray)):

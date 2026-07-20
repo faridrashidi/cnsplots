@@ -1,14 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    import pandas as pd
-    from anndata import AnnData
-    from matplotlib.axes import Axes
-    from PyComplexHeatmap import DotClustermapPlotter
-
-    from cnsplots.helpers._heatmap import ClusterMapPlotterNew
+from typing import Any, cast
 
 import matplotlib as mpl
 import matplotlib.colorbar  # noqa: F401  # ensure submodule is importable for isinstance checks
@@ -19,14 +11,17 @@ import numpy as np
 import pandas as pd
 import PyComplexHeatmap as pch
 import seaborn as sns
+from anndata import AnnData
 from anndata.abc import CSCDataset, CSRDataset
+from matplotlib.axes import Axes
 from natsort import natsort_keygen
 from scipy import sparse
 from scipy.stats import fisher_exact
 
-import cnsplots._utils as utils
 from cnsplots._settings import settings
+import cnsplots._utils as utils
 import cnsplots.helpers._heatmap as helper_heatmap
+from cnsplots.helpers._heatmap import ClusterMapPlotterNew, DotClustermapPlotterNew
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_adata_layer,
@@ -50,10 +45,11 @@ def _anndata_to_heatmap_dataframe(adata: AnnData, layer: str | None) -> pd.DataF
     matrix = adata.X if layer is None else adata.layers[layer]
     is_backed_sparse = isinstance(matrix, (CSRDataset, CSCDataset))
     if sparse.issparse(matrix) or is_backed_sparse:
+        sparse_matrix = cast(Any, matrix)
         dense_nbytes = (
-            int(matrix.shape[0])
-            * int(matrix.shape[1])
-            * np.dtype(matrix.dtype).itemsize
+            int(sparse_matrix.shape[0])
+            * int(sparse_matrix.shape[1])
+            * np.dtype(sparse_matrix.dtype).itemsize
         )
         if dense_nbytes > _MAX_DENSE_HEATMAP_BYTES:
             dense_mib = dense_nbytes / 1024**2
@@ -62,8 +58,8 @@ def _anndata_to_heatmap_dataframe(adata: AnnData, layer: str | None) -> pd.DataF
                 f"{dense_mib:.1f} MiB when densified; subset AnnData before plotting."
             )
         if is_backed_sparse:
-            matrix = matrix.to_memory()
-        matrix = matrix.toarray()
+            sparse_matrix = sparse_matrix.to_memory()
+        matrix = sparse_matrix.toarray()
 
     return pd.DataFrame(matrix, index=adata.obs_names, columns=adata.var_names)
 
@@ -369,7 +365,7 @@ def dotplot(
     xticklabels_fontsize: int = 7,
     yticklabels_fontsize: int = 7,
     **kwargs: Any,
-) -> DotClustermapPlotter:
+) -> DotClustermapPlotterNew:
     """
     Create a dot plot matrix with color and size encodings.
 

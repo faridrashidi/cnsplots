@@ -127,9 +127,9 @@ replace = '\1"{new_version}"'
 exclude = ["examples/", "docs/"]
 
 [tool.ty.rules]
-unresolved-import = "ignore"
-unresolved-attribute = "ignore"
-possibly-missing-attribute = "ignore"
+unresolved-import = "error"
+unresolved-attribute = "error"
+possibly-missing-attribute = "error"
 
 [tool.codespell]
 skip = ".git,.venv,*.lock"

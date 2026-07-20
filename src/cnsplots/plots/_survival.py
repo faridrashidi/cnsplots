@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Literal
-
-if TYPE_CHECKING:
-    import numpy as np
-    import pandas as pd
-    from matplotlib.axes import Axes
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
 
 from cnsplots._validation import (
     validate_columns_exist,

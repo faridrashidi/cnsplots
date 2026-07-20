@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.collections import PathCollection, QuadMesh
-from matplotlib.patches import PathPatch, Wedge
+from matplotlib.patches import PathPatch, Rectangle, Wedge
 
 import cnsplots as cns
 from cnsplots import _methods, _setup, _svg, _utils, _validation
@@ -77,26 +77,29 @@ def test_methods_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_multipanel_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     mp = cns.multipanel()
-    mp._panels = [{"label": "A", "_below": "missing"}]
+    mp._panels = cast(Any, [{"label": "A", "_below": "missing"}])
     assert mp._get_panel_position(0) == (0, 0)
 
     mp_title = cns.multipanel(title="Overview")
     assert mp_title._get_content_horizontal_bounds_px() == (0.0, 540.0)
 
     mp2 = cns.multipanel()
-    mp2._panels = [
-        {
-            "label": "A",
-            "width": 10,
-            "height": 10,
-            "pad_left": 0,
-            "pad_top": 0,
-            "margin_left": 0,
-            "margin_top": 0,
-            "margin_right": 0,
-            "margin_bottom": 0,
-        }
-    ]
+    mp2._panels = cast(
+        Any,
+        [
+            {
+                "label": "A",
+                "width": 10,
+                "height": 10,
+                "pad_left": 0,
+                "pad_top": 0,
+                "margin_left": 0,
+                "margin_top": 0,
+                "margin_right": 0,
+                "margin_bottom": 0,
+            }
+        ],
+    )
     assert mp2._get_panel_position(0) == (0, 0)
 
     mp3 = cns.multipanel(max_width=200)
@@ -118,30 +121,33 @@ def test_multipanel_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_multipanel_calculate_layout_wraps_to_new_row() -> None:
     mp = cns.multipanel(max_width=100)
-    mp._panels = [
-        {
-            "label": "A",
-            "width": 60,
-            "height": 20,
-            "pad_left": 0,
-            "pad_top": 0,
-            "margin_left": 0,
-            "margin_top": 0,
-            "margin_right": 0,
-            "margin_bottom": 0,
-        },
-        {
-            "label": "B",
-            "width": 60,
-            "height": 30,
-            "pad_left": 0,
-            "pad_top": 0,
-            "margin_left": 0,
-            "margin_top": 0,
-            "margin_right": 0,
-            "margin_bottom": 0,
-        },
-    ]
+    mp._panels = cast(
+        Any,
+        [
+            {
+                "label": "A",
+                "width": 60,
+                "height": 20,
+                "pad_left": 0,
+                "pad_top": 0,
+                "margin_left": 0,
+                "margin_top": 0,
+                "margin_right": 0,
+                "margin_bottom": 0,
+            },
+            {
+                "label": "B",
+                "width": 60,
+                "height": 30,
+                "pad_left": 0,
+                "pad_top": 0,
+                "margin_left": 0,
+                "margin_top": 0,
+                "margin_right": 0,
+                "margin_bottom": 0,
+            },
+        ],
+    )
 
     mp._calculate_layout()
 
@@ -317,8 +323,8 @@ def test_import_upsetplot_module_tolerates_path_resolution_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     valid_module = types.ModuleType("upsetplot")
-    valid_module.from_memberships = lambda memberships: memberships
-    valid_module.UpSet = object
+    setattr(valid_module, "from_memberships", lambda memberships: memberships)
+    setattr(valid_module, "UpSet", object)
 
     monkeypatch.setitem(sys.modules, "upsetplot", valid_module)
     monkeypatch.setattr(
@@ -434,7 +440,9 @@ def test_utils_internal_coverage(
     fig, ax = plt.subplots()
     plt.sca(ax)
     _utils.take_legend_out()
-    assert ax.get_legend().get_title().get_text() == ""
+    legend = ax.get_legend()
+    assert legend is not None
+    assert legend.get_title().get_text() == ""
 
     assert _utils._is_qualitative_cmap(["a"]) is True
     assert _utils._is_qualitative_cmap({"a": "#111111"}) is True
@@ -452,7 +460,7 @@ def test_utils_internal_coverage(
 
     class DummyAnnotator:
         def __init__(self, ax: object, pairs: object, **plotting: object) -> None:
-            self._pvalue_format = None
+            self._pvalue_format: Any = None
 
         def configure(self, **kwargs: object) -> None:
             return None
@@ -480,7 +488,7 @@ def test_utils_internal_coverage(
     formatter = formatter or _utils.Annotator(formatter_ax, [])._pvalue_format
 
     class CaptureAnnotator(DummyAnnotator):
-        last = None
+        last: CaptureAnnotator | None = None
 
         def __init__(self, ax: object, pairs: object, **plotting: object) -> None:
             super().__init__(ax, pairs, **plotting)
@@ -496,7 +504,9 @@ def test_utils_internal_coverage(
         "all",
         format="full",
     )
-    formatted = CaptureAnnotator.last._pvalue_format.format_data(DummyResult(0.2))
+    captured_annotator = CaptureAnnotator.last
+    assert captured_annotator is not None
+    formatted = captured_annotator._pvalue_format.format_data(DummyResult(0.2))
     assert formatted.startswith("$T P = ")
     assert r"\times 10^{-1}$" in formatted
 
@@ -548,7 +558,7 @@ def test_validation_internal_coverage(heatmap_adata: ad.AnnData) -> None:
 def test_helper_heatmap_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[object] = []
 
-    def fake_plot(self: object) -> None:
+    def fake_plot(self: Any) -> None:
         self.ax = plt.gca()
         self.ax_heatmap = plt.gca()
         self.yticklabels = []
@@ -832,7 +842,11 @@ def test_plot_internal_coverage(
         addcount=True,
         bar_order=["C", "B", "A"],
     )
-    assert [patch.get_width() for patch in stack_ax.patches] == pytest.approx([0.5] * 6)
+    stack_widths = []
+    for patch in stack_ax.patches:
+        assert isinstance(patch, Rectangle)
+        stack_widths.append(patch.get_width())
+    assert stack_widths == pytest.approx([0.5] * 6)
     assert [tick.get_text() for tick in stack_ax.get_yticklabels()] == [
         "C\n(n=4)",
         "B\n(n=4)",
@@ -984,7 +998,7 @@ def test_plot_internal_coverage(
 
     monkeypatch.setattr(dist_mod.sns, "boxplot", lambda **kwargs: FakeAxes())
     monkeypatch.setattr(cns.utils, "_remove_edge_from_legend_items", lambda ax: None)
-    box_ax = cns.boxplot(categorical_df, x="group", y="value")
+    box_ax = cast(Any, cns.boxplot(categorical_df, x="group", y="value"))
     assert box_ax.artists[0].edgecolor == "None"
     assert box_ax.artists[0].facecolor == (1, 0, 0, 1)
     assert [line.color for line in box_ax.lines] == [
@@ -999,9 +1013,11 @@ def test_plot_internal_coverage(
     hist_ax = cns.histplot(
         data=categorical_df.rename(columns={"value": "x", "group": "y"}), y="x"
     )
-    assert sum(patch.get_width() for patch in hist_ax.patches) == pytest.approx(
-        len(categorical_df)
-    )
+    histogram_widths = []
+    for patch in hist_ax.patches:
+        assert isinstance(patch, Rectangle)
+        histogram_widths.append(patch.get_width())
+    assert sum(histogram_widths) == pytest.approx(len(categorical_df))
 
     adata_nan = heatmap_adata.copy()
     adata_nan.obs["cluster"] = pd.Series(

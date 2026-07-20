@@ -158,7 +158,7 @@ def test_multipanel_reports_exhausted_automatic_labels() -> None:
 
 def test_multipanel_stacks_multiple_children_without_overlap() -> None:
     mp = cns.multipanel(max_width=100)
-    panel_kwargs = {
+    panel_kwargs: dict[str, Any] = {
         "width": 20,
         "pad_left": 0,
         "pad_top": 0,
@@ -180,7 +180,7 @@ def test_multipanel_stacks_multiple_children_without_overlap() -> None:
 
 def test_multipanel_stacks_nested_children_before_later_siblings() -> None:
     mp = cns.multipanel(max_width=100)
-    panel_kwargs = {
+    panel_kwargs: dict[str, Any] = {
         "width": 20,
         "pad_left": 0,
         "pad_top": 0,
@@ -204,7 +204,7 @@ def test_multipanel_stacks_nested_children_before_later_siblings() -> None:
 
 def test_multipanel_uses_descendant_width_for_row_wrapping() -> None:
     mp = cns.multipanel(max_width=70)
-    panel_kwargs = {
+    panel_kwargs: dict[str, Any] = {
         "height": 10,
         "pad_left": 0,
         "pad_top": 0,
@@ -224,7 +224,7 @@ def test_multipanel_uses_descendant_width_for_row_wrapping() -> None:
 
 def test_multipanel_uses_typed_panels_and_pure_immutable_layout() -> None:
     mp = cns.multipanel(max_width=100)
-    panel_kwargs = {
+    panel_kwargs: dict[str, Any] = {
         "width": 20,
         "pad_left": 0,
         "pad_top": 0,

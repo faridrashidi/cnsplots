@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from anndata import AnnData
-    from matplotlib.axes import Axes
-
 import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from anndata import AnnData
+from matplotlib.axes import Axes
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 from sklearn.metrics import auc, roc_curve
 

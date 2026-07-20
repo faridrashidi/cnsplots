@@ -2,19 +2,20 @@ from __future__ import annotations
 
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, cast
-
-if TYPE_CHECKING:
-    from matplotlib.axes import Axes
+from typing import Any, Literal, cast
 
 import matplotlib as mpl
 from matplotlib import font_manager as fm
+from matplotlib.axes import Axes
+from matplotlib.rcsetup import cycler
+from matplotlib.typing import ColorType
 
 from cnsplots._settings import settings
 
 _HELVETICA_BOLD_REGISTERED = False
-ColorCycle = Union[str, list[str]]
+ColorCycle = str | Sequence[ColorType]
 _UNSET = object()
 
 
@@ -231,6 +232,7 @@ def setup_matplotlib(
     resolved_legend_fontsize, legend_title_fontsize = _resolve_legend_fontsizes(
         title_fontsize, legend_fontsize
     )
+    cycle_colors = cast(Sequence[ColorType], palettes(color_cycle))
 
     def config() -> dict[str, object]:
         """
@@ -268,7 +270,7 @@ def setup_matplotlib(
             "axes.titlepad": settings.axes_titlepad,
             "axes.xmargin": settings.axes_xmargin,
             "axes.ymargin": settings.axes_ymargin,
-            "axes.prop_cycle": mpl.cycler(color=palettes(color_cycle)),
+            "axes.prop_cycle": cycler(color=cycle_colors),
             "image.cmap": color_map,
             "legend.fontsize": resolved_legend_fontsize,
             "legend.title_fontsize": legend_title_fontsize,
@@ -325,7 +327,8 @@ def setup_matplotlib(
     ]:
         if categorical not in mpl.colormaps:
             mpl.colormaps.register(
-                mpl.colors.ListedColormap(palettes(categorical)), name=categorical
+                mpl.colors.ListedColormap(palettes(categorical)),
+                name=categorical,
             )
     for continues in [
         "parula",
@@ -337,7 +340,9 @@ def setup_matplotlib(
         "YlGnBu_custom",
     ]:
         if continues not in mpl.colormaps:
-            mpl.colormaps.register(palettes(continues), name=continues)
+            mpl.colormaps.register(
+                cast(mpl.colors.Colormap, palettes(continues)), name=continues
+            )
 
     mpl.rcParams.update(config())
 
@@ -549,9 +554,16 @@ def setup_ax(
         left=settings.ytick_left,
     )
     for tick_label in ax.get_xticklabels():
-        tick_label.set_horizontalalignment(settings.xtick_alignment)
+        tick_label.set_horizontalalignment(
+            cast(Literal["left", "center", "right"], settings.xtick_alignment)
+        )
     for tick_label in ax.get_yticklabels():
-        tick_label.set_verticalalignment(settings.ytick_alignment)
+        tick_label.set_verticalalignment(
+            cast(
+                Literal["bottom", "baseline", "center", "center_baseline", "top"],
+                settings.ytick_alignment,
+            )
+        )
     ax.grid(settings.axes_grid)
     ax.margins(x=settings.axes_xmargin, y=settings.axes_ymargin)
     cbar = ax.collections[0].colorbar if ax.collections else None

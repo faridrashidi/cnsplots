@@ -1,6 +1,40 @@
 """Plot functions for cnsplots."""
 
 from importlib import import_module
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ._categorical import barplot as barplot
+    from ._categorical import donutplot as donutplot
+    from ._categorical import lollipopplot as lollipopplot
+    from ._categorical import pieplot as pieplot
+    from ._categorical import stackplot as stackplot
+    from ._categorical import stripplot as stripplot
+    from ._distribution import boxplot as boxplot
+    from ._distribution import distplot as distplot
+    from ._distribution import histplot as histplot
+    from ._distribution import kdeplot as kdeplot
+    from ._distribution import qqplot as qqplot
+    from ._distribution import ridgeplot as ridgeplot
+    from ._distribution import violinplot as violinplot
+    from ._genomics import gseaplot as gseaplot
+    from ._genomics import volcanoplot as volcanoplot
+    from ._heatmap import confusionplot as confusionplot
+    from ._heatmap import dotplot as dotplot
+    from ._heatmap import heatmapplot as heatmapplot
+    from ._regression import lineplot as lineplot
+    from ._regression import regplot as regplot
+    from ._regression import scatterplot as scatterplot
+    from ._regression import slopeplot as slopeplot
+    from ._sets import upsetplot as upsetplot
+    from ._sets import vennplot as vennplot
+    from ._specialized import forestplot as forestplot
+    from ._specialized import phyloplot as phyloplot
+    from ._specialized import placeholderplot as placeholderplot
+    from ._specialized import rocplot as rocplot
+    from ._specialized import sankeyplot as sankeyplot
+    from ._survival import cumulativeincidenceplot as cumulativeincidenceplot
+    from ._survival import survivalplot as survivalplot
 
 _LAZY_IMPORTS = {
     "barplot": ("cnsplots.plots._categorical", "barplot"),

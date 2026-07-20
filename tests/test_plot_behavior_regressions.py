@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.collections import LineCollection, PathCollection
+from matplotlib.patches import Rectangle
 from scipy import stats
 
 import cnsplots as cns
@@ -32,7 +33,7 @@ def test_confusionplot_rejects_non_exact_orders(
     data = pd.DataFrame({"pred": ["a", "b", "c"], "truth": ["a", "b", "c"]})
 
     with pytest.raises(ValueError, match=order_name) as exc_info:
-        cns.confusionplot(data, x="pred", y="truth", **{order_name: order})
+        cast(Any, cns.confusionplot)(data, x="pred", y="truth", **{order_name: order})
 
     assert expected_detail in str(exc_info.value)
 
@@ -103,9 +104,10 @@ def test_lollipop_geometry_is_consistent_across_orientations_and_hue(
     assert len(scatter_collections) == len(value_series)
     assert len(stem_collections) == len(value_series)
     if with_hue:
-        assert ax.get_legend() is not None
-        assert ax.get_legend().get_title().get_text() == "hue"
-        assert [text.get_text() for text in ax.get_legend().get_texts()] == ["H1", "H2"]
+        legend = ax.get_legend()
+        assert legend is not None
+        assert legend.get_title().get_text() == "hue"
+        assert [text.get_text() for text in legend.get_texts()] == ["H1", "H2"]
 
     for scatter, stems, values, positions in zip(
         scatter_collections, stem_collections, value_series, position_series
@@ -260,7 +262,7 @@ def test_stackplot_fills_sparse_cells_before_testing(
 
     contingency = calls[0][5]
     assert isinstance(contingency, pd.DataFrame)
-    assert not contingency.isna().any().any()
+    assert not contingency.isna().to_numpy().any()
     assert contingency.loc["B", "No"] == 0
 
 
@@ -306,15 +308,18 @@ def test_stackplot_y_axis_preserves_bar_and_stack_semantics(
         "P2\n(n=4)",
         "P1\n(n=6)",
     ]
-    assert [text.get_text() for text in ax.get_legend().get_texts()] == [
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == [
         "M3",
         "M2",
         "M1",
     ]
-    np.testing.assert_allclose(
-        [patch.get_width() for patch in ax.patches],
-        [1 / 4, 1 / 3, 1 / 2, 1 / 6, 1 / 4, 1 / 2],
-    )
+    widths = []
+    for patch in ax.patches:
+        assert isinstance(patch, Rectangle)
+        widths.append(patch.get_width())
+    np.testing.assert_allclose(widths, [1 / 4, 1 / 3, 1 / 2, 1 / 6, 1 / 4, 1 / 2])
 
     assert calls[0][0] == "chi-squared"
     plotting = calls[0][3]
@@ -345,7 +350,9 @@ def test_stackplot_tests_sparse_table_with_zero_filled_cells(
     )
 
     cns.figure(120, 120)
-    ax = cns.stackplot(data, stack="outcome", pairs=[("A", "B")], **{bar_axis: "group"})
+    ax = cast(Any, cns.stackplot)(
+        data, stack="outcome", pairs=[("A", "B")], **{bar_axis: "group"}
+    )
 
     assert ax.texts
 
@@ -389,7 +396,7 @@ def test_stackplot_requires_exactly_one_bar_axis(axes: dict[str, str]) -> None:
     )
 
     with pytest.raises(ValueError, match="exactly one of `x` or `y`"):
-        cns.stackplot(data, stack="outcome", **axes)
+        cast(Any, cns.stackplot)(data, stack="outcome", **axes)
 
 
 @pytest.mark.parametrize(

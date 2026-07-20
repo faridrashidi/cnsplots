@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import pandas as pd
-    from matplotlib.axes import Axes
+from typing import Any, cast
 
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
+from matplotlib.axes import Axes
 
 import cnsplots._utils as utils
 from cnsplots._setup import setup_ax
@@ -251,7 +249,7 @@ def gseaplot(
     ax = plt.gca()
     gp.dotplot(
         plot_data,
-        cmap=resolved_cmap,
+        cmap=cast(Any, resolved_cmap),
         y=y,
         x="NES",
         cutoff=np.inf,

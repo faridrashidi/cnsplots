@@ -7,12 +7,12 @@ from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lxml.etree import _Element
+    from lxml.etree import _Element  # ty: ignore[unresolved-import]
 
 import subprocess
 
 import matplotlib.pyplot as plt
-from lxml import etree
+from lxml import etree  # ty: ignore[unresolved-import]
 from matplotlib.text import Text
 
 _PDF_SUBSET_FONT_PREFIX = re.compile(r"^[A-Z]{6}\+")

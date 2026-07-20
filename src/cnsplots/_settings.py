@@ -37,7 +37,28 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
+
+if TYPE_CHECKING:
+    from typing import Literal
+
+    _Number = int | float
+    _TitleLocation = Literal["left", "center", "right"]
+    _PValueFormat = Literal["star", "threshold", "full"]
+    _PValueLocation = Literal["inside", "outside"]
+    _LegendLocation = Literal[
+        "best",
+        "upper right",
+        "upper left",
+        "lower left",
+        "lower right",
+        "right",
+        "center left",
+        "center right",
+        "lower center",
+        "upper center",
+        "center",
+    ]
 
 _CNSPLOTS_LOGGER_NAME = "cnsplots"
 
@@ -633,6 +654,104 @@ class CNSSettings:
     overrides and :meth:`reset` to restore every setting to its package
     default.
     """
+
+    if TYPE_CHECKING:
+        palette_qual: str
+        palette_seq: str
+        title_fontsize: _Number
+        title_fontweight: str | int
+        axes_linewidth: _Number
+        verbosity: int
+        mathtext_fontset: str
+        font_family: str
+
+        @property
+        def font_sans_serif(self) -> tuple[str, ...]: ...
+
+        @font_sans_serif.setter
+        def font_sans_serif(self, value: Sequence[str]) -> None: ...
+
+        savefig_bbox: str
+        savefig_pad_inches: _Number
+        savefig_dpi: _Number
+        savefig_transparent: bool
+        svg_fonttype: str
+        pdf_fonttype: int
+        axes_titlelocation: _TitleLocation
+        axes_grid: bool
+        axes_spines_top: bool
+        axes_spines_right: bool
+        axes_edgecolor: str
+        axes_labelcolor: str
+        axes_labelpad: _Number
+        axes_titlepad: _Number
+        axes_xmargin: _Number
+        axes_ymargin: _Number
+        legend_fontsize: _Number | None
+        legend_title_fontsize: _Number | None
+        pvalue_format: _PValueFormat
+        pvalue_fontsize: str | _Number
+        pvalue_loc: _PValueLocation
+        annotation_auto_contrast: bool
+        legend_frameon: bool
+        legend_markerscale: _Number
+        legend_handlelength: _Number
+        legend_handleheight: _Number
+        legend_handletextpad: _Number
+        xtick_bottom: bool
+        xtick_color: str
+        xtick_major_size: _Number
+        xtick_major_width: _Number
+        xtick_major_pad: _Number
+        xtick_alignment: str
+        xtick_labelrotation: _Number
+        ytick_left: bool
+        ytick_color: str
+        ytick_major_size: _Number
+        ytick_major_width: _Number
+        ytick_major_pad: _Number
+        ytick_alignment: str
+        ytick_labelrotation: _Number
+        setup_ax_colorbar_label: str
+        scanpy_use_default_style: bool
+
+        @property
+        def scanpy_figsize(self) -> tuple[_Number, _Number]: ...
+
+        @scanpy_figsize.setter
+        def scanpy_figsize(self, value: Sequence[_Number]) -> None: ...
+
+        scanpy_facecolor: str
+        ggplot_fontsize: _Number
+        ggplot_font_family: str
+        ggplot_font_face: str
+        ggplot_text_color: str
+        figure_width: _Number
+        figure_height: _Number
+        figure_dpi: _Number
+        multipanel_max_width: _Number
+        multipanel_title_loc: _TitleLocation
+        multipanel_title_height_min: _Number
+        multipanel_title_height_pad: _Number
+        panel_width: _Number
+        panel_height: _Number
+        panel_pad_left: _Number
+        panel_pad_top: _Number
+        panel_margin_top: _Number
+        panel_margin_bottom: _Number
+        panel_margin_left: _Number
+        panel_margin_right: _Number
+        panel_label_fontname: str
+        panel_label_fontweight: str | int
+
+        @property
+        def legend_out_bbox_to_anchor(self) -> tuple[_Number, _Number]: ...
+
+        @legend_out_bbox_to_anchor.setter
+        def legend_out_bbox_to_anchor(self, value: Sequence[_Number]) -> None: ...
+
+        legend_out_loc: _LegendLocation
+        legend_out_markerscale: _Number
 
     _setting_specs = _SETTING_SPECS
     _defaults = {name: spec.default for name, spec in _SETTING_SPECS.items()}

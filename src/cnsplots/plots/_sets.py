@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from matplotlib.figure import Figure
+from typing import Any
 
 from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
@@ -14,6 +11,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from matplotlib.figure import Figure
 
 import cnsplots._utils as utils
 from cnsplots._setup import setup_ax

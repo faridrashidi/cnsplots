@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.transforms import Bbox
 
 import cnsplots as cns
@@ -262,6 +263,7 @@ def test_phylo_helper_functions(phylo_adata: ad.AnnData) -> None:
 
     assert len(_phylo._gen_colors("Set1", 2)) == 2
     assert len(_phylo._gen_colors(cns.palettes("parula"), 2)) == 2
+    assert len(_phylo._gen_colors(mpl.colors.ListedColormap(["red", "blue"]), 2)) == 2
     assert len(_phylo._gen_colors(["red", "blue"], 2)) == 2
     with pytest.raises(ValueError, match="at least as many colors"):
         _phylo._gen_colors(["red"], 2)
@@ -600,7 +602,7 @@ def test_sync_detached_legend_axes_uses_label_width_for_right_annotation() -> No
 
     helper_heatmap._sync_detached_legend_axes(plotter)
     fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
+    renderer = cast(FigureCanvasAgg, fig.canvas).get_renderer()
     anchor_bbox = ax.get_window_extent(renderer=renderer)
     expected_x0 = (
         anchor_bbox.x1
