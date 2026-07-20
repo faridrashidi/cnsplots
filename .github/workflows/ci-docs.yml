@@ -67,6 +67,11 @@ jobs:
           print(f"{resolved_name} -> {font_path}")
           assert resolved_name == "Helvetica"
           PY
+      - name: Check documentation links
+        run: |
+          uv run python docs/_scripts/build_versioned_docs.py \
+            --builder linkcheck \
+            site-build-linkcheck/output
       - name: Build versioned documentation
         run: |
           rm -rf site-build

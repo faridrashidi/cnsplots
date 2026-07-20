@@ -79,6 +79,9 @@ jobs:
 
       - name: Build docs
         run: make doc
+
+      - name: Check docs links
+        run: make doc-linkcheck
   package:
     name: package-validation
     runs-on: ubuntu-latest
@@ -107,4 +110,6 @@ jobs:
           python -m pip install dist/*.whl
           python -c "import cnsplots; print(cnsplots.__version__)"
           python -c "from importlib.resources import files; assert files('cnsplots').joinpath('py.typed').is_file()"
+          python -c "from importlib.resources import files; root = files('cnsplots.datasets').joinpath('_data'); image = root.joinpath('showcase').joinpath('image1.webp'); assert root.joinpath('iris.csv').is_file(); assert image.read_bytes()[:4] == b'RIFF'"
+          python -c "import cnsplots; assert cnsplots.datasets.load_dataset('iris').shape == (150, 5)"
           python -m pip check

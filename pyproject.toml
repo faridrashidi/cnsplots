@@ -81,6 +81,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 cnsplots = ["py.typed"]
+"cnsplots.datasets" = ["_data/*.csv", "_data/showcase/*.webp"]
 
 [tool.ruff]
 target-version = "py310"

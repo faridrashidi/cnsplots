@@ -123,10 +123,9 @@ This installs the package with its development and documentation dependencies.
 
 ```python
 import cnsplots as cns
-import seaborn as sns
 
 # Load example data
-df = sns.load_dataset("tips")
+df = cns.datasets.load_dataset("tips")
 
 # Create a figure (height, width in pixels)
 cns.figure(height=150, width=100)

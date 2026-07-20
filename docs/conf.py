@@ -13,12 +13,17 @@ _conf_dir = Path(__file__).resolve().parent
 _active_docs_dir = Path(
     os.environ.get("SPHINX_MULTIVERSION_SOURCEDIR", str(_conf_dir))
 ).resolve()
-_active_repo_root = _active_docs_dir.parent
+_active_repo_root = Path(
+    os.environ.get("CNSPLOTS_DOCS_REPO_ROOT", str(_active_docs_dir.parent))
+).resolve()
+_docs_online = os.environ.get("CNSPLOTS_DOCS_ONLINE", "0") == "1"
+_execute_gallery = os.environ.get("CNSPLOTS_DOCS_EXECUTE_GALLERY", "1") == "1"
 
 sys.path.insert(0, str(_active_repo_root / "src"))
 sys.path.insert(0, str(_conf_dir / "_ext"))
 
 import cnsplots as cns  # noqa: E402
+from gallery_order import GALLERY_CATEGORIES  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -94,127 +99,21 @@ myst_enable_extensions = [
     "dollarmath",
     "amsmath",
 ]
-intersphinx_mapping = {
+_intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "matplotlib": ("https://matplotlib.org/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "seaborn": ("https://seaborn.pydata.org/", None),
     "anndata": ("https://anndata.readthedocs.io/en/latest/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
+intersphinx_mapping = _intersphinx_mapping if _docs_online else {}
+# This image target is emitted as a valid HTML anchor, but linkcheck interprets
+# the raw ``.html#fragment`` value as a source-file path.
+linkcheck_ignore = [r"^examples/showcase[.]html#figure-1$"]
 
-_GALLERY_CATEGORIES = [
-    {
-        "title": "Getting Started",
-        "description": (
-            "Start here for the core cnsplots workflow: overview figures, global "
-            "settings, figure setup, color palettes, and publication-style "
-            "multipanel layouts."
-        ),
-        "examples": [
-            "showcase",
-            "settings",
-            "figure_setup",
-            "palettes",
-            "multipanel",
-        ],
-    },
-    {
-        "title": "Comparison & Categories",
-        "description": (
-            "Examples in this section focus on comparing groups and compositions "
-            "with categorical plots, proportion charts, and flow-based visual "
-            "summaries."
-        ),
-        "examples": [
-            "boxplot",
-            "stackplot",
-            "barplot",
-            "lollipopplot",
-            "stripplot",
-            "violinplot",
-            "dotplot",
-            "pieplot",
-            "donutplot",
-            "sankeyplot",
-        ],
-    },
-    {
-        "title": "Distributions & Trends",
-        "description": (
-            "These examples highlight continuous data, distribution shapes, "
-            "relationships, and trend-oriented visualizations for exploratory "
-            "and publication figures."
-        ),
-        "examples": [
-            "histplot",
-            "kdeplot",
-            "distplot",
-            "ridgeplot",
-            "qqplot",
-            "scatterplot",
-            "regplot",
-            "lineplot",
-            "slopeplot",
-        ],
-    },
-    {
-        "title": "Analysis & Evaluation",
-        "description": (
-            "This section collects analysis-driven examples including "
-            "enrichment, survival, classification, overlap, and evaluation "
-            "plots commonly used in scientific workflows."
-        ),
-        "examples": [
-            "heatmapplot",
-            "survivalplot",
-            "forestplot",
-            "gseaplot",
-            "volcanoplot",
-            "confusionplot",
-            "rocplot",
-            "vennplot",
-            "upsetplot",
-        ],
-    },
-    {
-        "title": "Integrations",
-        "description": (
-            "These examples show how to combine cnsplots styling, sizing, and "
-            "export helpers with native matplotlib, seaborn, and scanpy "
-            "workflows."
-        ),
-        "examples": [
-            "matplotlib_integration",
-            "seaborn_integration",
-            "scanpy_integration",
-        ],
-    },
-]
-
-_GALLERY_EXAMPLE_ORDER = [
-    f"{example}.py"
-    for category in _GALLERY_CATEGORIES
-    for example in category["examples"]
-]
-
-
-class GalleryExampleOrder:
-    """Keep gallery examples in a stable, curated order."""
-
-    def __init__(self, src_dir: str):
-        del src_dir
-        self.positions = {
-            name: index for index, name in enumerate(_GALLERY_EXAMPLE_ORDER)
-        }
-
-    def __call__(self, filename: str) -> tuple[int, str]:
-        name = Path(filename).name
-        return (self.positions.get(name, len(self.positions)), name)
-
-    def __repr__(self) -> str:
-        return "<GalleryExampleOrder>"
+_GALLERY_CATEGORIES = GALLERY_CATEGORIES
 
 
 sphinx_gallery_conf = {
@@ -223,7 +122,8 @@ sphinx_gallery_conf = {
     "examples_dirs": str(_active_repo_root / "examples"),
     "gallery_dirs": "examples",  # path to where to save gallery generated output
     "only_warn_on_example_error": _is_archived_release_build,
-    "within_subsection_order": GalleryExampleOrder,
+    "plot_gallery": _execute_gallery,
+    "within_subsection_order": "gallery_order.GalleryExampleOrder",
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
     "reference_url": {
@@ -356,7 +256,6 @@ git_ref = _resolve_git_ref(_active_docs_version_name)
 _cnsplots_tools_module_path = os.path.dirname(
     importlib.util.find_spec("cnsplots").origin
 )
-_docs_dir = _active_docs_dir
 _repo_root = _active_repo_root
 
 
@@ -419,9 +318,9 @@ def _render_gallery_category_section(
 
 def _regroup_flat_gallery_index(app, env, docnames) -> None:
     """Group the root examples gallery without requiring example subfolders."""
-    del app, env, docnames
+    del env, docnames
 
-    gallery_index = _docs_dir / "examples" / "index.rst"
+    gallery_index = Path(app.srcdir) / "examples" / "index.rst"
     if not gallery_index.exists():
         return
 
@@ -726,6 +625,9 @@ def linkcode_resolve(domain, info):
 
 def setup(app):
     """Register Sphinx hooks for page metadata and source link overrides."""
+    os.environ["CNSPLOTS_GALLERY_OUTPUT_DIR"] = str(
+        Path(app.doctreedir) / "gallery-exports"
+    )
     app.connect("env-before-read-docs", _regroup_flat_gallery_index)
     app.connect("config-inited", _configure_active_docs_build, priority=800)
     app.connect("html-page-context", _override_source_links)

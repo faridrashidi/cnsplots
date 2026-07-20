@@ -7,6 +7,9 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=uv run --extra dev sphinx-build
 )
+if "%STAGEDBUILD%" == "" (
+	set STAGEDBUILD=uv run --extra dev python _scripts/build_versioned_docs.py
+)
 set SOURCEDIR=.
 set BUILDDIR=build
 
@@ -24,12 +27,18 @@ if errorlevel 9009 (
 )
 
 if "%1" == "" goto help
+if /I "%1" == "help" goto help
+if /I "%1" == "clean" goto clean
 
-%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+%STAGEDBUILD% --builder %1 "%BUILDDIR%\%1" %SPHINXOPTS% %O%
 goto end
 
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+goto end
+
+:clean
+if exist "%BUILDDIR%" rmdir /s /q "%BUILDDIR%"
 
 :end
 popd

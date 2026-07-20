@@ -274,16 +274,27 @@ def forestplot(
     >>> from cnsplots import CoxModel
     >>>
     >>> # Fit Cox model
-    >>> model = CoxModel(data=df, duration="time", event="death")
-    >>> model.fit(predictors=["age", "stage", "treatment"])
+    >>> model = CoxModel(
+    ...     data=df,
+    ...     duration="time",
+    ...     event="death",
+    ...     variates=["age", "stage", "treatment"],
+    ... )
+    >>> model.fit()
     >>>
     >>> # Create forest plot
     >>> ax = cns.forestplot(model)
     >>> ax.set_title("Hazard Ratios")
 
     >>> # With grouping variable
-    >>> model = CoxModel(data=df, duration="time", event="death", hue="cohort")
-    >>> model.fit(predictors=["biomarker_a", "biomarker_b"])
+    >>> model = CoxModel(
+    ...     data=df,
+    ...     duration="time",
+    ...     event="death",
+    ...     variates=["biomarker_a", "biomarker_b"],
+    ...     hue="cohort",
+    ... )
+    >>> model.fit()
     >>> ax = cns.forestplot(model)
     """
     # Validate model has required attributes

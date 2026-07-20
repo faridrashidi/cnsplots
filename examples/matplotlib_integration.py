@@ -11,8 +11,8 @@ These examples intentionally stick to matplotlib's plotting API and only use
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
+import os
 from pathlib import Path
-import tempfile
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -90,7 +90,7 @@ fig.tight_layout()
 # Save a matplotlib figure with cns.save
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Export the current matplotlib figure using the cnsplots save helper.
-export_dir = Path(tempfile.gettempdir()) / "cnsplots-gallery"
+export_dir = Path(os.environ.get("CNSPLOTS_GALLERY_OUTPUT_DIR", "."))
 export_dir.mkdir(parents=True, exist_ok=True)
 
 cns.figure(140, 180)

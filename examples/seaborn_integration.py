@@ -11,8 +11,8 @@ These examples intentionally stick to seaborn's plotting API and only use
 # %%
 # Load packages
 # ~~~~~~~~~~~~~
+import os
 from pathlib import Path
-import tempfile
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -23,11 +23,11 @@ import cnsplots as cns
 # %%
 # Load example datasets
 # ~~~~~~~~~~~~~~~~~~~~~
-tips = sns.load_dataset("tips")
-penguins = sns.load_dataset("penguins").dropna(
+tips = cns.datasets.load_dataset("tips")
+penguins = cns.datasets.load_dataset("penguins").dropna(
     subset=["bill_length_mm", "bill_depth_mm", "species", "sex"]
 )
-flights = sns.load_dataset("flights")
+flights = cns.datasets.load_dataset("flights")
 
 
 # %%
@@ -94,7 +94,7 @@ monthly_passengers = (
     .mean()
     .rename(columns={"passengers": "mean_passengers"})
 )
-export_dir = Path(tempfile.gettempdir()) / "cnsplots-gallery"
+export_dir = Path(os.environ.get("CNSPLOTS_GALLERY_OUTPUT_DIR", "."))
 export_dir.mkdir(parents=True, exist_ok=True)
 
 cns.figure(150, 200)

@@ -14,11 +14,10 @@ and before/after analyses.
 # ~~~~~~~~~~~~~
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 import cnsplots as cns
 
-tips = sns.load_dataset("tips")
+tips = cns.datasets.load_dataset("tips")
 
 
 # %%

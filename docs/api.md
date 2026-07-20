@@ -129,9 +129,25 @@ import cnsplots as cns
    take_legend_out
 ```
 
+## Example Datasets
+
+The gallery datasets are bundled with cnsplots, so loading them does not
+require network access.
+
+```{eval-rst}
+.. currentmodule:: cnsplots.datasets
+.. apirootsummary::
+   :toctree: api
+   :nosignatures:
+
+   load_dataset
+   get_showcase_data
+```
+
 ## Configuration & Setup
 
 ```{eval-rst}
+.. currentmodule:: cnsplots
 .. apirootsummary::
    :toctree: api
    :nosignatures:

@@ -17,12 +17,11 @@ import glasbey
 import matplotlib.pyplot as plt
 import numpy as np
 import palettable
-import seaborn as sns
 
 import cnsplots as cns
 
-tips = sns.load_dataset("tips")
-iris = sns.load_dataset("iris")
+tips = cns.datasets.load_dataset("tips")
+iris = cns.datasets.load_dataset("iris")
 
 
 # %%

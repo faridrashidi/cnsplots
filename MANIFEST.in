@@ -1,0 +1,2 @@
+# The test suite is intended to run from the repository, not release artifacts.
+prune tests

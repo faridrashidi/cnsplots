@@ -28,6 +28,27 @@ DOCS_DIR = REPO_ROOT / "docs"
 ROBOTS_FILE = DOCS_DIR / "robots.txt"
 COMPAT_SITE_DIR = Path(__file__).resolve().parent / "compat"
 REFRESHED_VERSION_STATIC_ASSETS = (Path("_static/js/repo-stats.js"),)
+STAGED_DOCS_IGNORE_PATTERNS = (
+    "_build",
+    "build",
+    "api",
+    "examples",
+    "gen_modules",
+    "sg_execution_times.rst",
+    "__pycache__",
+    "*.pyc",
+)
+STAGED_CONF_COMPATIBILITY = """
+
+# Added to staged sources by the current documentation runner.
+import os as _cnsplots_docs_os
+
+if _cnsplots_docs_os.environ.get("CNSPLOTS_DOCS_ONLINE", "0") != "1":
+    intersphinx_mapping = {}
+if _cnsplots_docs_os.environ.get("CNSPLOTS_DOCS_EXECUTE_GALLERY", "1") != "1":
+    sphinx_gallery_conf["plot_gallery"] = False
+suppress_warnings = [*globals().get("suppress_warnings", ()), "config.cache"]
+"""
 
 
 def _run(*args: str, env: dict[str, str] | None = None, cwd: Path = REPO_ROOT) -> str:
@@ -62,6 +83,91 @@ def _ensure_clean_dir(path: Path) -> None:
     if path.exists():
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
+
+
+@contextmanager
+def _staged_docs_source(
+    docs_dir: Path, repo_root: Path, build_root: Path
+) -> Iterator[tuple[Path, Path]]:
+    """Yield a disposable docs source tree located inside the build tree."""
+    build_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix=".sphinx-staging-", dir=build_root
+    ) as tmpdir:
+        staging_root = Path(tmpdir)
+        staged_docs_dir = staging_root / "docs"
+        shutil.copytree(
+            docs_dir,
+            staged_docs_dir,
+            ignore=shutil.ignore_patterns(*STAGED_DOCS_IGNORE_PATTERNS),
+        )
+        for source_name in ("src", "examples"):
+            shutil.copytree(
+                repo_root / source_name,
+                staging_root / source_name,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
+        yield staged_docs_dir, staging_root
+
+
+def _run_sphinx_build(
+    builder: str,
+    output_dir: Path,
+    *,
+    docs_dir: Path = DOCS_DIR,
+    cwd: Path = REPO_ROOT,
+    env: dict[str, str] | None = None,
+    metadata: dict[str, dict[str, object]] | None = None,
+    current_version: str | None = None,
+    sphinx_args: tuple[str, ...] = (),
+) -> None:
+    """Run a strict Sphinx build from a disposable staged source tree."""
+    output_dir = output_dir.resolve()
+    build_env = (env or os.environ).copy()
+    conf_source = (docs_dir / "conf.py").read_text(encoding="utf-8")
+    supports_offline_controls = all(
+        name in conf_source
+        for name in ("CNSPLOTS_DOCS_ONLINE", "CNSPLOTS_DOCS_EXECUTE_GALLERY")
+    )
+    build_env["CNSPLOTS_DOCS_ONLINE"] = "1" if builder == "linkcheck" else "0"
+    build_env["CNSPLOTS_DOCS_EXECUTE_GALLERY"] = (
+        "1" if builder != "linkcheck" and supports_offline_controls else "0"
+    )
+
+    with _staged_docs_source(docs_dir, cwd, output_dir.parent) as (
+        staged_docs_dir,
+        staging_root,
+    ):
+        if not supports_offline_controls:
+            staged_conf = staged_docs_dir / "conf.py"
+            staged_conf.write_text(
+                staged_conf.read_text(encoding="utf-8") + STAGED_CONF_COMPATIBILITY,
+                encoding="utf-8",
+            )
+        build_env["CNSPLOTS_DOCS_REPO_ROOT"] = str(staging_root)
+        build_env["CNSPLOTS_GALLERY_OUTPUT_DIR"] = str(staging_root / "gallery-exports")
+        build_env["MPLBACKEND"] = "Agg"
+        build_env["MPLCONFIGDIR"] = str(staging_root / "matplotlib")
+        command = [
+            sys.executable,
+            "-m",
+            "sphinx",
+            "-W",
+            "--keep-going",
+            "-b",
+            builder,
+            "-d",
+            str(staging_root / "doctrees"),
+        ]
+        if metadata is not None:
+            metadata_path = staging_root / "versions.json"
+            metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+            command.extend(["-D", f"smv_metadata_path={metadata_path}"])
+        if current_version is not None:
+            command.extend(["-D", f"smv_current_version={current_version}"])
+        command.extend(sphinx_args)
+        command.extend([str(staged_docs_dir), str(output_dir)])
+        _run_checked(*command, env=build_env, cwd=cwd)
 
 
 def _version_sort_key(name: str) -> tuple[int, int, int]:
@@ -775,24 +881,15 @@ def _build_single_version_docs(
 ) -> None:
     """Build a single docs version using precomputed multiversion metadata."""
     _remove_path(output_dir)
-
-    env = _docs_env(latest_release_tag)
-    with tempfile.TemporaryDirectory() as tmpdir:
-        metadata_path = Path(tmpdir) / "versions.json"
-        metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
-        _run_checked(
-            sys.executable,
-            "-m",
-            "sphinx",
-            "-D",
-            f"smv_metadata_path={metadata_path}",
-            "-D",
-            f"smv_current_version={version_name}",
-            str(docs_dir),
-            str(output_dir),
-            env=env,
-            cwd=cwd,
-        )
+    _run_sphinx_build(
+        "html",
+        output_dir,
+        docs_dir=docs_dir,
+        cwd=cwd,
+        env=_docs_env(latest_release_tag),
+        metadata=metadata,
+        current_version=version_name,
+    )
 
 
 def _build_bootstrap_site(output_dir: Path, latest_release_tag: str) -> None:
@@ -988,9 +1085,22 @@ def main() -> None:
         help="Build mode for docs publishing.",
     )
     parser.add_argument(
+        "--builder",
+        help="Run one strict Sphinx builder from a staged source tree.",
+    )
+    parser.add_argument(
         "output_dir", type=Path, help="Directory to write the site into."
     )
-    args = parser.parse_args()
+    args, sphinx_args = parser.parse_known_args()
+    if args.builder:
+        _run_sphinx_build(
+            args.builder,
+            args.output_dir,
+            sphinx_args=tuple(sphinx_args),
+        )
+        return
+    if sphinx_args:
+        parser.error(f"unrecognized arguments: {' '.join(sphinx_args)}")
     build(args.output_dir.resolve(), args.mode)
 
 
