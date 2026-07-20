@@ -1,9 +1,13 @@
 """Static checks for the public typing contract."""
 
+import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from importlib.abc import Traversable
+    if sys.version_info >= (3, 11):
+        from importlib.resources.abc import Traversable
+    else:
+        from importlib.abc import Traversable
 
     import pandas as pd
     from anndata import AnnData

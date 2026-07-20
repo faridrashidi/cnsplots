@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
-from importlib.abc import Traversable
+import sys
 from importlib import resources
 from typing import TYPE_CHECKING, Literal, TypeAlias, overload
+
+if sys.version_info >= (3, 11):
+    from importlib.resources.abc import Traversable  # pragma: no cover
+else:
+    from importlib.abc import Traversable  # pragma: no cover
 
 if TYPE_CHECKING:
     import pandas as pd
