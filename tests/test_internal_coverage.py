@@ -1100,6 +1100,8 @@ def test_plot_internal_coverage(
             "time",
             "event",
             "group",
+            hue_order=["A", "B", "C"],
+            overall_test="trend",
         )
     with pytest.raises(RuntimeError, match="Could not compute hazard ratios"):
         cns.survivalplot(survival_df, "time", "event", "group")

@@ -175,15 +175,20 @@ def test_survival_plots(
         control_y,
         [1, 5 / 6, 2 / 3, 2 / 3, 4 / 9, 4 / 9, 0],
     )
-    assert ax.texts[0].get_text() == "HR = 0.68 (0.15-3.06)\nP = $0.6$"
-    assert "multivariate log-rank test" in caplog.text
+    assert ax.texts[0].get_text() == (
+        "Omnibus log-rank P = $0.6$\n"
+        "Control vs Treatment: HR = 0.68 (95% CI 0.15-3.06), Cox P = $0.62$"
+    )
+    assert "omnibus log-rank test" in caplog.text
 
     cns.figure(120, 120)
     caplog.clear()
     with caplog.at_level(logging.INFO, logger="cnsplots"):
         ax2 = cns.survivalplot(survival_three_group_df, "time", "event", "group")
     assert ax2.get_xlabel() == "Time"
-    assert "trend" in caplog.text
+    assert ax2.texts[0].get_text() == "Omnibus log-rank P = $0.36$"
+    assert "omnibus log-rank test" in caplog.text
+    assert "trend" not in caplog.text
 
     cns.figure(120, 120)
     caplog.clear()
