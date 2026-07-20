@@ -16,7 +16,7 @@ import cnsplots as cns
 from cnsplots import _methods
 
 
-def test_auc_ci_uses_bootstrap_median_without_changing_global_rng(
+def test_auc_ci_uses_full_predictions_and_bootstrap_only_for_bounds(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     class FakeGenerator:
@@ -50,7 +50,7 @@ def test_auc_ci_uses_bootstrap_median_without_changing_global_rng(
     )
 
     rng_state_after = repr(np.random.get_state())
-    assert (auc, lower, upper) == (0.0, 0.0, 0.0)
+    assert (auc, lower, upper) == (0.5, 0.0, 0.0)
     assert rng_state_before == rng_state_after
 
 
@@ -60,9 +60,9 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
 ) -> None:
     data = pd.DataFrame(
         {
-            "event": [0, 1] * 10,
-            "score": np.arange(20, dtype=float),
-            "group": ["A"] * 10 + ["B"] * 10,
+            "event": [0, 1] * 14,
+            "score": np.arange(28, dtype=float),
+            "group": ["A"] * 14 + ["B"] * 14,
         }
     )
     seen_estimators: list[Pipeline] = []
@@ -101,6 +101,74 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
         assert classifier.penalty == "l1"
         assert classifier.solver == "liblinear"
         assert classifier.cv == 5
+
+
+def test_logistic_model_aligns_outcome_after_patsy_drops_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame(
+        {
+            "event": [0, 1] * 8,
+            "score": np.arange(16, dtype=float),
+        },
+        index=np.arange(100, 116),
+    )
+    data.loc[[100, 101], "score"] = np.nan
+
+    def fake_cross_val_predict(
+        estimator: Pipeline,
+        X: pd.DataFrame,
+        y: np.ndarray,
+        *,
+        cv: int,
+        method: str,
+    ) -> np.ndarray:
+        assert X.index.tolist() == list(range(2, 16))
+        np.testing.assert_array_equal(y, data["event"].to_numpy()[2:])
+        probabilities = np.linspace(0.1, 0.9, len(y))
+        return np.column_stack((1 - probabilities, probabilities))
+
+    monkeypatch.setattr(_methods, "cross_val_predict", fake_cross_val_predict)
+    monkeypatch.setattr(
+        cns.LogisticModel,
+        "_compute_auc_ci",
+        lambda self, y, predictions: (0.5, 0.4, 0.6),
+    )
+
+    model = cns.LogisticModel(data, event="event", variates=["score"])
+    model.fit()
+
+    assert model.results is not None
+
+
+@pytest.mark.parametrize(
+    ("minority_count", "message"),
+    [
+        (4, "Outer 5-fold cross-validation requires at least 5 observations"),
+        (6, "Inner 5-fold cross-validation requires at least 5 observations"),
+    ],
+)
+def test_logistic_model_validates_each_nested_cv_layer(
+    minority_count: int, message: str
+) -> None:
+    event = [0] * minority_count + [1] * 10
+    data = pd.DataFrame({"event": event, "score": np.arange(len(event))})
+    model = cns.LogisticModel(data, event="event", variates=["score"])
+
+    with pytest.warns(RuntimeWarning, match=message):
+        model.fit()
+
+    assert model.results is None
+
+
+def test_logistic_model_rejects_more_than_two_outcome_classes() -> None:
+    data = pd.DataFrame({"event": [0, 1, 2] * 7, "score": np.arange(21, dtype=float)})
+    model = cns.LogisticModel(data, event="event", variates=["score"])
+
+    with pytest.warns(RuntimeWarning, match="requires exactly two outcome classes"):
+        model.fit()
+
+    assert model.results is None
 
 
 def test_cox_model_warns_for_failed_unstratified_fit(
