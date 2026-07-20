@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from importlib import resources
-from importlib.abc import Traversable
 
 
-def _showcase_images() -> Traversable:
+def _showcase_images():
     """Return the packaged showcase image directory."""
     return resources.files("cnsplots.datasets").joinpath("_data").joinpath("showcase")
 
