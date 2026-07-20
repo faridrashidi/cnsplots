@@ -572,11 +572,12 @@ def lollipopplot(
 
 def stackplot(
     data: pd.DataFrame,
-    x: str,
-    y: str,
+    x: str | None = None,
+    y: str | None = None,
+    *,
+    stack: str,
     bar_order: list[str] | None = None,
     stack_order: list[str] | None = None,
-    horizontal: bool = False,
     width: float = 0.5,
     normalize: bool = True,
     pairs: list[tuple[str, str]] | None = None,
@@ -586,31 +587,36 @@ def stackplot(
     """
     Create a stacked bar plot showing categorical distributions.
 
-    This function creates a stacked bar plot (or horizontal stacked bar plot)
-    displaying the distribution or count of one categorical variable across
-    levels of another categorical variable.
+    This function creates a vertical or horizontal stacked bar plot displaying
+    the distribution or count of one categorical variable across levels of
+    another categorical variable. Provide exactly one of ``x`` or ``y`` to
+    select the bar axis, and use ``stack`` for the stack segments.
 
     Parameters
     ----------
     data : pd.DataFrame
         The input DataFrame containing the data to be plotted.
-    x : str
-        Column name for the categorical variable determining bar positions.
-    y : str
+    x : str, optional
+        Column name for the categorical variable determining bar positions on
+        the x-axis. Produces vertical bars. Exactly one of ``x`` or ``y`` must
+        be provided.
+    y : str, optional
+        Column name for the categorical variable determining bar positions on
+        the y-axis. Produces horizontal bars. Exactly one of ``x`` or ``y`` must
+        be provided.
+    stack : str
         Column name for the categorical variable determining stack segments.
     bar_order : list, optional
-        Order of categories from x to display.
+        Order of categories from the selected bar variable to display.
     stack_order : list, optional
-        Order of categories from y for stacking.
-    horizontal : bool, default: False
-        Whether to create horizontal bars instead of vertical bars.
+        Order of categories from ``stack`` for stacking.
     width : float, default: 0.5
         Width of the bars.
     normalize : bool, default: True
         Whether to normalize counts to frequencies (proportions summing to 1).
     pairs : list of tuple of str, optional
         List of pairs of bar-category names for pairwise statistical comparisons
-        (levels of ``x`` vertically and levels of ``y`` horizontally).
+        from the selected bar variable.
     addcount : bool, default: False
         Whether to append total counts to the category tick labels in the
         format ``n=...``.
@@ -634,33 +640,32 @@ def stackplot(
     >>> ax = cns.stackplot(
     ...     data=df,
     ...     x="tissue",
-    ...     y="cell_type",
+    ...     stack="cell_type",
     ...     normalize=True,
     ...     pairs=[("lung", "liver")],
     ... )
     >>> ax.set_title("Cell Type Distribution by Tissue")
 
     >>> # Horizontal stacked bar plot
-    >>> ax = cns.stackplot(
-    ...     data=df, x="patient", y="mutation", horizontal=True, normalize=False
-    ... )
+    >>> ax = cns.stackplot(data=df, y="patient", stack="mutation", normalize=False)
     >>> ax.set_xlabel("Mutation Count")
     """
     # Validate inputs
     validate_dataframe(data, "data", "stackplot")
-    validate_columns_exist(data, [x, y], "stackplot")
+    if (x is None) == (y is None):
+        raise ValueError("stackplot requires exactly one of `x` or `y`.")
+    bar = x if x is not None else y
+    assert bar is not None
+    validate_columns_exist(data, [bar, stack], "stackplot")
     validate_dataframe_not_empty(data, "stackplot")
 
-    data2 = data.value_counts([x, y]).reset_index()
-    if horizontal:
-        df = data2.pivot(index=y, columns=x, values="count")
-    else:
-        df = data2.pivot(index=x, columns=y, values="count")
+    data2 = data.value_counts([bar, stack]).reset_index()
+    df = data2.pivot(index=bar, columns=stack, values="count")
     df = df.fillna(0)
     contingency = df.copy()
     if stack_order is not None:
         df.columns = pd.CategoricalIndex(
-            df.columns.values, ordered=True, categories=stack_order, name=y
+            df.columns.values, ordered=True, categories=stack_order, name=stack
         )
         df = df.sort_index(axis=1)
     if normalize:
@@ -671,7 +676,7 @@ def stackplot(
     df = df.reindex(index=bar_order)
     df = df / n_factor
     ax = plt.gca()
-    if horizontal:
+    if y is not None:
         ax = df.plot.barh(stacked=True, width=width, ax=ax, rot=0)
         ax.set_ylabel("")
         ax.set_xlabel(value_label)
@@ -681,14 +686,13 @@ def stackplot(
         ax.set_xlabel("")
     utils.take_legend_out()
     if addcount:
-        count_attr = y if horizontal else x
-        count_axis = "y" if horizontal else "x"
-        utils._addcount_helper(data, count_attr, ax, axis=count_axis)
+        count_axis = "y" if y is not None else "x"
+        utils._addcount_helper(data, bar, ax, axis=count_axis)
     if pairs is not None:
-        if horizontal:
-            plotting = {"data": data2, "x": "count", "y": y, "order": bar_order}
+        if y is not None:
+            plotting = {"data": data2, "x": "count", "y": bar, "order": bar_order}
         else:
-            plotting = {"data": data2, "x": x, "y": "count", "order": bar_order}
+            plotting = {"data": data2, "x": bar, "y": "count", "order": bar_order}
         if contingency.shape[1] == 2:
             utils._p_value_helper(
                 "fisher-exact", data2, ax, plotting, pairs, contingency

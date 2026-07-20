@@ -159,6 +159,11 @@ def test_public_namespace_contract() -> None:
 
 def test_public_stackplot_signature_contract() -> None:
     parameters = inspect.signature(cns.stackplot).parameters
+    assert parameters["x"].default is None
+    assert parameters["y"].default is None
+    assert parameters["stack"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["stack"].default is inspect.Parameter.empty
+    assert "horizontal" not in parameters
     assert "addcount" in parameters
     assert "addtip" not in parameters
 

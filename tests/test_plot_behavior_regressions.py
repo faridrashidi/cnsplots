@@ -256,7 +256,7 @@ def test_stackplot_fills_sparse_cells_before_testing(
     )
 
     cns.figure(120, 120)
-    cns.stackplot(data, x="group", y="outcome", pairs=[("A", "B")])
+    cns.stackplot(data, x="group", stack="outcome", pairs=[("A", "B")])
 
     contingency = calls[0][5]
     assert isinstance(contingency, pd.DataFrame)
@@ -264,7 +264,79 @@ def test_stackplot_fills_sparse_cells_before_testing(
     assert contingency.loc["B", "No"] == 0
 
 
-def test_stackplot_tests_sparse_table_with_zero_filled_cells() -> None:
+def test_stackplot_y_axis_preserves_bar_and_stack_semantics(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame(
+        {
+            "patient": ["P1"] * 6 + ["P2"] * 4,
+            "mutation": [
+                "M1",
+                "M1",
+                "M1",
+                "M2",
+                "M3",
+                "M3",
+                "M1",
+                "M2",
+                "M2",
+                "M3",
+            ],
+        }
+    )
+    calls: list[tuple[object, ...]] = []
+    monkeypatch.setattr(
+        cns.utils,
+        "_p_value_helper",
+        lambda *args, **kwargs: calls.append(args),
+    )
+
+    cns.figure(120, 120)
+    ax = cns.stackplot(
+        data,
+        y="patient",
+        stack="mutation",
+        addcount=True,
+        pairs=[("P2", "P1")],
+        bar_order=["P2", "P1"],
+        stack_order=["M3", "M2", "M1"],
+    )
+
+    assert [tick.get_text() for tick in ax.get_yticklabels()] == [
+        "P2\n(n=4)",
+        "P1\n(n=6)",
+    ]
+    assert [text.get_text() for text in ax.get_legend().get_texts()] == [
+        "M3",
+        "M2",
+        "M1",
+    ]
+    np.testing.assert_allclose(
+        [patch.get_width() for patch in ax.patches],
+        [1 / 4, 1 / 3, 1 / 2, 1 / 6, 1 / 4, 1 / 2],
+    )
+
+    assert calls[0][0] == "chi-squared"
+    plotting = calls[0][3]
+    assert plotting == {
+        "data": calls[0][1],
+        "x": "count",
+        "y": "patient",
+        "order": ["P2", "P1"],
+    }
+    assert calls[0][4] == [("P2", "P1")]
+    contingency = calls[0][5]
+    assert isinstance(contingency, pd.DataFrame)
+    assert contingency.index.name == "patient"
+    assert contingency.columns.name == "mutation"
+    assert contingency.loc["P2", "M2"] == 2
+    assert contingency.loc["P1", "M1"] == 3
+
+
+@pytest.mark.parametrize("bar_axis", ["x", "y"])
+def test_stackplot_tests_sparse_table_with_zero_filled_cells(
+    bar_axis: str,
+) -> None:
     data = pd.DataFrame(
         {
             "group": ["A", "A", "B", "B"],
@@ -273,7 +345,7 @@ def test_stackplot_tests_sparse_table_with_zero_filled_cells() -> None:
     )
 
     cns.figure(120, 120)
-    ax = cns.stackplot(data, x="group", y="outcome", pairs=[("A", "B")])
+    ax = cns.stackplot(data, stack="outcome", pairs=[("A", "B")], **{bar_axis: "group"})
 
     assert ax.texts
 
@@ -288,7 +360,7 @@ def test_stackplot_rejects_degenerate_contingency_margins() -> None:
 
     cns.figure(120, 120)
     with pytest.raises(ValueError, match="nonzero row and column margins"):
-        cns.stackplot(data, x="group", y="outcome", pairs=[("A", "B")])
+        cns.stackplot(data, x="group", stack="outcome", pairs=[("A", "B")])
 
 
 def test_stackplot_requires_distinct_comparison_levels() -> None:
@@ -301,7 +373,23 @@ def test_stackplot_requires_distinct_comparison_levels() -> None:
 
     cns.figure(120, 120)
     with pytest.raises(ValueError, match="exactly two distinct levels"):
-        cns.stackplot(data, x="group", y="outcome", pairs=[("A", "A")])
+        cns.stackplot(data, x="group", stack="outcome", pairs=[("A", "A")])
+
+
+@pytest.mark.parametrize(
+    "axes",
+    [{}, {"x": "group", "y": "outcome"}],
+)
+def test_stackplot_requires_exactly_one_bar_axis(axes: dict[str, str]) -> None:
+    data = pd.DataFrame(
+        {
+            "group": ["A", "B"],
+            "outcome": ["Yes", "No"],
+        }
+    )
+
+    with pytest.raises(ValueError, match="exactly one of `x` or `y`"):
+        cns.stackplot(data, stack="outcome", **axes)
 
 
 @pytest.mark.parametrize(
