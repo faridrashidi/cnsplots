@@ -109,7 +109,7 @@ cns.barplot(data=tips, x="day", y="total_bill", palette=cols)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add significance annotations for all pairwise comparisons.
 cns.figure(100, 150, "Tableau")
-cns.barplot(data=tips, x="day", y="total_bill", pairs="all", addtip=True)
+cns.barplot(data=tips, x="day", y="total_bill", pairs="all", add_tip=True)
 
 
 # %%
@@ -122,7 +122,7 @@ cns.barplot(
     x="day",
     y="total_bill",
     pairs=[("Thur", "Fri"), ("Sat", "Sun")],
-    addtip=True,
+    add_tip=True,
 )
 
 
@@ -206,18 +206,18 @@ ax.spines["left"].set_visible(False)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare measurements across species.
 cns.figure(100, 150, "Bold")
-ax = cns.barplot(data=iris, x="species", y="sepal_width", pairs="all", addtip=True)
+ax = cns.barplot(data=iris, x="species", y="sepal_width", pairs="all", add_tip=True)
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
 )
 
 
 # %%
-# Barplot with sample counts
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Display number of samples above bars.
+# Barplot with value labels
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Display the aggregated value above each bar.
 cns.figure(150, 150)
-cns.barplot(data=iris, x="species", y="sepal_length", addtip=True)
+cns.barplot(data=iris, x="species", y="sepal_length", add_tip=True)
 
 
 # %%

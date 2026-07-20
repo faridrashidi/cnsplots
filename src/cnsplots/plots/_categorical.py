@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.axes import Axes
+from matplotlib.container import BarContainer
 from matplotlib.patches import Patch
 from scipy import stats
 
@@ -128,7 +129,7 @@ def _draw_lollipop_series(
     markersize: float,
     marker: str,
     errors: pd.Series | None,
-    addtip: bool,
+    add_tip: bool,
     tip_offset: float,
     label: Any = None,
 ) -> None:
@@ -175,7 +176,7 @@ def _draw_lollipop_series(
                 capsize=2,
             )
 
-    if addtip:
+    if add_tip:
         for position, value in zip(positions, values):
             if pd.isna(value):
                 continue
@@ -200,7 +201,11 @@ def barplot(
     x: str,
     y: str,
     pairs: list[tuple[str, str]] | None = None,
-    addtip: bool = False,
+    add_tip: bool = False,
+    *,
+    hue: str | None = None,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -221,8 +226,14 @@ def barplot(
     pairs : list of tuple of str, optional
         List of pairs of category names from x for pairwise statistical comparisons
         using Welch's t-test.
-    addtip : bool, default: False
+    add_tip : bool, default: False
         Whether to add text labels showing the mean value above each bar.
+    hue : str, optional
+        Column name for grouping data into separate bars.
+    order : list of str, optional
+        Order of categories along the categorical axis.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.barplot`.
 
@@ -245,7 +256,7 @@ def barplot(
     ...     x="treatment",
     ...     y="response",
     ...     pairs=[("control", "drug_a"), ("control", "drug_b")],
-    ...     addtip=True,
+    ...     add_tip=True,
     ... )
     >>> ax.set_title("Treatment Response")
 
@@ -255,8 +266,15 @@ def barplot(
     """
     # Validate inputs
     validate_dataframe(data, "data", "barplot")
-    validate_columns_exist(data, [x, y], "barplot")
+    columns = [x, y] if hue is None else [x, y, hue]
+    validate_columns_exist(data, columns, "barplot")
     validate_dataframe_not_empty(data, "barplot")
+
+    if "addtip" in kwargs:
+        raise TypeError(
+            "barplot() got an unexpected keyword argument 'addtip'; "
+            "use 'add_tip' instead"
+        )
 
     args = {
         "edgecolor": None,
@@ -276,21 +294,32 @@ def barplot(
             group_col,
         )
         show_legend = True
-    plotting = {"data": data, "x": x, "y": y, "palette": palette}
+    plotting = {
+        "data": data,
+        "x": x,
+        "y": y,
+        "hue": hue,
+        "order": order,
+        "hue_order": hue_order,
+        "palette": palette,
+    }
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.barplot(**plotting)
-    if addtip:
-        groupedvalues = data.groupby(x)[[y]].mean().reset_index()
-        for _, row in groupedvalues.iterrows():
-            ax.text(
-                row.name,
-                row[y] + 0.05,
-                round(row[y], 2),
+    if add_tip:
+        for container in (
+            item for item in ax.containers if isinstance(item, BarContainer)
+        ):
+            labels = [
+                "" if pd.isna(value) else str(round(value, 2))
+                for value in container.datavalues
+            ]
+            ax.bar_label(
+                container,
+                labels=labels,
+                padding=2,
                 color="black",
-                ha="center",
-                rotation=0,
-                size=_legend_fontsize(),
+                fontsize=_legend_fontsize(),
             )
     if pairs is not None:
         utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
@@ -313,7 +342,7 @@ def lollipopplot(
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
     pairs: list[LollipopPair] | None = None,
-    addtip: bool = False,
+    add_tip: bool = False,
     estimator: str = "mean",
     errorbar: str | None = None,
     markersize: float = 20,
@@ -348,7 +377,7 @@ def lollipopplot(
     pairs : list of tuple of str, optional
         List of pairs of category names for pairwise statistical comparisons
         using Welch's t-test.
-    addtip : bool, default: False
+    add_tip : bool, default: False
         Whether to add text labels showing the aggregated value at each dot.
     estimator : {'mean', 'median'}, default: 'mean'
         The aggregation function to compute for each category.
@@ -475,7 +504,7 @@ def lollipopplot(
             markersize=markersize,
             marker=marker,
             errors=errors,
-            addtip=addtip,
+            add_tip=add_tip,
             tip_offset=(means.max() - baseline) * 0.02,
         )
     else:
@@ -514,7 +543,7 @@ def lollipopplot(
                 markersize=markersize,
                 marker=marker,
                 errors=errors,
-                addtip=addtip,
+                add_tip=add_tip,
                 tip_offset=means.max() * 0.02,
                 label=hue_val,
             )
@@ -573,12 +602,12 @@ def stackplot(
     y: str | None = None,
     *,
     stack: str,
-    bar_order: list[str] | None = None,
+    order: list[str] | None = None,
     stack_order: list[str] | None = None,
     width: float = 0.5,
     normalize: bool = True,
     pairs: list[tuple[str, str]] | None = None,
-    addcount: bool = False,
+    add_count: bool = False,
     n_factor: int | float = 1,
 ) -> Axes:
     """
@@ -603,7 +632,7 @@ def stackplot(
         be provided.
     stack : str
         Column name for the categorical variable determining stack segments.
-    bar_order : list, optional
+    order : list, optional
         Order of categories from the selected bar variable to display.
     stack_order : list, optional
         Order of categories from ``stack`` for stacking.
@@ -614,7 +643,7 @@ def stackplot(
     pairs : list of tuple of str, optional
         List of pairs of bar-category names for pairwise statistical comparisons
         from the selected bar variable.
-    addcount : bool, default: False
+    add_count : bool, default: False
         Whether to append total counts to the category tick labels in the
         format ``n=...``.
     n_factor : int or float, default: 1
@@ -670,7 +699,7 @@ def stackplot(
         value_label = "Frequency"
     else:
         value_label = "Count"
-    df = df.reindex(index=bar_order)
+    df = df.reindex(index=order)
     df = df / n_factor
     ax = plt.gca()
     if y is not None:
@@ -682,14 +711,14 @@ def stackplot(
         ax.set_ylabel(value_label)
         ax.set_xlabel("")
     utils.take_legend_out()
-    if addcount:
+    if add_count:
         count_axis = "y" if y is not None else "x"
-        utils._addcount_helper(data, bar, ax, axis=count_axis)
+        utils._add_count_helper(data, bar, ax, axis=count_axis)
     if pairs is not None:
         if y is not None:
-            plotting = {"data": data2, "x": "count", "y": bar, "order": bar_order}
+            plotting = {"data": data2, "x": "count", "y": bar, "order": order}
         else:
-            plotting = {"data": data2, "x": bar, "y": "count", "order": bar_order}
+            plotting = {"data": data2, "x": bar, "y": "count", "order": order}
         if contingency.shape[1] == 2:
             utils._p_value_helper(
                 "fisher-exact", data2, ax, plotting, pairs, contingency
@@ -709,7 +738,11 @@ def stripplot(
     size: float = 2,
     showmedian: bool = True,
     showmeans: bool = False,
-    addcount: bool = False,
+    add_count: bool = False,
+    *,
+    hue: str | None = None,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -732,8 +765,14 @@ def stripplot(
         Whether to overlay a horizontal line at the median for each category.
     showmeans : bool, default: False
         Whether to overlay a marker at the mean for each category.
-    addcount : bool, default: False
+    add_count : bool, default: False
         Whether to add sample size (n) labels above each category.
+    hue : str, optional
+        Column name for grouping points within each category.
+    order : list of str, optional
+        Order of categories along the categorical axis.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.stripplot`.
 
@@ -752,7 +791,7 @@ def stripplot(
     --------
     >>> import cnsplots as cns
     >>> ax = cns.stripplot(
-    ...     data=df, x="treatment", y="response", showmedian=True, addcount=True
+    ...     data=df, x="treatment", y="response", showmedian=True, add_count=True
     ... )
     >>> ax.set_title("Treatment Response")
 
@@ -764,14 +803,31 @@ def stripplot(
     """
     # Validate inputs
     validate_dataframe(data, "data", "stripplot")
-    validate_columns_exist(data, [x, y], "stripplot")
+    columns = [x, y] if hue is None else [x, y, hue]
+    validate_columns_exist(data, columns, "stripplot")
     validate_dataframe_not_empty(data, "stripplot")
 
-    ax = sns.stripplot(data=data, x=x, y=y, size=size, **kwargs)
+    if "addcount" in kwargs:
+        raise TypeError(
+            "stripplot() got an unexpected keyword argument 'addcount'; "
+            "use 'add_count' instead"
+        )
+
+    ax = sns.stripplot(
+        data=data,
+        x=x,
+        y=y,
+        hue=hue,
+        order=order,
+        hue_order=hue_order,
+        size=size,
+        **kwargs,
+    )
     sns.boxplot(
         data=data,
         x=x,
         y=y,
+        order=order,
         medianprops={"visible": showmedian, "color": "black", "lw": 1},
         meanprops={
             "markerfacecolor": "white",
@@ -788,8 +844,8 @@ def stripplot(
         ax=ax,
         showmeans=showmeans,
     )
-    if addcount:
-        utils._addcount_helper(data, x, ax)
+    if add_count:
+        utils._add_count_helper(data, x, ax)
 
     _resize_legend_markers(ax.get_legend(), size**2, marker_size=size * 2)
 
@@ -800,7 +856,7 @@ def pieplot(
     data: pd.DataFrame,
     x: str,
     legend: str = "bottom",
-    hue_order: list[str] | None = None,
+    order: list[str] | None = None,
 ) -> Axes:
     """
     Create a pie chart showing categorical proportions.
@@ -813,7 +869,7 @@ def pieplot(
         Column name for the categorical variable to visualize.
     legend : {'right', 'left', 'top', 'bottom'}, default: 'bottom'
         Position of the legend relative to the pie chart.
-    hue_order : list, optional
+    order : list, optional
         Order of categories to display in the pie chart.
 
     Returns
@@ -834,7 +890,7 @@ def pieplot(
     >>> ax.set_title("Cell Type Distribution")
 
     >>> # Specify category order
-    >>> ax = cns.pieplot(data=df, x="response", hue_order=["CR", "PR", "SD", "PD"])
+    >>> ax = cns.pieplot(data=df, x="response", order=["CR", "PR", "SD", "PD"])
     """
     # Validate inputs
     validate_dataframe(data, "data", "pieplot")
@@ -842,10 +898,10 @@ def pieplot(
     validate_dataframe_not_empty(data, "pieplot")
 
     df = data[x].value_counts()
-    if hue_order is None:
-        hue_order = df.index
+    if order is None:
+        order = df.index
     ax = plt.gca()
-    ax = df.reindex(index=hue_order).plot.pie(
+    ax = df.reindex(index=order).plot.pie(
         shadow=False,
         autopct="%1.0f%%",
         explode=[0] * df.shape[0],
@@ -874,7 +930,7 @@ def donutplot(
     data: pd.DataFrame,
     x: str,
     legend: str = "bottom",
-    hue_order: list[str] | None = None,
+    order: list[str] | None = None,
 ) -> Axes:
     """
     Create a donut chart showing categorical proportions.
@@ -887,7 +943,7 @@ def donutplot(
         Column name for the categorical variable to visualize.
     legend : {'right', 'left', 'top', 'bottom'}, default: 'bottom'
         Position of the legend relative to the pie chart.
-    hue_order : list, optional
+    order : list, optional
         Order of categories to display in the donut chart.
 
     Returns
@@ -908,7 +964,7 @@ def donutplot(
     >>> ax.set_title("Tissue Type Distribution")
 
     >>> # Specify category order
-    >>> ax = cns.donutplot(data=df, x="grade", hue_order=["I", "II", "III", "IV"])
+    >>> ax = cns.donutplot(data=df, x="grade", order=["I", "II", "III", "IV"])
     """
     # Validate inputs
     validate_dataframe(data, "data", "donutplot")
@@ -916,10 +972,10 @@ def donutplot(
     validate_dataframe_not_empty(data, "donutplot")
 
     df = data[x].value_counts()
-    if hue_order is None:
-        hue_order = df.index
+    if order is None:
+        order = df.index
     ax = plt.gca()
-    ax = df.reindex(index=hue_order).plot.pie(
+    ax = df.reindex(index=order).plot.pie(
         labeldistance=None,
         ax=ax,
         ylabel="",

@@ -47,7 +47,7 @@ def test_boxplot_and_violinplot(
             x="group",
             y="value",
             pairs=[("A", "B")],
-            addcount=True,
+            add_count=True,
             showoutliers=True,
             whis=(0, 100),
         )
@@ -77,7 +77,7 @@ def test_boxplot_and_violinplot(
         y="value",
         pairs=[("A", "B")],
         add_box=True,
-        addcount=True,
+        add_count=True,
         hue="hue",
         split=True,
         inner="quart",
@@ -106,7 +106,7 @@ def test_barplot_and_lollipopplot(
         x="group",
         y="value",
         pairs=[("A", "B")],
-        addtip=True,
+        add_tip=True,
         palette="palette_group",
     )
     legend = ax.get_legend()
@@ -125,7 +125,7 @@ def test_barplot_and_lollipopplot(
         y="value",
         hue="hue",
         pairs=[(("A", "H1"), ("A", "H2"))],
-        addtip=True,
+        add_tip=True,
         errorbar="ci",
         palette="Set1",
     )
@@ -138,7 +138,7 @@ def test_barplot_and_lollipopplot(
         y="cat",
         color="black",
         errorbar="sd",
-        addtip=True,
+        add_tip=True,
         estimator="median",
     )
     assert ax3.get_yticklabels()[0].get_text()
@@ -160,12 +160,12 @@ def test_categorical_annotations_use_legend_fontsize(
 ) -> None:
     with cns.settings.context(legend_fontsize=13):
         cns.figure(120, 120)
-        bar_ax = cns.barplot(categorical_df, x="group", y="value", addtip=True)
+        bar_ax = cns.barplot(categorical_df, x="group", y="value", add_tip=True)
         assert {text.get_fontsize() for text in bar_ax.texts} == {13}
 
         cns.figure(120, 120)
         lollipop_ax = cns.lollipopplot(
-            categorical_df, x="group", y="value", addtip=True
+            categorical_df, x="group", y="value", add_tip=True
         )
         assert {text.get_fontsize() for text in lollipop_ax.texts} == {13}
 
@@ -203,9 +203,9 @@ def test_stack_strip_pie_and_donut_plots(
         x="treatment",
         stack="response",
         normalize=True,
-        addcount=True,
+        add_count=True,
         pairs=[("A", "B")],
-        bar_order=["A", "B", "C"],
+        order=["A", "B", "C"],
         stack_order=["Yes", "No"],
     )
     assert ax.get_ylabel() == "Frequency"
@@ -226,7 +226,7 @@ def test_stack_strip_pie_and_donut_plots(
         stack="response",
         normalize=False,
         pairs=[("A", "B")],
-        bar_order=["A", "B", "C"],
+        order=["A", "B", "C"],
         stack_order=["No", "Yes"],
     )
     assert ax2.get_xlabel() == "Count"
@@ -240,7 +240,7 @@ def test_stack_strip_pie_and_donut_plots(
         y="treatment",
         stack="response",
         normalize=False,
-        addcount=True,
+        add_count=True,
     )
     assert {tick.get_text() for tick in ax2b.get_yticklabels()} == {
         "A\n(n=4)",
@@ -256,14 +256,12 @@ def test_stack_strip_pie_and_donut_plots(
         y="value",
         hue="hue",
         showmeans=True,
-        addcount=True,
+        add_count=True,
     )
     assert ax3.get_legend() is not None
 
     cns.figure(120, 120)
-    ax4 = cns.pieplot(
-        categorical_df, x="group", legend="left", hue_order=["C", "B", "A"]
-    )
+    ax4 = cns.pieplot(categorical_df, x="group", legend="left", order=["C", "B", "A"])
     assert ax4.get_legend() is not None
     pie_wedges = [patch for patch in ax4.patches if isinstance(patch, Wedge)]
     np.testing.assert_allclose(
@@ -271,9 +269,7 @@ def test_stack_strip_pie_and_donut_plots(
     )
 
     cns.figure(120, 120)
-    ax5 = cns.donutplot(
-        categorical_df, x="group", legend="top", hue_order=["A", "B", "C"]
-    )
+    ax5 = cns.donutplot(categorical_df, x="group", legend="top", order=["A", "B", "C"])
     assert ax5.get_legend() is not None
     assert any(text.get_text() == "group" for text in ax5.texts)
     donut_wedges = [patch for patch in ax5.patches if isinstance(patch, Wedge)]
@@ -320,6 +316,78 @@ def test_distribution_wrappers(
     assert ax6 is plt.gca()
 
 
+@pytest.mark.parametrize(
+    "plot_name",
+    [
+        "barplot",
+        "boxplot",
+        "violinplot",
+        "stripplot",
+        "distplot",
+        "kdeplot",
+        "histplot",
+        "scatterplot",
+        "lineplot",
+    ],
+)
+def test_seaborn_wrappers_respect_explicit_hue_order(plot_name: str) -> None:
+    data = pd.DataFrame(
+        {
+            "category": ["A", "A", "B", "B", "C", "C"] * 2,
+            "hue": ["H1"] * 6 + ["H2"] * 6,
+            "time": [0, 1, 2, 0, 1, 2] * 2,
+            "value": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0] + [0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
+        }
+    )
+    data["other"] = data["value"] * 2
+    hue_order = ["H2", "H1"]
+
+    if plot_name in {"barplot", "boxplot", "violinplot", "stripplot"}:
+        kwargs: dict[str, Any] = {
+            "data": data,
+            "x": "category",
+            "y": "value",
+            "order": ["C", "B", "A"],
+        }
+    elif plot_name in {"distplot", "kdeplot", "histplot"}:
+        kwargs = {"data": data, "x": "value"}
+    elif plot_name == "scatterplot":
+        kwargs = {"data": data, "x": "value", "y": "other"}
+    else:
+        kwargs = {"data": data, "x": "time", "y": "value"}
+
+    cns.figure(120, 120)
+    ax = getattr(cns, plot_name)(
+        **kwargs,
+        hue="hue",
+        hue_order=hue_order,
+    )
+
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()][:2] == hue_order
+    if "order" in kwargs:
+        assert [tick.get_text() for tick in ax.get_xticklabels()] == kwargs["order"]
+
+
+@pytest.mark.parametrize("plot_name", ["pieplot", "donutplot"])
+def test_circular_plots_respect_category_order(plot_name: str) -> None:
+    data = pd.DataFrame({"group": ["A"] + ["B"] * 2 + ["C"] * 3})
+    order = ["A", "C", "B"]
+
+    cns.figure(120, 120)
+    ax = getattr(cns, plot_name)(data, x="group", order=order)
+
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == order
+    wedges = [patch for patch in ax.patches if isinstance(patch, Wedge)]
+    np.testing.assert_allclose(
+        [patch.theta2 - patch.theta1 for patch in wedges],
+        [60.0, 180.0, 120.0],
+    )
+
+
 def test_distribution_annotations_use_legend_fontsize(
     numeric_df: pd.DataFrame,
     categorical_df: pd.DataFrame,
@@ -362,7 +430,7 @@ def test_pieplot_uses_contrast_text_color() -> None:
 
     cns.figure(120, 120)
     with plt.rc_context({"axes.prop_cycle": cycler(color=["#111111", "#eeeeee"])}):
-        ax = cns.pieplot(data, x="group", hue_order=["dark", "light"])
+        ax = cns.pieplot(data, x="group", order=["dark", "light"])
 
     percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
     assert [text.get_color() for text in percent_texts] == ["white", "black"]
@@ -370,7 +438,7 @@ def test_pieplot_uses_contrast_text_color() -> None:
     with cns.settings.context(annotation_auto_contrast=False):
         cns.figure(120, 120)
         with plt.rc_context({"axes.prop_cycle": cycler(color=["#111111", "#eeeeee"])}):
-            ax = cns.pieplot(data, x="group", hue_order=["dark", "light"])
+            ax = cns.pieplot(data, x="group", order=["dark", "light"])
 
     percent_texts = [text for text in ax.texts if text.get_text().endswith("%")]
     assert [text.get_color() for text in percent_texts] == ["white", "white"]

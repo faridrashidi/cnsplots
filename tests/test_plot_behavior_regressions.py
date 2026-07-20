@@ -139,10 +139,38 @@ def test_lollipop_ignores_missing_order_categories_for_errors_and_tips() -> None
         y="value",
         order=["A", "B", "missing"],
         errorbar="se",
-        addtip=True,
+        add_tip=True,
     )
 
     assert [text.get_text() for text in ax.texts] == ["0.50", "2.50"]
+
+
+def test_barplot_labels_each_hue_bar_and_skips_missing_order_levels() -> None:
+    data = pd.DataFrame(
+        {
+            "category": ["A", "A", "A", "A", "B", "B", "B", "B"],
+            "value": [1.0, 3.0, 2.0, 4.0, 5.0, 7.0, 6.0, 8.0],
+            "hue": ["H1", "H1", "H2", "H2"] * 2,
+        }
+    )
+
+    cns.figure(120, 120)
+    ax = cns.barplot(
+        data,
+        x="category",
+        y="value",
+        hue="hue",
+        order=["A", "B", "missing"],
+        hue_order=["H2", "H1"],
+        add_tip=True,
+    )
+
+    assert [text.get_text() for text in ax.texts if text.get_text()] == [
+        "3.0",
+        "7.0",
+        "2.0",
+        "6.0",
+    ]
 
 
 def test_lollipop_rejects_ambiguous_palette_column_combinations() -> None:
@@ -298,9 +326,9 @@ def test_stackplot_y_axis_preserves_bar_and_stack_semantics(
         data,
         y="patient",
         stack="mutation",
-        addcount=True,
+        add_count=True,
         pairs=[("P2", "P1")],
-        bar_order=["P2", "P1"],
+        order=["P2", "P1"],
         stack_order=["M3", "M2", "M1"],
     )
 

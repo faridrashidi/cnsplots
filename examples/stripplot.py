@@ -70,9 +70,9 @@ ax.set_title("Strip Plot with Median and Mean")
 # %%
 # Strip plot with sample counts
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``addcount=True`` to display sample sizes.
+# Use ``add_count=True`` to display sample sizes.
 cns.figure(100, 120)
-ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, addcount=True)
+ax = cns.stripplot(data=tips, x="day", y="total_bill", size=2, add_count=True)
 ax.set_title("Strip Plot with Sample Counts")
 
 
@@ -205,7 +205,7 @@ ax = cns.stripplot(
     size=3,
     showmedian=True,
     showmeans=True,
-    addcount=True,
+    add_count=True,
     order=["Thur", "Fri", "Sat", "Sun"],
     alpha=0.6,
 )

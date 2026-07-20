@@ -10,7 +10,7 @@ import types
 from collections.abc import Mapping, Sequence
 from importlib.metadata import version
 from pathlib import Path
-from typing import cast, get_type_hints
+from typing import Any, cast, get_type_hints
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -196,8 +196,79 @@ def test_public_stackplot_signature_contract() -> None:
     assert parameters["stack"].kind is inspect.Parameter.KEYWORD_ONLY
     assert parameters["stack"].default is inspect.Parameter.empty
     assert "horizontal" not in parameters
-    assert "addcount" in parameters
-    assert "addtip" not in parameters
+    assert "add_count" in parameters
+    assert "add_tip" not in parameters
+
+
+@pytest.mark.parametrize(
+    ("plot_name", "canonical_names", "removed_names"),
+    [
+        ("barplot", {"add_tip", "hue", "order", "hue_order"}, {"addtip"}),
+        (
+            "boxplot",
+            {"add_count", "hue", "order", "hue_order"},
+            {"addcount"},
+        ),
+        (
+            "violinplot",
+            {"add_box", "add_count", "hue", "order", "hue_order"},
+            {"addcount"},
+        ),
+        (
+            "lollipopplot",
+            {"add_tip", "hue", "order", "hue_order"},
+            {"addtip"},
+        ),
+        (
+            "stackplot",
+            {"add_count", "order", "stack_order"},
+            {"addcount", "bar_order"},
+        ),
+        (
+            "stripplot",
+            {"add_count", "hue", "order", "hue_order"},
+            {"addcount"},
+        ),
+        ("pieplot", {"order"}, {"hue_order"}),
+        ("donutplot", {"order"}, {"hue_order"}),
+        ("distplot", {"hue", "hue_order"}, set()),
+        ("kdeplot", {"hue", "hue_order"}, set()),
+        ("histplot", {"hue", "hue_order"}, set()),
+        ("scatterplot", {"hue", "hue_order"}, set()),
+        ("lineplot", {"hue", "hue_order"}, set()),
+        ("regplot", {"hue", "hue_order"}, set()),
+        ("slopeplot", {"hue", "hue_order"}, set()),
+    ],
+)
+def test_public_plot_naming_contract(
+    plot_name: str,
+    canonical_names: set[str],
+    removed_names: set[str],
+) -> None:
+    parameters = inspect.signature(getattr(cns, plot_name)).parameters
+
+    assert canonical_names <= set(parameters)
+    assert removed_names.isdisjoint(parameters)
+
+
+def test_removed_plot_keywords_name_their_replacements(
+    categorical_df: pd.DataFrame,
+) -> None:
+    calls = [
+        (cns.barplot, "addtip", "add_tip"),
+        (cns.boxplot, "addcount", "add_count"),
+        (cns.violinplot, "addcount", "add_count"),
+        (cns.stripplot, "addcount", "add_count"),
+    ]
+
+    for plotter, removed, replacement in calls:
+        with pytest.raises(TypeError, match=replacement):
+            cast(Any, plotter)(
+                categorical_df,
+                x="group",
+                y="value",
+                **{removed: True},
+            )
 
 
 def test_public_validation_contract(heatmap_adata: object) -> None:

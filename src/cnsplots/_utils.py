@@ -641,7 +641,7 @@ def apply_unicode_font(ax: Axes | None = None, font: str = "DejaVu Sans") -> Non
             text_obj.set_fontfamily(font)
 
 
-def _addcount_helper(data, attr, ax, axis="x"):
+def _add_count_helper(data, attr, ax, axis="x"):
     counts = data[attr].astype(str).value_counts()
     if axis == "x":
         tick_labels = ax.get_xticklabels()

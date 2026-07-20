@@ -53,7 +53,7 @@ ax.set_title("Customers by Sex")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the order of categories.
 cns.figure(100, 100)
-ax = cns.donutplot(tips, "day", hue_order=["Thur", "Fri", "Sat", "Sun"])
+ax = cns.donutplot(tips, "day", order=["Thur", "Fri", "Sat", "Sun"])
 ax.set_title("Custom Order")
 
 
