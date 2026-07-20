@@ -55,6 +55,15 @@ def _write_docs_source(repo_root: Path) -> Path:
     return docs_dir
 
 
+def test_docs_workflow_serializes_main_and_tag_deployments():
+    repo_root = Path(__file__).resolve().parents[1]
+    workflow = (repo_root / ".github" / "workflows" / "ci-docs.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "group: gh-pages\n  cancel-in-progress: false\n  queue: max" in workflow
+
+
 def test_sphinx_build_stages_docs_and_repository_inputs(tmp_path, monkeypatch):
     docs_build = _load_docs_build_script()
     repo_root = tmp_path / "repo"
