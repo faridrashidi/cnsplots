@@ -9,7 +9,14 @@ import pandas as pd
 import pytest
 from cycler import cycler
 from matplotlib.colors import to_hex, to_rgba
-from matplotlib.patches import Circle, FancyBboxPatch, PathPatch, Polygon, Wedge
+from matplotlib.patches import (
+    Circle,
+    FancyBboxPatch,
+    PathPatch,
+    Polygon,
+    Rectangle,
+    Wedge,
+)
 
 import cnsplots as cns
 
@@ -102,10 +109,12 @@ def test_barplot_and_lollipopplot(
         addtip=True,
         palette="palette_group",
     )
-    assert ax.get_legend() is not None
-    assert ax.get_legend().get_title().get_text() == "palette_group"
+    legend = ax.get_legend()
+    assert legend is not None
+    assert legend.get_title().get_text() == "palette_group"
     np.testing.assert_allclose(
-        [patch.get_height() for patch in ax.patches], [1.2, 2.15, 3.15]
+        [cast(Rectangle, patch).get_height() for patch in ax.patches],
+        [1.2, 2.15, 3.15],
     )
     assert [text.get_text() for text in ax.texts] == ["1.2", "2.15", "3.15"]
 
@@ -205,7 +214,9 @@ def test_stack_strip_pie_and_donut_plots(
         "B\n(n=4)",
         "C\n(n=4)",
     ]
-    np.testing.assert_allclose([patch.get_height() for patch in ax.patches], [0.5] * 6)
+    np.testing.assert_allclose(
+        [cast(Rectangle, patch).get_height() for patch in ax.patches], [0.5] * 6
+    )
     assert not ax.texts
 
     cns.figure(120, 120)
@@ -219,7 +230,9 @@ def test_stack_strip_pie_and_donut_plots(
         stack_order=["No", "Yes"],
     )
     assert ax2.get_xlabel() == "Count"
-    np.testing.assert_allclose([patch.get_width() for patch in ax2.patches], [2.0] * 6)
+    np.testing.assert_allclose(
+        [cast(Rectangle, patch).get_width() for patch in ax2.patches], [2.0] * 6
+    )
 
     cns.figure(120, 120)
     ax2b = cns.stackplot(
@@ -294,9 +307,9 @@ def test_distribution_wrappers(
 
     cns.figure(120, 120)
     ax4 = cns.histplot(data=numeric_df, x="x", kde=True)
-    assert sum(patch.get_height() for patch in ax4.patches) == pytest.approx(
-        len(numeric_df)
-    )
+    assert sum(
+        cast(Rectangle, patch).get_height() for patch in ax4.patches
+    ) == pytest.approx(len(numeric_df))
 
     cns.figure(120, 120)
     ax5 = cns.ridgeplot(categorical_df, x="value", y="group", cmap="viridis")
@@ -432,8 +445,8 @@ def test_placeholderplot_renders_centered_placeholder() -> None:
 
         text = ax.texts[0]
         assert text.get_text() == "A description to be centered in the panel"
-        assert text.get_ha() == "center"
-        assert text.get_va() == "center"
+        assert text.get_horizontalalignment() == "center"
+        assert text.get_verticalalignment() == "center"
         assert text.get_wrap() is True
         assert text.get_fontsize() == pytest.approx(11)
         assert text.get_fontweight() == "normal"

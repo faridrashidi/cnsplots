@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union, cast
-
-if TYPE_CHECKING:
-    import pandas as pd
-    from matplotlib.axes import Axes
+from typing import Any, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.axes import Axes
 from matplotlib.patches import Patch
 from scipy import stats
 

@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    import pandas as pd
-    from matplotlib.axes import Axes
+from typing import Any
 
 import matplotlib as mpl
 import matplotlib.patches  # noqa: F401  # ensure submodule is importable for isinstance checks
@@ -15,6 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 import seaborn as sns
+from matplotlib.axes import Axes
 
 import cnsplots._utils as utils
 from cnsplots._utils import _legend_fontsize

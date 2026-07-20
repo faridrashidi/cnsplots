@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+from typing import cast
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -69,7 +72,9 @@ def test_slopeplot_aligns_values_by_pair_key() -> None:
         pair="subject",
     )
 
-    paired_values = sorted(tuple(line.get_ydata()) for line in ax.lines)
+    paired_values = sorted(
+        tuple(cast(Iterable[float], line.get_ydata())) for line in ax.lines
+    )
     assert paired_values == [(1.0, 2.0), (10.0, 20.0)]
 
 

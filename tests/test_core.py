@@ -16,16 +16,23 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
 import pytest
-from lxml import etree
+from lxml import etree  # ty: ignore[unresolved-import]
 from matplotlib.backend_bases import DrawEvent, Event
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure, SubFigure
 
 import cnsplots as cns
 from cnsplots import _settings, _setup, _svg, _utils
 
 
+def _figure_renderer(fig: Figure | SubFigure):
+    """Return the renderer exposed by the Agg canvas used in tests."""
+    return cast(FigureCanvasAgg, fig.canvas).get_renderer()
+
+
 def _panel_label_padding(ax, text) -> tuple[float, float]:
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
     axes_bbox = ax.get_window_extent(renderer=renderer)
     text_bbox = text.get_window_extent(renderer=renderer)
     return axes_bbox.x0 - text_bbox.x1, text_bbox.y0 - axes_bbox.y1
@@ -33,7 +40,7 @@ def _panel_label_padding(ax, text) -> tuple[float, float]:
 
 def _panel_label_left_gap(ax, text) -> float:
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
     tight_bbox = ax.yaxis.get_tightbbox(renderer=renderer)
     if tight_bbox is None:
         return 0.0
@@ -43,7 +50,7 @@ def _panel_label_left_gap(ax, text) -> float:
 
 def _panel_label_title_gap(ax, text) -> float:
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
     text_bbox = text.get_window_extent(renderer=renderer)
     title_bbox = ax.title.get_window_extent(renderer=renderer)
     return text_bbox.y0 - title_bbox.y1
@@ -51,7 +58,7 @@ def _panel_label_title_gap(ax, text) -> float:
 
 def _panel_label_top_gap(ax, text) -> float:
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
     text_bbox = text.get_window_extent(renderer=renderer)
     axes_bbox = ax.get_window_extent(renderer=renderer)
     top_edge = float(axes_bbox.y1)
@@ -391,83 +398,83 @@ def test_settings_validation_errors() -> None:
     settings = _settings.CNSSettings()
 
     with pytest.raises(TypeError):
-        settings.palette_qual = 1
+        setattr(settings, "palette_qual", 1)
     with pytest.raises(TypeError):
-        settings.palette_seq = 1
+        setattr(settings, "palette_seq", 1)
     with pytest.raises(TypeError):
-        settings.title_fontsize = "1"
+        setattr(settings, "title_fontsize", "1")
     with pytest.raises(TypeError):
-        settings.figure_width = None
+        setattr(settings, "figure_width", None)
     with pytest.raises(ValueError):
         settings.title_fontsize = 0
     with pytest.raises(TypeError):
-        settings.title_fontweight = []
+        setattr(settings, "title_fontweight", [])
     with pytest.raises(TypeError):
-        settings.panel_label_fontweight = None
+        setattr(settings, "panel_label_fontweight", None)
     with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
-        settings.title_fontweight = 1.5
+        setattr(settings, "title_fontweight", 1.5)
     with pytest.raises(TypeError):
-        settings.legend_fontsize = "1"
+        setattr(settings, "legend_fontsize", "1")
     with pytest.raises(ValueError):
         settings.legend_fontsize = 0
     with pytest.raises(ValueError, match="pvalue_format must be one of"):
-        settings.pvalue_format = "simple"
+        setattr(settings, "pvalue_format", "simple")
     with pytest.raises(ValueError, match="pvalue_loc must be one of"):
-        settings.pvalue_loc = "between"
+        setattr(settings, "pvalue_loc", "between")
     with pytest.raises(
         TypeError, match="pvalue_fontsize must be a positive number or string"
     ):
-        settings.pvalue_fontsize = None
+        setattr(settings, "pvalue_fontsize", None)
     with pytest.raises(
         TypeError, match="pvalue_fontsize must be a positive number or string"
     ):
-        settings.pvalue_fontsize = []
+        setattr(settings, "pvalue_fontsize", [])
     with pytest.raises(ValueError, match="pvalue_fontsize must be positive"):
         settings.pvalue_fontsize = 0
     with pytest.raises(ValueError, match="pvalue_fontsize must not be empty"):
         settings.pvalue_fontsize = ""
     with pytest.raises(TypeError):
-        settings.axes_linewidth = "1"
+        setattr(settings, "axes_linewidth", "1")
     with pytest.raises(ValueError):
         settings.axes_linewidth = 0
     with pytest.raises(TypeError):
-        settings.verbosity = 1.5
+        setattr(settings, "verbosity", 1.5)
     with pytest.raises(ValueError):
         settings.verbosity = -1
     with pytest.raises(TypeError):
-        settings.axes_grid = "yes"
+        setattr(settings, "axes_grid", "yes")
     with pytest.raises(TypeError):
-        settings.axes_titlelocation = 1
+        setattr(settings, "axes_titlelocation", 1)
     with pytest.raises(ValueError, match="axes_titlelocation must be one of"):
-        settings.axes_titlelocation = "top"
+        setattr(settings, "axes_titlelocation", "top")
     with pytest.raises(TypeError):
-        settings.font_sans_serif = "Arial"
+        setattr(settings, "font_sans_serif", "Arial")
     with pytest.raises(TypeError):
-        settings.font_sans_serif = ["Arial", 1]
+        setattr(settings, "font_sans_serif", ["Arial", 1])
     with pytest.raises(ValueError):
         settings.font_sans_serif = []
     with pytest.raises(TypeError):
-        settings.scanpy_figsize = "big"
+        setattr(settings, "scanpy_figsize", "big")
     with pytest.raises(ValueError):
         settings.scanpy_figsize = (1.0,)
     with pytest.raises(TypeError):
-        settings.legend_fontsize = "big"
+        setattr(settings, "legend_fontsize", "big")
     with pytest.raises(ValueError):
         settings.legend_markerscale = -1
     with pytest.raises(TypeError, match="annotation_auto_contrast must be a boolean"):
-        settings.annotation_auto_contrast = "yes"
+        setattr(settings, "annotation_auto_contrast", "yes")
     with pytest.raises(TypeError):
-        settings.panel_margin_top = "big"
+        setattr(settings, "panel_margin_top", "big")
     with pytest.raises(ValueError):
         settings.panel_margin_left = -1
     with pytest.raises(TypeError):
-        settings.pdf_fonttype = 1.5
+        setattr(settings, "pdf_fonttype", 1.5)
     with pytest.raises(ValueError):
         settings.pdf_fonttype = 0
     with pytest.raises(TypeError):
-        settings.legend_out_loc = 1
+        setattr(settings, "legend_out_loc", 1)
     with pytest.raises(ValueError, match="legend_out_loc must be one of"):
-        settings.legend_out_loc = "corner"
+        setattr(settings, "legend_out_loc", "corner")
 
 
 def test_ensure_helvetica_bold_branches(
@@ -645,7 +652,7 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         )
         fig.canvas.draw()
         assert ax.get_xlabel() == "X"
-        assert ax._left_title.get_text() == "Title"
+        assert ax.get_title(loc="left") == "Title"
         assert ax.xaxis.label.get_color() == "purple"
         assert ax.xaxis.labelpad == 5
         assert ax.spines["top"].get_visible() is True
@@ -653,13 +660,13 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         assert ax.spines["bottom"].get_edgecolor() == mpl.colors.to_rgba("green")
         assert {tick.get_fontsize() for tick in ax.get_xticklabels()} == {9}
         assert {tick.get_fontsize() for tick in ax.get_yticklabels()} == {9}
-        assert ax.get_xticklabels()[0].get_ha() == "right"
-        assert ax.get_yticklabels()[0].get_va() == "top"
-        assert heat.colorbar.ax.get_ylabel() == "Configured"
-        assert heat.colorbar.ax.yaxis.label.get_color() == "purple"
-        assert {tick.get_fontsize() for tick in heat.colorbar.ax.get_yticklabels()} == {
-            9
-        }
+        assert ax.get_xticklabels()[0].get_horizontalalignment() == "right"
+        assert ax.get_yticklabels()[0].get_verticalalignment() == "top"
+        colorbar = heat.colorbar
+        assert colorbar is not None
+        assert colorbar.ax.get_ylabel() == "Configured"
+        assert colorbar.ax.yaxis.label.get_color() == "purple"
+        assert {tick.get_fontsize() for tick in colorbar.ax.get_yticklabels()} == {9}
     legacy_setup_ax = cast(Any, _setup.setup_ax)
     with pytest.raises(TypeError, match="title_fontweight must be a string or integer"):
         legacy_setup_ax(ax, title_fontweight=1.5)
@@ -805,6 +812,7 @@ def test_svg_helpers_and_export(
         saved_png_meta["dpi_kwarg"] = float(dpi)
         bbox_inches = kwargs.get("bbox_inches")
         if bbox_inches is not None:
+            assert isinstance(bbox_inches, mtransforms.BboxBase)
             saved_png_meta["bbox_x0"] = float(bbox_inches.x0)
             saved_png_meta["bbox_y0"] = float(bbox_inches.y0)
             saved_png_meta["bbox_x1"] = float(bbox_inches.x1)
@@ -1003,7 +1011,7 @@ def test_savefig_heatmap_multipanel_exports_without_pdf_renderer(
 def test_utils_helpers_and_showcase_data(
     monkeypatch: pytest.MonkeyPatch,
     categorical_df: pd.DataFrame,
-    heatmap_adata: object,
+    heatmap_adata: ad.AnnData,
 ) -> None:
     cns.settings.reset()
     with cns.settings.context(
@@ -1032,10 +1040,12 @@ def test_utils_helpers_and_showcase_data(
         ax.legend(title="Legend")
         _utils.take_legend_out(title="Moved")
         legend = ax.get_legend()
+        assert legend is not None
         assert legend.get_title().get_text() == "Moved"
         assert legend.markerscale == 2
-        assert legend.get_bbox_to_anchor()._bbox.x0 == pytest.approx(1.3)
-        assert legend.get_bbox_to_anchor()._bbox.y0 == pytest.approx(1.4)
+        anchor_bbox = legend.get_bbox_to_anchor().transformed(ax.transAxes.inverted())
+        assert anchor_bbox.x0 == pytest.approx(1.3)
+        assert anchor_bbox.y0 == pytest.approx(1.4)
 
         _utils.add_panel_label("A")
         panel_text = plt.gca().texts[-1]
@@ -1045,8 +1055,8 @@ def test_utils_helpers_and_showcase_data(
         assert panel_pad_top == pytest.approx(5, abs=0.5)
         assert panel_text.get_fontproperties().get_name() == "DejaVu Sans"
         assert panel_text.get_fontweight() == "normal"
-        assert panel_text.get_ha() == "right"
-        assert panel_text.get_va() == "bottom"
+        assert panel_text.get_horizontalalignment() == "right"
+        assert panel_text.get_verticalalignment() == "bottom"
 
         _utils.add_panel_label("B", pad_left=9, pad_top=4)
         override_text = plt.gca().texts[-1]
@@ -1108,7 +1118,7 @@ def test_utils_helpers_and_showcase_data(
             self.ax = ax
             self.pairs = list(pairs)
             self.plotting = plotting
-            self._pvalue_format = None
+            self._pvalue_format: Any = None
             self.configured: dict[str, object] = {}
             self.pvalues = None
             DummyAnnotator.last = self
@@ -1208,12 +1218,22 @@ def test_utils_helpers_and_showcase_data(
         contingency=contingency,
     )
 
-    assert len(_utils.palettes(["#111111", "#222222"])) == 2
+    custom_palette = _utils.palettes(["#111111", "#222222"])
+    assert isinstance(custom_palette, list)
+    assert len(custom_palette) == 2
     assert _utils.palettes("Set1")
-    assert len(_utils.palettes("Cell")) == 10
-    assert len(_utils.palettes("Nature")) == 10
-    assert len(_utils.palettes("Science")) == 10
-    assert _utils.palettes("BuRd_custom").name == "BuRd_custom"
+    cell_palette = _utils.palettes("Cell")
+    nature_palette = _utils.palettes("Nature")
+    science_palette = _utils.palettes("Science")
+    custom_colormap = _utils.palettes("BuRd_custom")
+    assert isinstance(cell_palette, list)
+    assert isinstance(nature_palette, list)
+    assert isinstance(science_palette, list)
+    assert isinstance(custom_colormap, mpl.colors.Colormap)
+    assert len(cell_palette) == 10
+    assert len(nature_palette) == 10
+    assert len(science_palette) == 10
+    assert custom_colormap.name == "BuRd_custom"
     for invalid_palette in ["NPG", "AAAS", "Wrong Choice!"]:
         with pytest.raises(RuntimeError, match="Wrong Choice!"):
             _utils.palettes(invalid_palette)
@@ -1256,7 +1276,7 @@ def test_figure_keeps_fixed_size_with_overflowing_artists() -> None:
     outside_text = ax.text(1.02, 1.05, "Outside note", transform=ax.transAxes)
 
     fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
+    renderer = _figure_renderer(fig)
 
     assert legend is not None
     assert tuple(fig.get_size_inches()) == pytest.approx(initial_size)
@@ -1318,9 +1338,12 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         panel = mp._panels[0]
 
         assert mp._max_width == 180
-        assert mp.fig.dpi == 160
-        assert mp._title_text is not None
-        assert mp._title_text.get_ha() == "left"
+        fig = mp.fig
+        title_text = mp._title_text
+        assert fig is not None
+        assert title_text is not None
+        assert fig.dpi == 160
+        assert title_text.get_horizontalalignment() == "left"
         assert ax.get_position().width == pytest.approx(70 / 180)
         ax.yaxis.set_visible(False)
         assert panel["width"] == 70
@@ -1333,8 +1356,8 @@ def test_multipanel_settings_defaults_and_label_style() -> None:
         assert label_pad_top == pytest.approx(5, abs=0.5)
         assert label_text.get_fontproperties().get_name() == "DejaVu Sans"
         assert label_text.get_fontweight() == "normal"
-        assert label_text.get_ha() == "right"
-        assert label_text.get_va() == "bottom"
+        assert label_text.get_horizontalalignment() == "right"
+        assert label_text.get_verticalalignment() == "bottom"
 
 
 def test_multipanel_pad_left_matches_rendered_left_gap() -> None:
@@ -1355,7 +1378,7 @@ def test_multipanel_pad_left_matches_rendered_left_gap() -> None:
     ax.set_yticks([0, 5, 10])
 
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
     label_text = mp._label_texts["A"]
     gap = _panel_label_left_gap(ax, label_text)
     assert gap == pytest.approx(18, abs=0.6)
@@ -1528,9 +1551,12 @@ def test_multipanel_recreates_panel_label_after_axes_clear(
     cns.placeholderplot("Placeholder")
     ax.set_title("?")
 
-    mp.fig.savefig(output_path, dpi=300)
+    fig = mp.fig
+    assert fig is not None
+    fig.savefig(output_path, dpi=300)
 
     assert output_path.exists()
+    assert mp.fig is fig
     label_text = mp._label_texts["A"]
     assert label_text.figure is mp.fig
     assert _panel_label_title_gap(ax, label_text) == pytest.approx(8, abs=1.0)
@@ -1553,7 +1579,7 @@ def test_multipanel_top_row_label_stays_visible() -> None:
     ax.set_ylabel("Expression")
 
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
     fig_bbox = ax.figure.bbox
     label_bbox = mp._label_texts["A"].get_window_extent(renderer=renderer)
 
@@ -1566,9 +1592,12 @@ def test_multipanel_update_preserves_existing_figure_dpi() -> None:
     ax.plot([0, 1], [0, 1])
     ax.set_title("Plot")
 
-    mp.fig.set_dpi(300)
+    fig = mp.fig
+    assert fig is not None
+    fig.set_dpi(300)
     mp._create_or_update_figure()
 
+    assert mp.fig is fig
     assert mp.fig.dpi == pytest.approx(300)
 
 
@@ -1591,24 +1620,29 @@ def test_multipanel_high_dpi_save_keeps_top_content_in_bounds(
     )
     ax.plot([0, 1], [0, 1], color="black")
     ax.set_title("Plot")
+    fig = mp.fig
+    title_text = mp._title_text
+    assert fig is not None
+    assert title_text is not None
 
     captures: list[tuple[object, object, object]] = []
 
-    def on_draw(event: object) -> None:
+    def on_draw(event: Event) -> None:
+        assert isinstance(event, DrawEvent)
         renderer = event.renderer
         captures.append(
             (
-                mp.fig.bbox.frozen(),
+                fig.bbox.frozen(),
                 mp._label_texts["A"].get_window_extent(renderer=renderer).frozen(),
-                mp._title_text.get_window_extent(renderer=renderer).frozen(),
+                title_text.get_window_extent(renderer=renderer).frozen(),
             )
         )
 
-    cid = mp.fig.canvas.mpl_connect("draw_event", on_draw)
+    cid = fig.canvas.mpl_connect("draw_event", on_draw)
     try:
-        mp.fig.savefig(output_path, dpi=300)
+        fig.savefig(output_path, dpi=300)
     finally:
-        mp.fig.canvas.mpl_disconnect(cid)
+        fig.canvas.mpl_disconnect(cid)
 
     assert output_path.exists()
     assert captures
@@ -1684,7 +1718,7 @@ def test_multipanel_measure_top_decoration_skips_missing_bbox(
     ax = mp.panel("A", width=80, height=60)
     label_text = mp._label_texts["A"]
     ax.figure.canvas.draw()
-    renderer = ax.figure.canvas.get_renderer()
+    renderer = _figure_renderer(ax.figure)
 
     class DummyArtist:
         def get_visible(self) -> bool:
@@ -1705,8 +1739,8 @@ def test_multipanel_update_left_layout_metrics_skips_missing_entries(
 ) -> None:
     mp = cns.multipanel(max_width=240)
     mp.panel("A", width=80, height=60)
-    mp._panels.append({"_is_spacer": True})
-    mp._panels.append({"label": "B"})
+    mp._panels.append(cast(Any, {"_is_spacer": True}))
+    mp._panels.append(cast(Any, {"label": "B"}))
     mp._label_texts.pop("A")
 
     monkeypatch.setattr(
@@ -1756,7 +1790,9 @@ def test_multipanel_linked_helper_discovery_guard_branches() -> None:
     finally:
         plt.close(other_fig)
 
-    helper_ax = mp.fig.add_axes((0.8, 0.2, 0.05, 0.5))
+    fig = mp.fig
+    assert fig is not None
+    helper_ax = fig.add_axes((0.8, 0.2, 0.05, 0.5))
     setattr(helper_ax, "_colorbar_info", {"parents": []})
     artist.colorbar = types.SimpleNamespace(ax=helper_ax)
     assert list(mp._iter_linked_helper_axes(host_ax, panel)) == []
@@ -1768,7 +1804,9 @@ def test_multipanel_linked_helper_discovery_skips_known_and_duplicate_axes() -> 
     panel = mp._panels[0]
     artist_a = cast(Any, host_ax.scatter([1.0], [1.0], c=[0.1]))
     artist_b = cast(Any, host_ax.scatter([2.0], [2.0], c=[0.2]))
-    helper_ax = mp.fig.add_axes((0.8, 0.2, 0.05, 0.5))
+    fig = mp.fig
+    assert fig is not None
+    helper_ax = fig.add_axes((0.8, 0.2, 0.05, 0.5))
     setattr(helper_ax, "_colorbar_info", {"parents": [host_ax]})
 
     artist_a.colorbar = types.SimpleNamespace(ax=helper_ax)
@@ -1806,15 +1844,17 @@ def test_multipanel_draw_helpers_handle_guard_paths(
 ) -> None:
     mp = cns.multipanel(max_width=240)
     ax = mp.panel("A", width=80, height=60)
-    renderer = ax.figure.canvas.get_renderer()
+    fig = mp.fig
+    assert fig is not None
+    renderer = _figure_renderer(ax.figure)
 
     assert mp._get_canvas_renderer(types.SimpleNamespace(get_renderer=None)) is None
 
-    mp._on_draw(Event("resize_event", mp.fig.canvas))
+    mp._on_draw(Event("resize_event", fig.canvas))
 
     other_fig = plt.figure()
     try:
-        other_renderer = other_fig.canvas.get_renderer()
+        other_renderer = _figure_renderer(other_fig)
         mp._on_draw(DrawEvent("draw_event", other_fig.canvas, other_renderer))
     finally:
         plt.close(other_fig)
@@ -1833,13 +1873,13 @@ def test_multipanel_draw_helpers_handle_guard_paths(
         lambda: created.__setitem__("count", created["count"] + 1),
     )
     monkeypatch.setattr(
-        mp.fig.canvas,
+        fig.canvas,
         "draw",
         lambda: drawn.__setitem__("count", drawn["count"] + 1),
     )
     monkeypatch.setattr(mp, "_get_canvas_renderer", lambda canvas: None)
 
-    mp._on_draw(DrawEvent("draw_event", mp.fig.canvas, renderer))
+    mp._on_draw(DrawEvent("draw_event", fig.canvas, renderer))
 
     assert created["count"] == 1
     assert drawn["count"] == 1
@@ -1857,13 +1897,14 @@ def test_multipanel_title_alignment_and_default_fontweight(loc: str) -> None:
         "right": right_bound_px / 200,
     }[loc]
 
-    assert mp._title_text is not None
-    assert mp._title_text.get_text() == "Overview"
-    assert mp._title_text.get_ha() == loc
-    assert mp._title_text.get_fontweight() == "bold"
-    assert mp._title_text.get_position()[0] == pytest.approx(expected_x)
-    assert mp._label_texts["A"].get_ha() == "right"
-    assert mp._label_texts["A"].get_va() == "bottom"
+    title_text = mp._title_text
+    assert title_text is not None
+    assert title_text.get_text() == "Overview"
+    assert title_text.get_horizontalalignment() == loc
+    assert title_text.get_fontweight() == "bold"
+    assert title_text.get_position()[0] == pytest.approx(expected_x)
+    assert mp._label_texts["A"].get_horizontalalignment() == "right"
+    assert mp._label_texts["A"].get_verticalalignment() == "bottom"
 
 
 def test_multipanel_title_fontweight_and_height_reservation() -> None:
@@ -1877,8 +1918,12 @@ def test_multipanel_title_fontweight_and_height_reservation() -> None:
     )
     mp_titled.panel("A", width=60, height=40)
 
-    plain_height_px = mp_plain.fig.get_size_inches()[1] * 72
-    titled_height_px = mp_titled.fig.get_size_inches()[1] * 72
+    plain_fig = mp_plain.fig
+    titled_fig = mp_titled.fig
+    assert plain_fig is not None
+    assert titled_fig is not None
+    plain_height_px = plain_fig.get_size_inches()[1] * 72
+    titled_height_px = titled_fig.get_size_inches()[1] * 72
     expected_delta = max(
         cns.settings.multipanel_title_height_min,
         cns.settings.title_fontsize + cns.settings.multipanel_title_height_pad,
@@ -1903,13 +1948,13 @@ def test_multipanel_title_updates_existing_artist() -> None:
     _, right_bound_px = mp._get_content_horizontal_bounds_px()
 
     assert mp._title_text is original_title_text
-    assert mp._title_text.get_text() == "Updated Overview"
-    assert mp._title_text.get_ha() == "right"
-    assert mp._title_text.get_va() == "center"
-    assert mp._title_text.get_fontweight() == "normal"
-    assert mp._title_text.get_position()[0] == pytest.approx(right_bound_px / 200)
-    assert mp._label_texts["A"].get_ha() == "right"
-    assert mp._label_texts["A"].get_va() == "bottom"
+    assert original_title_text.get_text() == "Updated Overview"
+    assert original_title_text.get_horizontalalignment() == "right"
+    assert original_title_text.get_verticalalignment() == "center"
+    assert original_title_text.get_fontweight() == "normal"
+    assert original_title_text.get_position()[0] == pytest.approx(right_bound_px / 200)
+    assert mp._label_texts["A"].get_horizontalalignment() == "right"
+    assert mp._label_texts["A"].get_verticalalignment() == "bottom"
 
 
 def test_multipanel_title_can_be_removed() -> None:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from importlib import resources
-from typing import cast
+from typing import Any, cast, get_type_hints
 
 import numpy as np
 import pandas as pd
@@ -73,7 +73,7 @@ def test_load_dataset_returns_fresh_dataframes() -> None:
 
 def test_load_dataset_rejects_invalid_names() -> None:
     with pytest.raises(TypeError, match="must be a string"):
-        cns.datasets.load_dataset(1)  # type: ignore[arg-type]
+        cns.datasets.load_dataset(cast(Any, 1))
     with pytest.raises(ValueError, match="Unknown dataset 'missing'"):
         cns.datasets.load_dataset("missing")
 
@@ -109,7 +109,7 @@ def test_showcase_data_is_offline_deterministic_and_uses_local_rng(
     pd.testing.assert_frame_equal(first[0], second[0])
     pd.testing.assert_frame_equal(first[1], second[1])
     pd.testing.assert_frame_equal(first[2], second[2])
-    np.testing.assert_allclose(first[3].X, second[3].X)
+    np.testing.assert_allclose(np.asarray(first[3].X), np.asarray(second[3].X))
     pd.testing.assert_frame_equal(first[4], second[4])
     assert first[5] == second[5]
     pd.testing.assert_frame_equal(first[6], second[6])
@@ -127,5 +127,6 @@ def test_showcase_data_moved_to_datasets_namespace() -> None:
         not in inspect.signature(cns.datasets.get_showcase_data).parameters
     )
     assert cns.datasets.get_showcase_data is cns.datasets.gallery.get_showcase_data
+    assert "return" in get_type_hints(cns.datasets.get_showcase_data)
     assert not hasattr(cns, "get_showcase_data")
     assert not hasattr(cns.utils, "get_showcase_data")

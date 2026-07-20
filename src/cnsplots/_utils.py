@@ -2,11 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    import pandas as pd
-    from matplotlib.axes import Axes
+from typing import Any, Literal, cast, overload
 
 import itertools
 import math
@@ -20,11 +16,16 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import num2tex
 import numpy as np
-import palettable
 import pandas as pd
 import scipy.stats as stats
 import seaborn as sns
+from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.colors import Colormap
+from matplotlib.typing import ColorType
+from palettable.cartocolors.qualitative import get_map as _get_cartocolor_map
+from palettable.colorbrewer.colorbrewer import get_map as _get_colorbrewer_map
+from palettable.tableau.tableau import get_map as _get_tableau_map
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
@@ -34,6 +35,45 @@ from cnsplots._setup import setup_matplotlib
 from cnsplots._svg import _save_svg
 
 logger = logging.getLogger(__name__)
+
+_QualitativePaletteName = Literal[
+    "Set1",
+    "Set2",
+    "Set3",
+    "Pastel1",
+    "Pastel2",
+    "Paired",
+    "Dark2",
+    "Accent",
+    "Tableau",
+    "Bold",
+    "BlueRed",
+    "Cell",
+    "Nature",
+    "Science",
+    "Lancet",
+    "NEJM",
+    "JAMA",
+    "JCO",
+    "OkabeIto",
+    "TolBright",
+    "TolMuted",
+    "ECharts",
+    "Ecotyper1",
+    "Ecotyper2",
+    "Ecotyper3",
+    "Ecotyper4",
+    "Ecotyper5",
+    "Ecotyper6",
+]
+_ContinuousPaletteName = Literal[
+    "BuRd_custom",
+    "WhYlOrRd_custom",
+    "OrBu_custom",
+    "YlGnBu_custom",
+    "parula",
+]
+_RGBColor = tuple[float, float, float]
 
 RED = "#D6372E"
 BLUE = "#5189BB"
@@ -173,7 +213,12 @@ def _capture_detached_axes_layout(
     return new_layouts
 
 
-def figure(width=None, height=None, color_cycle=None, color_map=None):
+def figure(
+    width: int | float | None = None,
+    height: int | float | None = None,
+    color_cycle: str | Sequence[ColorType] | None = None,
+    color_map: str | None = None,
+) -> None:
     """
     Initialize a new figure with custom size and styling.
 
@@ -236,7 +281,7 @@ def figure(width=None, height=None, color_cycle=None, color_map=None):
     plt.figure(figsize=(width / 72, height / 72), dpi=settings.figure_dpi)
 
 
-def savefig(filepath):
+def savefig(filepath: str | os.PathLike[str]) -> None:
     """
     Save the current figure to a file, creating directories if needed.
 
@@ -330,7 +375,7 @@ def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
         fig.set_canvas(original_canvas)
 
 
-def take_legend_out(title=None):
+def take_legend_out(title: str | None = None) -> None:
     """
     Move the legend outside the plot area to the upper-left of the right margin.
 
@@ -394,7 +439,11 @@ def take_legend_out(title=None):
     )
 
 
-def add_panel_label(name="A", pad_left=None, pad_top=None):
+def add_panel_label(
+    name: str = "A",
+    pad_left: int | float | None = None,
+    pad_top: int | float | None = None,
+) -> None:
     """
     Add a panel label (e.g., 'A', 'B', 'C') to the current axes.
 
@@ -475,8 +524,11 @@ def add_panel_label(name="A", pad_left=None, pad_top=None):
 
 
 def get_hexcolors_from_apalette(
-    alist, palette=palettable.colorbrewer.qualitative.Set1_9.hex_colors
-):
+    alist: Sequence[int],
+    palette: str | Sequence[ColorType] = _get_colorbrewer_map(
+        "Set1", "qualitative", 9
+    ).hex_colors,
+) -> list[str]:
     """
     Extract specific colors from a palette by index.
 
@@ -524,7 +576,11 @@ def get_hexcolors_from_apalette(
     >>> selected
     ['#ff0000', '#0000ff']
     """
-    colors = palettes(palette) if isinstance(palette, str) else palette
+    colors = (
+        cast(Sequence[ColorType], palettes(palette))
+        if isinstance(palette, str)
+        else palette
+    )
     return [mcolors.to_hex(colors[index]) for index in alist]
 
 
@@ -553,7 +609,7 @@ def _has_non_ascii(text):
     return bool(re.search(r"[^\x00-\x7F]", text))
 
 
-def apply_unicode_font(ax=None, font="DejaVu Sans"):
+def apply_unicode_font(ax: Axes | None = None, font: str = "DejaVu Sans") -> None:
     """
     Set font to a Unicode-compatible font for text elements containing non-ASCII characters.
 
@@ -768,7 +824,23 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
         logger.info("P-values were determined by two-sided Chi-squared test.")
 
 
-def palettes(color):
+@overload
+def palettes(color: _QualitativePaletteName) -> list[_RGBColor]: ...
+
+
+@overload
+def palettes(color: _ContinuousPaletteName) -> Colormap: ...
+
+
+@overload
+def palettes(color: Sequence[ColorType]) -> list[_RGBColor]: ...
+
+
+@overload
+def palettes(color: str) -> list[_RGBColor] | Colormap: ...
+
+
+def palettes(color: str | Sequence[ColorType]) -> list[_RGBColor] | Colormap:
     """
     Get a color palette by name.
 
@@ -847,31 +919,31 @@ def palettes(color):
     >>> custom = ["#FF0000", "#00FF00", "#0000FF"]
     >>> palette = cns.palettes(custom)
     """
-    if isinstance(color, list):
+    if not isinstance(color, str):
         return sns.color_palette(color)
     else:
         if color == "Set1":
-            return palettable.colorbrewer.qualitative.Set1_9.mpl_colors
+            return _get_colorbrewer_map("Set1", "qualitative", 9).mpl_colors
         elif color == "Set2":
-            return palettable.colorbrewer.qualitative.Set2_8.mpl_colors
+            return _get_colorbrewer_map("Set2", "qualitative", 8).mpl_colors
         elif color == "Set3":
-            return palettable.colorbrewer.qualitative.Set3_12.mpl_colors
+            return _get_colorbrewer_map("Set3", "qualitative", 12).mpl_colors
         elif color == "Pastel1":
-            return palettable.colorbrewer.qualitative.Pastel1_9.mpl_colors
+            return _get_colorbrewer_map("Pastel1", "qualitative", 9).mpl_colors
         elif color == "Pastel2":
-            return palettable.colorbrewer.qualitative.Pastel2_8.mpl_colors
+            return _get_colorbrewer_map("Pastel2", "qualitative", 8).mpl_colors
         elif color == "Paired":
-            return palettable.colorbrewer.qualitative.Paired_12.mpl_colors
+            return _get_colorbrewer_map("Paired", "qualitative", 12).mpl_colors
         elif color == "Dark2":
-            return palettable.colorbrewer.qualitative.Dark2_8.mpl_colors
+            return _get_colorbrewer_map("Dark2", "qualitative", 8).mpl_colors
         elif color == "Accent":
-            return palettable.colorbrewer.qualitative.Accent_8.mpl_colors
+            return _get_colorbrewer_map("Accent", "qualitative", 8).mpl_colors
         elif color == "Tableau":
-            return palettable.tableau.Tableau_10.mpl_colors
+            return _get_tableau_map("Tableau_10").mpl_colors
         elif color == "Bold":
-            return palettable.cartocolors.qualitative.Bold_10.mpl_colors
+            return _get_cartocolor_map("Bold_10").mpl_colors
         elif color == "BlueRed":
-            return palettable.tableau.BlueRed_6.mpl_colors
+            return _get_tableau_map("BlueRed_6").mpl_colors
         elif color == "Cell":
             colors = [
                 "#C84C3A",

@@ -4,24 +4,22 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import Any, Literal, Optional, cast
 
 from matplotlib.backend_bases import DrawEvent, Event, RendererBase
-
-if TYPE_CHECKING:
-    from matplotlib.axes import Axes
-    from matplotlib.text import Text
-    from matplotlib.transforms import Bbox
-
 import matplotlib.pyplot as plt
 from matplotlib import transforms as mtransforms
+from matplotlib.axes import Axes
+from matplotlib.text import Text
+from matplotlib.transforms import Bbox
 
 import cnsplots._utils as utils
 from cnsplots._settings import settings
-from cnsplots._setup import setup_matplotlib
+from cnsplots._setup import ColorCycle, setup_matplotlib
 
 _LEFT_DECORATION_TOLERANCE_PX = 0.5
 _RELAYOUT_MAX_PASSES = 3
+_TitleLocation = Literal["left", "center", "right"]
 
 
 def _validate_positive_finite_dimension(
@@ -218,7 +216,7 @@ def _layout_panels(
     )
 
 
-def _validate_title_loc(loc: str) -> str:
+def _validate_title_loc(loc: str) -> _TitleLocation:
     """Validate figure title alignment."""
     if loc not in {"left", "center", "right"}:
         raise ValueError("loc must be one of: 'left', 'center', or 'right'")
@@ -806,8 +804,8 @@ class multipanel:
                     (x_positions[self._title_loc], title_y_fig)
                 )
                 self._title_text.set_text(self._title)
-                self._title_text.set_ha(self._title_loc)
-                self._title_text.set_va("center")
+                self._title_text.set_horizontalalignment(self._title_loc)
+                self._title_text.set_verticalalignment("center")
                 self._title_text.set_fontsize(settings.title_fontsize)
                 self._title_text.set_fontweight(self._title_fontweight)
 
@@ -868,8 +866,8 @@ class multipanel:
                 label_text.set_fontsize(settings.title_fontsize)
                 label_text.set_fontweight(settings.panel_label_fontweight)
                 label_text.set_fontname(settings.panel_label_fontname)
-                label_text.set_ha("right")
-                label_text.set_va("bottom")
+                label_text.set_horizontalalignment("right")
+                label_text.set_verticalalignment("bottom")
 
         self._refresh_known_figure_axes_ids()
 
@@ -885,7 +883,7 @@ class multipanel:
         margin_bottom: int | float | None = None,
         margin_left: int | float | None = None,
         margin_right: int | float | None = None,
-        color_cycle: str | list[str] | None = None,
+        color_cycle: ColorCycle | None = None,
         color_map: str | None = None,
         below: str | None = None,
     ) -> Axes:
@@ -922,9 +920,9 @@ class multipanel:
             Left margin in pixels. If None, uses cns.settings.panel_margin_left.
         margin_right : int, optional
             Right margin in pixels. If None, uses cns.settings.panel_margin_right.
-        color_cycle : str or list of str, optional
-            Color palette name or explicit color list for this panel. If None,
-            uses cns.settings.palette_qual.
+        color_cycle : str or sequence of matplotlib colors, optional
+            Color palette name or explicit color sequence for this panel. If
+            None, uses cns.settings.palette_qual.
         color_map : str, optional
             Colormap name for this panel. If None, uses cns.settings.palette_seq.
         below : str, optional

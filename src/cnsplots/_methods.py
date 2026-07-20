@@ -11,8 +11,8 @@ import warnings
 
 import numpy as np
 import pandas as pd
-import patsy
 import sklearn as skl
+from patsy.highlevel import dmatrix
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import cross_val_predict
 from sklearn.pipeline import make_pipeline
@@ -457,7 +457,7 @@ class LogisticModel:
             hue_data = hue_data.reset_index(drop=True)
             for var in self.variates:
                 try:
-                    X = patsy.dmatrix(var, hue_data, return_type="dataframe").drop(
+                    X = dmatrix(var, hue_data, return_type="dataframe").drop(
                         "Intercept", axis=1
                     )
                     y = hue_data.loc[X.index, self.event].to_numpy()

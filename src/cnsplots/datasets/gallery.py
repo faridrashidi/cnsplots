@@ -2,15 +2,78 @@
 
 from __future__ import annotations
 
+from importlib.abc import Traversable
 from importlib import resources
+from typing import TYPE_CHECKING, Literal, TypeAlias, overload
+
+if TYPE_CHECKING:
+    import pandas as pd
+    from anndata import AnnData
+
+    _ShowcaseData: TypeAlias = tuple[
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        AnnData,
+        pd.DataFrame,
+        list[set[str]],
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        dict[str, set[str]],
+    ]
+    _ShowcaseDataWithImages: TypeAlias = tuple[
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        AnnData,
+        pd.DataFrame,
+        list[set[str]],
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        pd.DataFrame,
+        dict[str, set[str]],
+        Traversable,
+    ]
+else:
+    # Keep importing the datasets namespace lightweight while allowing
+    # typing.get_type_hints() to resolve the public function at runtime.
+    _ShowcaseData = tuple[object, ...]
+    _ShowcaseDataWithImages = tuple[object, ...]
 
 
-def _showcase_images():
+def _showcase_images() -> Traversable:
     """Return the packaged showcase image directory."""
     return resources.files("cnsplots.datasets").joinpath("_data").joinpath("showcase")
 
 
-def get_showcase_data(*, include_showcase_images: bool = False):
+@overload
+def get_showcase_data(
+    *, include_showcase_images: Literal[False] = False
+) -> _ShowcaseData: ...
+
+
+@overload
+def get_showcase_data(
+    *, include_showcase_images: Literal[True]
+) -> _ShowcaseDataWithImages: ...
+
+
+@overload
+def get_showcase_data(
+    *, include_showcase_images: bool
+) -> _ShowcaseData | _ShowcaseDataWithImages: ...
+
+
+def get_showcase_data(
+    *, include_showcase_images: bool = False
+) -> _ShowcaseData | _ShowcaseDataWithImages:
     """Load deterministic showcase datasets and optional packaged images.
 
     Parameters
@@ -49,7 +112,8 @@ def get_showcase_data(*, include_showcase_images: bool = False):
     blobs.obs["Cluster"] = pd.Categorical(
         [f"C{x}" for x in rng.integers(0, 4, blobs.shape[0])]
     )
-    blobs.X = blobs.X - blobs.X.mean()
+    blobs_matrix = np.asarray(blobs.X)
+    blobs.X = blobs_matrix - blobs_matrix.mean()
 
     n_genes = 500
     logfc = rng.normal(0, 1.5, n_genes)

@@ -167,7 +167,11 @@ def test_cumulativeincidenceplot_ties_are_deterministic_without_rng_side_effects
         first_ax = cns.cumulativeincidenceplot(tied, "time", "event", "group", seed=17)
     actual_random_values = np.random.random(5)
     first_coordinates = [
-        (line.get_xdata().copy(), line.get_ydata().copy()) for line in first_ax.lines
+        (
+            np.asarray(line.get_xdata()).copy(),
+            np.asarray(line.get_ydata()).copy(),
+        )
+        for line in first_ax.lines
     ]
 
     plt.figure()

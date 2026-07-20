@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
@@ -120,7 +122,7 @@ def test_survivalplot_validates_pairwise_contrasts(
             "time",
             "event",
             "group",
-            pairs=pairs,  # type: ignore[arg-type]
+            pairs=cast(Any, pairs),
         )
 
 
@@ -133,5 +135,5 @@ def test_survivalplot_rejects_unknown_overall_test(
             "time",
             "event",
             "group",
-            overall_test="score",  # type: ignore[arg-type]
+            overall_test=cast(Any, "score"),
         )

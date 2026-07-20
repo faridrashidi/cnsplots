@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    import pandas as pd
-    from matplotlib.axes import Axes
+from typing import Any
 
 import matplotlib.pyplot as plt
 import num2tex
 import numpy as np
-import palettable.colorbrewer.qualitative  # noqa: F401  # ensure submodule is importable
+import pandas as pd
 import scipy as sp
 import seaborn as sns
+from matplotlib.axes import Axes
+from matplotlib.typing import ColorType
+from palettable.colorbrewer.colorbrewer import get_map as _get_brewer_map
 
 from cnsplots._utils import _resize_legend_markers
 from cnsplots._validation import (
@@ -49,7 +48,7 @@ def regplot(
     y: str,
     hue: str | None = None,
     s: float = 3,
-    color="black",
+    color: ColorType = "black",
     **kwargs: Any,
 ) -> Axes:
     """
@@ -71,13 +70,13 @@ def regplot(
         correlation statistics are drawn for each group.
     s : float, default: 3
         Size of scatter plot markers.
-    color : str, default: "black"
-        Either a matplotlib color string (e.g. ``"black"``, ``"#ff0000"``) or the
-        name of a column in *data*.  When a column name is given, the scatter
-        points are colored by the unique values of that column and a legend is
-        added, while a single overall regression line and correlation statistic
-        are shown.  If *hue* is also specified, *hue* takes precedence and
-        *color* is ignored.
+    color : matplotlib color, default: "black"
+        Either a matplotlib color (e.g. ``"black"``, ``"#ff0000"``, or an RGB
+        tuple) or the name of a column in *data*. When a column name is given,
+        the scatter points are colored by the unique values of that column and
+        a legend is added, while a single overall regression line and correlation
+        statistic are shown. If *hue* is also specified, *hue* takes precedence
+        and *color* is ignored.
     **kwargs
         Additional keyword arguments passed to `seaborn.regplot`.
 
@@ -404,8 +403,8 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str, pair: str) -> Axes:
         )
 
     # https://cduvallet.github.io/posts/2018/03/slopegraphs-in-python
-    red = palettable.colorbrewer.qualitative.Set1_9.hex_colors[0]
-    blue = palettable.colorbrewer.qualitative.Set1_9.hex_colors[1]
+    set1 = _get_brewer_map("Set1", "qualitative", 9)
+    red, blue = set1.hex_colors[:2]
 
     ax = plt.gca()
 

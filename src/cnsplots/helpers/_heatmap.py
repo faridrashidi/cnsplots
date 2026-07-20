@@ -8,6 +8,7 @@ import matplotlib.colorbar  # noqa: F401  # ensure submodule is importable
 import matplotlib.legend as mlegend
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
 from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
 from PyComplexHeatmap.clustermap import mm2inch
 
@@ -154,7 +155,7 @@ def _capture_detached_colorbar_layout(plotter: ClusterMapPlotter) -> None:
     """Record detached colorbar positions relative to their legend columns."""
     legend_axes = list(getattr(plotter, "legend_axes", []) or [])
     if not legend_axes:
-        plotter._detached_colorbar_layout = []
+        setattr(plotter, "_detached_colorbar_layout", [])
         return
 
     fig_bbox = legend_axes[0].figure.bbox.frozen()
@@ -205,7 +206,7 @@ def _capture_detached_colorbar_layout(plotter: ClusterMapPlotter) -> None:
                 }
             )
 
-    plotter._detached_colorbar_layout = layouts
+    setattr(plotter, "_detached_colorbar_layout", layouts)
 
 
 def _sync_detached_legend_axes(plotter: ClusterMapPlotter) -> None:
@@ -524,6 +525,12 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
 
 
 class DotClustermapPlotterNew(DotClustermapPlotter):
+    hm_ax: Axes
+    colorbar: mpl.colorbar.Colorbar | None
+    dot_legend: mlegend.Legend | None
+    cbar_ax: Axes | None
+    legend_ax: Axes | None
+
     def _define_axes(self, subplot_spec: Any = None) -> None:
         if not _define_axes_within_current_bounds(self, subplot_spec):
             super()._define_axes(subplot_spec)

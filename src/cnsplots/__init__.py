@@ -1,6 +1,76 @@
 """CNSPlots public API."""
 
 from importlib import import_module
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from . import _methods as _methods
+    from . import _utils as _utils
+    from . import _validation as _validation
+    from . import datasets as datasets
+    from ._methods import CoxModel as CoxModel
+    from ._methods import LogisticModel as LogisticModel
+    from ._methods import prerank as prerank
+    from ._multipanels import multipanel as multipanel
+    from ._settings import settings as settings
+    from ._setup import setup_ax as setup_ax
+    from ._setup import setup_ggplot as setup_ggplot
+    from ._setup import setup_matplotlib as setup_matplotlib
+    from ._setup import setup_scanpy as setup_scanpy
+    from ._utils import BLUE as BLUE
+    from ._utils import BROWN as BROWN
+    from ._utils import CHOCOLATE as CHOCOLATE
+    from ._utils import GRAY as GRAY
+    from ._utils import GREEN as GREEN
+    from ._utils import ORANGE as ORANGE
+    from ._utils import PINK as PINK
+    from ._utils import PURPLE as PURPLE
+    from ._utils import RED as RED
+    from ._utils import VIOLET as VIOLET
+    from ._utils import YELLOW as YELLOW
+    from ._utils import add_panel_label as add_panel_label
+    from ._utils import apply_unicode_font as apply_unicode_font
+    from ._utils import figure as figure
+    from ._utils import get_hexcolors_from_apalette as get_hexcolors_from_apalette
+    from ._utils import palettes as palettes
+    from ._utils import savefig as savefig
+    from ._utils import take_legend_out as take_legend_out
+    from .plots import barplot as barplot
+    from .plots import boxplot as boxplot
+    from .plots import confusionplot as confusionplot
+    from .plots import cumulativeincidenceplot as cumulativeincidenceplot
+    from .plots import distplot as distplot
+    from .plots import donutplot as donutplot
+    from .plots import dotplot as dotplot
+    from .plots import forestplot as forestplot
+    from .plots import gseaplot as gseaplot
+    from .plots import heatmapplot as heatmapplot
+    from .plots import histplot as histplot
+    from .plots import kdeplot as kdeplot
+    from .plots import lineplot as lineplot
+    from .plots import lollipopplot as lollipopplot
+    from .plots import phyloplot as phyloplot
+    from .plots import pieplot as pieplot
+    from .plots import placeholderplot as placeholderplot
+    from .plots import qqplot as qqplot
+    from .plots import regplot as regplot
+    from .plots import ridgeplot as ridgeplot
+    from .plots import rocplot as rocplot
+    from .plots import sankeyplot as sankeyplot
+    from .plots import scatterplot as scatterplot
+    from .plots import slopeplot as slopeplot
+    from .plots import stackplot as stackplot
+    from .plots import stripplot as stripplot
+    from .plots import survivalplot as survivalplot
+    from .plots import upsetplot as upsetplot
+    from .plots import vennplot as vennplot
+    from .plots import violinplot as violinplot
+    from .plots import volcanoplot as volcanoplot
+
+    methods = _methods
+    save = savefig
+    utils = _utils
+    validation = _validation
 
 __version__ = "0.4.0"
 
