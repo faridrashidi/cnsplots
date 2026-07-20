@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from importlib import resources
-from importlib.resources.abc import Traversable
+from importlib.abc import Traversable
 
 
 def _showcase_images() -> Traversable:
