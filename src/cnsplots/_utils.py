@@ -692,6 +692,39 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
             )
         pairs = hue_pairs
 
+    contingency_tables = None
+    if contingency is not None:
+        contingency = contingency.fillna(0)
+        contingency_tables = []
+        for pair in pairs:
+            if len(pair) != 2 or pair[0] == pair[1]:
+                raise ValueError(
+                    "Contingency-table comparisons require exactly two distinct "
+                    "levels per pair."
+                )
+            missing_levels = [level for level in pair if level not in contingency.index]
+            if missing_levels:
+                raise ValueError(
+                    "Contingency-table pair contains levels absent from the data: "
+                    f"{missing_levels}."
+                )
+            table = contingency.loc[list(pair)].to_numpy(dtype=float)
+            if table.shape[0] < 2 or table.shape[1] < 2:
+                raise ValueError(
+                    "Contingency-table comparisons require at least two rows and "
+                    "two columns."
+                )
+            if not np.isfinite(table).all() or (table < 0).any():
+                raise ValueError(
+                    "Contingency-table cells must contain finite, nonnegative counts."
+                )
+            if (table.sum(axis=0) == 0).any() or (table.sum(axis=1) == 0).any():
+                raise ValueError(
+                    "Contingency-table comparisons require nonzero row and column "
+                    "margins."
+                )
+            contingency_tables.append(table)
+
     annotator = Annotator(ax, pairs, **plotting)
     annotator._pvalue_format = PValueFormatNew()
     annotator.configure(
@@ -711,15 +744,13 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
 
     pvalues = []
     if test == "fisher-exact":
-        assert contingency is not None
-        for pair in pairs:
-            pvalues.append(stats.fisher_exact(contingency.loc[list(pair)].values)[1])
+        assert contingency_tables is not None
+        for table in contingency_tables:
+            pvalues.append(stats.fisher_exact(table)[1])
     if test == "chi-squared":
-        assert contingency is not None
-        for pair in pairs:
-            pvalues.append(
-                stats.chi2_contingency(contingency.loc[list(pair)].values)[1]
-            )
+        assert contingency_tables is not None
+        for table in contingency_tables:
+            pvalues.append(stats.chi2_contingency(table)[1])
 
     if contingency is None:
         annotator.apply_and_annotate()

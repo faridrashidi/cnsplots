@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
+from scipy import stats
 
 import cnsplots._utils as utils
 from cnsplots._utils import _legend_fontsize, _resize_legend_markers
@@ -22,6 +23,10 @@ from cnsplots._validation import (
 )
 
 LollipopPair = Union[tuple[str, str], tuple[tuple[str, str], tuple[str, str]]]
+LollipopError = float | tuple[float, float]
+
+_LOLLIPOP_BOOTSTRAP_SAMPLES = 1000
+_LOLLIPOP_BOOTSTRAP_SEED = 0
 
 
 def _resolve_palette_column(
@@ -54,22 +59,51 @@ def _resolve_palette_column(
     return category_to_color, legend_handles
 
 
-def _compute_lollipop_error(group_values: pd.Series, errorbar: str) -> float:
+def _compute_lollipop_error(
+    group_values: pd.Series,
+    errorbar: str,
+    estimator: str = "mean",
+) -> LollipopError:
     """Compute the requested lollipop error magnitude for one group."""
-    sem = group_values.std() / np.sqrt(len(group_values))
+    if estimator not in {"mean", "median"}:
+        raise ValueError("estimator must be one of: 'mean', 'median'")
+    if errorbar not in {"se", "sd", "ci"}:
+        raise ValueError("errorbar must be one of: 'se', 'sd', 'ci', or None")
+
+    values = group_values.dropna()
+    sample_size = len(values)
+    standard_deviation = values.std()
+    if errorbar == "sd":
+        return standard_deviation
+    if sample_size < 2:
+        return np.nan
+
+    if estimator == "median":
+        samples = values.to_numpy(dtype=float)
+        rng = np.random.default_rng(_LOLLIPOP_BOOTSTRAP_SEED)
+        indices = rng.integers(
+            0,
+            sample_size,
+            size=(_LOLLIPOP_BOOTSTRAP_SAMPLES, sample_size),
+        )
+        bootstrap_medians = np.median(samples[indices], axis=1)
+        if errorbar == "se":
+            return float(bootstrap_medians.std(ddof=1))
+        lower, upper = np.percentile(bootstrap_medians, [2.5, 97.5])
+        estimate = float(np.median(samples))
+        return estimate - float(lower), float(upper) - estimate
+
+    sem = standard_deviation / np.sqrt(sample_size)
     if errorbar == "se":
         return sem
-    if errorbar == "sd":
-        return group_values.std()
-    if errorbar == "ci":
-        return 1.96 * sem
-    return 0
+    return stats.t.ppf(0.975, sample_size - 1) * sem
 
 
 def _lollipop_errors(
     grouped: Any,
     categories: list[str],
     errorbar: str | None,
+    estimator: str,
     *,
     require_multiple: bool,
 ) -> pd.Series | None:
@@ -77,7 +111,7 @@ def _lollipop_errors(
     if errorbar is None:
         return None
     errors = grouped.apply(
-        lambda values: _compute_lollipop_error(values, errorbar)
+        lambda values: _compute_lollipop_error(values, errorbar, estimator)
     ).reindex(categories)
     if require_multiple:
         counts = grouped.count().reindex(categories)
@@ -125,11 +159,17 @@ def _draw_lollipop_series(
 
     if errors is not None:
         for position, value, error in zip(positions, values, errors):
-            if pd.isna(error):
+            error_values = np.asarray(error, dtype=float)
+            if np.isnan(error_values).any():
                 continue
-            error_kwargs = {"yerr" if orient == "v" else "xerr": error}
+            resolved_error: float | np.ndarray
+            if error_values.ndim == 0:
+                resolved_error = float(error_values)
+            else:
+                resolved_error = error_values.reshape(2, 1)
+            error_kwargs = {"yerr" if orient == "v" else "xerr": resolved_error}
             point = (position, value) if orient == "v" else (value, position)
-            ax.errorbar(
+            cast(Any, ax.errorbar)(
                 *point,
                 **error_kwargs,
                 fmt="none",
@@ -317,7 +357,9 @@ def lollipopplot(
         The aggregation function to compute for each category.
     errorbar : {'se', 'sd', 'ci'}, optional
         Type of error bar to draw. ``'se'`` for standard error, ``'sd'`` for
-        standard deviation, ``'ci'`` for 95% confidence interval.
+        standard deviation, ``'ci'`` for a 95% confidence interval. Mean intervals
+        use Student's t distribution; median intervals use deterministic bootstrap
+        percentiles.
     markersize : float, default: 20
         Size of the dot markers (in points squared, passed to scatter ``s``).
     linewidth : float, default: 1.5
@@ -364,6 +406,10 @@ def lollipopplot(
     validate_dataframe_not_empty(data, "lollipopplot")
     if hue is not None:
         validate_column_exists(data, hue, "hue", "lollipopplot")
+    if estimator not in {"mean", "median"}:
+        raise ValueError("estimator must be one of: 'mean', 'median'")
+    if errorbar not in {None, "se", "sd", "ci"}:
+        raise ValueError("errorbar must be one of: 'se', 'sd', 'ci', or None")
 
     palette_is_column = isinstance(palette, str) and palette in data.columns
     if hue is not None and palette_is_column and palette != hue:
@@ -414,7 +460,13 @@ def lollipopplot(
     if hue is None:
         grouped = data.groupby(cat_col, sort=False)[val_col]
         means = grouped.agg(agg_func).reindex(categories)
-        errors = _lollipop_errors(grouped, categories, errorbar, require_multiple=False)
+        errors = _lollipop_errors(
+            grouped,
+            categories,
+            errorbar,
+            estimator,
+            require_multiple=False,
+        )
         _draw_lollipop_series(
             ax,
             orient=orient,
@@ -448,7 +500,11 @@ def lollipopplot(
             means = grouped.agg(agg_func).reindex(categories)
             positions = cat_positions + offsets[i]
             errors = _lollipop_errors(
-                grouped, categories, errorbar, require_multiple=True
+                grouped,
+                categories,
+                errorbar,
+                estimator,
+                require_multiple=True,
             )
             _draw_lollipop_series(
                 ax,
@@ -553,7 +609,8 @@ def stackplot(
     normalize : bool, default: True
         Whether to normalize counts to frequencies (proportions summing to 1).
     pairs : list of tuple of str, optional
-        List of pairs of category names from x for pairwise statistical comparisons.
+        List of pairs of bar-category names for pairwise statistical comparisons
+        (levels of ``x`` vertically and levels of ``y`` horizontally).
     addcount : bool, default: False
         Whether to append total counts to the category tick labels in the
         format ``n=...``.
@@ -599,6 +656,7 @@ def stackplot(
         df = data2.pivot(index=y, columns=x, values="count")
     else:
         df = data2.pivot(index=x, columns=y, values="count")
+    df = df.fillna(0)
     contingency = df.copy()
     if stack_order is not None:
         df.columns = pd.CategoricalIndex(
