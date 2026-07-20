@@ -221,7 +221,8 @@ def test_survival_plots(
     ]
     assert risk_table_labels[0].split() == ["At", "risk", "A", "6", "B", "6"]
     assert risk_table_labels[-1].split() == ["0", "0"]
-    assert "Gray's test" in caplog.text
+    assert ax3.texts[0].get_text() == "P = $0.88$"
+    assert "Gray's K-sample test" in caplog.text
 
     cns.figure(120, 120)
     single_group = competing_risk_df[competing_risk_df["group"] == "A"].copy()
