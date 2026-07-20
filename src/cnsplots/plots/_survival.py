@@ -359,7 +359,7 @@ def cumulativeincidenceplot(
     Create a cumulative incidence plot for competing risks analysis.
 
     This function generates cumulative incidence curves using the Aalen-Johansen
-    estimator for competing risks data, with automatic statistical testing and
+    estimator for competing risks data, with an automatic Gray's K-sample test and
     optional at-risk table.
 
     Parameters
@@ -376,7 +376,7 @@ def cumulativeincidenceplot(
     hue_order : list, optional
         Order of groups from hue to display and compare.
     pvalue_position : tuple of float, default: (0, 0.5)
-        (x, y) coordinates for placing the p-value text annotation.
+        (x, y) coordinates for placing the Gray's test p-value annotation.
     show_risk_table : bool, default: False
         Whether to display a risk table below the plot.
     risk_table_rows : tuple of str, default: ('At risk',)
@@ -527,12 +527,11 @@ def cumulativeincidenceplot(
             )
             ax.set_xlim(new_xlim)
     if data[hue].nunique() > 1:
-        gray_events = data[event].where(data[event] <= 1, 2)
         pvalue = helper_cmprsk.cuminc(
-            data[duration], gray_events, group=data[hue].cat.codes
+            data[duration], data[event], group=data[hue].cat.codes
         )
         p = num2tex.num2tex(pvalue, precision=2)
-        logger.info("P-value was determined by two-sided Gray's test.")
+        logger.info("P-value was determined by Gray's K-sample test.")
         ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
 
     if show_risk_table:

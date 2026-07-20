@@ -146,6 +146,7 @@ def test_cumulativeincidenceplot_accepts_multiple_competing_event_codes(
     ax = cns.cumulativeincidenceplot(data, "time", "event", "group")
 
     assert ax.get_xlabel() == "Time"
+    assert ax.texts[0].get_text() == "P = $0.88$"
 
 
 def test_cumulativeincidenceplot_ties_are_deterministic_without_rng_side_effects() -> (

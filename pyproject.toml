@@ -24,6 +24,7 @@ dependencies = [
     "adjustText",
     "anndata",
     "biopython",
+    "comprisk>=0.7,<0.8",
     "gseapy",
     "lifelines>=0.30,<0.31",
     "lxml",

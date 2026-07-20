@@ -18,13 +18,56 @@ from cnsplots import _utils
 from cnsplots.helpers import _cmprsk, _heatmap as helper_heatmap, _phylo, _sankey
 
 
-def test_competing_risk_helper(competing_risk_df: pd.DataFrame) -> None:
+@pytest.mark.parametrize(
+    "competing_codes",
+    [(2, 2, 2, 2), (2, 3, 2, 3), (3, 3, 3, 3)],
+)
+def test_competing_risk_helper_matches_cmprsk_reference(
+    competing_risk_df: pd.DataFrame,
+    competing_codes: tuple[int, ...],
+) -> None:
+    data = competing_risk_df.copy()
+    data.loc[data["event"] == 2, "event"] = competing_codes
+
+    pvalue = _cmprsk.cuminc(
+        data["time"],
+        data["event"],
+        data["group"],
+    )
+
+    # cmprsk 2.2-12: cuminc(time, event, group)$Tests["1", "pv"]
+    assert pvalue == pytest.approx(0.87651762813141, rel=1e-12)
+
+
+def test_competing_risk_helper_matches_three_group_cmprsk_reference() -> None:
+    durations = pd.Series(
+        [1, 2, 3, 4, 5, 6, 7, 8]
+        + [1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5]
+        + [0.5, 1.8, 3.2, 4.8, 5.2, 6.8, 7.2, 9]
+    )
+    events = pd.Series(
+        [1, 2, 0, 1, 3, 0, 1, 2] + [2, 1, 0, 2, 1, 3, 0, 1] + [3, 0, 1, 2, 0, 1, 2, 1]
+    )
+    groups = pd.Series(["A"] * 8 + ["B"] * 8 + ["C"] * 8)
+
+    pvalue = _cmprsk.cuminc(durations, events, groups)
+
+    # cmprsk 2.2-12: cuminc(time, event, group)$Tests["1", "pv"]
+    assert pvalue == pytest.approx(0.7367051945773576, rel=1e-12)
+
+
+def test_competing_risk_helper_supports_an_alternate_event_of_interest(
+    competing_risk_df: pd.DataFrame,
+) -> None:
     pvalue = _cmprsk.cuminc(
         competing_risk_df["time"],
         competing_risk_df["event"],
         competing_risk_df["group"],
+        event_of_interest=2,
     )
-    assert 0 <= pvalue <= 1
+
+    # cmprsk 2.2-12: cuminc(time, event, group)$Tests["2", "pv"]
+    assert pvalue == pytest.approx(0.6230363296121225, rel=1e-12)
 
 
 def test_competing_risk_helper_validates_inputs() -> None:

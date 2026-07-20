@@ -486,6 +486,7 @@ dependencies = [
     { name = "anndata", version = "0.11.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "anndata", version = "0.12.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "biopython" },
+    { name = "comprisk" },
     { name = "gseapy" },
     { name = "lifelines", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "lifelines", version = "0.30.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -542,6 +543,7 @@ requires-dist = [
     { name = "anndata" },
     { name = "biopython" },
     { name = "bump-my-version", marker = "extra == 'dev'" },
+    { name = "comprisk", specifier = ">=0.7,<0.8" },
     { name = "fastcluster", marker = "extra == 'dev'" },
     { name = "furo", marker = "extra == 'dev'" },
     { name = "glasbey", marker = "extra == 'dev'" },
@@ -609,6 +611,26 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4c/13/7d740c5849255756bc17888787313b61fd38a0a8304fc4f073dfc46122aa/comm-0.2.3.tar.gz", hash = "sha256:2dc8048c10962d55d7ad693be1e7045d891b7ce8d999c97963a5e3e99c055971", size = 6319, upload-time = "2025-07-25T14:02:04.452Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/97/891a0971e1e4a8c5d2b20bbe0e524dc04548d2307fee33cdeba148fd4fc7/comm-0.2.3-py3-none-any.whl", hash = "sha256:c615d91d75f7f04f095b30d1c1711babd43bdc6419c1be9886a85f2f4e489417", size = 7294, upload-time = "2025-07-25T14:02:02.896Z" },
+]
+
+[[package]]
+name = "comprisk"
+version = "0.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "joblib" },
+    { name = "numba" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pandas" },
+    { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scikit-learn", version = "1.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ae/05/55906f8f7459f4e3a3c108a9296abb6c2384f9d7a88278d0c8d040bbe3b1/comprisk-0.7.0.tar.gz", hash = "sha256:95d40b913ade87f32da273703c8b118b27f457a0e11d8bb89b2bc7c8c5c70709", size = 322459, upload-time = "2026-06-22T13:18:08.489Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/77/a2cba01fc8525fa7e24ed005b8fa7129a8a472ec8a6e2ccde0a49fb6829d/comprisk-0.7.0-py3-none-any.whl", hash = "sha256:cc616c8591b762a80bc3becd89c38e42a46f0fb42a133efdb06a83efb3fd15d3", size = 147303, upload-time = "2026-06-22T13:18:05.82Z" },
 ]
 
 [[package]]
