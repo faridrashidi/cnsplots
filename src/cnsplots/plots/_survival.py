@@ -15,13 +15,10 @@ import numpy as np
 import pandas as pd
 
 from cnsplots._validation import (
-    validate_binary_column,
-    validate_column_type,
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
-    validate_no_nulls,
-    validate_sufficient_data,
+    validate_time_to_event_data,
 )
 
 logger = logging.getLogger(__name__)
@@ -114,6 +111,7 @@ def survivalplot(
     event: str,
     hue: str,
     hue_order: list[str] | None = None,
+    time_label: str = "Time",
 ) -> Axes:
     """
     Create a Kaplan-Meier survival plot with statistical comparisons.
@@ -134,6 +132,8 @@ def survivalplot(
         Column name for the grouping variable to compare survival curves.
     hue_order : list, optional
         Order of groups from hue to display and compare.
+    time_label : str, default: "Time"
+        Label for the time axis, including units when applicable.
 
     Returns
     -------
@@ -154,6 +154,7 @@ def survivalplot(
     ...     event="death",
     ...     hue="treatment",
     ...     hue_order=["control", "drug_a", "drug_b"],
+    ...     time_label="Time (months)",
     ... )
     >>> ax.set_title("Overall Survival by Treatment")
     """
@@ -162,15 +163,14 @@ def survivalplot(
     validate_columns_exist(data, [duration, event, hue], "survivalplot")
     validate_dataframe_not_empty(data, "survivalplot")
 
-    # Validate data types
-    validate_column_type(data, duration, ["numeric"], "survivalplot")
-    validate_binary_column(data, event, "survivalplot")
-
-    # Validate no nulls in critical columns
-    validate_no_nulls(data, [duration, event, hue], "survivalplot")
-
-    # Validate sufficient data
-    validate_sufficient_data(data, duration, 2, "survivalplot")
+    validate_time_to_event_data(
+        data,
+        duration,
+        event,
+        hue,
+        "survivalplot",
+        min_groups=2,
+    )
 
     import lifelines as ll
     from lifelines.statistics import multivariate_logrank_test
@@ -200,16 +200,8 @@ def survivalplot(
             )
     assert ax is not None
     plt.ylim(-0.05, 1.01)
-    if ax.get_xlim()[1] > 120:
-        ax.xaxis.set_major_locator(plt.MultipleLocator(24))
-        plt.xlabel("Time (Months)")
-    elif ax.get_xlim()[1] > 12:
-        ax.xaxis.set_major_locator(plt.MultipleLocator(12))
-        plt.xlabel("Time (Months)")
-    else:
-        ax.xaxis.set_major_locator(plt.MultipleLocator(1))
-        plt.xlabel("Time (Years)")
-    plt.ylabel("Overall survival probability")
+    ax.set_xlabel(time_label)
+    ax.set_ylabel("Survival probability")
 
     df = data[[duration, hue, event]].copy()
     df[hue] = df[hue].cat.codes
@@ -283,6 +275,8 @@ def cumulativeincidenceplot(
     xticks: np.ndarray | Sequence[int | float] | None = None,
     censor_mark_position: CensorMarkPosition | list[CensorMarkPosition] = "line",
     censor_mark_length: float = _DEFAULT_CENSOR_MARK_LENGTH,
+    time_label: str = "Time",
+    seed: int | None = 0,
 ) -> Axes:
     """
     Create a cumulative incidence plot for competing risks analysis.
@@ -324,6 +318,12 @@ def cumulativeincidenceplot(
     censor_mark_length : float, default: 0.02
         Length of each vertical censoring mark in cumulative-incidence probability
         units. The same length is used for all curves.
+    time_label : str, default: "Time"
+        Label for the time axis, including units when applicable.
+    seed : int or None, default: 0
+        Seed used by lifelines when tied event times require jittering. The default
+        makes tied-data plots deterministic. The caller's NumPy random state is
+        restored after fitting.
 
     Returns
     -------
@@ -345,6 +345,7 @@ def cumulativeincidenceplot(
     ...     hue="treatment",
     ...     hue_order=["placebo", "drug"],
     ...     show_risk_table=True,
+    ...     time_label="Time (years)",
     ... )
 
     >>> # With custom tick positions
@@ -354,6 +355,7 @@ def cumulativeincidenceplot(
     ...     event="outcome",
     ...     hue="risk_group",
     ...     xticks=[0, 12, 24, 36, 48, 60],
+    ...     time_label="Time (months)",
     ... )
     """
     # Validate inputs
@@ -361,14 +363,14 @@ def cumulativeincidenceplot(
     validate_columns_exist(data, [duration, event, hue], "cumulativeincidenceplot")
     validate_dataframe_not_empty(data, "cumulativeincidenceplot")
 
-    # Validate data types
-    validate_column_type(data, duration, ["numeric"], "cumulativeincidenceplot")
-
-    # Validate no nulls in critical columns
-    validate_no_nulls(data, [duration, event, hue], "cumulativeincidenceplot")
-
-    # Validate sufficient data
-    validate_sufficient_data(data, duration, 2, "cumulativeincidenceplot")
+    validate_time_to_event_data(
+        data,
+        duration,
+        event,
+        hue,
+        "cumulativeincidenceplot",
+        competing_risks=True,
+    )
 
     if censor_mark_length < 0:
         raise ValueError(
@@ -393,8 +395,12 @@ def cumulativeincidenceplot(
         label = f"{group} (n={df.shape[0]})"
         if show_risk_table:
             label = group
-        fitter = ll.AalenJohansenFitter()
-        fitter.fit(df[duration], df[event], label=label, event_of_interest=1)
+        fitter = ll.AalenJohansenFitter(seed=seed)
+        random_state = np.random.get_state()
+        try:
+            fitter.fit(df[duration], df[event], label=label, event_of_interest=1)
+        finally:
+            np.random.set_state(random_state)
         fitters.append(fitter)
         df = pd.merge(
             fitter.cumulative_density_.reset_index(drop=False),
@@ -431,7 +437,7 @@ def cumulativeincidenceplot(
     assert ax is not None
     ax.set_ylim(_CIF_Y_LIMITS)
     ax.set_ylabel("Cumulative incidence probability")
-    ax.set_xlabel("Time (Years)")
+    ax.set_xlabel(time_label)
     specified_xticks = None
     if xticks is not None:
         specified_xticks = np.asarray(list(xticks), dtype=float)
@@ -444,8 +450,9 @@ def cumulativeincidenceplot(
             )
             ax.set_xlim(new_xlim)
     if data[hue].nunique() > 1:
+        gray_events = data[event].where(data[event] <= 1, 2)
         pvalue = helper_cmprsk.cuminc(
-            data[duration], data[event], group=data[hue].cat.codes
+            data[duration], gray_events, group=data[hue].cat.codes
         )
         p = num2tex.num2tex(pvalue, precision=2)
         logger.info("P-value was determined by two-sided Gray's test.")
