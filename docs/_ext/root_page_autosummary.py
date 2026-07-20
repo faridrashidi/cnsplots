@@ -51,7 +51,12 @@ class ApiRootSummary(Autosummary):
         group.append(body)
 
         source, line = self.state_machine.get_source_and_line()
-        current_doc = self.env.current_document.docname
+        current_document = getattr(self.env, "current_document", None)
+        current_doc = (
+            current_document.docname
+            if current_document is not None
+            else self.env.docname
+        )
         dirname = posixpath.dirname(current_doc)
         tree_prefix = self.options["toctree"].strip()
         filename_map = self.config.autosummary_filename_map
