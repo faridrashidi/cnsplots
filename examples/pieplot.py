@@ -53,7 +53,7 @@ ax.set_title("Customers by Sex")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Control the order of categories.
 cns.figure(100, 100)
-ax = cns.pieplot(tips, "day", hue_order=["Thur", "Fri", "Sat", "Sun"])
+ax = cns.pieplot(tips, "day", order=["Thur", "Fri", "Sat", "Sun"])
 ax.set_title("Custom Order")
 
 
@@ -91,7 +91,7 @@ contrast_data = pd.DataFrame(
 )
 
 cns.figure(100, 100, ["#1F2937", "#F3F4F6"])
-ax = cns.pieplot(contrast_data, "region", hue_order=["Dark Region", "Light Region"])
+ax = cns.pieplot(contrast_data, "region", order=["Dark Region", "Light Region"])
 ax.set_title("Contrast-Aware Labels")
 
 

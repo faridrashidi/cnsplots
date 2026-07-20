@@ -754,11 +754,11 @@ def test_plot_internal_coverage(
 ) -> None:
     with pytest.raises(ValueError, match="errorbar must be one of"):
         cns.lollipopplot(
-            categorical_df, x="group", y="value", addtip=True, errorbar="bad"
+            categorical_df, x="group", y="value", add_tip=True, errorbar="bad"
         )
 
     cns.figure(120, 120)
-    lollipop_ax = cns.lollipopplot(categorical_df, x="group", y="value", addtip=True)
+    lollipop_ax = cns.lollipopplot(categorical_df, x="group", y="value", add_tip=True)
     lollipop_points = [
         collection
         for collection in lollipop_ax.collections
@@ -807,7 +807,7 @@ def test_plot_internal_coverage(
         x="num",
         y="cat",
         hue="hue",
-        addtip=True,
+        add_tip=True,
         errorbar="se",
     )
     horizontal_lollipop_points = [
@@ -839,8 +839,8 @@ def test_plot_internal_coverage(
         y="treatment",
         stack="response",
         normalize=True,
-        addcount=True,
-        bar_order=["C", "B", "A"],
+        add_count=True,
+        order=["C", "B", "A"],
     )
     stack_widths = []
     for patch in stack_ax.patches:

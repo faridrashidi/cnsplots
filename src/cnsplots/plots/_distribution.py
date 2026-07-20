@@ -32,8 +32,12 @@ def boxplot(
     y: str,
     pairs: list[tuple[str, str]] | None = None,
     showoutliers: bool = False,
-    addcount: bool = False,
+    add_count: bool = False,
     whis: float | tuple[float, float] = 1.5,
+    *,
+    hue: str | None = None,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -56,11 +60,17 @@ def boxplot(
         using Mann-Whitney U test.
     showoutliers : bool, default: False
         Whether to display outlier points beyond the whiskers.
-    addcount : bool, default: False
+    add_count : bool, default: False
         Whether to add sample size (n) labels above each box.
     whis : float or tuple of float, default: 1.5
         The proportion of the IQR past the low and high quartiles to extend the
         plot whiskers.
+    hue : str, optional
+        Column name for grouping boxes within each category.
+    order : list of str, optional
+        Order of categories along the categorical axis.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.boxplot`.
 
@@ -89,8 +99,15 @@ def boxplot(
     """
     # Validate inputs
     validate_dataframe(data, "data", "boxplot")
-    validate_columns_exist(data, [x, y], "boxplot")
+    columns = [x, y] if hue is None else [x, y, hue]
+    validate_columns_exist(data, columns, "boxplot")
     validate_dataframe_not_empty(data, "boxplot")
+
+    if "addcount" in kwargs:
+        raise TypeError(
+            "boxplot() got an unexpected keyword argument 'addcount'; "
+            "use 'add_count' instead"
+        )
 
     args = {
         "showfliers": showoutliers,
@@ -111,7 +128,14 @@ def boxplot(
         },
         "width": 0.5,
     }
-    plotting: dict[str, Any] = {"data": data, "x": x, "y": y}
+    plotting: dict[str, Any] = {
+        "data": data,
+        "x": x,
+        "y": y,
+        "hue": hue,
+        "order": order,
+        "hue_order": hue_order,
+    }
     plotting.update(args)
     plotting.update(kwargs)
     ax = sns.boxplot(**plotting)
@@ -156,8 +180,8 @@ def boxplot(
     if pairs is not None:
         utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
-    if addcount:
-        utils._addcount_helper(data, x, ax)
+    if add_count:
+        utils._add_count_helper(data, x, ax)
 
     return ax
 
@@ -169,7 +193,11 @@ def violinplot(
     pairs: list[tuple[str, str]] | None = None,
     width: float = 0.6,
     add_box: bool = True,
-    addcount: bool = False,
+    add_count: bool = False,
+    *,
+    hue: str | None = None,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -193,8 +221,14 @@ def violinplot(
         Width of each violin body.
     add_box : bool, default: True
         Whether to overlay a narrow box plot inside each violin.
-    addcount : bool, default: False
+    add_count : bool, default: False
         Whether to add sample size (n) labels above each violin.
+    hue : str, optional
+        Column name for grouping violins within each category.
+    order : list of str, optional
+        Order of categories along the categorical axis.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.violinplot`.
 
@@ -223,8 +257,15 @@ def violinplot(
     """
     # Validate inputs
     validate_dataframe(data, "data", "violinplot")
-    validate_columns_exist(data, [x, y], "violinplot")
+    columns = [x, y] if hue is None else [x, y, hue]
+    validate_columns_exist(data, columns, "violinplot")
     validate_dataframe_not_empty(data, "violinplot")
+
+    if "addcount" in kwargs:
+        raise TypeError(
+            "violinplot() got an unexpected keyword argument 'addcount'; "
+            "use 'add_count' instead"
+        )
 
     args = {
         "showfliers": False,
@@ -245,7 +286,14 @@ def violinplot(
         "width": 0.2,
         "color": "white",
     }
-    plotting: dict[str, Any] = {"data": data, "x": x, "y": y}
+    plotting: dict[str, Any] = {
+        "data": data,
+        "x": x,
+        "y": y,
+        "hue": hue,
+        "order": order,
+        "hue_order": hue_order,
+    }
     plotting.update(kwargs)
     ax = sns.violinplot(linewidth=0.001, width=width, **plotting)
     plotting.update(args)
@@ -257,13 +305,20 @@ def violinplot(
     if pairs is not None:
         utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
 
-    if addcount:
-        utils._addcount_helper(data, x, ax)
+    if add_count:
+        utils._add_count_helper(data, x, ax)
 
     return ax
 
 
-def distplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
+def distplot(
+    data: pd.DataFrame,
+    x: str,
+    *,
+    hue: str | None = None,
+    hue_order: list[str] | None = None,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a distribution plot combining histogram and kernel density estimate.
 
@@ -276,6 +331,10 @@ def distplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
         The input DataFrame containing the data to be plotted.
     x : str
         Column name for the continuous variable to plot.
+    hue : str, optional
+        Column name for grouping distributions.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.histplot`.
 
@@ -302,16 +361,31 @@ def distplot(data: pd.DataFrame, x: str, **kwargs: Any) -> Axes:
     """
     # Validate inputs
     validate_dataframe(data, "data", "distplot")
-    validate_column_exists(data, x, "x", "distplot")
+    columns = [x] if hue is None else [x, hue]
+    validate_columns_exist(data, columns, "distplot")
     validate_dataframe_not_empty(data, "distplot")
 
     args = {"kde": True, "edgecolor": None}
     args.update(kwargs)
-    ax = sns.histplot(data=data, x=x, **args)
+    ax = sns.histplot(
+        data=data,
+        x=x,
+        hue=hue,
+        hue_order=hue_order,
+        **args,
+    )
     return ax
 
 
-def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) -> Axes:
+def kdeplot(
+    data: pd.DataFrame,
+    x: str,
+    add_mode: bool = True,
+    *,
+    hue: str | None = None,
+    hue_order: list[str] | None = None,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a kernel density estimate plot with optional mode annotation.
 
@@ -327,6 +401,10 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
         Column name for the continuous variable to plot.
     add_mode : bool, default: True
         Whether to add a vertical dashed line at the mode (peak) of the distribution.
+    hue : str, optional
+        Column name for grouping density estimates.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.kdeplot`.
 
@@ -353,19 +431,24 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
     """
     # Validate inputs
     validate_dataframe(data, "data", "kdeplot")
-    columns_to_check = [x]
-    if "hue" in kwargs:
-        columns_to_check.append(kwargs["hue"])
+    columns_to_check = [x] if hue is None else [x, hue]
     validate_columns_exist(data, columns_to_check, "kdeplot")
     validate_dataframe_not_empty(data, "kdeplot")
 
     linewidth = kwargs.pop("linewidth", 1)
-    ax = sns.kdeplot(data=data, x=x, linewidth=linewidth, **kwargs)
+    ax = sns.kdeplot(
+        data=data,
+        x=x,
+        hue=hue,
+        hue_order=hue_order,
+        linewidth=linewidth,
+        **kwargs,
+    )
     ax = plt.gca()
     modes = []
-    if "hue" in kwargs:
-        if data[kwargs["hue"]].nunique() == 2:
-            grouped = data.groupby(kwargs["hue"])
+    if hue is not None:
+        if data[hue].nunique() == 2:
+            grouped = data.groupby(hue)
             args = [group_df[x].values for _, group_df in grouped]
             p_value = sp.stats.ks_2samp(*args)
             ax = plt.gca()
@@ -421,7 +504,12 @@ def kdeplot(data: pd.DataFrame, x: str, add_mode: bool = True, **kwargs: Any) ->
     return ax
 
 
-def histplot(**kwargs: Any) -> Axes:
+def histplot(
+    *,
+    hue: str | None = None,
+    hue_order: list[str] | None = None,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a histogram plot (wrapper around seaborn.histplot).
 
@@ -430,6 +518,10 @@ def histplot(**kwargs: Any) -> Axes:
 
     Parameters
     ----------
+    hue : str, optional
+        Column name for grouping histograms.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Keyword arguments passed directly to `seaborn.histplot`.
 
@@ -463,6 +555,8 @@ def histplot(**kwargs: Any) -> Axes:
             columns_to_check.append(kwargs["x"])
         if "y" in kwargs:
             columns_to_check.append(kwargs["y"])
+        if hue is not None:
+            columns_to_check.append(hue)
         if columns_to_check:
             validate_columns_exist(data, columns_to_check, "histplot")
 
@@ -471,7 +565,7 @@ def histplot(**kwargs: Any) -> Axes:
     existing_axes = list(host_ax.figure.axes) if track_detached_axes else []
 
     kwargs.setdefault("edgecolor", None)
-    ax = sns.histplot(**kwargs)
+    ax = sns.histplot(hue=hue, hue_order=hue_order, **kwargs)
     if track_detached_axes:
         utils._capture_detached_axes_layout(ax, existing_axes)
     return ax

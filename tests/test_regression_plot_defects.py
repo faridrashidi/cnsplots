@@ -78,6 +78,64 @@ def test_slopeplot_aligns_values_by_pair_key() -> None:
     assert paired_values == [(1.0, 2.0), (10.0, 20.0)]
 
 
+def test_regplot_and_slopeplot_respect_hue_order() -> None:
+    regression_data = pd.DataFrame(
+        {
+            "x": [0.0, 1.0, 0.0, 1.0],
+            "y": [0.0, 1.0, 1.0, 2.0],
+            "condition": ["before", "before", "after", "after"],
+        }
+    )
+    hue_order = ["after", "before"]
+
+    cns.figure(120, 120)
+    regression_ax = cns.regplot(
+        regression_data,
+        x="x",
+        y="y",
+        hue="condition",
+        hue_order=hue_order,
+    )
+    regression_legend = regression_ax.get_legend()
+    assert regression_legend is not None
+    assert [text.get_text() for text in regression_legend.get_texts()] == hue_order
+
+    slope_data = regression_data.assign(site="A", subject=["one", "two"] * 2)
+    cns.figure(120, 120)
+    slope_ax = cns.slopeplot(
+        slope_data,
+        x="site",
+        y="y",
+        hue="condition",
+        pair="subject",
+        hue_order=hue_order,
+    )
+    slope_legend = slope_ax.get_legend()
+    assert slope_legend is not None
+    assert [text.get_text() for text in slope_legend.get_texts()] == hue_order
+
+
+def test_slopeplot_rejects_incomplete_hue_order() -> None:
+    data = pd.DataFrame(
+        {
+            "site": ["A"] * 4,
+            "subject": ["one", "two"] * 2,
+            "condition": ["before", "before", "after", "after"],
+            "value": [1.0, 10.0, 2.0, 20.0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="hue_order.*both observed"):
+        cns.slopeplot(
+            data,
+            x="site",
+            y="value",
+            hue="condition",
+            pair="subject",
+            hue_order=["before", "missing"],
+        )
+
+
 @pytest.mark.parametrize(
     "conditions",
     [

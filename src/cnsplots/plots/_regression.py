@@ -49,6 +49,8 @@ def regplot(
     hue: str | None = None,
     s: float = 3,
     color: ColorType = "black",
+    *,
+    hue_order: list[str] | None = None,
     **kwargs: Any,
 ) -> Axes:
     """
@@ -77,6 +79,8 @@ def regplot(
         a legend is added, while a single overall regression line and correlation
         statistic are shown. If *hue* is also specified, *hue* takes precedence
         and *color* is ignored.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.regplot`.
 
@@ -127,9 +131,9 @@ def regplot(
     if hue is not None:
         plot_data = finite_data.loc[finite_data[hue].notna()]
         _validate_pearson_sample_size(plot_data)
+        hue_levels = list(plot_data[hue].unique()) if hue_order is None else hue_order
         hue_subsets = [
-            (hue_val, plot_data[plot_data[hue] == hue_val])
-            for hue_val in plot_data[hue].unique()
+            (hue_val, plot_data[plot_data[hue] == hue_val]) for hue_val in hue_levels
         ]
         for hue_val, subset in hue_subsets:
             _validate_pearson_sample_size(subset, group=hue_val)
@@ -219,7 +223,14 @@ def regplot(
 
 
 def scatterplot(
-    data: pd.DataFrame, x: str, y: str, s: float = 7, **kwargs: Any
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    s: float = 7,
+    *,
+    hue: str | None = None,
+    hue_order: list[str] | None = None,
+    **kwargs: Any,
 ) -> Axes:
     """
     Create a scatter plot with automatic legend size correction.
@@ -234,6 +245,10 @@ def scatterplot(
         Column name for the y-axis variable.
     s : float, default: 7
         Size of scatter plot markers.
+    hue : str, optional
+        Column name for grouping points by color.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Additional keyword arguments passed to `seaborn.scatterplot`.
 
@@ -262,22 +277,41 @@ def scatterplot(
     """
     # Validate inputs
     validate_dataframe(data, "data", "scatterplot")
-    validate_columns_exist(data, [x, y], "scatterplot")
+    columns = [x, y] if hue is None else [x, y, hue]
+    validate_columns_exist(data, columns, "scatterplot")
     validate_dataframe_not_empty(data, "scatterplot")
 
-    ax = sns.scatterplot(data=data, x=x, y=y, s=s, edgecolor=None, **kwargs)
+    ax = sns.scatterplot(
+        data=data,
+        x=x,
+        y=y,
+        hue=hue,
+        hue_order=hue_order,
+        s=s,
+        edgecolor=None,
+        **kwargs,
+    )
 
     _resize_legend_markers(ax.get_legend(), s)
 
     return ax
 
 
-def lineplot(**kwargs: Any) -> Axes:
+def lineplot(
+    *,
+    hue: str | None = None,
+    hue_order: list[str] | None = None,
+    **kwargs: Any,
+) -> Axes:
     """
     Create a line plot (wrapper around seaborn.lineplot).
 
     Parameters
     ----------
+    hue : str, optional
+        Column name for grouping lines by color.
+    hue_order : list of str, optional
+        Order of hue levels.
     **kwargs
         Keyword arguments passed directly to `seaborn.lineplot`.
 
@@ -313,14 +347,24 @@ def lineplot(**kwargs: Any) -> Axes:
             columns_to_check.append(kwargs["x"])
         if "y" in kwargs:
             columns_to_check.append(kwargs["y"])
+        if hue is not None:
+            columns_to_check.append(hue)
         if columns_to_check:
             validate_columns_exist(data, columns_to_check, "lineplot")
 
-    ax = sns.lineplot(**kwargs)
+    ax = sns.lineplot(hue=hue, hue_order=hue_order, **kwargs)
     return ax
 
 
-def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str, pair: str) -> Axes:
+def slopeplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    hue: str,
+    pair: str,
+    *,
+    hue_order: list[str] | None = None,
+) -> Axes:
     """
     Create a slope plot showing paired changes between two conditions.
 
@@ -338,6 +382,8 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str, pair: str) -> Axes:
         Column containing the subject or observation identifier used to pair values
         across the two conditions. Each pair must belong to one ``x`` group and have
         exactly one value per condition.
+    hue_order : list of str, optional
+        Order of the two hue levels from left to right within each x group.
 
     Returns
     -------
@@ -378,12 +424,20 @@ def slopeplot(data: pd.DataFrame, x: str, y: str, hue: str, pair: str) -> Axes:
     validate_dataframe_not_empty(data, "slopeplot")
     validate_no_nulls(data, [x, y, hue, pair], "slopeplot")
 
-    hues = data[hue].unique()
-    if len(hues) != 2:
+    observed_hues = list(data[hue].unique())
+    if len(observed_hues) != 2:
         raise ValueError(
             f"[slopeplot] Column '{hue}' must have exactly 2 unique values, "
-            f"found {len(hues)}: {list(hues)}"
+            f"found {len(observed_hues)}: {observed_hues}"
         )
+    if hue_order is not None and (
+        len(hue_order) != 2 or set(hue_order) != set(observed_hues)
+    ):
+        raise ValueError(
+            "[slopeplot] 'hue_order' must contain both observed hue levels exactly "
+            "once."
+        )
+    hues = observed_hues if hue_order is None else hue_order
 
     pair_count = len(data[[pair]].drop_duplicates())
     pair_x_keys = list(dict.fromkeys((pair, x)))

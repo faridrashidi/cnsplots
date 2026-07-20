@@ -24,10 +24,10 @@ tips = cns.datasets.load_dataset("tips")
 # Basic stacked bar plot (normalized)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Shows proportions that sum to 100% within each bar.
-# Use ``addcount=True`` to display total counts in the tick labels.
+# Use ``add_count=True`` to display total counts in the tick labels.
 cns.figure(100, 120)
 ax = cns.stackplot(
-    data=tips, x="sex", stack="day", width=0.4, normalize=True, addcount=True
+    data=tips, x="sex", stack="day", width=0.4, normalize=True, add_count=True
 )
 ax.set_title("Basic Stacked Plot")
 
@@ -99,7 +99,7 @@ ax = cns.stackplot(
     stack="sex",
     normalize=True,
     pairs=[("Thur", "Fri"), ("Fri", "Sat")],
-    bar_order=["Fri", "Sat", "Sun", "Thur"],
+    order=["Fri", "Sat", "Sun", "Thur"],
 )
 ax.set_title("Horizontal Stacked Bar")
 
@@ -107,14 +107,14 @@ ax.set_title("Horizontal Stacked Bar")
 # %%
 # Stacked bar plot with custom bar order
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``bar_order`` to specify the order of bars on the axis.
+# Use ``order`` to specify the order of bars on the axis.
 cns.figure(100, 120)
 ax = cns.stackplot(
     data=tips,
     x="day",
     stack="sex",
     normalize=True,
-    bar_order=["Sun", "Sat", "Fri", "Thur"],
+    order=["Sun", "Sat", "Fri", "Thur"],
 )
 ax.set_title("Custom Bar Order")
 
@@ -163,7 +163,7 @@ mp.get_axes("B").set_title("BlueRed")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Stack plots work with multiple categories in the stack variable.
 cns.figure(100, 150, "Ecotyper1")
-ax = cns.stackplot(data=tips, x="sex", stack="time", normalize=True, addcount=True)
+ax = cns.stackplot(data=tips, x="sex", stack="time", normalize=True, add_count=True)
 ax.set_title("Multiple Stack Categories")
 
 
@@ -212,7 +212,7 @@ ax = cns.stackplot(
     y="day",
     stack="sex",
     normalize=True,
-    addcount=True,
+    add_count=True,
     width=0.6,
 )
 ax.set_title("Horizontal with Labels")
@@ -232,6 +232,6 @@ mp.get_axes("A").set_ylabel("Count")
 mp.newline()
 
 mp.panel("B", 130, 80, margin_top=10)
-cns.stackplot(data=tips, x="day", stack="sex", normalize=True, addcount=True)
+cns.stackplot(data=tips, x="day", stack="sex", normalize=True, add_count=True)
 mp.get_axes("B").set_title("Normalized Proportions")
 mp.get_axes("B").set_ylabel("Proportion")

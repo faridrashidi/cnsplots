@@ -93,7 +93,7 @@ cns.lollipopplot(
 # ~~~~~~~~~~~~~~~~~
 # Display the mean value at each dot.
 cns.figure(100, 150, "Tableau")
-cns.lollipopplot(data=tips, x="day", y="total_bill", addtip=True)
+cns.lollipopplot(data=tips, x="day", y="total_bill", add_tip=True)
 
 
 # %%
@@ -145,7 +145,7 @@ cns.take_legend_out()
 # Compare measurements across species with value labels.
 cns.figure(100, 150, "Bold")
 ax = cns.lollipopplot(
-    data=iris, x="species", y="sepal_width", addtip=True, errorbar="se"
+    data=iris, x="species", y="sepal_width", add_tip=True, errorbar="se"
 )
 ax.set_xticklabels(
     ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
@@ -189,6 +189,6 @@ cns.take_legend_out()
 # Use median instead of mean for robust estimation.
 cns.figure(100, 150)
 ax = cns.lollipopplot(
-    data=tips, x="day", y="total_bill", estimator="median", addtip=True
+    data=tips, x="day", y="total_bill", estimator="median", add_tip=True
 )
 ax.set_title("Median Total Bill")

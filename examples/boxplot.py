@@ -92,7 +92,7 @@ for index in range(tips["day"].nunique()):
 # Boxplot with statistical comparisons (all pairs)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use ``pairs="all"`` to perform Mann-Whitney U tests between all groups.
-# The ``addcount=True`` parameter adds sample sizes below each box.
+# The ``add_count=True`` parameter adds sample sizes below each box.
 with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
     cns.figure(100, 150)
     ax = cns.boxplot(
@@ -100,7 +100,7 @@ with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
         x="species",
         y="sepal_width",
         pairs="all",
-        addcount=True,
+        add_count=True,
     )
 ax.set_title("All Pairwise Comparisons\nwith Sample Counts")
 
