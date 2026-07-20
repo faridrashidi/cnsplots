@@ -68,8 +68,9 @@ class CoxModel:
 
     Notes
     -----
-    The fit() method performs univariate Cox regression for each variate,
-    optionally stratified by hue groups. Results include:
+    The fit() method fits one Cox regression model for each formula,
+    optionally stratified by hue groups. Every fitted coefficient is retained.
+    Results include:
 
     - exp(coef): Hazard ratio
     - exp(coef) lower 95%, exp(coef) upper 95%: 95% confidence interval
@@ -147,9 +148,10 @@ class CoxModel:
         - hue_group: Group name (or 'All' if no grouping)
         - p: P-value
 
-        The display_label is automatically extracted from formula strings,
-        removing formula syntax (Q(), C(), np.log(), etc.) for cleaner
-        visualization.
+        For formulas with one coefficient, display_label is automatically
+        extracted from the formula string. For formulas with multiple
+        coefficients, it combines the formula and coefficient names so every
+        estimate remains distinct in visualizations.
 
         Examples
         --------
@@ -190,7 +192,11 @@ class CoxModel:
                         event_col=self.event,
                         formula=var,
                     )
-                    summary = cph.summary.iloc[[0]].reset_index()
+                    summary = cph.summary.reset_index()
+                    if summary.empty:
+                        raise ValueError(
+                            f"Formula {var!r} produced no fitted coefficients"
+                        )
                     summary["analysis"] = var
                     summary["hue_group"] = hue_group
                     all_results.append(summary)
@@ -211,8 +217,13 @@ class CoxModel:
         df["exp(coef) lower_err"] = df["exp(coef)"] - df["exp(coef) lower 95%"]
         df["exp(coef) upper_err"] = df["exp(coef) upper 95%"] - df["exp(coef)"]
         df["log10_pvalue"] = -np.log10(df["p"])
+        df["coefficient_count"] = df.groupby("analysis")["covariate"].transform(
+            "nunique"
+        )
 
         def display_label_helper(x):
+            if x["coefficient_count"] > 1:
+                return f"{x['analysis']} ({x['covariate']})"
             analysis_str = (
                 x["analysis"].split(" + ")[0] if "+" in x["analysis"] else x["analysis"]
             )
@@ -227,6 +238,16 @@ class CoxModel:
             return None
 
         df["display_label"] = df.apply(display_label_helper, axis=1)
+        label_counts = (
+            df[["display_label", "analysis", "covariate"]]
+            .drop_duplicates()
+            .groupby("display_label", dropna=False)
+            .size()
+        )
+        duplicate_labels = df["display_label"].map(label_counts).fillna(1).gt(1)
+        df.loc[duplicate_labels, "display_label"] = df.loc[duplicate_labels].apply(
+            lambda x: f"{x['analysis']} ({x['covariate']})", axis=1
+        )
 
         self.results = df[
             [

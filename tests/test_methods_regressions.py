@@ -198,6 +198,95 @@ def test_cox_model_warns_for_failed_unstratified_fit(
     assert model.results is None
 
 
+def test_cox_model_retains_all_numeric_formula_coefficients(
+    survival_df: pd.DataFrame,
+) -> None:
+    data = survival_df.assign(
+        x1=survival_df["age"],
+        x2=[0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0],
+    )
+    model = cns.CoxModel(
+        data,
+        duration="time",
+        event="event",
+        variates=["x1 + x2"],
+    )
+
+    model.fit()
+
+    assert model.results is not None
+    results = model.results.sort_values("covariate").reset_index(drop=True)
+    assert results["analysis"].tolist() == ["x1 + x2", "x1 + x2"]
+    assert results["covariate"].tolist() == ["x1", "x2"]
+    assert results["display_label"].tolist() == [
+        "x1 + x2 (x1)",
+        "x1 + x2 (x2)",
+    ]
+
+
+def test_cox_model_retains_all_categorical_formula_coefficients(
+    survival_df: pd.DataFrame,
+) -> None:
+    model = cns.CoxModel(
+        survival_df,
+        duration="time",
+        event="event",
+        variates=["C(stage)"],
+    )
+
+    model.fit()
+
+    assert model.results is not None
+    results = model.results.sort_values("covariate").reset_index(drop=True)
+    assert results["analysis"].tolist() == ["C(stage)", "C(stage)"]
+    assert set(results["covariate"]) == {
+        "C(stage)[T.II]",
+        "C(stage)[T.III]",
+    }
+    assert results["display_label"].is_unique
+
+
+def test_cox_model_disambiguates_shared_single_coefficient_labels(
+    survival_df: pd.DataFrame,
+) -> None:
+    model = cns.CoxModel(
+        survival_df,
+        duration="time",
+        event="event",
+        variates=["age", "np.log(age)"],
+    )
+
+    model.fit()
+
+    assert model.results is not None
+    labels = model.results.set_index("analysis")["display_label"].to_dict()
+    assert labels == {
+        "age": "age (age)",
+        "np.log(age)": "np.log(age) (np.log(age))",
+    }
+
+
+def test_cox_model_rejects_formula_without_coefficients(
+    survival_df: pd.DataFrame,
+) -> None:
+    model = cns.CoxModel(
+        survival_df,
+        duration="time",
+        event="event",
+        variates=["0"],
+    )
+
+    with pytest.warns(RuntimeWarning) as caught:
+        model.fit()
+
+    messages = [str(warning.message) for warning in caught]
+    assert any(
+        "Formula '0' produced no fitted coefficients" in message for message in messages
+    )
+    assert "No successful model fits" in messages
+    assert model.results is None
+
+
 def test_logistic_model_warns_for_failed_unstratified_fit() -> None:
     model = cns.LogisticModel(
         pd.DataFrame({"event": [0, 1] * 5}),
