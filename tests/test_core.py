@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import subprocess
 import sys
@@ -930,6 +931,41 @@ def test_svg_helpers_and_export(
     with pytest.warns(RuntimeWarning, match="boom"):
         _svg._save_svg(str(failed_path), str(output_dir / "failed"))
     assert failed_path.exists()
+
+
+def test_svg_export_suppresses_fonttools_logs_and_restores_level(
+    output_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    fonttools_logger = logging.getLogger("fontTools")
+    previous_level = fonttools_logger.level
+    expected_level = logging.DEBUG
+    fonttools_logger.setLevel(expected_level)
+
+    def fake_savefig(*args: object, **kwargs: object) -> None:
+        if str(args[0]).endswith(".pdf"):
+            logging.getLogger("fontTools.subset").info("maxp pruned")
+
+    def missing_run(*args: object, **kwargs: object) -> object:
+        raise FileNotFoundError("mutool")
+
+    monkeypatch.setattr(_svg.plt, "savefig", fake_savefig)
+    monkeypatch.setattr(_svg.subprocess, "run", missing_run)
+
+    try:
+        with (
+            caplog.at_level(logging.INFO),
+            pytest.warns(RuntimeWarning, match="mutool"),
+        ):
+            _svg._save_svg(str(output_dir / "plot.svg"), str(output_dir / "plot"))
+
+        assert not [
+            record for record in caplog.records if record.name.startswith("fontTools")
+        ]
+        assert fonttools_logger.level == expected_level
+    finally:
+        fonttools_logger.setLevel(previous_level)
 
 
 def test_savefig_default_bounds_match_jpg_pdf_and_svg(

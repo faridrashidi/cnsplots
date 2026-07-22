@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import warnings
 from pathlib import Path
@@ -68,9 +69,17 @@ def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
         tmp_dir_path = Path(tmp_dir)
         tmp_pdf = tmp_dir_path / f"{stem}.pdf"
         tmp_svg = tmp_dir_path / "1.svg"
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            plt.savefig(tmp_pdf, **savefig_kwargs)
+        fonttools_logger = logging.getLogger("fontTools")
+        previous_level = fonttools_logger.level
+        try:
+            fonttools_logger.setLevel(
+                max(fonttools_logger.getEffectiveLevel(), logging.ERROR)
+            )
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                plt.savefig(tmp_pdf, **savefig_kwargs)
+        finally:
+            fonttools_logger.setLevel(previous_level)
         try:
             subprocess.run(
                 [
