@@ -451,7 +451,18 @@ def savefig(filepath: str | os.PathLike[str]) -> None:
             if bbox_inches is not None:
                 savefig_kwargs["bbox_inches"] = bbox_inches
                 savefig_kwargs["pad_inches"] = 0
-            plt.savefig(filepath, **savefig_kwargs)
+            if ext.lower() == ".pdf":
+                fonttools_logger = logging.getLogger("fontTools")
+                previous_level = fonttools_logger.level
+                try:
+                    fonttools_logger.setLevel(
+                        max(fonttools_logger.getEffectiveLevel(), logging.ERROR)
+                    )
+                    plt.savefig(filepath, **savefig_kwargs)
+                finally:
+                    fonttools_logger.setLevel(previous_level)
+            else:
+                plt.savefig(filepath, **savefig_kwargs)
     finally:
         if fig.dpi != original_dpi:
             fig.set_dpi(original_dpi)

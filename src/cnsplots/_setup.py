@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -228,6 +229,8 @@ def setup_matplotlib(
     if axes_linewidth is None:
         axes_linewidth = settings.axes_linewidth
 
+    fonttools_logger = logging.getLogger("fontTools")
+    fonttools_logger.setLevel(max(fonttools_logger.getEffectiveLevel(), logging.ERROR))
     _ensure_helvetica_bold()
     resolved_legend_fontsize, legend_title_fontsize = _resolve_legend_fontsizes(
         title_fontsize, legend_fontsize
