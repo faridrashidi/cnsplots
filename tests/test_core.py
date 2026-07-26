@@ -975,8 +975,6 @@ def test_pdf_export_suppresses_fonttools_logs_and_restores_level(
 ) -> None:
     fonttools_logger = logging.getLogger("fontTools")
     previous_level = fonttools_logger.level
-    expected_level = logging.DEBUG
-    fonttools_logger.setLevel(expected_level)
 
     def fake_savefig(*args: object, **kwargs: object) -> None:
         logging.getLogger("fontTools.subset").info("maxp pruned")
@@ -986,6 +984,8 @@ def test_pdf_export_suppresses_fonttools_logs_and_restores_level(
     try:
         cns.figure(120, 120)
         plt.plot([0, 1], [0, 1])
+        expected_level = logging.DEBUG
+        fonttools_logger.setLevel(expected_level)
         with caplog.at_level(logging.INFO):
             cns.savefig(str(output_dir / "plot.pdf"))
 
@@ -993,6 +993,28 @@ def test_pdf_export_suppresses_fonttools_logs_and_restores_level(
             record for record in caplog.records if record.name.startswith("fontTools")
         ]
         assert fonttools_logger.level == expected_level
+    finally:
+        fonttools_logger.setLevel(previous_level)
+
+
+def test_setup_suppresses_fonttools_logs_for_direct_pdf_export(
+    output_dir: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    fonttools_logger = logging.getLogger("fontTools")
+    previous_level = fonttools_logger.level
+    fonttools_logger.setLevel(logging.DEBUG)
+
+    try:
+        output_dir.mkdir(parents=True)
+        cns.figure(120, 120)
+        plt.plot([0, 1], [0, 1])
+        with caplog.at_level(logging.INFO):
+            plt.gcf().savefig(output_dir / "direct.pdf")
+
+        assert not [
+            record for record in caplog.records if record.name.startswith("fontTools")
+        ]
     finally:
         fonttools_logger.setLevel(previous_level)
 
