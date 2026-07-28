@@ -21,10 +21,74 @@ logger = logging.getLogger(__name__)
 
 CensorMarkPosition = Literal["line", "above", "below", "none"]
 VisibleCensorMarkPosition = Literal["line", "above", "below"]
+PValueLoc = Literal[
+    "upper left",
+    "upper center",
+    "upper right",
+    "center left",
+    "center",
+    "center right",
+    "right",
+    "lower left",
+    "lower center",
+    "lower right",
+]
+HorizontalAlignment = Literal["left", "center", "right"]
+VerticalAlignment = Literal["top", "center", "bottom"]
 
 _CIF_Y_LIMITS = (-0.05, 1.01)
 _DEFAULT_CENSOR_MARK_LENGTH = 0.02
 _CENSOR_MARK_POSITIONS = ("line", "above", "below", "none")
+_PVALUE_LOCATIONS: dict[
+    PValueLoc,
+    tuple[float, float, HorizontalAlignment, VerticalAlignment],
+] = {
+    "upper left": (0.02, 0.98, "left", "top"),
+    "upper center": (0.5, 0.98, "center", "top"),
+    "upper right": (0.98, 0.98, "right", "top"),
+    "center left": (0.02, 0.5, "left", "center"),
+    "center": (0.5, 0.5, "center", "center"),
+    "center right": (0.98, 0.5, "right", "center"),
+    "right": (0.98, 0.5, "right", "center"),
+    "lower left": (0.02, 0.02, "left", "bottom"),
+    "lower center": (0.5, 0.02, "center", "bottom"),
+    "lower right": (0.98, 0.02, "right", "bottom"),
+}
+
+
+def _add_pvalue_annotation(
+    ax: Axes,
+    text: str,
+    pvalue_loc: PValueLoc,
+    *,
+    data_position: tuple[float, float] | None = None,
+) -> None:
+    if data_position is not None:
+        ax.text(
+            *data_position,
+            text,
+            fontsize=plt.rcParams["legend.fontsize"],
+            linespacing=1.25,
+        )
+        return
+
+    if pvalue_loc not in _PVALUE_LOCATIONS:
+        valid_locations = "', '".join(_PVALUE_LOCATIONS)
+        raise ValueError(
+            "[survival plots] Parameter 'pvalue_loc' must be one of "
+            f"'{valid_locations}', got {pvalue_loc!r}"
+        )
+    x, y, horizontalalignment, verticalalignment = _PVALUE_LOCATIONS[pvalue_loc]
+    ax.text(
+        x,
+        y,
+        text,
+        transform=ax.transAxes,
+        ha=horizontalalignment,
+        va=verticalalignment,
+        fontsize=plt.rcParams["legend.fontsize"],
+        linespacing=1.25,
+    )
 
 
 def _format_valid_censor_mark_positions() -> str:
@@ -111,6 +175,8 @@ def survivalplot(
     *,
     overall_test: Literal["logrank", "trend"] = "logrank",
     pairs: list[tuple[str, str]] | None = None,
+    show_hazard_ratio: bool = True,
+    pvalue_loc: PValueLoc = "lower left",
     ax: Axes | None = None,
 ) -> Axes:
     """
@@ -146,6 +212,15 @@ def survivalplot(
         When omitted, the sole contrast is reported automatically for two groups;
         no contrast is inferred for three or more groups. Pass an empty list to
         suppress pairwise inference.
+    show_hazard_ratio : bool, default: True
+        Whether to show pairwise hazard ratios, confidence intervals, and Cox
+        p-values. If False, pairwise Cox inference is skipped and only the overall
+        log-rank or trend p-value is shown. Any value passed to ``pairs`` is ignored.
+    pvalue_loc : str, default: 'lower left'
+        Axes-relative location for the p-value and hazard-ratio annotation. Accepts
+        the fixed Matplotlib legend locations: ``'upper left'``, ``'upper center'``,
+        ``'upper right'``, ``'center left'``, ``'center'``, ``'center right'``,
+        ``'right'``, ``'lower left'``, ``'lower center'``, or ``'lower right'``.
     ax : matplotlib.axes.Axes, optional
         Axes to draw on. If None, uses the current axes.
 
@@ -211,11 +286,13 @@ def survivalplot(
         hue_order = observed_groups
     assert hue_order is not None
 
-    resolved_pairs = (
-        [(hue_order[0], hue_order[1])]
-        if pairs is None and len(hue_order) == 2
-        else ([] if pairs is None else pairs)
-    )
+    resolved_pairs: list[tuple[str, str]] = []
+    if show_hazard_ratio:
+        resolved_pairs = (
+            [(hue_order[0], hue_order[1])]
+            if pairs is None and len(hue_order) == 2
+            else ([] if pairs is None else pairs)
+        )
     for pair in resolved_pairs:
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise ValueError(
@@ -259,7 +336,7 @@ def survivalplot(
                 data[duration], data[hue], data[event]
             )
             overall_p = num2tex.num2tex(logrank_result.p_value, precision=2)
-            overall_label = "Omnibus log-rank"
+            overall_label = "Log-rank"
             logger.info("P-value was determined by two-sided omnibus log-rank test.")
         except Exception as e:
             raise RuntimeError(
@@ -314,16 +391,21 @@ def survivalplot(
                 f"{comparison!r} vs {reference!r}. This may indicate insufficient "
                 f"data or model convergence issues. Details: {e}"
             ) from e
-        annotation_lines.append(
-            f"{comparison} vs {reference}: HR = {hazard_ratio:.2f} "
-            f"(95% CI {ci1:.2f}-{ci2:.2f}), Cox P = " + rf"${pair_p:.2g}$"
+        if len(hue_order) > 2:
+            annotation_lines.append(f"{comparison} vs {reference}")
+        annotation_lines.extend(
+            [
+                f"HR = {hazard_ratio:.2f}",
+                f"95% CI {ci1:.2f}\N{EN DASH}{ci2:.2f}",
+                "Cox P = " + rf"${pair_p:.2g}$",
+            ]
         )
     if resolved_pairs:
         logger.info(
             "Pairwise hazard ratios and unadjusted two-sided P-values were determined "
             "by Cox proportional hazards models."
         )
-    ax.text(0, 0, "\n".join(annotation_lines))
+    _add_pvalue_annotation(ax, "\n".join(annotation_lines), pvalue_loc)
 
     legend = ax.get_legend()
     if legend is not None:
@@ -341,7 +423,7 @@ def cumulativeincidenceplot(
     event: str,
     hue: str,
     hue_order: list[str] | None = None,
-    pvalue_position: tuple[float, float] = (0, 0.5),
+    pvalue_position: tuple[float, float] | None = None,
     show_risk_table: bool = False,
     risk_table_rows: tuple[str, ...] = ("At risk",),
     risk_table_ypos: float = -0.2,
@@ -351,6 +433,7 @@ def cumulativeincidenceplot(
     time_label: str = "Time",
     seed: int | None = 0,
     *,
+    pvalue_loc: PValueLoc = "center left",
     ax: Axes | None = None,
 ) -> Axes:
     """
@@ -373,8 +456,9 @@ def cumulativeincidenceplot(
         Column name for the grouping variable to compare cumulative incidence curves.
     hue_order : list, optional
         Order of groups from hue to display and compare.
-    pvalue_position : tuple of float, default: (0, 0.5)
-        (x, y) coordinates for placing the Gray's test p-value annotation.
+    pvalue_position : tuple of float, optional
+        Data coordinates for placing the Gray's test p-value annotation. When
+        provided, this overrides ``pvalue_loc``.
     show_risk_table : bool, default: False
         Whether to display a risk table below the plot.
     risk_table_rows : tuple of str, default: ('At risk',)
@@ -399,6 +483,12 @@ def cumulativeincidenceplot(
         Seed used by lifelines when tied event times require jittering. The default
         makes tied-data plots deterministic. The caller's NumPy random state is
         restored after fitting.
+    pvalue_loc : str, default: 'center left'
+        Axes-relative location for the Gray's test p-value. Accepts the fixed
+        Matplotlib legend locations: ``'upper left'``, ``'upper center'``,
+        ``'upper right'``, ``'center left'``, ``'center'``, ``'center right'``,
+        ``'right'``, ``'lower left'``, ``'lower center'``, or ``'lower right'``.
+        Ignored when ``pvalue_position`` is provided.
     ax : matplotlib.axes.Axes, optional
         Axes to draw on. If None, uses the current axes. Any risk table is linked
         to this axes and created on the same figure.
@@ -530,7 +620,12 @@ def cumulativeincidenceplot(
         )
         p = num2tex.num2tex(pvalue, precision=2)
         logger.info("P-value was determined by Gray's K-sample test.")
-        ax.text(pvalue_position[0], pvalue_position[1], "P = " + rf"${p:.2g}$")
+        _add_pvalue_annotation(
+            ax,
+            "P = " + rf"${p:.2g}$",
+            pvalue_loc,
+            data_position=pvalue_position,
+        )
 
     if show_risk_table:
         rows = None if risk_table_rows is None else list(risk_table_rows)

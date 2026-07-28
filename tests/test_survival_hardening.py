@@ -149,6 +149,62 @@ def test_cumulativeincidenceplot_accepts_multiple_competing_event_codes(
     assert ax.texts[0].get_text() == "P = $0.88$"
 
 
+def test_cumulativeincidenceplot_uses_center_left_default_location(
+    competing_risk_df: pd.DataFrame,
+) -> None:
+    ax = cns.cumulativeincidenceplot(
+        competing_risk_df,
+        "time",
+        "event",
+        "group",
+    )
+
+    annotation = ax.texts[0]
+
+    assert annotation.get_position() == (0.02, 0.5)
+    assert annotation.get_transform() is ax.transAxes
+    assert annotation.get_horizontalalignment() == "left"
+    assert annotation.get_verticalalignment() == "center"
+    assert annotation.get_bbox_patch() is None
+
+
+def test_cumulativeincidenceplot_supports_pvalue_location(
+    competing_risk_df: pd.DataFrame,
+) -> None:
+    ax = cns.cumulativeincidenceplot(
+        competing_risk_df,
+        "time",
+        "event",
+        "group",
+        pvalue_loc="upper right",
+    )
+
+    annotation = ax.texts[0]
+
+    assert annotation.get_position() == (0.98, 0.98)
+    assert annotation.get_transform() is ax.transAxes
+    assert annotation.get_horizontalalignment() == "right"
+    assert annotation.get_verticalalignment() == "top"
+
+
+def test_cumulativeincidenceplot_preserves_custom_data_position(
+    competing_risk_df: pd.DataFrame,
+) -> None:
+    ax = cns.cumulativeincidenceplot(
+        competing_risk_df,
+        "time",
+        "event",
+        "group",
+        pvalue_position=(2, 0.75),
+        pvalue_loc="upper right",
+    )
+
+    annotation = ax.texts[0]
+
+    assert annotation.get_position() == (2, 0.75)
+    assert annotation.get_transform() is ax.transData
+
+
 def test_cumulativeincidenceplot_ties_are_deterministic_without_rng_side_effects() -> (
     None
 ):
