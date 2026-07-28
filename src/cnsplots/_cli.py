@@ -42,8 +42,7 @@ def install_skill(
     """Install the packaged skill into one or more agent skill directories."""
     agent_names = tuple(_AGENT_SKILL_DIRS) if agent == "all" else (agent,)
     destinations = tuple(
-        (name, base_dir / _AGENT_SKILL_DIRS[name] / "cnsplots")
-        for name in agent_names
+        (name, base_dir / _AGENT_SKILL_DIRS[name] / "cnsplots") for name in agent_names
     )
 
     conflicts = tuple(path for _, path in destinations if path.exists())

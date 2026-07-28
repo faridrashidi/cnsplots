@@ -35,9 +35,7 @@ def test_install_skill_selects_one_project_agent(tmp_path: Path) -> None:
         base_dir=tmp_path,
     )
 
-    assert destinations == (
-        ("claude", tmp_path / ".claude" / "skills" / "cnsplots"),
-    )
+    assert destinations == (("claude", tmp_path / ".claude" / "skills" / "cnsplots"),)
     assert not (tmp_path / ".agents").exists()
 
 
@@ -58,8 +56,10 @@ def test_install_skill_force_updates_existing_files(tmp_path: Path) -> None:
 
     _cli.install_skill("codex", force=True, base_dir=tmp_path)
 
-    assert (destination / "SKILL.md").read_text(encoding="utf-8").startswith(
-        "---\nname: cnsplots\n"
+    assert (
+        (destination / "SKILL.md")
+        .read_text(encoding="utf-8")
+        .startswith("---\nname: cnsplots\n")
     )
 
 
@@ -70,15 +70,12 @@ def test_cli_installs_and_reports_project_skill(
 ) -> None:
     monkeypatch.chdir(tmp_path)
 
-    result = _cli.main(
-        ["skill", "install", "--agent", "codex", "--scope", "project"]
-    )
+    result = _cli.main(["skill", "install", "--agent", "codex", "--scope", "project"])
 
     assert result == 0
     assert (
         f"Installed cnsplots skill for codex: "
-        f"{tmp_path / '.agents' / 'skills' / 'cnsplots'}"
-        in capsys.readouterr().out
+        f"{tmp_path / '.agents' / 'skills' / 'cnsplots'}" in capsys.readouterr().out
     )
 
 
@@ -91,9 +88,7 @@ def test_cli_reports_existing_skill(
     destination = tmp_path / ".claude" / "skills" / "cnsplots"
     destination.mkdir(parents=True)
 
-    result = _cli.main(
-        ["skill", "install", "--agent", "claude", "--scope", "project"]
-    )
+    result = _cli.main(["skill", "install", "--agent", "claude", "--scope", "project"])
 
     assert result == 1
     assert "error: refusing to overwrite existing skill" in capsys.readouterr().err
