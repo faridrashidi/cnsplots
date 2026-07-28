@@ -16,6 +16,27 @@ pip install cnsplots
 This installs every supported plotting and scientific integration. Imports
 remain lazy, so those backends are loaded only when their APIs are first used.
 
+## Install the Agent Skill
+
+cnsplots includes an Agent Skills-compatible guide for building
+publication-ready plots. Install it for Codex and Claude Code with:
+
+```bash
+cnsplots skill install
+```
+
+The default user-scope destinations are `~/.agents/skills/cnsplots` for Codex
+and `~/.claude/skills/cnsplots` for Claude Code. You can target one agent or
+install into the current project:
+
+```bash
+cnsplots skill install --agent codex
+cnsplots skill install --agent claude --scope project
+```
+
+Invoke the installed skill as `$cnsplots` in Codex or `/cnsplots` in Claude
+Code. After upgrading cnsplots, pass `--force` to update an existing skill.
+
 ## Verify Installation
 
 After installation, verify that cnsplots is correctly installed:

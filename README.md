@@ -106,6 +106,26 @@ pip install cnsplots
 This installs every supported plotting and scientific integration. Imports
 remain lazy, so those backends are loaded only when their APIs are first used.
 
+### Agent Skill
+
+Install the bundled cnsplots skill so Codex and Claude Code can build plots
+using the package's current workflow and API:
+
+```bash
+cnsplots skill install
+```
+
+By default this installs the skill for both agents at user scope. Target one
+agent or the current project when needed:
+
+```bash
+cnsplots skill install --agent codex
+cnsplots skill install --agent claude --scope project
+```
+
+Use `$cnsplots` in Codex or `/cnsplots` in Claude Code to invoke it explicitly.
+Pass `--force` to update an existing installation after upgrading cnsplots.
+
 ### For Development
 
 First install [uv](https://docs.astral.sh/uv/), then:
