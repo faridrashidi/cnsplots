@@ -28,7 +28,12 @@ waltons = ll.datasets.load_waltons()
 # Kaplan-Meier survival curves with automatic log-rank test.
 cns.figure(150, 150)
 cns.survivalplot(
-    data=waltons, duration="T", event="E", hue="group", hue_order=["miR-137", "control"]
+    data=waltons,
+    duration="T",
+    event="E",
+    hue="group",
+    hue_order=["miR-137", "control"],
+    show_hazard_ratio=False,
 )
 _ = plt.legend(loc="upper right")
 plt.title("Kaplan-Meier Survival Curves")
@@ -60,6 +65,7 @@ ax = cns.cumulativeincidenceplot(
     xticks=np.arange(0, waltons["T"].max() + 2, 12),
     show_risk_table=True,
     risk_table_ypos=-0.2,
+    pvalue_loc="lower right",
 )
 ax.set_xlabel("Time (Months)")
 _ = plt.legend(loc="upper left")
@@ -78,6 +84,7 @@ ax = cns.cumulativeincidenceplot(
     hue="group",
     hue_order=["miR-137", "control"],
     show_risk_table=False,
+    pvalue_loc="lower right",
 )
 ax.set_xlabel("Time (Months)")
 _ = plt.legend(loc="upper left")
@@ -131,17 +138,18 @@ clinical_df = pd.DataFrame(survival_data)
 # Compare multiple treatment arms with an omnibus test and an explicitly
 # requested Cox contrast. Pair tuples are (reference, comparison).
 cns.figure(150, 180)
-cns.survivalplot(
+ax = cns.survivalplot(
     data=clinical_df,
     duration="time",
     event="event",
     hue="group",
     hue_order=["Control", "Treatment A", "Treatment B"],
     pairs=[("Control", "Treatment B")],
+    pvalue_loc="upper right",
 )
+ax.set_xlabel("Time (Months)")
 cns.take_legend_out()
 plt.title("Three-Arm Clinical Trial")
-plt.xlabel("Time (Months)")
 
 
 # %%
@@ -157,6 +165,7 @@ ax = cns.cumulativeincidenceplot(
     hue_order=["Control", "Treatment A", "Treatment B"],
     show_risk_table=True,
     risk_table_ypos=-0.25,
+    pvalue_loc="upper left",
 )
 ax.set_xlabel("Time (Months)")
 cns.take_legend_out()
@@ -186,6 +195,7 @@ cns.cumulativeincidenceplot(
     event="E",
     hue="group",
     show_risk_table=False,
+    pvalue_loc="center",
 )
 mp.get_axes("B").legend().remove()
 mp.get_axes("B").set_title("Cumulative Incidence")
@@ -215,16 +225,17 @@ for _ in range(n // 2):
 biomarker_df = pd.DataFrame(biomarker_data)
 
 cns.figure(150, 150)
-cns.survivalplot(
+ax = cns.survivalplot(
     data=biomarker_df,
     duration="time",
     event="event",
     hue="biomarker",
     hue_order=["High", "Low"],
+    pvalue_loc="upper right",
 )
+ax.set_xlabel("Time (Months)")
 cns.take_legend_out()
 plt.title("Survival by Biomarker Expression")
-plt.xlabel("Time (Months)")
 
 
 # %%
@@ -241,6 +252,7 @@ ax = cns.cumulativeincidenceplot(
     xticks=np.arange(0, 80, 10),
     show_risk_table=True,
     risk_table_ypos=-0.2,
+    pvalue_loc="lower right",
 )
 ax.set_xlabel("Time (Months)")
 _ = plt.legend(loc="upper left")
@@ -252,13 +264,13 @@ plt.title("Custom X-Axis Ticks")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The curves automatically handle censored observations (shown as vertical marks).
 cns.figure(150, 150)
-cns.survivalplot(
+ax = cns.survivalplot(
     data=clinical_df,
     duration="time",
     event="event",
     hue="group",
     hue_order=["Control", "Treatment B"],
 )
-cns.take_legend_out()
+ax.set_xlabel("Time (Months)")
+_ = plt.legend(loc="upper right")
 plt.title("Survival with Censoring Marks")
-plt.xlabel("Time (Months)")

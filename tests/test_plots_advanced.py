@@ -176,8 +176,7 @@ def test_survival_plots(
         [1, 5 / 6, 2 / 3, 2 / 3, 4 / 9, 4 / 9, 0],
     )
     assert ax.texts[0].get_text() == (
-        "Omnibus log-rank P = $0.6$\n"
-        "Control vs Treatment: HR = 0.68 (95% CI 0.15-3.06), Cox P = $0.62$"
+        "Log-rank P = $0.6$\nHR = 0.68\n95% CI 0.15–3.06\nCox P = $0.62$"
     )
     assert "omnibus log-rank test" in caplog.text
 
@@ -186,7 +185,7 @@ def test_survival_plots(
     with caplog.at_level(logging.INFO, logger="cnsplots"):
         ax2 = cns.survivalplot(survival_three_group_df, "time", "event", "group")
     assert ax2.get_xlabel() == "Time"
-    assert ax2.texts[0].get_text() == "Omnibus log-rank P = $0.36$"
+    assert ax2.texts[0].get_text() == "Log-rank P = $0.36$"
     assert "omnibus log-rank test" in caplog.text
     assert "trend" not in caplog.text
 

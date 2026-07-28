@@ -174,7 +174,13 @@ ax.set_title("Regplot")
 
 # Panel J: survivalplot
 mp.panel("J", 90, 90)
-ax = cns.survivalplot(data=survival_df, duration="time", event="event", hue="group")
+ax = cns.survivalplot(
+    data=survival_df,
+    duration="time",
+    event="event",
+    hue="group",
+    show_hazard_ratio=False,
+)
 # Keep the showcase annotation compact by dropping the CI from the HR line.
 for text in ax.texts:
     label = text.get_text()
