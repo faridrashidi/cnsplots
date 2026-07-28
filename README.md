@@ -10,7 +10,7 @@
 [![Docs](https://img.shields.io/website?url=https%3A%2F%2Fcnsplots.farid.one%2F&up_message=online&down_message=offline&logo=readthedocs&logoColor=white&style=flat-square&label=docs&labelColor=000000&cacheSeconds=0)](https://cnsplots.farid.one/)
 [![Downloads](https://img.shields.io/pepy/dt/cnsplots?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTExIDNoMnYxMGwzLjUtMy41IDEuNCAxLjQtNS45IDUuOS01LjktNS45IDEuNC0xLjRMMTEgMTNWM3pNNSAxOGgxNHYzSDV6Ii8%2BPC9zdmc%2B&style=flat-square&label=downloads&labelColor=000000&cacheSeconds=0)](https://pepy.tech/project/cnsplots)
 [![PyPI](https://img.shields.io/pypi/v/cnsplots?logo=pypi&logoColor=white&style=flat-square&labelColor=000000&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
-[![Python Version](https://img.shields.io/pypi/pyversions/cnsplots?logo=python&logoColor=white&style=flat-square&labelColor=000000&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
+[![Python Version](https://img.shields.io/badge/python-3.10%20to%203.14-blue?logo=python&logoColor=white&style=flat-square&labelColor=000000&cacheSeconds=0)](https://pypi.org/project/cnsplots/)
 [![License](https://img.shields.io/pypi/l/cnsplots?logo=creativecommons&logoColor=white&style=flat-square&labelColor=000000&color=blueviolet&cacheSeconds=0)](https://github.com/faridrashidi/cnsplots/blob/main/LICENSE.md)
 
 **Publication-Ready Scientific Plots for Cell, Nature, and Science Journals**
