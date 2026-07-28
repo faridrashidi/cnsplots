@@ -760,9 +760,9 @@ def test_capture_detached_colorbar_layout_guard_branches() -> None:
         figure=types.SimpleNamespace(bbox=Bbox.from_bounds(0, 0, 100, 100)),
         get_position=lambda: types.SimpleNamespace(bounds=(0.6, 0.2, 0.1, 0.5)),
     )
-    cbar1 = object.__new__(mpl.colorbar.Colorbar)
+    cbar1 = cast(Any, object.__new__(mpl.colorbar.Colorbar))
     cbar1.ax = None
-    cbar2 = object.__new__(mpl.colorbar.Colorbar)
+    cbar2 = cast(Any, object.__new__(mpl.colorbar.Colorbar))
     cbar2.ax = types.SimpleNamespace(
         get_position=lambda: types.SimpleNamespace(bounds=(0.0, 0.0, 0.0, 0.2))
     )
