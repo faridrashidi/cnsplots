@@ -27,8 +27,8 @@ blobs.obs["selected"] = np.where(blobs.obs["mitf"] > 0.95, "o", None)
 blobs.obs["cluster"] = pd.Categorical(
     [f"C{x}" for x in np.random.randint(0, 4, blobs.shape[0])]
 )
-blobs_full = blobs[:120, :].copy()
-blobs_annot = blobs[:240, :].copy()
+blobs_full = blobs[:24, :].copy()
+blobs_annot = blobs[:120, :].copy()
 
 
 # %%
@@ -60,8 +60,8 @@ cmp = cns.heatmapplot(
     row_split_gap=1,
     col_split_gap=1,
     legend_hpad=-2,
-    legend_vpad=6,
-    legend_width=20,
+    legend_vpad=1,
+    legend_width=15,
     xlabel_labelpad=-3,
 )
 cmp.ax.set_title("Basic Heatmapplot")
@@ -74,7 +74,7 @@ print(f"Row clusters: {len(cmp.row_order)}, Col clusters: {len(cmp.col_order)}")
 # Basic heatmap showing raw data without reordering.
 cns.figure(200, 250)
 cmp = cns.heatmapplot(
-    blobs[:50, :],  # Subset for visibility
+    blobs[:20, :],  # Subset for readable row labels
     label="Expression",
     xlabel="Genes",
     ylabel="Samples",
@@ -82,7 +82,7 @@ cmp = cns.heatmapplot(
     col_cluster=False,
     show_rownames=True,
     show_colnames=True,
-    yticklabels_fontsize=5,
+    yticklabels_fontsize=6,
     legend_hpad=5,
     xlabel_labelpad=-20,
     ylabel_labelpad=10,
@@ -95,8 +95,10 @@ cmp = cns.heatmapplot(
 # Cluster samples but keep gene order fixed.
 cns.figure(200, 250)
 cmp = cns.heatmapplot(
-    blobs[:50, :],
+    blobs[:20, :],
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_cluster=True,
     col_cluster=False,
     row_dendrogram=True,
@@ -104,18 +106,20 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     legend_hpad=5,
     xlabel_labelpad=-20,
-    yticklabels_fontsize=5,
+    yticklabels_fontsize=6,
 )
 
 
 # %%
 # Heatmap with categorical split
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Split rows by a categorical variable.
+# Split rows by a categorical variable using a subset with readable dendrograms.
 cns.figure(220, 300)
 cmp = cns.heatmapplot(
-    blobs,
+    blobs[:200, :],
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_annotation=["blobs"],
     row_split="blobs",
     row_cluster=True,
@@ -134,10 +138,12 @@ cmp = cns.heatmapplot(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Add both categorical and continuous annotations.
 # Use a display subset to keep the gallery image readable and stable to render.
-cns.figure(250, 320)
+cns.figure(280, 320)
 cmp = cns.heatmapplot(
     blobs_annot,
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_annotation=["blobs", "mitf", "cluster"],
     col_annotation=["ensemble"],
     row_cluster=True,
@@ -146,8 +152,9 @@ cmp = cns.heatmapplot(
     col_dendrogram=True,
     show_rownames=False,
     show_colnames=True,
-    legend_hpad=1,
-    legend_vpad=4,
+    legend_hpad=5,
+    legend_vpad=1,
+    legend_width=10,
 )
 
 
@@ -159,6 +166,8 @@ cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:50, :],
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     cmap="gnuplot",
     row_cluster=True,
     col_cluster=True,
@@ -181,6 +190,8 @@ cns.figure(200, 250)
 cmp = cns.heatmapplot(
     centered_data[:50, :],
     label="Z-score",
+    xlabel="Genes",
+    ylabel="Samples",
     cmap="BuRd_custom",
     row_cluster=True,
     col_cluster=True,
@@ -201,7 +212,7 @@ discrete.var["ensemble"] = [
 ]
 discrete.obs["group"] = [f"G{x}" for x in np.random.randint(0, 3, discrete.shape[0])]
 
-cns.figure(180, 250)
+cns.figure(240, 250)
 cmp = cns.heatmapplot(
     discrete,
     label="Category",
@@ -213,6 +224,8 @@ cmp = cns.heatmapplot(
     show_colnames=True,
     linewidth=1,
     legend_hpad=-3,
+    legend_vpad=1,
+    legend_width=15,
 )
 
 
@@ -228,6 +241,8 @@ cns.figure(220, 280)
 cmp = cns.heatmapplot(
     blobs[:60, :],
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_annotation=["blobs"],
     row_cluster=True,
     col_cluster=True,
@@ -248,6 +263,8 @@ cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:50, :],
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_cluster=True,
     col_cluster=True,
     show_rownames=False,
@@ -271,6 +288,8 @@ cns.figure(180, 200)
 cmp = cns.heatmapplot(
     small_data,
     label="Value",
+    xlabel="Features",
+    ylabel="Samples",
     row_annotation=["group"],
     col_annotation=["type"],
     show_rownames=True,
@@ -290,6 +309,8 @@ cns.figure(250, 300)
 cmp = cns.heatmapplot(
     blobs,
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_annotation=["blobs"],
     row_cluster=True,
     col_cluster=True,
@@ -309,6 +330,8 @@ cns.figure(200, 250)
 cmp = cns.heatmapplot(
     blobs[:60, :],
     label="Expression",
+    xlabel="Genes",
+    ylabel="Samples",
     row_cluster=True,
     col_cluster=True,
     row_cluster_method="average",  # Options: ward, complete, average, single
