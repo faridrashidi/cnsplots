@@ -1,0 +1,4 @@
+interface:
+  display_name: "CNSPlots"
+  short_description: "Build publication-ready scientific plots"
+  default_prompt: "Use $cnsplots to build a publication-ready scientific plot from my data."

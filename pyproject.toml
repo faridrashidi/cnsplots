@@ -73,6 +73,9 @@ Documentation = "https://cnsplots.farid.one"
 Repository = "https://github.com/faridrashidi/cnsplots"
 Issues = "https://github.com/faridrashidi/cnsplots/issues"
 
+[project.scripts]
+cnsplots = "cnsplots._cli:main"
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -81,7 +84,12 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-cnsplots = ["py.typed"]
+cnsplots = [
+    "py.typed",
+    "_agent_skill/cnsplots/*.md",
+    "_agent_skill/cnsplots/agents/*.yaml",
+    "_agent_skill/cnsplots/references/*.md",
+]
 "cnsplots.datasets" = ["_data/*.csv", "_data/showcase/*.webp"]
 
 [tool.ruff]
