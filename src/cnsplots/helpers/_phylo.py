@@ -122,7 +122,7 @@ def _heatmap(
     leg_kws :   dict, optional
                 Keyword arguments passed to plt.legend()
     **sns_kws
-                Keyword argumentas passed through to `seaborn.heatmap()`
+                Keyword arguments passed through to `seaborn.heatmap()`
     Returns
     -------
     matplotlib axis
