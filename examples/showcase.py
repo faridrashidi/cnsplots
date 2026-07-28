@@ -322,12 +322,14 @@ dp = cns.dotplot(
     legend=True,
     legend_width=10,
     legend_hpad=0,
+    legend_vgap=0,
     xlabel="",
     ylabel="",
     xticklabels_rotation=25,
     xticklabels_fontsize=6,
     yticklabels_fontsize=6,
     max_s=40,
+    ax=host_c,
 )
 hm_ax = dp.hm_ax
 for label in hm_ax.get_xticklabels():
@@ -339,7 +341,7 @@ dp.dot_legend.get_title().set_fontsize(6)
 for text in dp.dot_legend.get_texts():
     text.set_fontsize(6)
 dp.cbar_ax.tick_params(labelsize=6, length=0)
-dp.cbar_ax.set_title("size", fontsize=6, pad=1)
+dp.cbar_ax.set_title("size", fontsize=6, pad=1, loc="right")
 dp.cbar_ax.set_ylabel("")
 
 # Panel D: cumulativeincidenceplot
@@ -413,7 +415,7 @@ ax.set_xticklabels(
 )
 
 # Panel K: confusionplot
-ax = mp.panel("K", 60, 60, pad_top=30, margin_right=30)
+ax = mp.panel("K", 60, 60, pad_top=30, margin_right=10)
 ax = cns.confusionplot(
     data=confusion_df,
     x="pred",
@@ -443,9 +445,8 @@ forest_model = cns.methods.CoxModel(
     ],
 )
 forest_model.fit()
-forest_ax = cns.forestplot(forest_model, add_pvalue=False)
+forest_ax = cns.forestplot(forest_model, add_pvalue=False, ax=host_l)
 forest_ax.set_title("Forestplot")
-detached_panel_layouts.append((host_l, [forest_ax], 0.03, 0.04))
 
 # Panel M: upsetplot
 host_m = mp.panel("M", 200, 120, margin_right=0, pad_left=-100, pad_top=10)
@@ -460,37 +461,6 @@ upset_axes = cns.upsetplot(
 upset_axes["intersections"].set_title("UpSetplot")
 detached_panel_layouts.append((host_m, list(upset_axes.values()), 0.03, 0.04))
 
-# Finalize panel C after the multipanel layout settles.
-if mp.fig is not None:
-    mp.fig.canvas.draw()
-setattr(host_c, "_cnsplots_sync_embedded_axes", None)
-setattr(host_c, "_cnsplots_sync_detached_legends", None)
-host_box = host_c.get_position().frozen()
-heatmap_box = [
-    host_box.x0 + host_box.width * 0.06,
-    host_box.y0,
-    host_box.width * 0.40,
-    host_box.height * 0.90,
-]
-legend_box = [
-    host_box.x0 + host_box.width * 0.63,
-    host_box.y0,
-    host_box.width * 0.33,
-    host_box.height * 0.90,
-]
-dp.ax_heatmap.set_position(heatmap_box)
-hm_ax.set_position(heatmap_box)
-dp.legend_ax.set_position(legend_box)
-dp.cbar_ax.set_position(
-    [
-        legend_box[0],
-        legend_box[1] + legend_box[3] * 0.16,
-        host_box.width * 0.018,
-        legend_box[3] * 0.70,
-    ]
-)
-dp.dot_legend.set_bbox_to_anchor((0.66, 1.02), transform=dp.legend_ax.transAxes)
-dp.legend_ax.set_axis_off()
 for host_ax, detached_axes, xpad, ypad in detached_panel_layouts:
     _embed_detached_axes(host_ax, detached_axes, xpad=xpad, ypad=ypad)
 if mp.fig is not None:
