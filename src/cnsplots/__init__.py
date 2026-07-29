@@ -72,7 +72,7 @@ if TYPE_CHECKING:
     utils = _utils
     validation = _validation
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 _LAZY_IMPORTS = {
     "utils": ("cnsplots._utils", None),
