@@ -132,6 +132,7 @@ Clients must switch to the new export path before upgrading.
 - Use the same Gitmoji selection and tie-break rules as commit subjects.
 - Use the same `<emoji> <subject>` format as commit subjects.
 - PR body must include:
+  - the goal or purpose
   - what changed
   - how it was tested
   - any risks or follow-ups
