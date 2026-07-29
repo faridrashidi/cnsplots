@@ -18,6 +18,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from matplotlib.text import Text
 from sphinx_gallery.scrapers import matplotlib_scraper
+from sphinx_gallery.utils import scale_image
 
 _DARK_FOREGROUND = mcolors.to_rgba("#e6e6e6")[:3]
 _DARK_BACKGROUND = mcolors.to_rgba("#202124")[:3]
@@ -157,6 +158,70 @@ def _save_dark_companions(
 def _mark_theme(rst: str, theme: str) -> str:
     """Wrap gallery markup in a container recognized by Furo's theme switcher."""
     return f"\n.. container:: only-{theme}\n\n{indent(rst, '   ')}"
+
+
+def _theme_thumbnail_markup(light_path: str, dark_path: str) -> str:
+    """Return theme-aware markup for one gallery thumbnail."""
+    return f""".. only:: html
+
+  .. container:: only-light
+
+    .. image:: /{light_path}
+      :alt:
+
+  .. container:: only-dark
+
+    .. image:: /{dark_path}
+      :alt:"""
+
+
+def _prepare_dark_gallery_thumbnails(
+    gallery_dir: Path, thumbnail_size: tuple[int, int]
+) -> None:
+    """Create dark gallery thumbnails and add theme-aware index markup."""
+    index_path = gallery_dir / "index.rst"
+    image_dir = gallery_dir / "images"
+    thumbnail_dir = image_dir / "thumb"
+    if not index_path.exists() or not thumbnail_dir.exists():
+        return
+
+    content = index_path.read_text(encoding="utf-8")
+    for light_thumbnail in thumbnail_dir.glob("sphx_glr_*_thumb.png"):
+        example_name = light_thumbnail.stem.removeprefix("sphx_glr_").removesuffix(
+            "_thumb"
+        )
+        dark_source = image_dir / f"sphx_glr_{example_name}_001_dark.png"
+        if not dark_source.exists():
+            continue
+
+        dark_thumbnail = _dark_path(light_thumbnail)
+        scale_image(
+            str(dark_source),
+            str(dark_thumbnail),
+            *thumbnail_size,
+        )
+
+        light_relative = light_thumbnail.relative_to(gallery_dir.parent).as_posix()
+        dark_relative = dark_thumbnail.relative_to(gallery_dir.parent).as_posix()
+        light_markup = f""".. only:: html
+
+  .. image:: /{light_relative}
+    :alt:"""
+        content = content.replace(
+            light_markup,
+            _theme_thumbnail_markup(light_relative, dark_relative),
+        )
+
+    index_path.write_text(content, encoding="utf-8")
+
+
+def prepare_dark_gallery_thumbnails(app, env, docnames) -> None:
+    """Prepare theme-aware thumbnails after Sphinx-Gallery generates sources."""
+    del env, docnames
+
+    gallery_dir = Path(app.srcdir) / "examples"
+    thumbnail_size = tuple(app.config.sphinx_gallery_conf["thumbnail_size"])
+    _prepare_dark_gallery_thumbnails(gallery_dir, thumbnail_size)
 
 
 def theme_aware_matplotlib_scraper(block, block_vars, gallery_conf) -> str:

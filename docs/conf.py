@@ -24,6 +24,7 @@ sys.path.insert(0, str(_conf_dir / "_ext"))
 
 import cnsplots as cns  # noqa: E402
 from gallery_order import GALLERY_CATEGORIES  # noqa: E402
+from theme_aware_matplotlib import prepare_dark_gallery_thumbnails  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -629,6 +630,7 @@ def setup(app):
     os.environ["CNSPLOTS_GALLERY_OUTPUT_DIR"] = str(
         Path(app.doctreedir) / "gallery-exports"
     )
+    app.connect("env-before-read-docs", prepare_dark_gallery_thumbnails, priority=490)
     app.connect("env-before-read-docs", _regroup_flat_gallery_index)
     app.connect("config-inited", _configure_active_docs_build, priority=800)
     app.connect("html-page-context", _override_source_links)

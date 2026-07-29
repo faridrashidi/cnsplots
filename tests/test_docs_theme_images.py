@@ -11,6 +11,7 @@ from theme_aware_matplotlib import (  # noqa: E402  # ty: ignore[unresolved-impo
     _dark_figure,
     _dark_path,
     _mark_theme,
+    _prepare_dark_gallery_thumbnails,
     theme_aware_matplotlib_scraper,
 )
 
@@ -94,3 +95,37 @@ def test_scraper_generates_theme_specific_images_and_markup(tmp_path):
     assert ".. container:: only-dark" in rst
     assert "/sphx_glr_test_001_dark.png" in rst
     assert "/sphx_glr_test_001_2_00x_dark.png 2.00x" in rst
+
+
+def test_prepare_dark_gallery_thumbnails(tmp_path):
+    gallery_dir = tmp_path / "examples"
+    image_dir = gallery_dir / "images"
+    thumbnail_dir = image_dir / "thumb"
+    thumbnail_dir.mkdir(parents=True)
+
+    light_thumbnail = thumbnail_dir / "sphx_glr_test_thumb.png"
+    dark_source = image_dir / "sphx_glr_test_001_dark.png"
+    plt.imsave(light_thumbnail, np.ones((10, 10, 3)))
+    plt.imsave(dark_source, np.zeros((20, 20, 3)))
+
+    index_path = gallery_dir / "index.rst"
+    index_path.write_text(
+        """.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_test_thumb.png
+    :alt:
+
+  :doc:`/examples/test`
+""",
+        encoding="utf-8",
+    )
+
+    _prepare_dark_gallery_thumbnails(gallery_dir, (40, 28))
+
+    dark_thumbnail = thumbnail_dir / "sphx_glr_test_thumb_dark.png"
+    content = index_path.read_text(encoding="utf-8")
+    assert dark_thumbnail.exists()
+    assert ".. container:: only-light" in content
+    assert ".. container:: only-dark" in content
+    assert "/examples/images/thumb/sphx_glr_test_thumb_dark.png" in content
+    assert ":doc:`/examples/test`" in content
