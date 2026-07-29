@@ -4,11 +4,21 @@
 
 cnsplots is a Python visualization library built on matplotlib and fully compatible with seaborn. It creates figures that meet the high standards of top-tier scientific publications while keeping the API simple and intuitive.
 
-```{image} _static/images/overview.png
+::::{container} only-light
+:::{image} examples/images/sphx_glr_showcase_001.png
 :alt: Overview of cnsplots visualizations
 :align: center
 :target: examples/showcase.html#figure-1
-```
+:::
+::::
+
+::::{container} only-dark
+:::{image} examples/images/sphx_glr_showcase_001_dark.png
+:alt: Overview of cnsplots visualizations
+:align: center
+:target: examples/showcase.html#figure-1
+:::
+::::
 
 ## Key Features
 

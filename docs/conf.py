@@ -24,6 +24,11 @@ sys.path.insert(0, str(_conf_dir / "_ext"))
 
 import cnsplots as cns  # noqa: E402
 from gallery_order import GALLERY_CATEGORIES  # noqa: E402
+from theme_aware_matplotlib import (  # noqa: E402
+    fallback_linkcheck_showcase_images,
+    prepare_dark_gallery_thumbnails,
+    theme_gallery_thumbnail_nodes,
+)
 
 # -- Project information -----------------------------------------------------
 
@@ -126,6 +131,7 @@ sphinx_gallery_conf = {
     "within_subsection_order": "gallery_order.GalleryExampleOrder",
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
+    "image_scrapers": ("theme_aware_matplotlib.theme_aware_matplotlib_scraper",),
     "reference_url": {
         "cnsplots": None,  # Module to create cross-references for
     },
@@ -628,7 +634,10 @@ def setup(app):
     os.environ["CNSPLOTS_GALLERY_OUTPUT_DIR"] = str(
         Path(app.doctreedir) / "gallery-exports"
     )
+    app.connect("env-before-read-docs", prepare_dark_gallery_thumbnails, priority=490)
     app.connect("env-before-read-docs", _regroup_flat_gallery_index)
+    app.connect("doctree-read", fallback_linkcheck_showcase_images, priority=480)
+    app.connect("doctree-read", theme_gallery_thumbnail_nodes, priority=490)
     app.connect("config-inited", _configure_active_docs_build, priority=800)
     app.connect("html-page-context", _override_source_links)
     app.connect("html-page-context", _inject_page_seo)
