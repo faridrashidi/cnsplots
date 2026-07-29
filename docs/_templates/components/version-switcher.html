@@ -1,50 +1,49 @@
 {% if docs_release_versions or docs_development_version %}
-<div class="docs-version-switcher" aria-label="Documentation versions">
-  <div class="docs-version-switcher-header">
-    <span class="docs-version-switcher-title">Versions</span>
-    {% if docs_current_version_label %}
+<details class="docs-version-switcher">
+  <summary class="docs-version-switcher-summary">
+    <span class="docs-version-switcher-title">Version</span>
     <span class="docs-version-switcher-current"
       >{{ docs_current_version_label }}</span
     >
+    <span class="docs-version-switcher-chevron" aria-hidden="true"></span>
+  </summary>
+
+  <div id="docs-version-switcher-list" class="docs-version-switcher-list">
+    {% if docs_development_version %}
+    <div class="docs-version-switcher-group">
+      <span class="docs-version-switcher-group-title">Development</span>
+      <ul class="docs-version-switcher-options">
+        <li>
+          <a
+            class="docs-version-switcher-link{% if docs_current_version_name == docs_development_version.name %} is-active{% endif %}"
+            href="{{ docs_development_version.url }}"
+            {% if docs_current_version_name == docs_development_version.name %}
+            aria-current="page"
+            {% endif %}
+            >dev</a
+          >
+        </li>
+      </ul>
+    </div>
+    {% endif %} {% if docs_release_versions %}
+    <div class="docs-version-switcher-group">
+      <span class="docs-version-switcher-group-title">Releases</span>
+      <ul class="docs-version-switcher-options">
+        {% for item in docs_release_versions %}
+        <li>
+          <a
+            class="docs-version-switcher-link{% if docs_current_version_name == item.name %} is-active{% endif %}"
+            href="{{ item.url }}"
+            {% if docs_current_version_name == item.name %}
+            aria-current="page"
+            {% endif %}
+            >{{ item.name }}</a
+          >
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
     {% endif %}
   </div>
-
-  <div class="docs-version-switcher-field">
-    <div class="docs-version-switcher-select-wrap">
-      <select
-        id="docs-version-switcher-select"
-        class="docs-version-switcher-select"
-        aria-label="Select documentation version"
-        onchange="if (this.value) window.location.assign(this.value);"
-      >
-        {% if docs_development_version %}
-        <optgroup label="Development">
-          <option
-            value="{{ docs_development_version.url }}"
-            {% if current_version and current_version.name == docs_development_version.name %}
-            selected
-            {% endif %}
-          >
-            dev
-          </option>
-        </optgroup>
-        {% endif %} {% if docs_release_versions %}
-        <optgroup label="Releases">
-          {% for item in docs_release_versions %}
-          <option
-            value="{{ item.url }}"
-            {% if current_version and current_version.name == item.name %}
-            selected
-            {% endif %}
-          >
-            {{ item.name }}
-          </option>
-          {% endfor %}
-        </optgroup>
-        {% endif %}
-      </select>
-      <span class="docs-version-switcher-chevron" aria-hidden="true"></span>
-    </div>
-  </div>
-</div>
+</details>
 {% endif %}
