@@ -1,0 +1,40 @@
+Package: cnsplots
+Type: Package
+Title: Scientific Plotting Tools for R
+Version: 0.0.0.9000
+Authors@R: c(
+    person(
+      given = "Farid",
+      family = "Rashidi",
+      email = "farid.rsh@gmail.com",
+      role = c("aut", "cph"),
+      comment = "Original cnsplots design and Python implementation"
+    ),
+    person(
+      given = "jarxunlai",
+      email = "1927756261@qq.com",
+      role = c("aut", "cre"),
+      comment = "Native R implementation"
+    )
+  )
+Description: A native R implementation of the visual conventions, colour
+    palettes, figure sizing, export behavior, and scientific plotting intent
+    of the Python 'cnsplots' package. The package returns ordinary 'ggplot2'
+    objects and keeps statistical computation explicit.
+License: BSD_3_clause + file LICENSE
+URL: https://github.com/faridrashidi/cnsplots
+BugReports: https://github.com/faridrashidi/cnsplots/issues
+Depends:
+    R (>= 4.1.0)
+Imports:
+    ggplot2 (>= 3.4.0),
+    grDevices,
+    grid,
+    stats
+Suggests:
+    testthat (>= 3.1.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: false
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0

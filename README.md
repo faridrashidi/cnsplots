@@ -96,6 +96,20 @@ cns.scatterplot(data=df2, x="x", y="y")
 
 ## Installation
 
+### Native R package (experimental)
+
+A native R/ggplot2 implementation is available in [`r/`](r/). It keeps the
+direct plot names, palettes, physical export behavior, and ordinary ggplot
+composition without adding a public `cns_` prefix.
+
+```sh
+R CMD INSTALL r
+```
+
+See the [R README](r/README.md) and the
+[complete Chinese usage guide](r/README_zh.md) for the implemented scope and
+known compatibility boundaries.
+
 ### From PyPI
 
 ```bash

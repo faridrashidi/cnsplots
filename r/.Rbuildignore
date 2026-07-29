@@ -1,0 +1,5 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^cran-comments\.md$
+^cnsplots\.Rcheck$
+^.*\.tar\.gz$
