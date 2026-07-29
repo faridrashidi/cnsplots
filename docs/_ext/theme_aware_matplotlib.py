@@ -23,6 +23,10 @@ from sphinx_gallery.utils import scale_image
 
 _DARK_FOREGROUND = mcolors.to_rgba("#e6e6e6")[:3]
 _DARK_BACKGROUND = mcolors.to_rgba("#202124")[:3]
+_HOMEPAGE_SHOWCASE_IMAGES = {
+    "sphx_glr_showcase_001.png",
+    "sphx_glr_showcase_001_dark.png",
+}
 
 
 def _map_neutral_color(value, *, light_background: bool = False):
@@ -193,6 +197,20 @@ def prepare_dark_gallery_thumbnails(app, env, docnames) -> None:
     gallery_dir = Path(app.srcdir) / "examples"
     thumbnail_size = tuple(app.config.sphinx_gallery_conf["thumbnail_size"])
     _prepare_dark_gallery_thumbnails(gallery_dir, thumbnail_size)
+
+
+def fallback_linkcheck_showcase_images(app, doctree) -> None:
+    """Use the static overview when linkcheck skips gallery execution."""
+    if app.builder.name != "linkcheck":
+        return
+
+    for image in doctree.findall(nodes.image):
+        uri = Path(image["uri"])
+        if (
+            uri.parent.as_posix() == "examples/images"
+            and uri.name in _HOMEPAGE_SHOWCASE_IMAGES
+        ):
+            image["uri"] = "_static/images/overview.png"
 
 
 def theme_gallery_thumbnail_nodes(app, doctree) -> None:

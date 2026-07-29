@@ -13,6 +13,7 @@ from theme_aware_matplotlib import (  # noqa: E402  # ty: ignore[unresolved-impo
     _dark_path,
     _mark_theme,
     _prepare_dark_gallery_thumbnails,
+    fallback_linkcheck_showcase_images,
     theme_gallery_thumbnail_nodes,
     theme_aware_matplotlib_scraper,
 )
@@ -132,3 +133,30 @@ def test_theme_gallery_thumbnail_nodes(tmp_path):
     assert dark_container["classes"] == ["only-dark"]
     assert light_container[0]["uri"].endswith("sphx_glr_test_thumb.png")
     assert dark_container[0]["uri"].endswith("sphx_glr_test_thumb_dark.png")
+
+
+def test_linkcheck_uses_static_showcase_fallback():
+    light_uri = "examples/images/sphx_glr_showcase_001.png"
+    dark_uri = "examples/images/sphx_glr_showcase_001_dark.png"
+    doctree = nodes.container()
+    doctree += nodes.image(uri=light_uri)
+    doctree += nodes.image(uri=dark_uri)
+
+    linkcheck_app = type(
+        "App",
+        (),
+        {"builder": type("Builder", (), {"name": "linkcheck"})()},
+    )()
+    fallback_linkcheck_showcase_images(linkcheck_app, doctree)
+
+    assert [image["uri"] for image in doctree.findall(nodes.image)] == [
+        "_static/images/overview.png",
+        "_static/images/overview.png",
+    ]
+
+    html_doctree = nodes.container()
+    html_doctree += nodes.image(uri=light_uri)
+    html_app = type("App", (), {"builder": type("Builder", (), {"name": "html"})()})()
+    fallback_linkcheck_showcase_images(html_app, html_doctree)
+
+    assert html_doctree[0]["uri"] == light_uri
