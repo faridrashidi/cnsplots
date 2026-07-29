@@ -3,6 +3,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from docutils import nodes
 from sphinx_gallery.scrapers import ImagePathIterator
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "docs" / "_ext"))
@@ -12,6 +13,7 @@ from theme_aware_matplotlib import (  # noqa: E402  # ty: ignore[unresolved-impo
     _dark_path,
     _mark_theme,
     _prepare_dark_gallery_thumbnails,
+    theme_gallery_thumbnail_nodes,
     theme_aware_matplotlib_scraper,
 )
 
@@ -108,24 +110,25 @@ def test_prepare_dark_gallery_thumbnails(tmp_path):
     plt.imsave(light_thumbnail, np.ones((10, 10, 3)))
     plt.imsave(dark_source, np.zeros((20, 20, 3)))
 
-    index_path = gallery_dir / "index.rst"
-    index_path.write_text(
-        """.. only:: html
-
-  .. image:: /examples/images/thumb/sphx_glr_test_thumb.png
-    :alt:
-
-  :doc:`/examples/test`
-""",
-        encoding="utf-8",
-    )
-
     _prepare_dark_gallery_thumbnails(gallery_dir, (40, 28))
 
     dark_thumbnail = thumbnail_dir / "sphx_glr_test_thumb_dark.png"
-    content = index_path.read_text(encoding="utf-8")
     assert dark_thumbnail.exists()
-    assert ".. container:: only-light" in content
-    assert ".. container:: only-dark" in content
-    assert "/examples/images/thumb/sphx_glr_test_thumb_dark.png" in content
-    assert ":doc:`/examples/test`" in content
+
+
+def test_theme_gallery_thumbnail_nodes(tmp_path):
+    thumbnail_dir = tmp_path / "examples" / "images" / "thumb"
+    thumbnail_dir.mkdir(parents=True)
+    (thumbnail_dir / "sphx_glr_test_thumb_dark.png").touch()
+
+    doctree = nodes.container()
+    doctree += nodes.image(uri="/examples/images/thumb/sphx_glr_test_thumb.png", alt="")
+    app = type("App", (), {"srcdir": str(tmp_path)})()
+
+    theme_gallery_thumbnail_nodes(app, doctree)
+
+    light_container, dark_container = doctree.children
+    assert light_container["classes"] == ["only-light"]
+    assert dark_container["classes"] == ["only-dark"]
+    assert light_container[0]["uri"].endswith("sphx_glr_test_thumb.png")
+    assert dark_container[0]["uri"].endswith("sphx_glr_test_thumb_dark.png")
