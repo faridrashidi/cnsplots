@@ -559,17 +559,37 @@ def _inject_version_navigation(
     app, pagename: str, templatename, context: dict[str, Any], doctree
 ):
     """Add ordered version-switcher and banner context for multiversion builds."""
-    del app, pagename, templatename, doctree
+    del app, templatename, doctree
 
     current_version = context.get("current_version")
     latest_version = context.get("latest_version")
     versions = context.get("versions")
 
     if current_version is None or latest_version is None or versions is None:
-        context["docs_release_versions"] = []
-        context["docs_development_version"] = None
+        page_suffix = "" if pagename == "index" else f"{pagename}.html"
+        page_suffix = f"/{page_suffix}" if page_suffix else "/"
+        try:
+            release_names = git(
+                "tag", "--list", "v*", "--sort=-version:refname"
+            ).splitlines()
+        except Exception:  # noqa: B902
+            release_names = []
+
+        context["docs_release_versions"] = [
+            {
+                "name": name,
+                "url": f"{_published_site_baseurl(name)}{page_suffix}",
+            }
+            for name in release_names
+            if _parse_release_name(name) != (-1, -1, -1)
+        ]
+        context["docs_development_version"] = {
+            "name": dev_docs_name,
+            "url": f"{_published_site_baseurl(dev_docs_name)}{page_suffix}",
+        }
         context["docs_version_banner"] = None
-        context["docs_current_version_label"] = None
+        context["docs_current_version_label"] = "dev (main)"
+        context["docs_current_version_name"] = dev_docs_name
         return
 
     release_versions = sorted(
@@ -584,6 +604,7 @@ def _inject_version_navigation(
 
     context["docs_release_versions"] = release_versions
     context["docs_development_version"] = development_version
+    context["docs_current_version_name"] = current_version.name
     context["docs_current_version_label"] = (
         "dev (main)" if current_version.name == dev_docs_name else current_version.name
     )

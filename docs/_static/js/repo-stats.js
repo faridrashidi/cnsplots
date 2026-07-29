@@ -219,7 +219,7 @@
     return `${location.rootPath}/${latestDocsName}/`;
   }
 
-  function appendVersionGroup(select, label, entries, location) {
+  function appendSelectVersionGroup(select, label, entries, location) {
     if (!entries.length) {
       return;
     }
@@ -236,9 +236,41 @@
     select.appendChild(group);
   }
 
+  function appendVersionGroup(container, label, entries, location) {
+    if (!entries.length) {
+      return;
+    }
+
+    const group = document.createElement("div");
+    group.className = "docs-version-switcher-group";
+
+    const title = document.createElement("span");
+    title.className = "docs-version-switcher-group-title";
+    title.textContent = label;
+
+    const options = document.createElement("ul");
+    options.className = "docs-version-switcher-options";
+    entries.forEach(function (entry) {
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      link.className = "docs-version-switcher-link";
+      link.href = versionUrl(location, entry.version);
+      link.textContent = entry.title;
+      if (location.canonicalVersion === entry.version) {
+        link.classList.add("is-active");
+        link.setAttribute("aria-current", "page");
+      }
+      item.appendChild(link);
+      options.appendChild(item);
+    });
+    group.append(title, options);
+    container.appendChild(group);
+  }
+
   function updateVersionSwitcher(entries, location) {
+    const list = document.querySelector("#docs-version-switcher-list");
     const select = document.querySelector("#docs-version-switcher-select");
-    if (!select) {
+    if (!list && !select) {
       return;
     }
 
@@ -249,14 +281,27 @@
       return releaseVersionPattern.test(entry.version);
     });
 
-    select.textContent = "";
-    appendVersionGroup(select, "Development", developmentVersions, location);
-    appendVersionGroup(select, "Releases", releaseVersions, location);
-    select.onchange = function () {
-      if (this.value) {
-        window.location.assign(this.value);
-      }
-    };
+    if (list) {
+      list.textContent = "";
+      appendVersionGroup(list, "Development", developmentVersions, location);
+      appendVersionGroup(list, "Releases", releaseVersions, location);
+    }
+
+    if (select) {
+      select.textContent = "";
+      appendSelectVersionGroup(
+        select,
+        "Development",
+        developmentVersions,
+        location,
+      );
+      appendSelectVersionGroup(select, "Releases", releaseVersions, location);
+      select.onchange = function () {
+        if (this.value) {
+          window.location.assign(this.value);
+        }
+      };
+    }
 
     const currentLabel = document.querySelector(".docs-version-switcher-current");
     if (!currentLabel) {
@@ -347,7 +392,8 @@
 
   async function initDocsVersionNavigation() {
     if (
-      !document.querySelector("#docs-version-switcher-select")
+      !document.querySelector("#docs-version-switcher-list")
+      && !document.querySelector("#docs-version-switcher-select")
       && !document.querySelector(".docs-version-banner")
     ) {
       return;
