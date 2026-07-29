@@ -126,6 +126,7 @@ sphinx_gallery_conf = {
     "within_subsection_order": "gallery_order.GalleryExampleOrder",
     "backreferences_dir": "gen_modules/backreferences",  # Where to store backreferences
     "doc_module": ("cnsplots",),  # The module containing your functions
+    "image_scrapers": ("theme_aware_matplotlib.theme_aware_matplotlib_scraper",),
     "reference_url": {
         "cnsplots": None,  # Module to create cross-references for
     },
