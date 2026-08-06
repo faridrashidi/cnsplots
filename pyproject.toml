@@ -3,112 +3,81 @@ name = "cnsplots"
 version = "0.6.0"
 description = "A comprehensive plotting library for bioinformatics and data visualization"
 readme = "README.md"
-license = { text = "BSD-3-Clause" }
 requires-python = ">=3.10,<4.0"
-keywords = ["plotting", "visualization", "bioinformatics"]
+license = "BSD-3-Clause"
+keywords = ["bioinformatics", "plotting", "visualization"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Topic :: Scientific/Engineering :: Visualization",
-    "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-    "adjustText",
-    "anndata",
-    "biopython",
-    "comprisk>=0.7,<0.8",
-    "gseapy",
-    "lifelines>=0.30,<0.31",
-    "lxml",
-    "matplotlib>=3.10,<3.11",
-    "matplotlib-venn",
-    "natsort",
-    "num2tex",
-    "numpy",
-    "palettable",
-    "pandas",
-    "patsy",
-    "pycomplexheatmap>=1.8.4,<1.9",
-    "scanpy",
-    "scikit-learn",
-    "scipy",
-    "seaborn>=0.13.2,<0.14",
-    "statannotations>=0.7.2,<0.8",
-    "statsmodels",
-    "upsetplot",
-]
-
-[project.optional-dependencies]
-dev = [
-    "bump-my-version",
-    "fastcluster",
-    "glasbey",
-    "ipykernel",
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-    "furo",
-    "myst-parser",
-    "sphinx<9; python_version < '3.11'",
-    "sphinx>=9,<9.1; python_version >= '3.11'",
-    "sphinx-autodoc-typehints",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinx-multiversion",
-    "sphinx-sitemap",
+  "adjustText",
+  "anndata",
+  "biopython",
+  "comprisk>=0.7,<0.8",
+  "gseapy",
+  "lifelines>=0.30,<0.31",
+  "lxml",
+  "matplotlib>=3.10,<3.11",
+  "matplotlib-venn",
+  "natsort",
+  "num2tex",
+  "numpy",
+  "palettable",
+  "pandas",
+  "patsy",
+  "pycomplexheatmap>=1.8.4,<1.9",
+  "scanpy",
+  "scikit-learn",
+  "scipy",
+  "seaborn>=0.13.2,<0.14",
+  "statannotations>=0.7.2,<0.8",
+  "statsmodels",
+  "upsetplot",
 ]
 
 [project.urls]
-Homepage = "https://github.com/faridrashidi/cnsplots"
 Documentation = "https://cnsplots.farid.one"
-Repository = "https://github.com/faridrashidi/cnsplots"
+Homepage = "https://github.com/faridrashidi/cnsplots"
 Issues = "https://github.com/faridrashidi/cnsplots/issues"
+Repository = "https://github.com/faridrashidi/cnsplots"
 
 [project.scripts]
 cnsplots = "cnsplots._cli:main"
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-cnsplots = [
-    "py.typed",
-    "_agent_skill/cnsplots/*.md",
-    "_agent_skill/cnsplots/agents/*.yaml",
-    "_agent_skill/cnsplots/references/*.md",
+[project.optional-dependencies]
+dev = [
+  "bump-my-version",
+  "fastcluster",
+  "glasbey",
+  "ipykernel",
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+  "furo",
+  "myst-parser",
+  "sphinx<9; python_version < '3.11'",
+  "sphinx>=9,<9.1; python_version >= '3.11'",
+  "sphinx-autodoc-typehints",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinx-gallery",
+  "sphinx-multiversion",
+  "sphinx-sitemap",
 ]
-"cnsplots.datasets" = ["_data/*.csv", "_data/showcase/*.webp"]
 
-[tool.ruff]
-target-version = "py310"
-line-length = 88
-src = ["src"]
-
-[tool.ruff.lint]
-select = ["E4", "E7", "E9", "F"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["cnsplots"]
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.rstcheck]
-report_level = "info"
-ignore_messages = '( No directive entry for.*|Hyperlink target.*|Unknown target name:.*|No (directive|role) entry for "(auto)?(class|method|property|function|func|mod|module)" in module "docutils\.parsers\.rst\.languages\.en"\.)'
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
 
 [tool.bumpversion]
 current_version = "0.6.0"
@@ -134,22 +103,9 @@ regex = true
 search = '(?ms)(\[\[package\]\]\nname = "cnsplots"\nversion = )"{current_version}"'
 replace = '\1"{new_version}"'
 
-[tool.ty.src]
-exclude = ["examples/", "docs/"]
-
-[tool.ty.rules]
-unresolved-import = "error"
-unresolved-attribute = "error"
-possibly-missing-attribute = "error"
-
 [tool.codespell]
 skip = ".git,.venv,*.lock"
 ignore-words-list = "thur,whis,fpr,socio-economic"
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
-addopts = "--cov=cnsplots --cov-report=term-missing --cov-fail-under=100"
 
 [tool.coverage.run]
 source = ["cnsplots"]
@@ -157,3 +113,46 @@ source = ["cnsplots"]
 [tool.coverage.report]
 show_missing = true
 fail_under = 100
+
+[tool.pytest.ini_options]
+addopts = "--cov=cnsplots --cov-report=term-missing --cov-fail-under=100"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.rstcheck]
+report_level = "info"
+ignore_messages = '( No directive entry for.*|Hyperlink target.*|Unknown target name:.*|No (directive|role) entry for "(auto)?(class|method|property|function|func|mod|module)" in module "docutils\.parsers\.rst\.languages\.en"\.)'
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cnsplots"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cnsplots = [
+  "py.typed",
+  "_agent_skill/cnsplots/*.md",
+  "_agent_skill/cnsplots/agents/*.yaml",
+  "_agent_skill/cnsplots/references/*.md",
+]
+"cnsplots.datasets" = ["_data/*.csv", "_data/showcase/*.webp"]
+
+[tool.ty.src]
+exclude = ["examples/", "docs/"]
+
+[tool.ty.rules]
+unresolved-import = "error"
+unresolved-attribute = "error"
+possibly-missing-attribute = "error"
