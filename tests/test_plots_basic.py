@@ -89,6 +89,47 @@ def test_boxplot_and_violinplot(
     assert ax3 is plt.gca()
 
 
+@pytest.mark.parametrize(
+    ("box_kwargs", "expected_color"),
+    [({}, "white"), ({"box_color": "#d95f02"}, "#d95f02")],
+)
+def test_violinplot_box_color(
+    categorical_df: pd.DataFrame,
+    box_kwargs: dict[str, Any],
+    expected_color: str,
+) -> None:
+    cns.figure(120, 120)
+    ax = cns.violinplot(
+        categorical_df,
+        x="group",
+        y="value",
+        hue="hue",
+        inner=None,
+        **box_kwargs,
+    )
+
+    box_patches = [patch for patch in ax.patches if isinstance(patch, PathPatch)]
+    assert box_patches
+    assert {patch.get_facecolor() for patch in box_patches} == {to_rgba(expected_color)}
+
+
+def test_violinplot_box_color_none_follows_hue(
+    categorical_df: pd.DataFrame,
+) -> None:
+    cns.figure(120, 120)
+    ax = cns.violinplot(
+        categorical_df,
+        x="group",
+        y="value",
+        hue="hue",
+        inner=None,
+        box_color=None,
+    )
+
+    box_patches = [patch for patch in ax.patches if isinstance(patch, PathPatch)]
+    assert len({patch.get_facecolor() for patch in box_patches}) > 1
+
+
 def test_barplot_and_lollipopplot(
     categorical_df: pd.DataFrame,
     monkeypatch: pytest.MonkeyPatch,

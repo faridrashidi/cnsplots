@@ -78,14 +78,15 @@ mp.get_axes("B").set_title("width=0.9 (wide)")
 # %%
 # Grouped violin plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``hue`` for side-by-side violins within each category.
+# Use ``hue`` for side-by-side violins within each category. Embedded boxes stay
+# white by default and can be colored independently with ``box_color``.
 cns.figure(180, 120)
 ax = cns.violinplot(
     data=tips,
     x="day",
     y="total_bill",
     hue="sex",
-    add_box=False,
+    box_color="white",
 )
 cns.take_legend_out()
 ax.set_title("Grouped Violin Plot")
