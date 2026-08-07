@@ -12,6 +12,7 @@ import pandas as pd
 import scipy as sp
 import seaborn as sns
 from matplotlib.axes import Axes
+from matplotlib.typing import ColorType
 
 import cnsplots._utils as utils
 from cnsplots._utils import _legend_fontsize
@@ -200,6 +201,7 @@ def violinplot(
     add_box: bool = True,
     add_count: bool = False,
     *,
+    box_color: ColorType | None = "white",
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
@@ -229,6 +231,9 @@ def violinplot(
         Whether to overlay a narrow box plot inside each violin.
     add_count : bool, default: False
         Whether to add sample size (n) labels above each violin.
+    box_color : matplotlib color or None, default: "white"
+        Color of the embedded box plots. Set to ``None`` to color boxes according
+        to *hue*.
     hue : str, optional
         Column name for grouping violins within each category.
     order : list of str, optional
@@ -275,12 +280,16 @@ def violinplot(
             "use 'add_count' instead"
         )
 
+    boxprops: dict[str, Any] = {"edgecolor": "black", "zorder": 2}
+    if box_color is not None:
+        boxprops["facecolor"] = box_color
+
     args = {
         "showfliers": False,
         "showcaps": False,
         "showbox": True,
         "linewidth": 0.4,
-        "boxprops": {"edgecolor": "black", "zorder": 2},
+        "boxprops": boxprops,
         "medianprops": {"color": "black", "linewidth": 0.8},
         "whiskerprops": {"color": "black"},
         "capprops": {"color": "none"},
@@ -292,7 +301,6 @@ def violinplot(
             "linewidth": 0,
         },
         "width": 0.2,
-        "color": "white",
     }
     plotting: dict[str, Any] = {
         "data": data,
