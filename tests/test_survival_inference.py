@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, cast
 
 import matplotlib.pyplot as plt
@@ -74,7 +75,7 @@ def test_survivalplot_trend_requires_complete_explicit_order(
             [
                 "High vs Low",
                 "HR = 0.38",
-                "95% CI 0.08–1.75",
+                "95% CI 0.08-1.75",
                 "Cox P = $0.21$",
             ],
         ),
@@ -83,7 +84,7 @@ def test_survivalplot_trend_requires_complete_explicit_order(
             [
                 "Low vs High",
                 "HR = 2.66",
-                "95% CI 0.57–12.43",
+                "95% CI 0.57-12.43",
                 "Cox P = $0.21$",
             ],
         ),
@@ -160,9 +161,23 @@ def test_survivalplot_uses_lower_left_default_location(
         "Log-rank P = $0.36$",
         "High vs Low",
         "HR = 0.38",
-        "95% CI 0.08–1.75",
+        "95% CI 0.08-1.75",
         "Cox P = $0.21$",
     ]
+
+
+def test_survivalplot_annotation_preserves_package_font_on_save(
+    survival_df: pd.DataFrame,
+    tmp_path: Path,
+) -> None:
+    with cns.settings.context(font_family="serif"):
+        cns.figure(120, 120)
+        ax = cns.survivalplot(survival_df, "time", "event", "group")
+        annotation = ax.texts[0]
+
+        cns.savefig(tmp_path / "survival.png")
+
+        assert annotation.get_fontfamily() == ["serif"]
 
 
 @pytest.mark.parametrize(

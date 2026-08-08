@@ -176,7 +176,7 @@ def test_survival_plots(
         [1, 5 / 6, 2 / 3, 2 / 3, 4 / 9, 4 / 9, 0],
     )
     assert ax.texts[0].get_text() == (
-        "Log-rank P = $0.6$\nHR = 0.68\n95% CI 0.15–3.06\nCox P = $0.62$"
+        "Log-rank P = $0.6$\nHR = 0.68\n95% CI 0.15-3.06\nCox P = $0.62$"
     )
     assert "omnibus log-rank test" in caplog.text
 
