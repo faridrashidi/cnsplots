@@ -396,7 +396,7 @@ def survivalplot(
         annotation_lines.extend(
             [
                 f"HR = {hazard_ratio:.2f}",
-                f"95% CI {ci1:.2f}\N{EN DASH}{ci2:.2f}",
+                f"95% CI {ci1:.2f}-{ci2:.2f}",
                 "Cox P = " + rf"${pair_p:.2g}$",
             ]
         )
