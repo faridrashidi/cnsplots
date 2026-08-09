@@ -541,6 +541,127 @@ def test_line_scatter_reg_and_slope_plots(
     assert ax6.get_legend() is not None
 
 
+def test_dumbbellplot_draws_two_points_per_category() -> None:
+    data = pd.DataFrame(
+        {
+            "pathway": ["A", "A", "B", "B", "C", "C"],
+            "score": [1.0, 3.0, 2.0, 5.0, 4.0, 6.0],
+            "condition": ["before", "after"] * 3,
+        }
+    )
+
+    cns.figure(120, 150)
+    ax = cns.dumbbellplot(data, x="pathway", y="score", hue="condition")
+    assert ax is plt.gca()
+    assert len(ax.lines) == 3
+    assert len(ax.collections) == 2
+    np.testing.assert_allclose(
+        [line.get_xdata() for line in ax.lines],
+        [[1.0, 3.0], [2.0, 5.0], [4.0, 6.0]],
+    )
+    assert [tick.get_text() for tick in ax.get_yticklabels()] == ["A", "B", "C"]
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == ["before", "after"]
+
+
+def test_dumbbellplot_custom_order_hue_order_and_ax() -> None:
+    data = pd.DataFrame(
+        {
+            "pathway": ["A", "A", "B", "B", "C", "C"],
+            "score": [1.0, 3.0, 2.0, 5.0, 4.0, 6.0],
+            "condition": ["before", "after"] * 3,
+        }
+    )
+    _, ax = plt.subplots()
+
+    result = cns.dumbbellplot(
+        data,
+        x="pathway",
+        y="score",
+        hue="condition",
+        order=["C", "A", "B"],
+        hue_order=["after", "before"],
+        markersize=12,
+        linewidth=2,
+        ax=ax,
+    )
+    assert result is ax
+    assert [tick.get_text() for tick in ax.get_yticklabels()] == ["C", "A", "B"]
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == ["after", "before"]
+
+
+def test_dumbbellplot_validates_inputs() -> None:
+    data = pd.DataFrame(
+        {
+            "pathway": ["A", "A", "B", "B", "C", "C"],
+            "score": [1.0, 3.0, 2.0, 5.0, 4.0, 6.0],
+            "condition": ["before", "after"] * 3,
+        }
+    )
+    with pytest.raises(TypeError, match="must be a pandas DataFrame"):
+        cns.dumbbellplot(cast(Any, []), x="pathway", y="score", hue="condition")
+    with pytest.raises(ValueError, match="not found in data"):
+        cns.dumbbellplot(data, x="missing", y="score", hue="condition")
+    with pytest.raises(ValueError, match="Data is empty"):
+        cns.dumbbellplot(data.iloc[0:0], x="pathway", y="score", hue="condition")
+    with pytest.raises(ValueError, match="must be numeric"):
+        cns.dumbbellplot(
+            data.assign(score=data["condition"]),
+            x="pathway",
+            y="score",
+            hue="condition",
+        )
+    with pytest.raises(ValueError, match="Null values found"):
+        cns.dumbbellplot(
+            data.assign(score=[1.0, None, 2.0, 3.0, 4.0, 5.0]),
+            x="pathway",
+            y="score",
+            hue="condition",
+        )
+    with pytest.raises(ValueError, match="exactly 2 unique values"):
+        cns.dumbbellplot(
+            data[data["condition"] == "before"],
+            x="pathway",
+            y="score",
+            hue="condition",
+        )
+    with pytest.raises(ValueError, match="hue_order"):
+        cns.dumbbellplot(
+            data,
+            x="pathway",
+            y="score",
+            hue="condition",
+            hue_order=["before", "before"],
+        )
+    with pytest.raises(ValueError, match="not present in data"):
+        cns.dumbbellplot(
+            data,
+            x="pathway",
+            y="score",
+            hue="condition",
+            order=["A", "D"],
+        )
+    duplicate = pd.concat([data, data.iloc[[0]]], ignore_index=True)
+    with pytest.raises(ValueError, match="exactly one"):
+        cns.dumbbellplot(
+            duplicate,
+            x="pathway",
+            y="score",
+            hue="condition",
+        )
+    incomplete = data.drop(index=[3])
+    with pytest.raises(ValueError, match="exactly one"):
+        cns.dumbbellplot(
+            incomplete,
+            x="pathway",
+            y="score",
+            hue="condition",
+        )
+
+
 def test_placeholderplot_renders_centered_placeholder() -> None:
     with cns.settings.context(title_fontsize=11, title_fontweight="normal"):
         cns.figure(180, 120)

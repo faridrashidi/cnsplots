@@ -22,6 +22,7 @@ signature and docstring before writing code.
 - `regplot`: fitted relationship with regression context.
 - `lineplot`: trends or repeated measurements over an ordered axis.
 - `slopeplot`: changes between conditions or time points.
+- `dumbbellplot`: two endpoints per category connected by a line.
 
 ## Matrices and classifications
 

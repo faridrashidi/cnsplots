@@ -38,6 +38,10 @@ if TYPE_CHECKING:
         assert_type(cns.histplot(data, x="x", ax=ax), Axes)
         assert_type(cns.lineplot(data, x="x", y="y", ax=ax), Axes)
         assert_type(cns.regplot(data, x="x", y="y", color=(0.1, 0.2, 0.3)), Axes)
+        assert_type(
+            cns.dumbbellplot(data, x="group", y="value", hue="condition", ax=ax),
+            Axes,
+        )
 
         panels = cns.multipanel()
         assert_type(panels.panel("A", color_cycle=("red", "blue")), Axes)

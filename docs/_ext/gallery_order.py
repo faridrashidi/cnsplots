@@ -55,6 +55,7 @@ GALLERY_CATEGORIES = [
             "regplot",
             "lineplot",
             "slopeplot",
+            "dumbbellplot",
         ],
     },
     {

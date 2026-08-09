@@ -31,6 +31,7 @@ PLOT_NAMES = [
     "scatterplot",
     "lineplot",
     "slopeplot",
+    "dumbbellplot",
 ]
 
 
@@ -74,6 +75,13 @@ def test_core_plots_draw_on_and_return_supplied_axes(
             "value": [1.0, 2.0, 2.0, 1.5],
             "condition": ["before", "after"] * 2,
             "subject": ["P1", "P1", "P2", "P2"],
+        }
+    )
+    dumbbell_data = pd.DataFrame(
+        {
+            "site": ["S1", "S1", "S2", "S2"],
+            "value": [1.0, 2.0, 2.5, 1.5],
+            "condition": ["before", "after"] * 2,
         }
     )
     plotters: list[tuple[str, Callable[[Axes], Axes]]] = [
@@ -126,6 +134,16 @@ def test_core_plots_draw_on_and_return_supplied_axes(
                 y="value",
                 hue="condition",
                 pair="subject",
+                ax=ax,
+            ),
+        ),
+        (
+            "dumbbellplot",
+            lambda ax: cns.dumbbellplot(
+                dumbbell_data,
+                x="site",
+                y="value",
+                hue="condition",
                 ax=ax,
             ),
         ),

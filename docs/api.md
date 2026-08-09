@@ -45,6 +45,7 @@ diagram object, respectively.
    regplot
    lineplot
    slopeplot
+   dumbbellplot
 ```
 
 ### Heatmaps & Matrix Plots

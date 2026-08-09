@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from ._heatmap import confusionplot as confusionplot
     from ._heatmap import dotplot as dotplot
     from ._heatmap import heatmapplot as heatmapplot
+    from ._regression import dumbbellplot as dumbbellplot
     from ._regression import lineplot as lineplot
     from ._regression import regplot as regplot
     from ._regression import scatterplot as scatterplot
@@ -47,6 +48,7 @@ _LAZY_IMPORTS = {
     "distplot": ("cnsplots.plots._distribution", "distplot"),
     "donutplot": ("cnsplots.plots._categorical", "donutplot"),
     "dotplot": ("cnsplots.plots._heatmap", "dotplot"),
+    "dumbbellplot": ("cnsplots.plots._regression", "dumbbellplot"),
     "forestplot": ("cnsplots.plots._specialized", "forestplot"),
     "gseaplot": ("cnsplots.plots._genomics", "gseaplot"),
     "heatmapplot": ("cnsplots.plots._heatmap", "heatmapplot"),

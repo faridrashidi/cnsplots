@@ -599,3 +599,187 @@ def slopeplot(
             set_sizes([12])
 
     return ax
+
+
+def dumbbellplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    hue: str,
+    *,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
+    markersize: float = 30,
+    linewidth: float = 1.5,
+    ax: Axes | None = None,
+) -> Axes:
+    """
+    Create a dumbbell plot comparing two numeric values per category.
+
+    This function draws one horizontal line per category, with two endpoints
+    colored by the two levels of ``hue``. It expects long-form data with
+    exactly one numeric value for each category and hue level.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the category labels plotted on the y-axis.
+    y : str
+        Column name for the numeric variable plotted on the x-axis.
+    hue : str
+        Column name with exactly two unique values defining the dumbbell
+        endpoints.
+    order : list of str, optional
+        Order of categories from bottom to top. Unlisted categories are
+        omitted.
+    hue_order : list of str, optional
+        Order of the two hue levels used for the left and right endpoints.
+    markersize : float, default: 30
+        Size of the endpoint markers.
+    linewidth : float, default: 1.5
+        Width of the connecting lines.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
+
+    See Also
+    --------
+    slopeplot : Create paired changes between two conditions.
+    lollipopplot : Create a lollipop plot with stems and dots.
+    scatterplot : Create a scatter plot without connecting lines.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> ax = cns.dumbbellplot(
+    ...     data=df,
+    ...     x="pathway",
+    ...     y="enrichment_score",
+    ...     hue="condition",
+    ... )
+    >>> ax.set_title("Pathway Enrichment Change")
+
+    >>> # Reverse category and endpoint order
+    >>> ax = cns.dumbbellplot(
+    ...     data=df,
+    ...     x="pathway",
+    ...     y="score",
+    ...     hue="timepoint",
+    ...     order=["Pathway C", "Pathway B", "Pathway A"],
+    ...     hue_order=["after", "before"],
+    ... )
+    """
+    # Validate inputs
+    validate_dataframe(data, "data", "dumbbellplot")
+    validate_columns_exist(data, [x, y, hue], "dumbbellplot")
+    validate_dataframe_not_empty(data, "dumbbellplot")
+    validate_no_nulls(data, [x, y, hue], "dumbbellplot")
+    validate_column_type(data, y, ["numeric"], "dumbbellplot")
+
+    observed_hues = list(data[hue].unique())
+    if len(observed_hues) != 2:
+        raise ValueError(
+            f"[dumbbellplot] Column '{hue}' must have exactly 2 unique values, "
+            f"found {len(observed_hues)}: {observed_hues}"
+        )
+    if hue_order is not None and (
+        len(hue_order) != 2 or set(hue_order) != set(observed_hues)
+    ):
+        raise ValueError(
+            "[dumbbellplot] 'hue_order' must contain both observed hue levels "
+            "exactly once."
+        )
+    hues = observed_hues if hue_order is None else hue_order
+
+    observed_categories = list(data[x].unique())
+    if order is not None:
+        missing_categories = [
+            category for category in order if category not in observed_categories
+        ]
+        if missing_categories:
+            raise ValueError(
+                "[dumbbellplot] 'order' lists categories not present in data: "
+                f"{missing_categories}"
+            )
+        categories = list(order)
+        plot_data = data[data[x].isin(categories)]
+    else:
+        categories = observed_categories
+        plot_data = data
+
+    if plot_data.duplicated([x, hue]).any():
+        raise ValueError(
+            f"[dumbbellplot] Each category must have exactly one '{y}' value "
+            f"for each '{hue}' level."
+        )
+    observed_count = len(plot_data[[x, hue]].drop_duplicates())
+    if observed_count != 2 * len(categories):
+        raise ValueError(
+            f"[dumbbellplot] Each category must have exactly one '{y}' value "
+            f"for each '{hue}' level."
+        )
+
+    colors = sns.color_palette(n_colors=2)
+    if ax is None:
+        ax = plt.gca()
+
+    positions = np.arange(len(categories))
+    starts: list[float] = []
+    ends: list[float] = []
+    position_values: list[int] = []
+    for i, category in enumerate(categories):
+        start = plot_data[
+            (plot_data[x] == category) & (plot_data[hue] == hues[0])
+        ].iloc[0][y]
+        end = plot_data[(plot_data[x] == category) & (plot_data[hue] == hues[1])].iloc[
+            0
+        ][y]
+        ax.plot(
+            [start, end],
+            [i, i],
+            color="gray",
+            linewidth=linewidth,
+            alpha=0.7,
+        )
+        starts.append(start)
+        ends.append(end)
+        position_values.append(i)
+    ax.scatter(
+        starts,
+        position_values,
+        color=colors[0],
+        s=markersize,
+        zorder=2,
+        label=hues[0],
+    )
+    ax.scatter(
+        ends,
+        position_values,
+        color=colors[1],
+        s=markersize,
+        zorder=2,
+        label=hues[1],
+    )
+
+    ax.set_yticks(positions)
+    ax.set_yticklabels(categories)
+    ax.set_xlabel(y)
+    ax.set_ylabel(x)
+
+    handles, labels = ax.get_legend_handles_labels()
+    if handles:
+        ax.legend(
+            handles[:2],
+            labels[:2],
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.15),
+            ncol=2,
+        )
+        _resize_legend_markers(ax.get_legend(), markersize)
+    return ax
