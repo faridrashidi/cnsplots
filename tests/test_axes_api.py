@@ -141,8 +141,8 @@ def test_core_plots_draw_on_and_return_supplied_axes(
             "dumbbellplot",
             lambda ax: cns.dumbbellplot(
                 dumbbell_data,
-                x="site",
-                y="value",
+                x="value",
+                y="site",
                 hue="condition",
                 ax=ax,
             ),

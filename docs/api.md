@@ -28,6 +28,7 @@ diagram object, respectively.
    stripplot
    barplot
    lollipopplot
+   dumbbellplot
    histplot
    distplot
    kdeplot
@@ -45,7 +46,6 @@ diagram object, respectively.
    regplot
    lineplot
    slopeplot
-   dumbbellplot
 ```
 
 ### Heatmaps & Matrix Plots

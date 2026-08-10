@@ -121,7 +121,7 @@ _LAZY_IMPORTS = {
     "distplot": ("cnsplots.plots._distribution", "distplot"),
     "donutplot": ("cnsplots.plots._categorical", "donutplot"),
     "dotplot": ("cnsplots.plots._heatmap", "dotplot"),
-    "dumbbellplot": ("cnsplots.plots._regression", "dumbbellplot"),
+    "dumbbellplot": ("cnsplots.plots._categorical", "dumbbellplot"),
     "forestplot": ("cnsplots.plots._specialized", "forestplot"),
     "gseaplot": ("cnsplots.plots._genomics", "gseaplot"),
     "heatmapplot": ("cnsplots.plots._heatmap", "heatmapplot"),

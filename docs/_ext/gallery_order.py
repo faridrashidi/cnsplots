@@ -30,6 +30,7 @@ GALLERY_CATEGORIES = [
             "stackplot",
             "barplot",
             "lollipopplot",
+            "dumbbellplot",
             "stripplot",
             "violinplot",
             "dotplot",
@@ -55,7 +56,6 @@ GALLERY_CATEGORIES = [
             "regplot",
             "lineplot",
             "slopeplot",
-            "dumbbellplot",
         ],
     },
     {

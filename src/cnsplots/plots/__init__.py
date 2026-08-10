@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ._categorical import barplot as barplot
     from ._categorical import donutplot as donutplot
+    from ._categorical import dumbbellplot as dumbbellplot
     from ._categorical import lollipopplot as lollipopplot
     from ._categorical import pieplot as pieplot
     from ._categorical import stackplot as stackplot
@@ -22,7 +23,6 @@ if TYPE_CHECKING:
     from ._heatmap import confusionplot as confusionplot
     from ._heatmap import dotplot as dotplot
     from ._heatmap import heatmapplot as heatmapplot
-    from ._regression import dumbbellplot as dumbbellplot
     from ._regression import lineplot as lineplot
     from ._regression import regplot as regplot
     from ._regression import scatterplot as scatterplot
@@ -48,7 +48,7 @@ _LAZY_IMPORTS = {
     "distplot": ("cnsplots.plots._distribution", "distplot"),
     "donutplot": ("cnsplots.plots._categorical", "donutplot"),
     "dotplot": ("cnsplots.plots._heatmap", "dotplot"),
-    "dumbbellplot": ("cnsplots.plots._regression", "dumbbellplot"),
+    "dumbbellplot": ("cnsplots.plots._categorical", "dumbbellplot"),
     "forestplot": ("cnsplots.plots._specialized", "forestplot"),
     "gseaplot": ("cnsplots.plots._genomics", "gseaplot"),
     "heatmapplot": ("cnsplots.plots._heatmap", "heatmapplot"),

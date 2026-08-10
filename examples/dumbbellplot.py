@@ -28,8 +28,8 @@ dumbbell_data = dumbbell_data.rename(columns={"sex": "condition"})
 cns.figure(180, 120)
 ax = cns.dumbbellplot(
     dumbbell_data,
-    x="day",
-    y="total_bill",
+    x="total_bill",
+    y="day",
     hue="condition",
 )
 
@@ -39,8 +39,8 @@ ax = cns.dumbbellplot(
 cns.figure(180, 120)
 ax = cns.dumbbellplot(
     dumbbell_data,
-    x="day",
-    y="total_bill",
+    x="total_bill",
+    y="day",
     hue="condition",
     order=["Thur", "Fri", "Sat", "Sun"],
     hue_order=["Female", "Male"],
@@ -56,8 +56,8 @@ mp = cns.multipanel(max_width=420)
 mp.panel("A", 160, 120)
 cns.dumbbellplot(
     dumbbell_data,
-    x="day",
-    y="total_bill",
+    x="total_bill",
+    y="day",
     hue="condition",
 )
 
@@ -65,7 +65,7 @@ mp.panel("B", 160, 120)
 weekend = dumbbell_data[dumbbell_data["day"].isin(["Sat", "Sun"])]
 cns.dumbbellplot(
     weekend,
-    x="day",
-    y="total_bill",
+    x="total_bill",
+    y="day",
     hue="condition",
 )
