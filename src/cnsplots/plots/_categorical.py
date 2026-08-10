@@ -15,9 +15,11 @@ import cnsplots._utils as utils
 from cnsplots._utils import _legend_fontsize, _resize_legend_markers
 from cnsplots._validation import (
     validate_column_exists,
+    validate_column_type,
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
+    validate_no_nulls,
 )
 
 LollipopPair = Union[tuple[str, str], tuple[tuple[str, str], tuple[str, str]]]
@@ -603,6 +605,194 @@ def lollipopplot(
     elif hue is not None and ax.get_legend() is None:
         ax.legend(title=hue)
 
+    return ax
+
+
+def dumbbellplot(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    hue: str,
+    *,
+    order: list[str] | None = None,
+    hue_order: list[str] | None = None,
+    markersize: float = 20,
+    linewidth: float = 1.5,
+    ax: Axes | None = None,
+) -> Axes:
+    """
+    Create a dumbbell plot comparing two numeric values per category.
+
+    This function draws one horizontal line per category, with two endpoints
+    colored by the two levels of ``hue``. It expects long-form data with
+    exactly one numeric value for each category and hue level.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The input DataFrame containing the data to be plotted.
+    x : str
+        Column name for the numeric variable plotted on the x-axis.
+    y : str
+        Column name for the category labels plotted on the y-axis.
+    hue : str
+        Column name with exactly two unique values defining the dumbbell
+        endpoints.
+    order : list of str, optional
+        Order of categories from bottom to top. Unlisted categories are
+        omitted.
+    hue_order : list of str, optional
+        Order of the two hue levels used for the left and right endpoints.
+    markersize : float, default: 20
+        Size of the endpoint markers (in points squared, passed to scatter
+        ``s``).
+    linewidth : float, default: 1.5
+        Width of the connecting lines.
+    ax : matplotlib.axes.Axes, optional
+        Axes on which to draw the plot. Defaults to the current Axes.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The matplotlib Axes object containing the plot.
+
+    See Also
+    --------
+    lollipopplot : Create a lollipop plot with stems and dots.
+    slopeplot : Create paired changes between two conditions.
+    scatterplot : Create a scatter plot without connecting lines.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> ax = cns.dumbbellplot(
+    ...     data=df,
+    ...     x="enrichment_score",
+    ...     y="pathway",
+    ...     hue="condition",
+    ... )
+    >>> ax.set_title("Pathway Enrichment Change")
+
+    >>> # Reverse category and endpoint order
+    >>> ax = cns.dumbbellplot(
+    ...     data=df,
+    ...     x="score",
+    ...     y="pathway",
+    ...     hue="timepoint",
+    ...     order=["Pathway C", "Pathway B", "Pathway A"],
+    ...     hue_order=["after", "before"],
+    ... )
+    """
+    # Validate inputs
+    validate_dataframe(data, "data", "dumbbellplot")
+    validate_columns_exist(data, [x, y, hue], "dumbbellplot")
+    validate_dataframe_not_empty(data, "dumbbellplot")
+    validate_no_nulls(data, [x, y, hue], "dumbbellplot")
+    validate_column_type(data, x, ["numeric"], "dumbbellplot")
+
+    observed_hues = list(data[hue].unique())
+    if len(observed_hues) != 2:
+        raise ValueError(
+            f"[dumbbellplot] Column '{hue}' must have exactly 2 unique values, "
+            f"found {len(observed_hues)}: {observed_hues}"
+        )
+    if hue_order is not None and (
+        len(hue_order) != 2 or set(hue_order) != set(observed_hues)
+    ):
+        raise ValueError(
+            "[dumbbellplot] 'hue_order' must contain both observed hue levels "
+            "exactly once."
+        )
+    hues = observed_hues if hue_order is None else hue_order
+
+    observed_categories = list(data[y].unique())
+    if order is not None:
+        if len(order) == 0:
+            raise ValueError(
+                "[dumbbellplot] 'order' must contain at least one category."
+            )
+        duplicate_categories = sorted(
+            {category for category in order if order.count(category) > 1}
+        )
+        if duplicate_categories:
+            raise ValueError(
+                "[dumbbellplot] 'order' contains duplicate categories: "
+                f"{duplicate_categories}"
+            )
+        missing_categories = [
+            category for category in order if category not in observed_categories
+        ]
+        if missing_categories:
+            raise ValueError(
+                "[dumbbellplot] 'order' lists categories not present in data: "
+                f"{missing_categories}"
+            )
+        categories = list(order)
+        plot_data = data[data[y].isin(categories)]
+    else:
+        categories = observed_categories
+        plot_data = data
+
+    if plot_data.duplicated([y, hue]).any():
+        raise ValueError(
+            f"[dumbbellplot] Each category must have exactly one '{x}' value "
+            f"for each '{hue}' level."
+        )
+    pivoted = plot_data.pivot(index=y, columns=hue, values=x)
+    if np.any(pivoted.isna().to_numpy()):
+        missing_categories = pivoted.index[pivoted.isna().any(axis=1)].tolist()
+        raise ValueError(
+            "[dumbbellplot] Categories are missing an "
+            f"'{x}' value for one of the '{hue}' levels: {missing_categories}"
+        )
+    pivoted = pivoted.loc[categories]
+
+    colors = sns.color_palette(n_colors=2)
+    if ax is None:
+        ax = plt.gca()
+
+    positions = np.arange(len(categories))
+    starts = pivoted[hues[0]].to_numpy()
+    ends = pivoted[hues[1]].to_numpy()
+    for start, end, position in zip(starts, ends, positions):
+        ax.plot(
+            [start, end],
+            [position, position],
+            color="gray",
+            linewidth=linewidth,
+            alpha=0.7,
+        )
+    ax.scatter(
+        starts,
+        positions,
+        color=colors[0],
+        s=markersize,
+        zorder=2,
+        label=hues[0],
+    )
+    ax.scatter(
+        ends,
+        positions,
+        color=colors[1],
+        s=markersize,
+        zorder=2,
+        label=hues[1],
+    )
+
+    ax.set_yticks(positions)
+    ax.set_yticklabels(categories)
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(
+        handles[:2],
+        labels[:2],
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.15),
+        ncol=2,
+    )
+    _resize_legend_markers(ax.get_legend(), markersize)
     return ax
 
 

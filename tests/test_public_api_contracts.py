@@ -33,6 +33,7 @@ _PUBLIC_PLOT_NAMES = frozenset(
         "distplot",
         "donutplot",
         "dotplot",
+        "dumbbellplot",
         "forestplot",
         "gseaplot",
         "heatmapplot",
@@ -213,7 +214,7 @@ assert not {
     src_path = Path(__file__).parents[1] / "src"
     no_site_script = (
         f"import sys; sys.path.insert(0, {str(src_path)!r}); "
-        "import cnsplots; assert len(cnsplots.__all__) == 63"
+        "import cnsplots; assert len(cnsplots.__all__) == 64"
     )
     subprocess.run([sys.executable, "-S", "-c", no_site_script], check=True)
 
@@ -411,6 +412,7 @@ def test_public_stackplot_signature_contract() -> None:
         ("lineplot", {"hue", "hue_order"}, set()),
         ("regplot", {"hue", "hue_order"}, set()),
         ("slopeplot", {"hue", "hue_order"}, set()),
+        ("dumbbellplot", {"hue", "hue_order", "order"}, set()),
     ],
 )
 def test_public_plot_naming_contract(

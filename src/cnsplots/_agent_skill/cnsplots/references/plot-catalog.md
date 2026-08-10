@@ -10,6 +10,7 @@ signature and docstring before writing code.
 - `stripplot`: individual observations across categories.
 - `barplot`: group estimates displayed as bars.
 - `lollipopplot`: values or summaries with stems and markers.
+- `dumbbellplot`: two endpoints per category connected by a line.
 - `histplot`: binned univariate or bivariate distributions.
 - `kdeplot`: smoothed density estimates.
 - `distplot`: compact distribution visualization.

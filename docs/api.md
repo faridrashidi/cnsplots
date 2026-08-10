@@ -28,6 +28,7 @@ diagram object, respectively.
    stripplot
    barplot
    lollipopplot
+   dumbbellplot
    histplot
    distplot
    kdeplot

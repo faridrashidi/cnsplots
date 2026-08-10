@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from cycler import cycler
+from matplotlib.collections import PathCollection
 from matplotlib.colors import to_hex, to_rgba
 from matplotlib.patches import (
     Circle,
@@ -539,6 +540,76 @@ def test_line_scatter_reg_and_slope_plots(
     cns.figure(120, 120)
     ax6 = cns.slopeplot(slope_df, x="site", y="value", hue="label", pair="site")
     assert ax6.get_legend() is not None
+
+
+def test_dumbbellplot_draws_two_points_per_category() -> None:
+    data = pd.DataFrame(
+        {
+            "pathway": ["A", "A", "B", "B", "C", "C"],
+            "score": [1.0, 3.0, 2.0, 5.0, 4.0, 6.0],
+            "condition": ["before", "after"] * 3,
+        }
+    )
+
+    cns.figure(120, 150)
+    ax = cns.dumbbellplot(data, x="score", y="pathway", hue="condition")
+    assert ax is plt.gca()
+    assert len(ax.lines) == 3
+    assert len(ax.collections) == 2
+    np.testing.assert_allclose(
+        [line.get_xdata() for line in ax.lines],
+        [[1.0, 3.0], [2.0, 5.0], [4.0, 6.0]],
+    )
+    assert [tick.get_text() for tick in ax.get_yticklabels()] == ["A", "B", "C"]
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == ["before", "after"]
+    assert ax.get_xlabel() == "score"
+    assert ax.get_ylabel() == "pathway"
+
+
+def test_dumbbellplot_custom_order_hue_order_and_ax() -> None:
+    data = pd.DataFrame(
+        {
+            "pathway": ["A", "A", "B", "B", "C", "C"],
+            "score": [1.0, 3.0, 2.0, 5.0, 4.0, 6.0],
+            "condition": ["before", "after"] * 3,
+        }
+    )
+    _, ax = plt.subplots()
+
+    result = cns.dumbbellplot(
+        data,
+        x="score",
+        y="pathway",
+        hue="condition",
+        order=["C", "A", "B"],
+        hue_order=["after", "before"],
+        markersize=12,
+        linewidth=2,
+        ax=ax,
+    )
+    assert result is ax
+    assert [tick.get_text() for tick in ax.get_yticklabels()] == ["C", "A", "B"]
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == ["after", "before"]
+    np.testing.assert_allclose(
+        [line.get_xdata() for line in ax.lines],
+        [[6.0, 4.0], [3.0, 1.0], [5.0, 2.0]],
+    )
+    np.testing.assert_allclose(
+        np.asarray(ax.collections[0].get_offsets(), dtype=float),
+        [[6.0, 0.0], [3.0, 1.0], [5.0, 2.0]],
+    )
+    np.testing.assert_allclose(
+        np.asarray(ax.collections[1].get_offsets(), dtype=float),
+        [[4.0, 0.0], [1.0, 1.0], [2.0, 2.0]],
+    )
+    assert ax.lines[0].get_linewidth() == 2
+    for collection in ax.collections:
+        assert isinstance(collection, PathCollection)
+        np.testing.assert_allclose(collection.get_sizes(), [12.0])
 
 
 def test_placeholderplot_renders_centered_placeholder() -> None:

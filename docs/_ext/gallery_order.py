@@ -30,6 +30,7 @@ GALLERY_CATEGORIES = [
             "stackplot",
             "barplot",
             "lollipopplot",
+            "dumbbellplot",
             "stripplot",
             "violinplot",
             "dotplot",
