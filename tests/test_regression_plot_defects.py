@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.collections import PathCollection
 
 import cnsplots as cns
@@ -56,6 +57,46 @@ def test_regplot_supports_spearman_correlation(grouping: str | None) -> None:
 
     assert ax.texts
     assert all(r"$\rho$=1.00," in text.get_text() for text in ax.texts)
+
+
+@pytest.mark.parametrize("grouping", [None, "hue", "color"])
+def test_regplot_can_add_regression_equations(grouping: str | None) -> None:
+    data = pd.DataFrame(
+        {
+            "x": [0.0, 1.0, 0.0, 1.0],
+            "y": [1.0, 3.0, -2.0, 1.0],
+            "group": ["A", "A", "B", "B"],
+        }
+    )
+
+    cns.figure(120, 120)
+    kwargs: dict[str, Any] = {"add_equation": True}
+    if grouping is not None:
+        kwargs[grouping] = "group"
+    ax = cns.regplot(data, x="x", y="y", **kwargs)
+
+    equations = [text for text in ax.texts if "y =" in text.get_text()]
+    assert len(equations) == (2 if grouping == "hue" else 1)
+    assert equations[0].get_position() == (0.95, 0.05)
+    assert equations[0].get_horizontalalignment() == "right"
+    assert equations[0].get_verticalalignment() == "bottom"
+    patch = equations[0].get_bbox_patch()
+    assert patch is not None
+    assert patch.get_alpha() == 1
+    assert patch.get_facecolor()[-1] == 1
+    assert patch.get_edgecolor()[-1] == 0
+    if grouping == "hue":
+        assert equations[0].get_text() == "A: y = 2.00x + 1.00\nR² = 1.000"
+        assert equations[1].get_text() == "B: y = 3.00x - 2.00\nR² = 1.000"
+        assert equations[1].get_position() == pytest.approx((0.95, 0.23))
+    if grouping is not None:
+        legend = ax.get_legend()
+        assert legend is not None
+        ax.figure.canvas.draw()
+        renderer = cast(FigureCanvasAgg, ax.figure.canvas).get_renderer()
+        assert (
+            legend.get_window_extent(renderer).x0 >= ax.get_window_extent(renderer).x1
+        )
 
 
 def test_regplot_rejects_unknown_correlation_method() -> None:
