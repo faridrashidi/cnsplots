@@ -173,6 +173,14 @@ def survivalplot(
     hue_order: list[str] | None = None,
     time_label: str = "Time",
     *,
+    ci_show: bool = False,
+    show_risk_table: bool = False,
+    risk_table_rows: tuple[str, ...] | None = ("At risk",),
+    risk_table_ypos: float = -0.2,
+    xticks: np.ndarray | Sequence[int | float] | None = None,
+    show_median_survival: bool = False,
+    landmark_time: float | None = None,
+    rmst_time: float | None = None,
     overall_test: Literal["logrank", "trend"] = "logrank",
     pairs: list[tuple[str, str]] | None = None,
     show_hazard_ratio: bool = True,
@@ -200,6 +208,29 @@ def survivalplot(
         Order of groups from hue to display and compare.
     time_label : str, default: "Time"
         Label for the time axis, including units when applicable.
+    ci_show : bool, default: False
+        Whether to display pointwise confidence bands for the Kaplan-Meier curves.
+    show_risk_table : bool, default: False
+        Whether to display a risk table below the plot.
+    risk_table_rows : tuple of str or None, default: ('At risk',)
+        Which rows to show in the risk table. Pass ``None`` to show at-risk,
+        censored, and event counts.
+    risk_table_ypos : float, default: -0.2
+        Vertical position of the risk table relative to the plot.
+    xticks : array-like, optional
+        Specific x-axis tick positions. These positions are also used by the risk
+        table when it is shown.
+    show_median_survival : bool, default: False
+        Whether to draw median-survival guides and include each group's median in
+        the statistical annotation. Medians that are not observed are reported as
+        ``not reached``.
+    landmark_time : float, optional
+        Time at which to mark and report each group's Kaplan-Meier survival
+        probability. For exactly two groups, also reports the two-sided fixed-time
+        log-minus-log comparison p-value.
+    rmst_time : float, optional
+        Truncation time through which to compute and report each group's restricted
+        mean survival time (RMST).
     overall_test : {'logrank', 'trend'}, default: 'logrank'
         Test used for the overall p-value. ``'logrank'`` performs a categorical
         omnibus log-rank test. ``'trend'`` performs a one-degree-of-freedom Cox
@@ -222,7 +253,8 @@ def survivalplot(
         ``'upper right'``, ``'center left'``, ``'center'``, ``'center right'``,
         ``'right'``, ``'lower left'``, ``'lower center'``, or ``'lower right'``.
     ax : matplotlib.axes.Axes, optional
-        Axes to draw on. If None, uses the current axes.
+        Axes to draw on. If None, uses the current axes. Any risk table is linked
+        to this axes and created on the same figure.
 
     Returns
     -------
@@ -245,6 +277,11 @@ def survivalplot(
     ...     hue_order=["control", "drug_a", "drug_b"],
     ...     time_label="Time (months)",
     ...     pairs=[("control", "drug_b")],
+    ...     ci_show=True,
+    ...     show_risk_table=True,
+    ...     show_median_survival=True,
+    ...     landmark_time=12,
+    ...     rmst_time=24,
     ... )
     >>> ax.set_title("Overall Survival by Treatment")
     """
@@ -263,7 +300,12 @@ def survivalplot(
     )
 
     import lifelines as ll
-    from lifelines.statistics import multivariate_logrank_test
+    from lifelines.plotting import add_at_risk_counts
+    from lifelines.statistics import (
+        multivariate_logrank_test,
+        survival_difference_at_fixed_point_in_time_test,
+    )
+    from lifelines.utils import restricted_mean_survival_time
 
     data = data.copy()
     observed_groups = list(data[hue].unique())
@@ -285,6 +327,29 @@ def survivalplot(
     if not has_explicit_order:
         hue_order = observed_groups
     assert hue_order is not None
+
+    common_follow_up = float(data.groupby(hue, observed=True)[duration].max().min())
+    for parameter_name, analysis_time in (
+        ("landmark_time", landmark_time),
+        ("rmst_time", rmst_time),
+    ):
+        if analysis_time is None:
+            continue
+        if (
+            isinstance(analysis_time, bool)
+            or not isinstance(analysis_time, (int, float, np.integer, np.floating))
+            or not np.isfinite(analysis_time)
+            or analysis_time <= 0
+        ):
+            raise ValueError(
+                f"[survivalplot] Parameter '{parameter_name}' must be a finite "
+                f"positive number, got {analysis_time!r}"
+            )
+        if analysis_time > common_follow_up:
+            raise ValueError(
+                f"[survivalplot] Parameter '{parameter_name}' must not exceed the "
+                f"common follow-up time ({common_follow_up:g}), got {analysis_time!r}"
+            )
 
     resolved_pairs: list[tuple[str, str]] = []
     if show_hazard_ratio:
@@ -314,21 +379,37 @@ def survivalplot(
         ax = plt.gca()
     data[hue] = pd.Categorical(data[hue], categories=hue_order, ordered=True)
     data = data.sort_values(hue)
-    kmf = ll.KaplanMeierFitter()
+    fitters: list[Any] = []
+    curve_colors: list[Any] = []
     for group in hue_order:
         df = data[data[hue] == group]
         label = f"{group} (n={df.shape[0]})"
+        if show_risk_table:
+            label = group
+        kmf = ll.KaplanMeierFitter()
         kmf.fit(df[duration], df[event], label=label)
+        fitters.append(kmf)
         kmf.plot_survival_function(
             ax=ax,
             linewidth=1,
-            ci_show=False,
+            ci_show=ci_show,
             show_censors=True,
             censor_styles={"ms": 3},
         )
+        curve = next(line for line in ax.lines if line.get_label() == label)
+        curve_colors.append(curve.get_color())
     ax.set_ylim(-0.05, 1.01)
     ax.set_xlabel(time_label)
     ax.set_ylabel("Survival probability")
+    if xticks is not None:
+        specified_xticks = np.asarray(list(xticks), dtype=float)
+        if specified_xticks.size > 0:
+            ax.set_xticks(specified_xticks)
+            current_xlim = ax.get_xlim()
+            ax.set_xlim(
+                min(current_xlim[0], specified_xticks.min()),
+                max(current_xlim[1], specified_xticks.max()),
+            )
 
     if overall_test == "logrank":
         try:
@@ -405,6 +486,75 @@ def survivalplot(
             "Pairwise hazard ratios and unadjusted two-sided P-values were determined "
             "by Cox proportional hazards models."
         )
+
+    if show_median_survival:
+        annotation_lines.append("Median survival")
+        for group, fitter, color in zip(hue_order, fitters, curve_colors, strict=True):
+            median = float(fitter.median_survival_time_)
+            if np.isfinite(median):
+                annotation_lines.append(f"{group} = {median:g}")
+                ax.hlines(
+                    0.5,
+                    0,
+                    median,
+                    colors=color,
+                    linestyles=":",
+                    linewidth=0.8,
+                )
+                ax.vlines(
+                    median,
+                    0,
+                    0.5,
+                    colors=color,
+                    linestyles=":",
+                    linewidth=0.8,
+                )
+            else:
+                annotation_lines.append(f"{group} = not reached")
+
+    analysis_guide_times = set()
+    if landmark_time is not None:
+        landmark_time = float(landmark_time)
+        analysis_guide_times.add(landmark_time)
+        landmark_estimates = [
+            float(fitter.predict(landmark_time)) for fitter in fitters
+        ]
+        annotation_lines.append(f"Survival at {landmark_time:g}")
+        for group, estimate, color in zip(
+            hue_order, landmark_estimates, curve_colors, strict=True
+        ):
+            annotation_lines.append(f"{group} = {estimate:.2f}")
+            ax.scatter(
+                landmark_time,
+                estimate,
+                color=color,
+                s=12,
+                zorder=3,
+            )
+        if len(fitters) == 2 and all(
+            0 < estimate < 1 for estimate in landmark_estimates
+        ):
+            landmark_result = survival_difference_at_fixed_point_in_time_test(
+                landmark_time, fitters[0], fitters[1]
+            )
+            landmark_p = num2tex.num2tex(landmark_result.p_value, precision=2)
+            annotation_lines.append("Landmark P = " + rf"${landmark_p:.2g}$")
+            logger.info(
+                "Landmark P-value was determined by a two-sided fixed-time "
+                "log-minus-log test."
+            )
+
+    if rmst_time is not None:
+        rmst_time = float(rmst_time)
+        analysis_guide_times.add(rmst_time)
+        annotation_lines.append(f"RMST to {rmst_time:g}")
+        for group, fitter in zip(hue_order, fitters, strict=True):
+            rmst = restricted_mean_survival_time(fitter, t=rmst_time)
+            annotation_lines.append(f"{group} = {rmst:.2f}")
+
+    for analysis_time in sorted(analysis_guide_times):
+        ax.axvline(analysis_time, color="0.5", linestyle="--", linewidth=0.8)
+
     _add_pvalue_annotation(ax, "\n".join(annotation_lines), pvalue_loc)
 
     legend = ax.get_legend()
@@ -413,6 +563,22 @@ def survivalplot(
             set_linewidth = getattr(handle, "set_linewidth", None)
             if callable(set_linewidth):
                 set_linewidth(1.7)
+
+    if show_risk_table:
+        rows = None if risk_table_rows is None else list(risk_table_rows)
+        visible_xticks = np.asarray(ax.get_xticks())
+        visible_xticks = visible_xticks[
+            (visible_xticks >= ax.get_xlim()[0] - 1e-8)
+            & (visible_xticks <= ax.get_xlim()[1] + 1e-8)
+        ]
+        add_at_risk_counts(
+            *fitters,
+            ax=ax,
+            rows_to_show=rows,
+            ypos=risk_table_ypos,
+            xticks=visible_xticks.tolist(),
+            fig=ax.figure,
+        )
 
     return ax
 
