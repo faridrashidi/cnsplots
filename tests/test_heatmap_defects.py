@@ -150,6 +150,25 @@ def test_heatmapplot_accepts_dataframe(
     pd.testing.assert_frame_equal(plotter.data2d, data)
 
 
+def test_heatmapplot_centers_ylabel_on_visible_heatmap() -> None:
+    data = pd.DataFrame(np.arange(12).reshape(4, 3))
+
+    plotter = cns.heatmapplot(
+        data,
+        xlabel="Features",
+        ylabel="Samples",
+        row_cluster=False,
+        col_cluster=False,
+    )
+    plotter.ax.figure.canvas.draw()
+
+    ylabel_box = plotter.ax.yaxis.label.get_window_extent()
+    heatmap_box = plotter.ax_heatmap.get_window_extent()
+    assert (ylabel_box.y0 + ylabel_box.y1) / 2 == pytest.approx(
+        (heatmap_box.y0 + heatmap_box.y1) / 2
+    )
+
+
 def test_heatmapplot_accepts_ndarray(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
