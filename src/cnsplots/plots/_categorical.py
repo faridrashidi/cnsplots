@@ -9,6 +9,7 @@ import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.container import BarContainer
 from matplotlib.patches import Patch
+from matplotlib.textpath import TextPath
 from scipy import stats
 
 import cnsplots._utils as utils
@@ -27,6 +28,38 @@ LollipopError = float | tuple[float, float]
 
 _LOLLIPOP_BOOTSTRAP_SAMPLES = 1000
 _LOLLIPOP_BOOTSTRAP_SEED = 0
+_BAR_LABEL_PADDING = 2
+_BAR_LABEL_PVALUE_GAP = 2
+_DEFAULT_PVALUE_GROUP_OFFSET = 0.06
+
+
+def _bar_label_pvalue_clearance(
+    ax: Axes,
+    labels: list[Any],
+    *,
+    orient: str,
+) -> float:
+    """Return enough axes-relative clearance for p-values above bar labels."""
+    visible_labels = [label for label in labels if label.get_text()]
+    if orient == "v":
+        label_extent = max(label.get_fontsize() for label in visible_labels)
+        axes_extent = ax.bbox.height * 72 / ax.figure.dpi
+    else:
+        label_extent = max(
+            TextPath(
+                (0, 0),
+                label.get_text(),
+                prop=label.get_fontproperties(),
+            )
+            .get_extents()
+            .width
+            for label in visible_labels
+        )
+        axes_extent = ax.bbox.width * 72 / ax.figure.dpi
+    required_clearance = (
+        label_extent + _BAR_LABEL_PADDING + _BAR_LABEL_PVALUE_GAP
+    ) / axes_extent
+    return max(_DEFAULT_PVALUE_GROUP_OFFSET, required_clearance)
 
 
 def _resolve_palette_column(
@@ -313,6 +346,7 @@ def barplot(
     if ax is None:
         ax = plt.gca()
     ax = sns.barplot(ax=ax, **plotting)
+    bar_labels = []
     if add_tip:
         for container in (
             item for item in ax.containers if isinstance(item, BarContainer)
@@ -321,15 +355,32 @@ def barplot(
                 "" if pd.isna(value) else str(round(value, 2))
                 for value in container.datavalues
             ]
-            ax.bar_label(
-                container,
-                labels=labels,
-                padding=2,
-                color="black",
-                fontsize=_legend_fontsize(),
+            bar_labels.extend(
+                ax.bar_label(
+                    container,
+                    labels=labels,
+                    padding=_BAR_LABEL_PADDING,
+                    color="black",
+                    fontsize=_legend_fontsize(),
+                )
             )
     if pairs is not None:
-        utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+        pvalue_kwargs = {}
+        if bar_labels:
+            orient = "h" if pd.api.types.is_numeric_dtype(data[x]) else "v"
+            pvalue_kwargs["label_clearance"] = _bar_label_pvalue_clearance(
+                ax,
+                bar_labels,
+                orient=orient,
+            )
+        utils._p_value_helper(
+            "t-test_welch",
+            data,
+            ax,
+            plotting,
+            pairs,
+            **pvalue_kwargs,
+        )
     if show_legend:
         ax.legend(
             handles=legend_handles,
