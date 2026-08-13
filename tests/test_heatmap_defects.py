@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import types
 from pathlib import Path
+from typing import Any, cast
 
 import anndata as ad
 import matplotlib.pyplot as plt
@@ -132,3 +133,60 @@ def test_heatmapplot_preserves_missing_x_error() -> None:
 
     with pytest.raises(ValueError, match="X is None, cannot convert to dataframe"):
         cns.heatmapplot(adata)
+
+
+def test_heatmapplot_accepts_dataframe(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame(
+        [[1.0, 2.0], [3.0, 4.0]],
+        index=pd.Index(["sample_1", "sample_2"]),
+        columns=pd.Index(["feature_1", "feature_2"]),
+    )
+    _stub_plotter(monkeypatch)
+
+    plotter = cns.heatmapplot(data)
+
+    pd.testing.assert_frame_equal(plotter.data2d, data)
+
+
+def test_heatmapplot_accepts_ndarray(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = np.array([[1.0, 2.0], [3.0, 4.0]])
+    _stub_plotter(monkeypatch)
+
+    plotter = cns.heatmapplot(data)
+
+    pd.testing.assert_frame_equal(plotter.data2d, pd.DataFrame(data))
+
+
+@pytest.mark.parametrize("data", [pd.DataFrame(), np.empty((0, 2))])
+def test_heatmapplot_rejects_empty_tabular_data(data: Any) -> None:
+    with pytest.raises(ValueError, match="Data is empty"):
+        cns.heatmapplot(data)
+
+
+def test_heatmapplot_rejects_non_matrix_input() -> None:
+    with pytest.raises(TypeError, match="AnnData, pandas DataFrame, or numpy ndarray"):
+        cns.heatmapplot(cast(Any, [[1.0, 2.0], [3.0, 4.0]]))
+
+    with pytest.raises(ValueError, match="two-dimensional"):
+        cns.heatmapplot(np.ones((2, 2, 2)))
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"layer": "scaled"},
+        {"row_annotation": ["group"]},
+        {"col_annotation": ["group"]},
+        {"row_split": "group"},
+        {"col_split": "group"},
+    ],
+)
+def test_heatmapplot_rejects_anndata_options_for_dataframe(
+    kwargs: dict[str, Any],
+) -> None:
+    with pytest.raises(ValueError, match="only supported for AnnData"):
+        cns.heatmapplot(pd.DataFrame([[1.0]]), **kwargs)
