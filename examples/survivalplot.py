@@ -40,6 +40,75 @@ plt.title("Kaplan-Meier Survival Curves")
 
 
 # %%
+# Confidence bands and median survival
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Combine pointwise confidence bands with median-survival guides. The annotation
+# reports a group's median as ``not reached`` when its curve never falls to 0.5.
+cns.figure(150, 160)
+ax = cns.survivalplot(
+    data=waltons,
+    duration="T",
+    event="E",
+    hue="group",
+    hue_order=["miR-137", "control"],
+    ci_show=True,
+    show_median_survival=True,
+    show_hazard_ratio=False,
+    pvalue_loc="upper right",
+)
+ax.set_xlabel("Time")
+_ = ax.legend(loc="lower left")
+plt.title("Confidence Bands and Median Survival")
+
+
+# %%
+# Landmark analysis with a risk table
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Mark 36 time units, report each group's survival probability there, and run
+# the two-group fixed-time comparison. The same ticks are used by the risk table.
+cns.figure(170, 170)
+ax = cns.survivalplot(
+    data=waltons,
+    duration="T",
+    event="E",
+    hue="group",
+    hue_order=["miR-137", "control"],
+    landmark_time=36,
+    show_risk_table=True,
+    risk_table_ypos=-0.25,
+    xticks=np.arange(0, 61, 12),
+    show_hazard_ratio=False,
+    pvalue_loc="upper right",
+)
+ax.set_xlabel("Time")
+_ = ax.legend(loc="lower left")
+plt.title("36-Unit Landmark with Risk Table")
+
+
+# %%
+# Landmark survival and RMST
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use a shared horizon to compare survival probability at 48 time units and the
+# area under each survival curve through that time. A single dashed guide marks
+# the common landmark and RMST truncation time.
+cns.figure(150, 170)
+ax = cns.survivalplot(
+    data=waltons,
+    duration="T",
+    event="E",
+    hue="group",
+    hue_order=["miR-137", "control"],
+    landmark_time=48,
+    rmst_time=48,
+    show_hazard_ratio=False,
+    pvalue_loc="upper right",
+)
+ax.set_xlabel("Time")
+_ = ax.legend(loc="lower left")
+plt.title("48-Unit Survival and RMST")
+
+
+# %%
 # Survival plot with legend outside
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Move legend to avoid overlapping curves.
