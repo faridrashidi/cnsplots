@@ -69,6 +69,33 @@ print(f"Row clusters: {len(cmp.row_order)}, Col clusters: {len(cmp.col_order)}")
 
 
 # %%
+# Heatmap from a DataFrame
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Pass a numeric DataFrame directly without converting it to AnnData. Its index and
+# columns become the heatmap labels. A two-dimensional NumPy array can be passed in
+# the same way and uses integer labels.
+expression_df = pd.DataFrame(
+    np.random.default_rng(42).normal(size=(12, 8)),
+    index=pd.Index([f"Sample {index + 1}" for index in range(12)]),
+    columns=pd.Index([f"Feature {index + 1}" for index in range(8)]),
+)
+
+cns.figure(200, 220)
+cmp = cns.heatmapplot(
+    expression_df,
+    label="Value",
+    xlabel="Features",
+    ylabel="Samples",
+    row_cluster=True,
+    col_cluster=True,
+    show_rownames=True,
+    show_colnames=True,
+    yticklabels_fontsize=6,
+    legend_hpad=5,
+)
+
+
+# %%
 # Simple heatmap without clustering
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Basic heatmap showing raw data without reordering.

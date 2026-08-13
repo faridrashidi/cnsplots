@@ -28,7 +28,6 @@ from cnsplots._validation import (
     validate_adata_layer,
     validate_adata_obs_columns,
     validate_adata_var_columns,
-    validate_anndata,
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
@@ -65,6 +64,24 @@ def _anndata_to_heatmap_dataframe(adata: AnnData, layer: str | None) -> pd.DataF
     return pd.DataFrame(matrix, index=adata.obs_names, columns=adata.var_names)
 
 
+def _to_heatmap_dataframe(
+    data: AnnData | pd.DataFrame | np.ndarray, layer: str | None
+) -> pd.DataFrame:
+    if isinstance(data, AnnData):
+        return _anndata_to_heatmap_dataframe(data, layer)
+    if isinstance(data, np.ndarray):
+        if data.ndim != 2:
+            raise ValueError("[heatmapplot] Input data must be two-dimensional.")
+        data = pd.DataFrame(data)
+    elif not isinstance(data, pd.DataFrame):
+        raise TypeError(
+            "[heatmapplot] Parameter 'adata' must be an AnnData, pandas DataFrame, "
+            f"or numpy ndarray, got {type(data).__name__}"
+        )
+    validate_dataframe_not_empty(data, "heatmapplot")
+    return data
+
+
 def _style_plotter_colorbars(cbars: list[Any]) -> None:
     font_family = mpl.rcParams.get("font.family")
     legend_fontsize = _legend_fontsize()
@@ -87,7 +104,7 @@ def _style_plotter_colorbars(cbars: list[Any]) -> None:
 
 
 def heatmapplot(
-    adata: AnnData,
+    adata: AnnData | pd.DataFrame | np.ndarray,
     layer: str | None = None,
     row_annotation: list[str] | None = None,
     col_annotation: list[str] | None = None,
@@ -122,22 +139,28 @@ def heatmapplot(
 
     Parameters
     ----------
-    adata : AnnData
-        Annotated data matrix containing observations and variables.
+    adata : AnnData, pandas.DataFrame, or numpy.ndarray
+        Matrix to plot. DataFrame index and column labels are preserved. ndarray
+        inputs use integer row and column labels.
     layer : str, optional
         Key in `adata.layers` to use for the heatmap data. If None, uses `adata.X`.
+        Only supported when `adata` is an AnnData object.
     row_annotation : list of str, optional
-        Column names from `adata.obs` to display as row annotations.
+        Column names from `adata.obs` to display as row annotations. Only supported
+        when `adata` is an AnnData object.
     col_annotation : list of str, optional
-        Column names from `adata.var` to display as column annotations.
+        Column names from `adata.var` to display as column annotations. Only supported
+        when `adata` is an AnnData object.
     row_cluster : bool, default: False
         Whether to perform hierarchical clustering on rows.
     col_cluster : bool, default: False
         Whether to perform hierarchical clustering on columns.
     row_split : str or int, optional
-        Column name from `adata.obs` or number of splits for row grouping.
+        Column name from `adata.obs` or number of splits for row grouping. String
+        values are only supported when `adata` is an AnnData object.
     col_split : str or int, optional
-        Column name from `adata.var` or number of splits for column grouping.
+        Column name from `adata.var` or number of splits for column grouping. String
+        values are only supported when `adata` is an AnnData object.
     cmap : str, optional
         Colormap for the heatmap. Can be categorical (Set1, Set2, Ecotyper1, Dark2,
         Ecotyper2, Set3) or continuous (parula, gnuplot, bwr, hot).
@@ -194,29 +217,37 @@ def heatmapplot(
     >>> cns.heatmapplot(
     ...     adata, row_annotation=["cell_type", "batch"], col_cluster=True, cmap="bwr"
     ... )
+    >>> cns.heatmapplot(expression_df, row_cluster=True, col_cluster=True)
     """
-    # Validate inputs
-    validate_anndata(adata, "adata", "heatmapplot")
+    if isinstance(adata, AnnData):
+        if layer is not None:
+            validate_adata_layer(adata, layer, "heatmapplot")
+        if row_annotation is not None:
+            validate_adata_obs_columns(adata, row_annotation, "heatmapplot")
+        if col_annotation is not None:
+            validate_adata_var_columns(adata, col_annotation, "heatmapplot")
+        if isinstance(row_split, str):
+            validate_adata_obs_columns(adata, row_split, "heatmapplot")
+        if isinstance(col_split, str):
+            validate_adata_var_columns(adata, col_split, "heatmapplot")
+        row_metadata = adata.obs
+        col_metadata = adata.var
+    else:
+        if (
+            layer is not None
+            or row_annotation is not None
+            or col_annotation is not None
+            or isinstance(row_split, str)
+            or isinstance(col_split, str)
+        ):
+            raise ValueError(
+                "[heatmapplot] layer, row_annotation, col_annotation, and string "
+                "row_split/col_split are only supported for AnnData inputs."
+            )
+        row_metadata = None
+        col_metadata = None
 
-    # Validate layer if provided
-    if layer is not None:
-        validate_adata_layer(adata, layer, "heatmapplot")
-
-    # Validate row annotations
-    if row_annotation is not None:
-        validate_adata_obs_columns(adata, row_annotation, "heatmapplot")
-
-    # Validate column annotations
-    if col_annotation is not None:
-        validate_adata_var_columns(adata, col_annotation, "heatmapplot")
-
-    # Validate row split if it's a string
-    if isinstance(row_split, str):
-        validate_adata_obs_columns(adata, row_split, "heatmapplot")
-
-    # Validate column split if it's a string
-    if isinstance(col_split, str):
-        validate_adata_var_columns(adata, col_split, "heatmapplot")
+    df = _to_heatmap_dataframe(adata, layer)
 
     if cmap is None:
         cmap = settings.palette_seq
@@ -286,7 +317,8 @@ def heatmapplot(
     left_annotation: Any = None
     top_annotation: Any = None
     if row_annotation is not None:
-        rc_dict = _annot_helper(adata.obs, row_annotation)
+        assert row_metadata is not None
+        rc_dict = _annot_helper(row_metadata, row_annotation)
         left_annotation = pch.HeatmapAnnotation(
             axis=0,
             verbose=0,
@@ -299,17 +331,19 @@ def heatmapplot(
             **rc_dict,
         )
     if col_annotation is not None:
-        ca_dict = _annot_helper(adata.var, col_annotation)
+        assert col_metadata is not None
+        ca_dict = _annot_helper(col_metadata, col_annotation)
         top_annotation = pch.HeatmapAnnotation(axis=1, verbose=0, **ca_dict)
 
     row_split_val: Any = row_split
     col_split_val: Any = col_split
     if row_split is not None and not isinstance(row_split, int):
-        row_split_val = adata.obs[row_split]
+        assert row_metadata is not None
+        row_split_val = row_metadata[row_split]
     if col_split is not None and not isinstance(col_split, int):
-        col_split_val = adata.var[col_split]
+        assert col_metadata is not None
+        col_split_val = col_metadata[col_split]
 
-    df = _anndata_to_heatmap_dataframe(adata, layer)
     host_ax = ax
     fig = None if host_ax is None else host_ax.figure
     layout_fig = (
