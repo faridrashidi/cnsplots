@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import cast
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,6 +34,35 @@ def test_regplot_uses_only_finite_plotted_pairs_for_pearson() -> None:
         np.asarray(scatter.get_offsets(), dtype=float),
         data.loc[:2, ["x", "y"]].to_numpy(),
     )
+
+
+@pytest.mark.parametrize("grouping", [None, "hue", "color"])
+def test_regplot_supports_spearman_correlation(grouping: str | None) -> None:
+    data = pd.DataFrame(
+        {
+            "x": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+            "y": [1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0],
+            "group": ["A"] * 4 + ["B"] * 4,
+        }
+    )
+
+    cns.figure(120, 120)
+    if grouping == "hue":
+        ax = cns.regplot(data, x="x", y="y", method="spearman", hue="group")
+    elif grouping == "color":
+        ax = cns.regplot(data, x="x", y="y", method="spearman", color="group")
+    else:
+        ax = cns.regplot(data, x="x", y="y", method="spearman")
+
+    assert ax.texts
+    assert all(r"$\rho$=1.00," in text.get_text() for text in ax.texts)
+
+
+def test_regplot_rejects_unknown_correlation_method() -> None:
+    data = pd.DataFrame({"x": [0.0, 1.0], "y": [0.0, 1.0]})
+
+    with pytest.raises(ValueError, match="method.*pearson.*spearman"):
+        cns.regplot(data, x="x", y="y", method=cast(Any, "kendall"))
 
 
 @pytest.mark.parametrize("hue", [None, "group"])
