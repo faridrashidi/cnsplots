@@ -785,7 +785,16 @@ def _add_count_helper(data, attr, ax, axis="x"):
     set_ticklabels(new_tick_labels)
 
 
-def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=None):
+def _p_value_helper(
+    test,
+    data,
+    ax,
+    plotting,
+    pairs,
+    contingency=None,
+    format=None,
+    label_clearance=None,
+):
     resolved_format = settings.pvalue_format if format is None else format
     if resolved_format not in {"star", "threshold", "full"}:
         raise ValueError("format must be one of: 'star', 'threshold', 'full'")
@@ -868,6 +877,15 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
             )
         pairs = hue_pairs
 
+    line_offset_to_group = None
+    if label_clearance is not None and settings.pvalue_loc == "inside":
+        # statannotations expands the value axis as it stacks brackets. Account
+        # for that scaling so the requested on-screen label clearance remains.
+        annotation_step = 0.07 + label_clearance
+        expansion = 1.04 * (1 + len(pairs) * annotation_step)
+        denominator = max(1 - 1.04 * label_clearance, 0.1)
+        line_offset_to_group = label_clearance * expansion / denominator
+
     contingency_tables = None
     if contingency is not None:
         contingency = contingency.fillna(0)
@@ -928,11 +946,18 @@ def _p_value_helper(test, data, ax, plotting, pairs, contingency=None, format=No
         for table in contingency_tables:
             pvalues.append(stats.chi2_contingency(table)[1])
 
-    if contingency is None:
-        annotator.apply_and_annotate()
-    else:
+    if contingency is not None:
         annotator.set_pvalues(pvalues=pvalues)
-        annotator.annotate()
+
+    if line_offset_to_group is None:
+        if contingency is None:
+            annotator.apply_and_annotate()
+        else:
+            annotator.annotate()
+    else:
+        if contingency is None:
+            annotator.apply_test()
+        annotator.annotate(line_offset_to_group=line_offset_to_group)
 
     if test == "Mann-Whitney":
         logger.info("P-values were determined by two-sided Mann-Whitney U test.")

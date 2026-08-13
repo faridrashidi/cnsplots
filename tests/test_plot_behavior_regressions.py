@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.collections import LineCollection, PathCollection
+from matplotlib.container import BarContainer
 from matplotlib.patches import Rectangle
 from scipy import stats
 
@@ -171,6 +173,41 @@ def test_barplot_labels_each_hue_bar_and_skips_missing_order_levels() -> None:
         "2.0",
         "6.0",
     ]
+
+
+@pytest.mark.parametrize(("x", "y"), [("group", "value"), ("value", "group")])
+def test_barplot_pvalues_do_not_overlap_value_labels(
+    categorical_df: pd.DataFrame,
+    x: str,
+    y: str,
+) -> None:
+    cns.figure(100, 150)
+    ax = cast(Any, cns.barplot)(
+        categorical_df,
+        x=x,
+        y=y,
+        pairs="all",
+        add_tip=True,
+    )
+
+    ax.figure.canvas.draw()
+    renderer = cast(FigureCanvasAgg, ax.figure.canvas).get_renderer()
+    label_count = sum(
+        len(cast(Any, container.datavalues))
+        for container in ax.containers
+        if isinstance(container, BarContainer)
+    )
+    label_bounds = [text.get_window_extent(renderer) for text in ax.texts[:label_count]]
+    pvalue_bounds = [
+        artist.get_window_extent(renderer)
+        for artist in [*ax.lines, *ax.texts[label_count:]]
+    ]
+
+    assert not any(
+        label_bound.overlaps(pvalue_bound)
+        for label_bound in label_bounds
+        for pvalue_bound in pvalue_bounds
+    )
 
 
 def test_lollipop_rejects_ambiguous_palette_column_combinations() -> None:
