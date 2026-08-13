@@ -12,7 +12,7 @@ from matplotlib.axes import Axes
 from matplotlib.typing import ColorType
 from palettable.colorbrewer.colorbrewer import get_map as _get_brewer_map
 
-from cnsplots._utils import _resize_legend_markers
+from cnsplots._utils import _resize_legend_markers, take_legend_out
 from cnsplots._validation import (
     validate_column_type,
     validate_columns_exist,
@@ -61,6 +61,38 @@ def _correlation_statistics(
     return float(result.statistic), float(result.pvalue)
 
 
+def _add_regression_equation(
+    ax: Axes,
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    *,
+    color: ColorType,
+    y_position: float = 0.05,
+    label: Any = None,
+) -> None:
+    """Add a fitted linear equation to the bottom-right of an axes."""
+    result = sp.stats.linregress(data[x], data[y])
+    intercept = f"{result.intercept:+.2f}"
+    label_prefix = "" if label is None else f"{label}: "
+    ax.text(
+        0.95,
+        y_position,
+        f"{label_prefix}y = {result.slope:.2f}x {intercept[0]} {intercept[1:]}\n"
+        f"R² = {result.rvalue**2:.3f}",
+        color=color,
+        transform=ax.transAxes,
+        ha="right",
+        va="bottom",
+        bbox=dict(
+            boxstyle="round",
+            facecolor="white",
+            edgecolor="none",
+            alpha=1,
+        ),
+    )
+
+
 def regplot(
     data: pd.DataFrame,
     x: str,
@@ -70,6 +102,7 @@ def regplot(
     color: ColorType = "black",
     *,
     method: CorrelationMethod = "pearson",
+    add_equation: bool = False,
     hue_order: list[str] | None = None,
     ax: Axes | None = None,
     **kwargs: Any,
@@ -103,6 +136,10 @@ def regplot(
     method : {"pearson", "spearman"}, default: "pearson"
         Correlation method used for the coefficient and p-value annotation.
         The fitted regression line remains linear for both methods.
+    add_equation : bool, default: False
+        Whether to annotate each fitted line's equation and R-squared value in
+        the bottom-right of the axes. When a legend is present, it is moved
+        outside the axes to avoid covering the equation annotation.
     hue_order : list of str, optional
         Order of hue levels.
     ax : matplotlib.axes.Axes, optional
@@ -135,6 +172,9 @@ def regplot(
 
     >>> # Report Spearman rank correlation
     >>> ax = cns.regplot(data=df, x="dose", y="response", method="spearman")
+
+    >>> # Add the fitted equation and R-squared value
+    >>> ax = cns.regplot(data=df, x="dose", y="response", add_equation=True)
     """
     # Validate inputs
     validate_dataframe(data, "data", "regplot")
@@ -194,7 +234,19 @@ def regplot(
                 ha="left",
                 va="top",
             )
+            if add_equation:
+                _add_regression_equation(
+                    ax,
+                    subset,
+                    x,
+                    y,
+                    color=palette[idx % len(palette)],
+                    y_position=0.05 + 0.18 * idx,
+                    label=hue_val,
+                )
         ax.legend(title=hue)
+        if add_equation:
+            take_legend_out(ax=ax)
     elif color_is_column:
         plot_data = finite_data.loc[finite_data[color].notna()]
         _validate_correlation_sample_size(plot_data, method)
@@ -231,10 +283,14 @@ def regplot(
             ha="left",
             va="top",
         )
+        if add_equation:
+            _add_regression_equation(ax, plot_data, x, y, color="black")
         ax.legend(title=color)
         _resize_legend_markers(
             ax.get_legend(), 2 * s, marker_size=2 * np.sqrt(s / np.pi)
         )
+        if add_equation:
+            take_legend_out(ax=ax)
     else:
         _validate_correlation_sample_size(finite_data, method)
         ax = sns.regplot(
@@ -256,6 +312,8 @@ def regplot(
             ha="left",
             va="top",
         )
+        if add_equation:
+            _add_regression_equation(ax, finite_data, x, y, color=color)
 
     return ax
 

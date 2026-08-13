@@ -113,27 +113,6 @@ for i, day in enumerate(["Thur", "Fri", "Sat", "Sun"]):
 
 
 # %%
-# Regression plot with correlation statistics
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Add correlation coefficient and p-value annotation.
-cns.figure(150, 150)
-ax = cns.regplot(data=tips, x="tip", y="total_bill", s=5)
-
-r, p = stats.pearsonr(tips["tip"], tips["total_bill"])
-ax.text(
-    0.05,
-    0.95,
-    f"r = {r:.3f}\np = {p:.2e}",
-    transform=ax.transAxes,
-    fontsize=7,
-    verticalalignment="top",
-    bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-)
-
-ax.set_title("With Correlation Stats")
-
-
-# %%
 # Regression plot for iris data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Apply to a different dataset.
@@ -148,19 +127,7 @@ ax.set_title("Petal Dimensions by Species")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Show the regression equation on the plot.
 cns.figure(150, 150)
-ax = cns.regplot(data=tips, x="tip", y="total_bill", s=5)
-
-# Calculate regression parameters
-slope, intercept, r, p, se = stats.linregress(tips["tip"], tips["total_bill"])
-ax.text(
-    0.05,
-    0.95,
-    f"y = {slope:.2f}x + {intercept:.2f}\nR² = {r**2:.3f}",
-    transform=ax.transAxes,
-    fontsize=7,
-    verticalalignment="top",
-    bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-)
+ax = cns.regplot(data=tips, x="tip", y="total_bill", s=5, add_equation=True)
 
 ax.set_title("With Regression Equation")
 ax.set_xlabel("Tip ($)")
