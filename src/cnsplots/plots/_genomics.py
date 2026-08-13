@@ -35,6 +35,9 @@ def volcanoplot(
     show_list: list[str] | None = None,
     n_show: int = 10,
     *,
+    pvalue_threshold: float = 0.05,
+    fold_change_threshold: float = 0.5,
+    transform_y: bool = False,
     ax: Axes | None = None,
 ) -> Axes:
     """
@@ -60,6 +63,14 @@ def volcanoplot(
         Number of top upregulated and downregulated genes to label automatically
         when ``show_list`` is ``None``. If ``show_list`` is provided, it takes
         precedence and ``n_show`` is ignored.
+    pvalue_threshold : float, default: 0.05
+        P-value threshold used to identify significant features.
+    fold_change_threshold : float, default: 0.5
+        Absolute fold-change threshold used to identify upregulated and
+        downregulated features.
+    transform_y : bool, default: False
+        If True, treat ``y`` as raw p-values and plot their -log10 transform.
+        If False, ``y`` must already contain -log10-transformed values.
     ax : matplotlib.axes.Axes, optional
         Axes to draw on. If None, uses the current axes.
 
@@ -81,13 +92,15 @@ def volcanoplot(
     ... )
     >>> ax.set_title("Differential Expression")
 
-    >>> # Label fewer top genes automatically
+    >>> # Use raw p-values and custom thresholds
     >>> ax = cns.volcanoplot(
     ...     data=de_results,
-    ...     x="log2FoldChange",
-    ...     y="-log10(padj)",
+    ...     x="LFC",
+    ...     y="padj",
     ...     symbol="gene_name",
-    ...     n_show=5,
+    ...     pvalue_threshold=0.01,
+    ...     fold_change_threshold=1,
+    ...     transform_y=True,
     ... )
 
     >>> # Highlight specific genes
@@ -107,16 +120,49 @@ def volcanoplot(
         raise TypeError("[volcanoplot] Parameter 'n_show' must be an integer")
     if n_show < 0:
         raise ValueError("[volcanoplot] Parameter 'n_show' must be non-negative")
+    numeric_types = (int, float, np.integer, np.floating)
+    if isinstance(pvalue_threshold, bool) or not isinstance(
+        pvalue_threshold, numeric_types
+    ):
+        raise TypeError("[volcanoplot] Parameter 'pvalue_threshold' must be a number")
+    if not 0 < pvalue_threshold <= 1:
+        raise ValueError(
+            "[volcanoplot] Parameter 'pvalue_threshold' must be greater than 0 "
+            "and at most 1"
+        )
+    if isinstance(fold_change_threshold, bool) or not isinstance(
+        fold_change_threshold, numeric_types
+    ):
+        raise TypeError(
+            "[volcanoplot] Parameter 'fold_change_threshold' must be a number"
+        )
+    if not np.isfinite(fold_change_threshold) or fold_change_threshold < 0:
+        raise ValueError(
+            "[volcanoplot] Parameter 'fold_change_threshold' must be a finite, "
+            "non-negative number"
+        )
+    if not isinstance(transform_y, bool):
+        raise TypeError("[volcanoplot] Parameter 'transform_y' must be a boolean")
 
     import adjustText as at
 
     hue = "DEG"
     de = data.copy()
+    if transform_y:
+        if not pd.api.types.is_numeric_dtype(de[y]):
+            raise ValueError(f"[volcanoplot] Column '{y}' must be numeric")
+        if ((de[y] < 0) | (de[y] > 1)).any():
+            raise ValueError(
+                f"[volcanoplot] Column '{y}' must contain p-values between 0 and 1"
+            )
+        de[y] = -np.log10(de[y].clip(lower=np.finfo(float).tiny))
 
     de[hue] = "NS"
-    de.loc[de[y] > -np.log10(0.05), hue] = "p_adj < 0.05"
-    up = (de[y] > -np.log10(0.05)) & (de[x] > 0.5)
-    down = (de[y] > -np.log10(0.05)) & (de[x] < -0.5)
+    significance_cutoff = -np.log10(pvalue_threshold)
+    significance_label = f"p_adj < {pvalue_threshold:g}"
+    de.loc[de[y] > significance_cutoff, hue] = significance_label
+    up = (de[y] > significance_cutoff) & (de[x] > fold_change_threshold)
+    down = (de[y] > significance_cutoff) & (de[x] < -fold_change_threshold)
     if show_list is None:
         de["rank"] = de[y] * de[x].abs()
         de.loc[de.loc[up].nlargest(n_show, "rank").index, hue] = "Up"
@@ -135,10 +181,10 @@ def volcanoplot(
         x=x,
         y=y,
         size=hue,
-        sizes={"Down": 10, "NS": 2, "Up": 10, "p_adj < 0.05": 2},
+        sizes={"Down": 10, "NS": 2, "Up": 10, significance_label: 2},
         hue=hue,
         edgecolor=None,
-        palette={"Down": blue, "NS": "grey", "Up": red, "p_adj < 0.05": "black"},
+        palette={"Down": blue, "NS": "grey", "Up": red, significance_label: "black"},
         rasterized=True,
         ax=ax,
     )
@@ -163,8 +209,11 @@ def volcanoplot(
 
     ax.spines["right"].set_visible(True)
     ax.spines["top"].set_visible(True)
-    ax.set_xlabel("log2(fold change)")
-    ax.set_ylabel("\u2013log10(adjusted p-value)")
+    ax.set_xlabel("log2(fold change)" if x == "log2FoldChange" else x)
+    if transform_y:
+        ax.set_ylabel(f"\u2013log10({y})")
+    else:
+        ax.set_ylabel("\u2013log10(adjusted p-value)" if y == "-log10(adjp)" else y)
     ax.plot(
         [0, 0],
         [0, max(de[y])],
