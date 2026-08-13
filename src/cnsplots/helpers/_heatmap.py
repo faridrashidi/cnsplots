@@ -451,6 +451,21 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
             col_order=col_order,
         )
 
+    def post_processing(self) -> None:
+        super().post_processing()
+        if (
+            self.ylabel is None
+            or "position" in self.ylabel_kws
+            or not hasattr(self, "ax_heatmap")
+        ):
+            return
+        heatmap_box = self.ax_heatmap.get_window_extent()
+        host_box = self.ax.get_window_extent()
+        ylabel_y = (heatmap_box.y0 + heatmap_box.height / 2 - host_box.y0) / (
+            host_box.height
+        )
+        self.ax.yaxis.label.set_y(ylabel_y)
+
     def _define_axes(self, subplot_spec: Any = None) -> None:
         if not _define_axes_within_current_bounds(self, subplot_spec):
             super()._define_axes(subplot_spec)
