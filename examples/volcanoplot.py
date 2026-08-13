@@ -29,6 +29,7 @@ pvals = np.clip(pvals, 1e-50, 1)
 de = pd.DataFrame(
     {
         "log2FoldChange": logfc,
+        "padj": pvals,
         "-log10(adjp)": -np.log10(pvals),
         "symbol": [f"Gene{i}" for i in range(n_genes)],
     }
@@ -43,6 +44,26 @@ de.head()
 cns.figure(200, 200)
 ax = cns.volcanoplot(de, x="log2FoldChange", y="-log10(adjp)", symbol="symbol")
 ax.set_title("Volcano Plot")
+
+
+# %%
+# Raw p-values and custom thresholds
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Transform raw adjusted p-values in the plot and apply stricter significance
+# and fold-change thresholds. The custom x column is also used as its axis label.
+raw_de = de.rename(columns={"log2FoldChange": "LFC"})
+cns.figure(200, 200)
+ax = cns.volcanoplot(
+    raw_de,
+    x="LFC",
+    y="padj",
+    symbol="symbol",
+    n_show=5,
+    pvalue_threshold=0.01,
+    fold_change_threshold=1,
+    transform_y=True,
+)
+ax.set_title("padj < 0.01 and |LFC| > 1")
 
 
 # %%

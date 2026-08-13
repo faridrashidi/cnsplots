@@ -1071,6 +1071,70 @@ def test_genomics_plots(
     )
 
 
+def test_volcanoplot_supports_raw_pvalues_and_custom_thresholds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_adjust = types.SimpleNamespace(adjust_text=lambda *args, **kwargs: None)
+    monkeypatch.setitem(sys.modules, "adjustText", fake_adjust)
+    raw_data = pd.DataFrame(
+        {
+            "LFC": [-1.2, -2.0, 0.0, 0.8, 1.2],
+            "padj": [0.009, 0.02, 0.001, 0.001, 0.009],
+            "gene": ["DOWN", "P_TOO_HIGH", "SIG_ONLY", "FC_TOO_LOW", "UP"],
+        }
+    )
+    original_data = raw_data.copy()
+
+    cns.figure(120, 120)
+    ax = cns.volcanoplot(
+        raw_data,
+        x="LFC",
+        y="padj",
+        symbol="gene",
+        pvalue_threshold=0.01,
+        fold_change_threshold=1.0,
+        transform_y=True,
+    )
+
+    assert ax.get_xlabel() == "LFC"
+    assert ax.get_ylabel() == "–log10(padj)"
+    assert {text.get_text() for text in ax.texts} == {"DOWN", "UP"}
+    legend = ax.get_legend()
+    assert legend is not None
+    assert "p_adj < 0.01" in {text.get_text() for text in legend.texts}
+    offsets = np.asarray(ax.collections[0].get_offsets(), dtype=float)
+    offsets = offsets[np.argsort(offsets[:, 0])]
+    expected = raw_data.sort_values("LFC")
+    np.testing.assert_allclose(offsets[:, 0], expected["LFC"])
+    np.testing.assert_allclose(offsets[:, 1], -np.log10(expected["padj"]))
+    pd.testing.assert_frame_equal(raw_data, original_data)
+
+
+def test_volcanoplot_validates_custom_thresholds(
+    volcano_df: pd.DataFrame,
+) -> None:
+    with pytest.raises(TypeError, match="'pvalue_threshold' must be a number"):
+        cast(Any, cns.volcanoplot)(volcano_df, pvalue_threshold="0.01")
+    with pytest.raises(ValueError, match="must be greater than 0 and at most 1"):
+        cns.volcanoplot(volcano_df, pvalue_threshold=0)
+    with pytest.raises(TypeError, match="'fold_change_threshold' must be a number"):
+        cast(Any, cns.volcanoplot)(volcano_df, fold_change_threshold=True)
+    with pytest.raises(ValueError, match="must be a finite, non-negative number"):
+        cns.volcanoplot(volcano_df, fold_change_threshold=-1)
+    with pytest.raises(TypeError, match="'transform_y' must be a boolean"):
+        cast(Any, cns.volcanoplot)(volcano_df, transform_y=1)
+
+    nonnumeric = volcano_df.rename(columns={"-log10(adjp)": "padj"}).assign(
+        padj="invalid"
+    )
+    with pytest.raises(ValueError, match="Column 'padj' must be numeric"):
+        cns.volcanoplot(nonnumeric, y="padj", transform_y=True)
+
+    out_of_range = volcano_df.rename(columns={"-log10(adjp)": "padj"}).assign(padj=1.1)
+    with pytest.raises(ValueError, match="p-values between 0 and 1"):
+        cns.volcanoplot(out_of_range, y="padj", transform_y=True)
+
+
 def test_volcanoplot_annotations_use_legend_fontsize(
     volcano_df: pd.DataFrame,
     monkeypatch: pytest.MonkeyPatch,
