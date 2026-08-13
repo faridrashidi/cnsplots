@@ -410,7 +410,7 @@ def test_public_stackplot_signature_contract() -> None:
         ("histplot", {"hue", "hue_order"}, set()),
         ("scatterplot", {"hue", "hue_order"}, set()),
         ("lineplot", {"hue", "hue_order"}, set()),
-        ("regplot", {"hue", "hue_order"}, set()),
+        ("regplot", {"hue", "hue_order", "method"}, set()),
         ("slopeplot", {"hue", "hue_order"}, set()),
         ("dumbbellplot", {"hue", "hue_order", "order"}, set()),
     ],

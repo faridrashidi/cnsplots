@@ -34,6 +34,23 @@ ax.set_ylabel("Total Bill ($)")
 
 
 # %%
+# Spearman rank correlation
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Use ``method="spearman"`` to report rank correlation for monotonic relationships.
+# The fitted line remains a linear regression fit.
+cns.figure(150, 150)
+ax = cns.regplot(
+    data=tips,
+    x="tip",
+    y="total_bill",
+    method="spearman",
+)
+ax.set_title("Spearman Correlation")
+ax.set_xlabel("Tip ($)")
+ax.set_ylabel("Total Bill ($)")
+
+
+# %%
 # Grouped regression plot with hue
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Fit separate regression lines for each group.

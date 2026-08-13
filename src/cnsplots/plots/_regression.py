@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import num2tex
@@ -28,18 +28,37 @@ def _finite_xy_data(data: pd.DataFrame, x: str, y: str) -> pd.DataFrame:
     return data.loc[np.isfinite(xy_values).all(axis=1)]
 
 
-def _validate_pearson_sample_size(
+CorrelationMethod = Literal["pearson", "spearman"]
+
+
+def _validate_correlation_sample_size(
     data: pd.DataFrame,
+    method: CorrelationMethod,
     *,
     group: Any = None,
 ) -> None:
-    """Require enough plotted pairs for Pearson correlation."""
+    """Require enough plotted pairs for the selected correlation method."""
     if len(data) < 2:
         group_suffix = "" if group is None else f" in hue group {group!r}"
         raise ValueError(
-            "[regplot] Pearson correlation requires at least 2 finite paired "
+            f"[regplot] {method.capitalize()} correlation requires at least 2 "
+            "finite paired "
             f"observations{group_suffix}."
         )
+
+
+def _correlation_statistics(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    method: CorrelationMethod,
+) -> tuple[float, float]:
+    """Return the selected correlation coefficient and p-value."""
+    if method == "pearson":
+        result = sp.stats.pearsonr(data[x], data[y])
+    else:
+        result = sp.stats.spearmanr(data[x], data[y])
+    return float(result.statistic), float(result.pvalue)
 
 
 def regplot(
@@ -50,6 +69,7 @@ def regplot(
     s: float = 3,
     color: ColorType = "black",
     *,
+    method: CorrelationMethod = "pearson",
     hue_order: list[str] | None = None,
     ax: Axes | None = None,
     **kwargs: Any,
@@ -58,7 +78,7 @@ def regplot(
     Create a regression plot with linear fit and correlation statistics.
 
     This function creates a scatter plot with a fitted regression line and displays
-    Pearson correlation coefficient and p-value.
+    a Pearson or Spearman correlation coefficient and p-value.
 
     Parameters
     ----------
@@ -80,6 +100,9 @@ def regplot(
         a legend is added, while a single overall regression line and correlation
         statistic are shown. If *hue* is also specified, *hue* takes precedence
         and *color* is ignored.
+    method : {"pearson", "spearman"}, default: "pearson"
+        Correlation method used for the coefficient and p-value annotation.
+        The fitted regression line remains linear for both methods.
     hue_order : list of str, optional
         Order of hue levels.
     ax : matplotlib.axes.Axes, optional
@@ -109,6 +132,9 @@ def regplot(
 
     >>> # Color points by a column (single regression line)
     >>> ax = cns.regplot(data=df, x="age", y="expression", color="cell_type")
+
+    >>> # Report Spearman rank correlation
+    >>> ax = cns.regplot(data=df, x="dose", y="response", method="spearman")
     """
     # Validate inputs
     validate_dataframe(data, "data", "regplot")
@@ -117,6 +143,11 @@ def regplot(
         columns_to_check.append(hue)
     validate_columns_exist(data, columns_to_check, "regplot")
     validate_dataframe_not_empty(data, "regplot")
+
+    if method not in ("pearson", "spearman"):
+        raise ValueError(
+            "[regplot] Parameter 'method' must be one of: 'pearson', 'spearman'"
+        )
 
     # Validate numeric columns
     validate_column_type(data, x, ["numeric"], "regplot")
@@ -132,15 +163,16 @@ def regplot(
     palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     color_is_column = isinstance(color, str) and color in data.columns
     finite_data = _finite_xy_data(data, x, y)
+    correlation_symbol = "r" if method == "pearson" else r"\rho"
     if hue is not None:
         plot_data = finite_data.loc[finite_data[hue].notna()]
-        _validate_pearson_sample_size(plot_data)
+        _validate_correlation_sample_size(plot_data, method)
         hue_levels = list(plot_data[hue].unique()) if hue_order is None else hue_order
         hue_subsets = [
             (hue_val, plot_data[plot_data[hue] == hue_val]) for hue_val in hue_levels
         ]
         for hue_val, subset in hue_subsets:
-            _validate_pearson_sample_size(subset, group=hue_val)
+            _validate_correlation_sample_size(subset, method, group=hue_val)
         for idx, (hue_val, subset) in enumerate(hue_subsets):
             ax = sns.regplot(
                 data=subset,
@@ -151,11 +183,11 @@ def regplot(
                 label=hue_val,
                 **args,
             )
-            r, p_value = sp.stats.pearsonr(subset[x], subset[y])
+            coefficient, p_value = _correlation_statistics(subset, x, y, method)
             ax.text(
                 0.05,
                 0.95 - 0.08 * idx,
-                rf"{hue_val}: $r$={r:.2f},"
+                rf"{hue_val}: ${correlation_symbol}$={coefficient:.2f},"
                 rf" P=${num2tex.num2tex(p_value, precision=2):.2g}$",
                 color=palette[idx % len(palette)],
                 transform=ax.transAxes,
@@ -165,7 +197,7 @@ def regplot(
         ax.legend(title=hue)
     elif color_is_column:
         plot_data = finite_data.loc[finite_data[color].notna()]
-        _validate_pearson_sample_size(plot_data)
+        _validate_correlation_sample_size(plot_data, method)
         line_args = {k: v for k, v in args.items() if k != "scatter_kws"}
         ax = sns.regplot(
             data=plot_data,
@@ -188,11 +220,12 @@ def regplot(
                 alpha=1,
                 edgecolors="none",
             )
-        r, p_value = sp.stats.pearsonr(plot_data[x], plot_data[y])
+        coefficient, p_value = _correlation_statistics(plot_data, x, y, method)
         ax.text(
             0.05,
             0.95,
-            rf"$r$={r:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+            rf"${correlation_symbol}$={coefficient:.2f}, "
+            rf"$P={num2tex.num2tex(p_value, precision=2):.2g}$",
             color="black",
             transform=ax.transAxes,
             ha="left",
@@ -203,7 +236,7 @@ def regplot(
             ax.get_legend(), 2 * s, marker_size=2 * np.sqrt(s / np.pi)
         )
     else:
-        _validate_pearson_sample_size(finite_data)
+        _validate_correlation_sample_size(finite_data, method)
         ax = sns.regplot(
             data=finite_data,
             x=x,
@@ -212,11 +245,12 @@ def regplot(
             color=color,
             **args,
         )
-        r, p_value = sp.stats.pearsonr(finite_data[x], finite_data[y])
+        coefficient, p_value = _correlation_statistics(finite_data, x, y, method)
         ax.text(
             0.05,
             0.95,
-            rf"$r$={r:.2f}, $P={num2tex.num2tex(p_value, precision=2):.2g}$",
+            rf"${correlation_symbol}$={coefficient:.2f}, "
+            rf"$P={num2tex.num2tex(p_value, precision=2):.2g}$",
             color=color,
             transform=ax.transAxes,
             ha="left",
