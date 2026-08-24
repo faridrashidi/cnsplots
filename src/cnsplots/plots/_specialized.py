@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -18,7 +20,18 @@ from cnsplots._validation import (
     validate_columns_exist,
     validate_dataframe,
     validate_dataframe_not_empty,
+    validate_no_nulls,
 )
+
+
+_FOREST_LABEL = "_forest_label"
+_FOREST_ESTIMATE = "_forest_estimate"
+_FOREST_LOWER = "_forest_lower"
+_FOREST_UPPER = "_forest_upper"
+_FOREST_PVALUE = "_forest_pvalue"
+_FOREST_GROUP = "_forest_group"
+_FOREST_HUE = "_forest_hue"
+_FOREST_ALL = "__forest_all__"
 
 
 def placeholderplot(description: str, *, ax: Axes | None = None) -> Axes:
@@ -249,88 +262,148 @@ def phyloplot(adata: AnnData, *, ax: Axes | None = None) -> Axes:
     return helper_phylo.phyloplot(adata, ax=ax)
 
 
-def forestplot(
-    model: object,
-    bar_width: float | None = None,
-    add_pvalue: bool = True,
+def _complete_forest_order(
+    observed: list[Any], requested: list[Any] | None, parameter: str
+) -> list[Any]:
+    """Return a complete explicit order or preserve first appearance."""
+    if requested is None:
+        return observed
+    if not isinstance(requested, list):
+        raise TypeError(f"[forestplot] '{parameter}' must be a list or None.")
+    if (
+        len(requested) != len(observed)
+        or len(set(requested)) != len(requested)
+        or set(requested) != set(observed)
+    ):
+        raise ValueError(
+            f"[forestplot] '{parameter}' must contain every observed value exactly "
+            f"once. Observed values: {observed}"
+        )
+    return list(requested)
+
+
+def _validate_normalized_forest_data(data: pd.DataFrame, *, has_pvalue: bool) -> None:
+    """Validate normalized forest-plot values."""
+    columns = [
+        _FOREST_LABEL,
+        _FOREST_ESTIMATE,
+        _FOREST_LOWER,
+        _FOREST_UPPER,
+        _FOREST_GROUP,
+        _FOREST_HUE,
+    ]
+    if has_pvalue:
+        columns.append(_FOREST_PVALUE)
+    validate_no_nulls(data, columns, "forestplot")
+
+    numeric_columns = [_FOREST_ESTIMATE, _FOREST_LOWER, _FOREST_UPPER]
+    if has_pvalue:
+        numeric_columns.append(_FOREST_PVALUE)
+    for column in numeric_columns:
+        values = data[column]
+        if (
+            not pd.api.types.is_numeric_dtype(values.dtype)
+            or pd.api.types.is_bool_dtype(values.dtype)
+            or np.iscomplexobj(values.to_numpy())
+        ):
+            raise ValueError(
+                f"[forestplot] Column '{column}' must contain real numeric values."
+            )
+        if not np.isfinite(values.to_numpy(dtype=float)).all():
+            raise ValueError(
+                f"[forestplot] Column '{column}' must contain only finite values."
+            )
+
+    invalid_bounds = (data[_FOREST_LOWER] > data[_FOREST_ESTIMATE]) | (
+        data[_FOREST_ESTIMATE] > data[_FOREST_UPPER]
+    )
+    if invalid_bounds.any():
+        raise ValueError(
+            "[forestplot] Confidence intervals must satisfy "
+            "lower <= estimate <= upper for every row."
+        )
+    if has_pvalue and ((data[_FOREST_PVALUE] <= 0) | (data[_FOREST_PVALUE] > 1)).any():
+        raise ValueError(
+            "[forestplot] P-values must be greater than 0 and less than or equal to 1."
+        )
+    if data.duplicated([_FOREST_GROUP, _FOREST_LABEL, _FOREST_HUE]).any():
+        raise ValueError(
+            "[forestplot] Each group, label, and hue combination must identify "
+            "exactly one row."
+        )
+
+
+def _normalize_forest_table(
+    data: pd.DataFrame,
     *,
-    ax: Axes | None = None,
-) -> Axes:
-    """
-    Create a forest plot displaying effect sizes from a regression model.
+    label: str | None,
+    estimate: str | None,
+    lower: str | None,
+    upper: str | None,
+    pvalue: str | None,
+    group: str | None,
+    hue: str | None,
+) -> tuple[pd.DataFrame, bool, bool, bool]:
+    """Map a caller-supplied results table to the forest renderer schema."""
+    validate_dataframe(data, "data", "forestplot")
+    validate_dataframe_not_empty(data, "forestplot")
+    mappings = {
+        "label": label,
+        "estimate": estimate,
+        "lower": lower,
+        "upper": upper,
+    }
+    missing_mappings = [name for name, column in mappings.items() if column is None]
+    if missing_mappings:
+        raise ValueError(
+            "[forestplot] DataFrame input requires column mappings for "
+            f"{missing_mappings}."
+        )
+    assert label is not None
+    assert estimate is not None
+    assert lower is not None
+    assert upper is not None
 
-    This function generates a forest plot showing hazard ratios (from Cox models)
-    or AUC values (from logistic models) with confidence intervals.
+    selected_columns = [label, estimate, lower, upper]
+    selected_columns.extend(
+        column for column in [pvalue, group, hue] if column is not None
+    )
+    validate_columns_exist(data, selected_columns, "forestplot")
 
-    Parameters
-    ----------
-    model : CoxModel or LogisticModel
-        Fitted regression model object containing results to plot.
-    bar_width : float or None, optional
-        Width of the bars in the p-value panel (Cox models only). If None,
-        defaults to ``0.8 / n_hue_groups`` when there are multiple hue groups,
-        or ``0.6`` otherwise.
-    add_pvalue : bool, optional
-        Whether to add the p-value bar panel alongside the forest plot
-        (Cox models only). Default is True.
-    ax : matplotlib.axes.Axes, optional
-        Axes to use for the primary forest panel. If None, uses the current
-        axes. The optional p-value panel is appended to this axes.
+    normalized = pd.DataFrame(
+        {
+            _FOREST_LABEL: data[label],
+            _FOREST_ESTIMATE: data[estimate],
+            _FOREST_LOWER: data[lower],
+            _FOREST_UPPER: data[upper],
+            _FOREST_GROUP: data[group] if group is not None else _FOREST_ALL,
+            _FOREST_HUE: data[hue] if hue is not None else _FOREST_ALL,
+        }
+    )
+    if pvalue is not None:
+        normalized[_FOREST_PVALUE] = data[pvalue]
+    normalized = normalized.reset_index(drop=True)
+    _validate_normalized_forest_data(normalized, has_pvalue=pvalue is not None)
+    return normalized, group is not None, hue is not None, pvalue is not None
 
-    Returns
-    -------
-    matplotlib.axes.Axes
-        The matplotlib Axes object containing the plot (primary panel).
 
-    See Also
-    --------
-    survivalplot : Create a Kaplan-Meier survival plot.
-    rocplot : Create an ROC curve plot.
-    boxplot : Create a box plot with statistical comparisons.
-
-    Examples
-    --------
-    >>> import cnsplots as cns
-    >>> from cnsplots import CoxModel
-    >>>
-    >>> # Fit Cox model
-    >>> model = CoxModel(
-    ...     data=df,
-    ...     duration="time",
-    ...     event="death",
-    ...     variates=["age", "stage", "treatment"],
-    ... )
-    >>> model.fit()
-    >>>
-    >>> # Create forest plot
-    >>> ax = cns.forestplot(model)
-    >>> ax.set_title("Hazard Ratios")
-
-    >>> # With grouping variable
-    >>> model = CoxModel(
-    ...     data=df,
-    ...     duration="time",
-    ...     event="death",
-    ...     variates=["biomarker_a", "biomarker_b"],
-    ...     hue="cohort",
-    ... )
-    >>> model.fit()
-    >>> ax = cns.forestplot(model)
-    """
-    # Validate model has required attributes
+def _normalize_forest_model(
+    model: object,
+) -> tuple[pd.DataFrame, bool, bool, bool, float, str, str | None]:
+    """Map a supported fitted model to the forest renderer schema."""
     if not hasattr(model, "results"):
         raise ValueError(
-            "[forestplot] Model object must have a 'results' attribute containing fitted model results."
+            "[forestplot] Model object must have a 'results' attribute containing "
+            "fitted model results."
         )
     if not hasattr(model, "name"):
         raise ValueError(
-            "[forestplot] Model object must have a 'name' attribute indicating model type."
+            "[forestplot] Model object must have a 'name' attribute indicating "
+            "model type."
         )
 
-    # Validate results is a DataFrame
     results = getattr(model, "results")
     model_name = getattr(model, "name")
-    model_hue = getattr(model, "hue", None)
     validate_dataframe(results, "model.results", "forestplot")
     if not isinstance(results, pd.DataFrame):
         raise TypeError(
@@ -338,127 +411,391 @@ def forestplot(
         )
     validate_dataframe_not_empty(results, "forestplot")
 
-    # Validate required columns exist based on model type
     if model_name == "cox":
-        required_cols = [
-            "display_label",
-            "exp(coef)",
-            "log10_pvalue",
-            "exp(coef) lower_err",
-            "exp(coef) upper_err",
-            "hue_group",
-        ]
-        validate_columns_exist(results, required_cols, "forestplot")
+        validate_columns_exist(
+            results,
+            ["display_label", "exp(coef)", "hue_group"],
+            "forestplot",
+        )
+        absolute_bounds = {
+            "exp(coef) lower 95%",
+            "exp(coef) upper 95%",
+        }
+        if absolute_bounds <= set(results.columns):
+            lower_values = results["exp(coef) lower 95%"]
+            upper_values = results["exp(coef) upper 95%"]
+        else:
+            validate_columns_exist(
+                results,
+                ["exp(coef) lower_err", "exp(coef) upper_err"],
+                "forestplot",
+            )
+            lower_values = results["exp(coef)"] - results["exp(coef) lower_err"]
+            upper_values = results["exp(coef)"] + results["exp(coef) upper_err"]
+        if "p" in results:
+            pvalues = results["p"]
+        else:
+            validate_columns_exist(results, ["log10_pvalue"], "forestplot")
+            pvalues = np.power(10.0, -results["log10_pvalue"])
+        normalized = pd.DataFrame(
+            {
+                _FOREST_LABEL: results["display_label"],
+                _FOREST_ESTIMATE: results["exp(coef)"],
+                _FOREST_LOWER: lower_values,
+                _FOREST_UPPER: upper_values,
+                _FOREST_PVALUE: pvalues,
+                _FOREST_GROUP: _FOREST_ALL,
+                _FOREST_HUE: results["hue_group"],
+            }
+        )
+        reference = 1.0
+        x_label = "Hazard ratio (95% CI)"
+    elif model_name == "logistic":
+        validate_columns_exist(
+            results,
+            ["predictor", "auc", "lower_ci", "upper_ci", "hue_group"],
+            "forestplot",
+        )
+        normalized = pd.DataFrame(
+            {
+                _FOREST_LABEL: results["predictor"],
+                _FOREST_ESTIMATE: results["auc"],
+                _FOREST_LOWER: results["auc"] - results["lower_ci"],
+                _FOREST_UPPER: results["auc"] + results["upper_ci"],
+                _FOREST_GROUP: _FOREST_ALL,
+                _FOREST_HUE: results["hue_group"],
+            }
+        )
+        reference = 0.5
+        x_label = "AUC (95% CI)"
     else:
-        required_cols = ["predictor", "auc", "lower_ci", "upper_ci", "hue_group"]
-        validate_columns_exist(results, required_cols, "forestplot")
+        raise ValueError(
+            f"[forestplot] Unsupported fitted model type {model_name!r}. Pass a "
+            "results DataFrame with explicit column mappings instead."
+        )
 
-    data = results.copy()
+    normalized = normalized.reset_index(drop=True)
+    has_pvalue = model_name == "cox"
+    _validate_normalized_forest_data(normalized, has_pvalue=has_pvalue)
+    hue_title = getattr(model, "hue", None)
+    has_hue = hue_title is not None or normalized[_FOREST_HUE].nunique() > 1
+    return normalized, False, has_hue, has_pvalue, reference, x_label, hue_title
 
-    if model_name == "cox":
-        y = "display_label"
-        x1 = "exp(coef)"
-        x2 = "log10_pvalue"
-        x1err = ["exp(coef) lower_err", "exp(coef) upper_err"]
-        x1label = "Hazard ratio (95% CI)"
-        x2label = "\u2013log10(p-value)"
-    else:
-        y = "predictor"
-        x1 = "auc"
-        x2 = ""
-        x1err = ["lower_ci", "upper_ci"]
-        x1label = "AUC (95% CI)"
-        x2label = ""
-    if ax is None:
-        ax = plt.gca()
-    ax1 = ax
 
-    unique_hue_groups = data["hue_group"].unique()
-    colors = sns.color_palette(n_colors=len(unique_hue_groups))
-    color_map = dict(zip(unique_hue_groups, colors))
-    unique_labels = data[y].drop_duplicates().tolist()
-    y_positions = {label: i for i, label in enumerate(reversed(unique_labels))}
+def _draw_forestplot(
+    data: pd.DataFrame,
+    *,
+    has_group: bool,
+    has_hue: bool,
+    has_pvalue: bool,
+    group_order: list[Any] | None,
+    order: list[Any] | None,
+    hue_order: list[Any] | None,
+    reference: float | None,
+    xlabel: str,
+    hue_title: str | None,
+    bar_width: float | None,
+    add_pvalue: bool,
+    ax: Axes,
+) -> Axes:
+    """Draw normalized effect estimates and optional p-values."""
+    if not has_group and group_order is not None:
+        raise ValueError("[forestplot] 'group_order' requires a 'group' column.")
+    if not has_hue and hue_order is not None:
+        raise ValueError("[forestplot] 'hue_order' requires a 'hue' column.")
 
-    max_offset = 0.15
-    n_hue_groups = len(unique_hue_groups)
-    offsets = (
-        np.linspace(-max_offset, max_offset, n_hue_groups) if n_hue_groups > 1 else [0]
+    observed_groups = data[_FOREST_GROUP].drop_duplicates().tolist()
+    observed_labels = data[_FOREST_LABEL].drop_duplicates().tolist()
+    observed_hues = data[_FOREST_HUE].drop_duplicates().tolist()
+    groups = _complete_forest_order(observed_groups, group_order, "group_order")
+    labels = (
+        None
+        if order is None
+        else _complete_forest_order(observed_labels, order, "order")
     )
-    hue_offset_map = dict(zip(unique_hue_groups, offsets))
+    hues = _complete_forest_order(observed_hues, hue_order, "hue_order")
 
-    for hue_group in unique_hue_groups:
-        hue_data = data[data["hue_group"] == hue_group]
-        color = color_map[hue_group]
-        y_coords = []
-        x_coords = []
-        x_errs_lower = []
-        x_errs_upper = []
-        for _, row in hue_data.iterrows():
-            y_pos = y_positions[row[y]] + hue_offset_map[hue_group]
-            y_coords.append(y_pos)
-            x_coords.append(row[x1])
-            x_errs_lower.append(row[x1err[0]])
-            x_errs_upper.append(row[x1err[1]])
+    row_specs: list[tuple[str, Any, Any | None]] = []
+    for group_value in groups:
+        group_data = data[data[_FOREST_GROUP] == group_value]
+        if has_group:
+            row_specs.append(("group", group_value, None))
+        group_labels = (
+            group_data[_FOREST_LABEL].drop_duplicates().tolist()
+            if labels is None
+            else labels
+        )
+        for label_value in group_labels:
+            if (group_data[_FOREST_LABEL] == label_value).any():
+                row_specs.append(("label", group_value, label_value))
 
-        ax1.errorbar(
-            x_coords,
+    tick_positions = list(reversed(range(len(row_specs))))
+    label_positions = {
+        (group_value, label_value): position
+        for (kind, group_value, label_value), position in zip(row_specs, tick_positions)
+        if kind == "label"
+    }
+    tick_labels = [
+        str(group_value) if kind == "group" else f"  {label_value}"
+        for kind, group_value, label_value in row_specs
+    ]
+    if not has_group:
+        tick_labels = [label.lstrip() for label in tick_labels]
+
+    colors = sns.color_palette(n_colors=len(hues))
+    color_map = dict(zip(hues, colors))
+    offsets = np.linspace(-0.15, 0.15, len(hues)) if len(hues) > 1 else [0.0]
+    hue_offset_map = dict(zip(hues, offsets))
+
+    for hue_value in hues:
+        hue_data = data[data[_FOREST_HUE] == hue_value]
+        y_coords = [
+            label_positions[(row[_FOREST_GROUP], row[_FOREST_LABEL])]
+            + hue_offset_map[hue_value]
+            for _, row in hue_data.iterrows()
+        ]
+        estimates = hue_data[_FOREST_ESTIMATE].to_numpy(dtype=float)
+        lower_errors = estimates - hue_data[_FOREST_LOWER].to_numpy(dtype=float)
+        upper_errors = hue_data[_FOREST_UPPER].to_numpy(dtype=float) - estimates
+        ax.errorbar(
+            estimates,
             y_coords,
-            xerr=[x_errs_lower, x_errs_upper],
+            xerr=[lower_errors, upper_errors],
             fmt="s",
-            color=color,
+            color=color_map[hue_value],
             markeredgewidth=0.8,
             elinewidth=0.8,
             capsize=2,
             markersize=3,
-            label=hue_group,
+            label=hue_value,
         )
-    ax1.set_yticks(list(y_positions.values()))
-    ax1.set_yticklabels(list(y_positions.keys()))
-    ax1.set_ylim(-0.5, len(unique_labels) - 0.5)
-    ax1.set_xlabel(x1label)
-    if len(unique_hue_groups) > 1:
-        ax1.legend(title=model_hue, loc="lower right")
-    if model_name == "cox":
-        ax1.axvline(x=1, color="red", linestyle="--", linewidth=0.8)
-        ax1.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
-    else:
-        ax1.axvline(x=0.5, color="red", linestyle="--", linewidth=0.8)
 
-    if model_name == "cox" and add_pvalue:
-        divider = make_axes_locatable(ax1)
-        ax2 = divider.append_axes("right", size="60%", pad=0.1)
-        if bar_width is None:
-            bar_width = (
-                0.8 / len(unique_hue_groups) if len(unique_hue_groups) > 1 else 0.6
+    ax.set_yticks(tick_positions)
+    ax.set_yticklabels(tick_labels)
+    for tick_label, (kind, _, _) in zip(ax.get_yticklabels(), row_specs):
+        if kind == "group":
+            tick_label.set_fontweight("bold")
+    ax.set_ylim(-0.5, len(row_specs) - 0.5)
+    ax.set_xlabel(xlabel)
+    ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
+    if len(hues) > 1:
+        ax.legend(title=hue_title, loc="lower right")
+    if reference is not None:
+        ax.axvline(x=reference, color="red", linestyle="--", linewidth=0.8)
+
+    if has_pvalue and add_pvalue:
+        divider = make_axes_locatable(ax)
+        pvalue_ax = divider.append_axes("right", size="60%", pad=0.1)
+        resolved_bar_width = bar_width
+        if resolved_bar_width is None:
+            resolved_bar_width = 0.8 / len(hues) if len(hues) > 1 else 0.6
+        for _, row in data.iterrows():
+            hue_index = hues.index(row[_FOREST_HUE])
+            bar_position = label_positions[(row[_FOREST_GROUP], row[_FOREST_LABEL])]
+            if len(hues) > 1:
+                bar_position += (hue_index - (len(hues) - 1) / 2) * resolved_bar_width
+            pvalue_ax.barh(
+                bar_position,
+                -np.log10(row[_FOREST_PVALUE]),
+                height=resolved_bar_width,
+                color=color_map[row[_FOREST_HUE]],
+                edgecolor=None,
             )
-        for i, label in enumerate(reversed(unique_labels)):
-            label_data = data[data[y] == label]
-            for j, hue_group in enumerate(unique_hue_groups):
-                hue_data = label_data[label_data["hue_group"] == hue_group]
-                if len(hue_data) > 0:
-                    color = color_map[hue_group]
-                    if len(unique_hue_groups) > 1:
-                        bar_pos = i + (j - (len(unique_hue_groups) - 1) / 2) * bar_width
-                    else:
-                        bar_pos = i
-                    ax2.barh(
-                        bar_pos,
-                        hue_data[x2].iloc[0],
-                        height=bar_width,
-                        color=color,
-                        edgecolor=None,
-                    )
-
-        ax2.set_yticks(list(range(len(unique_labels))))
-        ax2.set_yticklabels([])
-        ax2.set_xlabel(x2label)
-        ax2.axvline(
-            x=-np.log10(0.05), color="red", linestyle="--", linewidth=0.8, alpha=0.7
+        pvalue_ax.set_yticks(tick_positions)
+        pvalue_ax.set_yticklabels([])
+        pvalue_ax.set_xlabel("\u2013log10(p-value)")
+        pvalue_ax.axvline(
+            x=-np.log10(0.05),
+            color="red",
+            linestyle="--",
+            linewidth=0.8,
+            alpha=0.7,
         )
-        ax2.set_ylim(-0.5, len(unique_labels) - 0.5)
-        ax2.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
+        pvalue_ax.set_ylim(-0.5, len(row_specs) - 0.5)
+        pvalue_ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=5))
 
-    return ax1
+    return ax
+
+
+def forestplot(
+    model: object | pd.DataFrame | None = None,
+    bar_width: float | None = None,
+    add_pvalue: bool = True,
+    *,
+    data: pd.DataFrame | None = None,
+    label: str | None = None,
+    estimate: str | None = None,
+    lower: str | None = None,
+    upper: str | None = None,
+    pvalue: str | None = None,
+    group: str | None = None,
+    hue: str | None = None,
+    order: list[Any] | None = None,
+    group_order: list[Any] | None = None,
+    hue_order: list[Any] | None = None,
+    reference: float | None = None,
+    xlabel: str | None = None,
+    ax: Axes | None = None,
+) -> Axes:
+    """
+    Create a forest plot from a results table or fitted model.
+
+    DataFrame input supports any effect measure with explicit columns for its
+    estimate and confidence interval. CoxModel and LogisticModel inputs retain
+    the model-specific labels and reference lines used by earlier releases.
+
+    Parameters
+    ----------
+    model : CoxModel, LogisticModel, or pandas.DataFrame, optional
+        Fitted model to adapt, or a results DataFrame passed positionally. Use
+        either ``model`` or ``data``, not both.
+    bar_width : float or None, optional
+        Width of bars in the p-value panel. If None, uses ``0.8 / n_hue_groups``
+        for multiple hue groups and ``0.6`` otherwise.
+    add_pvalue : bool, default: True
+        Add a ``-log10(p)`` bar panel when p-values are available.
+    data : pandas.DataFrame, optional
+        Results table. Table input requires ``label``, ``estimate``, ``lower``,
+        and ``upper`` column mappings.
+    label : str, optional
+        Column containing row labels.
+    estimate : str, optional
+        Column containing effect estimates.
+    lower, upper : str, optional
+        Columns containing absolute lower and upper confidence bounds.
+    pvalue : str, optional
+        Column containing raw p-values greater than 0 and at most 1.
+    group : str, optional
+        Column defining labeled row sections.
+    hue : str, optional
+        Column defining offset, color-coded estimates within each row.
+    order, group_order, hue_order : list, optional
+        Complete display orders for labels, groups, and hue levels. Each list
+        must contain every observed value exactly once.
+    reference : float, optional
+        Position of the vertical reference line. Table input draws no reference
+        line by default. Cox and logistic models default to 1 and 0.5.
+    xlabel : str, optional
+        Label for the estimate axis. Defaults to the estimate column name for
+        table input and the model-specific effect label for fitted models.
+    ax : matplotlib.axes.Axes, optional
+        Axes for the primary forest panel. The p-value panel is appended to it.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The primary forest-plot Axes.
+
+    See Also
+    --------
+    survivalplot : Create a Kaplan-Meier survival plot.
+    rocplot : Create an ROC curve plot.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> ax = cns.forestplot(
+    ...     data=results,
+    ...     label="term",
+    ...     estimate="effect",
+    ...     lower="ci_low",
+    ...     upper="ci_high",
+    ...     pvalue="p",
+    ...     group="analysis",
+    ...     reference=1,
+    ...     xlabel="Risk ratio (95% CI)",
+    ... )
+
+    >>> model.fit()
+    >>> ax = cns.forestplot(model)
+    """
+    if model is None and data is None:
+        raise ValueError("[forestplot] Pass exactly one of 'model' or 'data'.")
+    if model is not None and data is not None:
+        raise ValueError("[forestplot] Pass exactly one of 'model' or 'data'.")
+    if bar_width is not None and (
+        isinstance(bar_width, bool)
+        or not isinstance(bar_width, (int, float, np.number))
+        or not np.isfinite(bar_width)
+        or bar_width <= 0
+    ):
+        raise ValueError("[forestplot] 'bar_width' must be a positive finite number.")
+    if reference is not None and (
+        isinstance(reference, bool)
+        or not isinstance(reference, (int, float, np.number))
+        or not np.isfinite(reference)
+    ):
+        raise ValueError("[forestplot] 'reference' must be a finite number or None.")
+    if xlabel is not None and not isinstance(xlabel, str):
+        raise TypeError("[forestplot] 'xlabel' must be a string or None.")
+
+    source = data if data is not None else model
+    if data is not None and not isinstance(data, pd.DataFrame):
+        raise TypeError("[forestplot] 'data' must be a pandas DataFrame.")
+
+    if isinstance(source, pd.DataFrame):
+        normalized, has_group, has_hue, has_pvalue = _normalize_forest_table(
+            source,
+            label=label,
+            estimate=estimate,
+            lower=lower,
+            upper=upper,
+            pvalue=pvalue,
+            group=group,
+            hue=hue,
+        )
+        resolved_reference = reference
+        resolved_xlabel = estimate if xlabel is None else xlabel
+        assert resolved_xlabel is not None
+        hue_title = hue
+    else:
+        table_parameters = {
+            "label": label,
+            "estimate": estimate,
+            "lower": lower,
+            "upper": upper,
+            "pvalue": pvalue,
+            "group": group,
+            "hue": hue,
+        }
+        supplied_table_parameters = [
+            name for name, value in table_parameters.items() if value is not None
+        ]
+        if supplied_table_parameters:
+            raise TypeError(
+                "[forestplot] Table column mappings are only valid with DataFrame "
+                f"input: {supplied_table_parameters}"
+            )
+        assert source is not None
+        (
+            normalized,
+            has_group,
+            has_hue,
+            has_pvalue,
+            model_reference,
+            model_xlabel,
+            hue_title,
+        ) = _normalize_forest_model(source)
+        resolved_reference = model_reference if reference is None else reference
+        resolved_xlabel = model_xlabel if xlabel is None else xlabel
+
+    if ax is None:
+        ax = plt.gca()
+    return _draw_forestplot(
+        normalized,
+        has_group=has_group,
+        has_hue=has_hue,
+        has_pvalue=has_pvalue,
+        group_order=group_order,
+        order=order,
+        hue_order=hue_order,
+        reference=resolved_reference,
+        xlabel=resolved_xlabel,
+        hue_title=hue_title,
+        bar_width=bar_width,
+        add_pvalue=add_pvalue,
+        ax=ax,
+    )
 
 
 def rocplot(

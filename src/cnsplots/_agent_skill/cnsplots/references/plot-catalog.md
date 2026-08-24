@@ -49,7 +49,9 @@ object.
 - `survivalplot`: Kaplan-Meier curves, overall tests, and optional pairwise
   hazard-ratio inference.
 - `cumulativeincidenceplot`: competing-risk cumulative incidence.
-- `forestplot`: effect estimates and confidence intervals.
+- `forestplot`: effect estimates and confidence intervals from a results table
+  or a fitted `CoxModel` or `LogisticModel`. For table input, map the label,
+  estimate, and absolute confidence-bound columns explicitly.
 - `CoxModel` and `LogisticModel`: fitted statistical models used by relevant
   plotting workflows.
 
