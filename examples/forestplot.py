@@ -6,8 +6,8 @@ Create forest plots for visualizing regression results.
 
 Forest plots display effect sizes (hazard ratios, odds ratios) with
 confidence intervals, commonly used in survival analysis, meta-analysis,
-and epidemiological studies. cnsplots integrates with lifelines for
-Cox proportional hazards and logistic regression models.
+and epidemiological studies. cnsplots accepts result tables directly and
+also adapts its Cox and logistic model classes.
 """
 
 # %%
@@ -18,6 +18,36 @@ import numpy as np
 import pandas as pd
 
 import cnsplots as cns
+
+# %%
+# Plot estimates from a results table
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Map label, estimate, confidence-bound, and p-value columns explicitly.
+# The section column adds row headings without changing the input table.
+table_results = pd.DataFrame(
+    {
+        "section": ["Overall", "Subgroup analysis", "Subgroup analysis"],
+        "population": ["All participants", "Women", "Men"],
+        "risk_ratio": [0.82, 0.74, 0.91],
+        "ci_lower": [0.71, 0.60, 0.75],
+        "ci_upper": [0.95, 0.91, 1.10],
+        "p_value": [0.01, 0.006, 0.34],
+    }
+)
+
+cns.figure(210, 80, ["black"])
+ax = cns.forestplot(
+    data=table_results,
+    label="population",
+    estimate="risk_ratio",
+    lower="ci_lower",
+    upper="ci_upper",
+    pvalue="p_value",
+    group="section",
+    reference=1,
+    xlabel="Risk ratio (95% CI)",
+)
+ax.set_title("Table-driven Forest Plot")
 
 # %%
 # Generate synthetic survival data

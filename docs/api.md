@@ -84,7 +84,6 @@ diagram object, respectively.
 
    survivalplot
    cumulativeincidenceplot
-   forestplot
 ```
 
 ### Genomics & Statistical Plots
@@ -98,6 +97,7 @@ diagram object, respectively.
    gseaplot
    rocplot
    qqplot
+   forestplot
 ```
 
 ### Specialized Plots
