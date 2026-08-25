@@ -60,10 +60,17 @@ ax.set_title("Best Model ROC")
 # %%
 # Two model comparison
 # ~~~~~~~~~~~~~~~~~~~~
-# Compare the two best models.
+# Compare the two best models with pointwise 95% bootstrap confidence bands and
+# a paired, two-sided DeLong test of their AUCs.
 cns.figure(150, 150)
-ax = cns.rocplot(iris, "true_labels", ["model1_prob", "model2_prob"])
-ax.set_title("Top 2 Models")
+ax = cns.rocplot(
+    iris,
+    "true_labels",
+    ["model1_prob", "model2_prob"],
+    ci_show=True,
+    pairs="all",
+)
+ax.set_title("Top 2 Models with Uncertainty")
 cns.take_legend_out()
 
 

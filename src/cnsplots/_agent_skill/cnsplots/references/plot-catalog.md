@@ -62,7 +62,8 @@ before plotting.
 
 - `volcanoplot`: effect size versus transformed adjusted significance.
 - `gseaplot`: gene-set enrichment results.
-- `rocplot`: receiver operating characteristic curves.
+- `rocplot`: receiver operating characteristic curves with optional pointwise
+  bootstrap confidence bands and paired DeLong AUC comparisons.
 - `phyloplot`: phylogenetic visualization from `AnnData`.
 - `prerank`: preranked enrichment analysis.
 
