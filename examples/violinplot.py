@@ -31,24 +31,33 @@ ax.set_title("Basic Violin Plot")
 # %%
 # Violin plot with statistical testing
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``pairs="all"`` for Mann-Whitney U tests between all groups.
+# Use ``pairs="all"`` with Holm correction for all Mann-Whitney U tests.
 cns.figure(100, 150, "Tableau")
-ax = cns.violinplot(data=tips, x="day", y="total_bill", pairs="all")
-ax.set_title("Violin Plot with All Pairwise Comparisons")
+ax = cns.violinplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    pairs="all",
+    test="Mann-Whitney",
+    p_adjust="holm",
+)
+ax.set_title("Holm-Corrected Pairwise Comparisons")
 
 
 # %%
 # Violin plot with specific pair comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Test only selected pairs.
+# Test selected pairs with Welch's t-test and Benjamini-Hochberg correction.
 cns.figure(100, 150)
 ax = cns.violinplot(
     data=iris,
     x="species",
     y="sepal_length",
     pairs=[("setosa", "versicolor"), ("setosa", "virginica")],
+    test="t-test_welch",
+    p_adjust="fdr_bh",
 )
-ax.set_title("Selected Pair Comparisons")
+ax.set_title("Welch Tests with FDR Correction")
 
 
 # %%

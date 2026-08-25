@@ -91,7 +91,7 @@ for index in range(tips["day"].nunique()):
 # %%
 # Boxplot with statistical comparisons (all pairs)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``pairs="all"`` to perform Mann-Whitney U tests between all groups.
+# Select Mann-Whitney U explicitly and use Holm correction across all pairs.
 # The ``add_count=True`` parameter adds sample sizes below each box.
 with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
     cns.figure(100, 150)
@@ -100,15 +100,17 @@ with cns.settings.context(pvalue_format="threshold", pvalue_fontsize=8):
         x="species",
         y="sepal_width",
         pairs="all",
+        test="Mann-Whitney",
+        p_adjust="holm",
         add_count=True,
     )
-ax.set_title("All Pairwise Comparisons\nwith Sample Counts")
+ax.set_title("Holm-Corrected Comparisons\nwith Sample Counts")
 
 
 # %%
 # Boxplot with specific pair comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Test only specific pairs by providing a list of tuples.
+# Test only specific pairs with Welch's t-test and control the false discovery rate.
 with cns.settings.context(pvalue_format="full", pvalue_fontsize=8):
     cns.figure(100, 150)
     ax = cns.boxplot(
@@ -116,8 +118,10 @@ with cns.settings.context(pvalue_format="full", pvalue_fontsize=8):
         x="species",
         y="sepal_width",
         pairs=[("setosa", "virginica"), ("versicolor", "virginica")],
+        test="t-test_welch",
+        p_adjust="fdr_bh",
     )
-ax.set_title("Selected Pair Comparisons")
+ax.set_title("Welch Tests with FDR Correction")
 
 
 # %%

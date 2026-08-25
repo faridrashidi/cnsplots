@@ -107,23 +107,35 @@ cns.barplot(data=tips, x="day", y="total_bill", palette=cols)
 # %%
 # Statistical comparisons (all pairs)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Add significance annotations for all pairwise comparisons.
+# Apply Benjamini-Hochberg correction across all pairwise Welch tests.
 cns.figure(100, 150, "Tableau")
-cns.barplot(data=tips, x="day", y="total_bill", pairs="all", add_tip=True)
+ax = cns.barplot(
+    data=tips,
+    x="day",
+    y="total_bill",
+    pairs="all",
+    test="t-test_welch",
+    p_adjust="fdr_bh",
+    add_tip=True,
+)
+ax.set_title("Welch Tests with FDR Correction")
 
 
 # %%
 # Statistical comparisons (specific pairs)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Compare only selected pairs of groups.
+# Switch to Mann-Whitney U and apply a Bonferroni correction.
 cns.figure(100, 150, "Set1")
-cns.barplot(
+ax = cns.barplot(
     data=tips,
     x="day",
     y="total_bill",
     pairs=[("Thur", "Fri"), ("Sat", "Sun")],
+    test="Mann-Whitney",
+    p_adjust="bonferroni",
     add_tip=True,
 )
+ax.set_title("Mann-Whitney with Bonferroni")
 
 
 # %%

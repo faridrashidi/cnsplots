@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union, cast
+from typing import Any, Literal, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -241,6 +241,8 @@ def barplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    test: Literal["Mann-Whitney", "t-test_welch"] = "t-test_welch",
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
@@ -270,6 +272,10 @@ def barplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    test : {'Mann-Whitney', 't-test_welch'}, default: 't-test_welch'
+        Statistical test used for pairwise comparisons.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
+        Multiple-comparison correction applied across the resolved pairs.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
@@ -294,6 +300,8 @@ def barplot(
     ...     x="treatment",
     ...     y="response",
     ...     pairs=[("control", "drug_a"), ("control", "drug_b")],
+    ...     test="Mann-Whitney",
+    ...     p_adjust="holm",
     ...     add_tip=True,
     ... )
     >>> ax.set_title("Treatment Response")
@@ -307,6 +315,11 @@ def barplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "barplot")
     validate_dataframe_not_empty(data, "barplot")
+    utils._validate_statistical_options(
+        test,
+        p_adjust,
+        valid_tests=("Mann-Whitney", "t-test_welch"),
+    )
 
     if "addtip" in kwargs:
         raise TypeError(
@@ -374,11 +387,12 @@ def barplot(
                 orient=orient,
             )
         utils._p_value_helper(
-            "t-test_welch",
+            test,
             data,
             ax,
             plotting,
             pairs,
+            p_adjust=p_adjust,
             **pvalue_kwargs,
         )
     if show_legend:
@@ -411,6 +425,8 @@ def lollipopplot(
     palette: Any = None,
     baseline: float = 0,
     *,
+    test: Literal["Mann-Whitney", "t-test_welch"] = "t-test_welch",
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
 ) -> Axes:
     """
@@ -462,6 +478,10 @@ def lollipopplot(
         or a column name in data for palette-as-column mapping.
     baseline : float, default: 0
         Value at which the stems originate.
+    test : {'Mann-Whitney', 't-test_welch'}, default: 't-test_welch'
+        Statistical test used for pairwise comparisons.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
+        Multiple-comparison correction applied across the resolved pairs.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
 
@@ -479,7 +499,13 @@ def lollipopplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> ax = cns.lollipopplot(data=df, x="treatment", y="response")
+    >>> ax = cns.lollipopplot(
+    ...     data=df,
+    ...     x="treatment",
+    ...     y="response",
+    ...     pairs="all",
+    ...     p_adjust="fdr_bh",
+    ... )
     >>> ax.set_title("Treatment Response")
 
     >>> # Horizontal lollipop plot
@@ -498,6 +524,11 @@ def lollipopplot(
         raise ValueError("estimator must be one of: 'mean', 'median'")
     if errorbar not in {None, "se", "sd", "ci"}:
         raise ValueError("errorbar must be one of: 'se', 'sd', 'ci', or None")
+    utils._validate_statistical_options(
+        test,
+        p_adjust,
+        valid_tests=("Mann-Whitney", "t-test_welch"),
+    )
 
     palette_is_column = isinstance(palette, str) and palette in data.columns
     if hue is not None and palette_is_column and palette != hue:
@@ -643,7 +674,14 @@ def lollipopplot(
             plotting["hue"] = hue
         if hue_order is not None:
             plotting["hue_order"] = hue_order
-        utils._p_value_helper("t-test_welch", data, ax, plotting, pairs)
+        utils._p_value_helper(
+            test,
+            data,
+            ax,
+            plotting,
+            pairs,
+            p_adjust=p_adjust,
+        )
 
     # Legend
     if show_legend:
@@ -858,6 +896,8 @@ def stackplot(
     width: float = 0.5,
     normalize: bool = True,
     pairs: list[tuple[str, str]] | None = None,
+    test: Literal["auto", "fisher-exact", "chi-squared"] = "auto",
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     add_count: bool = False,
     n_factor: int | float = 1,
     ax: Axes | None = None,
@@ -895,6 +935,11 @@ def stackplot(
     pairs : list of tuple of str, optional
         List of pairs of bar-category names for pairwise statistical comparisons
         from the selected bar variable.
+    test : {'auto', 'fisher-exact', 'chi-squared'}, default: 'auto'
+        Statistical test used for pairwise comparisons. Automatic selection uses
+        Fisher's exact test for two stack levels and chi-squared otherwise.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
+        Multiple-comparison correction applied across the resolved pairs.
     add_count : bool, default: False
         Whether to append total counts to the category tick labels in the
         format ``n=...``.
@@ -923,6 +968,8 @@ def stackplot(
     ...     stack="cell_type",
     ...     normalize=True,
     ...     pairs=[("lung", "liver")],
+    ...     test="chi-squared",
+    ...     p_adjust="holm",
     ... )
     >>> ax.set_title("Cell Type Distribution by Tissue")
 
@@ -938,6 +985,11 @@ def stackplot(
     assert bar is not None
     validate_columns_exist(data, [bar, stack], "stackplot")
     validate_dataframe_not_empty(data, "stackplot")
+    utils._validate_statistical_options(
+        test,
+        p_adjust,
+        valid_tests=("auto", "fisher-exact", "chi-squared"),
+    )
 
     data2 = data.value_counts([bar, stack]).reset_index()
     df = data2.pivot(index=bar, columns=stack, values="count")
@@ -974,14 +1026,20 @@ def stackplot(
             plotting = {"data": data2, "x": "count", "y": bar, "order": order}
         else:
             plotting = {"data": data2, "x": bar, "y": "count", "order": order}
-        if contingency.shape[1] == 2:
-            utils._p_value_helper(
-                "fisher-exact", data2, ax, plotting, pairs, contingency
-            )
-        else:
-            utils._p_value_helper(
-                "chi-squared", data2, ax, plotting, pairs, contingency
-            )
+        resolved_test = (
+            ("fisher-exact" if contingency.shape[1] == 2 else "chi-squared")
+            if test == "auto"
+            else test
+        )
+        utils._p_value_helper(
+            resolved_test,
+            data2,
+            ax,
+            plotting,
+            pairs,
+            contingency,
+            p_adjust=p_adjust,
+        )
 
     return ax
 

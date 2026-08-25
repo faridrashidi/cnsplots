@@ -50,8 +50,8 @@ ax.set_title("Stacked Bar with Counts")
 # %%
 # Stacked bar plot with Fisher's exact test
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``pairs`` to test if proportions differ significantly between groups.
-# Fisher's exact test is used for 2x2 contingency tables.
+# Select Fisher's exact test for the 2x2 contingency tables and apply Holm
+# correction across the requested pairs.
 cns.figure(100, 120)
 ax = cns.stackplot(
     data=tips,
@@ -59,14 +59,16 @@ ax = cns.stackplot(
     stack="sex",
     normalize=True,
     pairs=[("Thur", "Fri"), ("Fri", "Sat")],
+    test="fisher-exact",
+    p_adjust="holm",
 )
-ax.set_title("With Selected Statistical Comparisons")
+ax.set_title("Fisher Tests with Holm Correction")
 
 
 # %%
 # Stacked bar plot with custom stack order
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Control the order of stacked segments with ``stack_order``.
+# Control the stack order and explicitly use chi-squared for the 2x4 table.
 cns.figure(100, 120)
 ax = cns.stackplot(
     data=tips,
@@ -75,17 +77,25 @@ ax = cns.stackplot(
     normalize=True,
     stack_order=["Sun", "Sat", "Fri", "Thur"],
     pairs=[("Male", "Female")],
+    test="chi-squared",
 )
-ax.set_title("Custom Stack Order")
+ax.set_title("Explicit Chi-Squared Test")
 
 
 # %%
 # Stacked bar plot with all pairwise comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``pairs="all"`` to test all possible pairs.
+# Use ``pairs="all"`` and control the false discovery rate across every test.
 cns.figure(100, 150, "Tableau")
-ax = cns.stackplot(data=tips, x="day", stack="sex", normalize=True, pairs="all")
-ax.set_title("All Pairwise Comparisons")
+ax = cns.stackplot(
+    data=tips,
+    x="day",
+    stack="sex",
+    normalize=True,
+    pairs="all",
+    p_adjust="fdr_bh",
+)
+ax.set_title("All Pairs with FDR Correction")
 
 
 # %%
