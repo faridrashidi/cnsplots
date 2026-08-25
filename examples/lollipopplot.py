@@ -78,14 +78,17 @@ cns.take_legend_out()
 # %%
 # Statistical comparisons
 # ~~~~~~~~~~~~~~~~~~~~~~~
-# Add significance annotations for specific pairs.
+# Select Mann-Whitney U and apply Holm correction across the requested pairs.
 cns.figure(100, 150, "Set1")
-cns.lollipopplot(
+ax = cns.lollipopplot(
     data=tips,
     x="day",
     y="total_bill",
     pairs=[("Thur", "Fri"), ("Sat", "Sun")],
+    test="Mann-Whitney",
+    p_adjust="holm",
 )
+ax.set_title("Mann-Whitney with Holm Correction")
 
 
 # %%

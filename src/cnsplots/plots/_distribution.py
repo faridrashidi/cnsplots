@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 import matplotlib as mpl
 import matplotlib.patches  # noqa: F401  # ensure submodule is importable for isinstance checks
@@ -39,6 +39,8 @@ def boxplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    test: Literal["Mann-Whitney", "t-test_welch"] = "Mann-Whitney",
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
@@ -73,6 +75,10 @@ def boxplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    test : {'Mann-Whitney', 't-test_welch'}, default: 'Mann-Whitney'
+        Statistical test used for pairwise comparisons.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
+        Multiple-comparison correction applied across the resolved pairs.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
@@ -97,6 +103,8 @@ def boxplot(
     ...     x="treatment",
     ...     y="response",
     ...     pairs=[("control", "treated")],
+    ...     test="t-test_welch",
+    ...     p_adjust="holm",
     ...     showoutliers=True,
     ... )
     >>> ax.set_title("Treatment Response")
@@ -106,6 +114,11 @@ def boxplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "boxplot")
     validate_dataframe_not_empty(data, "boxplot")
+    utils._validate_statistical_options(
+        test,
+        p_adjust,
+        valid_tests=("Mann-Whitney", "t-test_welch"),
+    )
 
     if "addcount" in kwargs:
         raise TypeError(
@@ -184,7 +197,14 @@ def boxplot(
         f" correspond to the {whis_str}."
     )
     if pairs is not None:
-        utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        utils._p_value_helper(
+            test,
+            data,
+            ax,
+            plotting,
+            pairs,
+            p_adjust=p_adjust,
+        )
 
     if add_count:
         utils._add_count_helper(data, x, ax)
@@ -205,6 +225,8 @@ def violinplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
+    test: Literal["Mann-Whitney", "t-test_welch"] = "Mann-Whitney",
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
     **kwargs: Any,
 ) -> Axes:
@@ -240,6 +262,10 @@ def violinplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
+    test : {'Mann-Whitney', 't-test_welch'}, default: 'Mann-Whitney'
+        Statistical test used for pairwise comparisons.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
+        Multiple-comparison correction applied across the resolved pairs.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
@@ -264,6 +290,7 @@ def violinplot(
     ...     x="condition",
     ...     y="expression",
     ...     pairs=[("control", "treated")],
+    ...     p_adjust="fdr_bh",
     ...     add_box=True,
     ... )
     >>> ax.set_title("Expression by Condition")
@@ -273,6 +300,11 @@ def violinplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "violinplot")
     validate_dataframe_not_empty(data, "violinplot")
+    utils._validate_statistical_options(
+        test,
+        p_adjust,
+        valid_tests=("Mann-Whitney", "t-test_welch"),
+    )
 
     if "addcount" in kwargs:
         raise TypeError(
@@ -321,7 +353,14 @@ def violinplot(
     if add_box:
         sns.boxplot(ax=ax, **boxplot_kwargs)
     if pairs is not None:
-        utils._p_value_helper("Mann-Whitney", data, ax, plotting, pairs)
+        utils._p_value_helper(
+            test,
+            data,
+            ax,
+            plotting,
+            pairs,
+            p_adjust=p_adjust,
+        )
 
     if add_count:
         utils._add_count_helper(data, x, ax)

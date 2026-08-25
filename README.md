@@ -174,8 +174,10 @@ cns.boxplot(
     x="day",
     y="total_bill",
     pairs=[("Thur", "Fri"), ("Sat", "Sun")],  # Compare these pairs
+    test="t-test_welch",
+    p_adjust="holm",
 )
-# Prints: P-values were determined by two-sided Mann-Whitney U test.
+# Prints: P-values were determined by two-sided Welch's t-test.
 ```
 
 ### Custom Colors
@@ -241,14 +243,35 @@ blue = cns.BLUE
 Many plot functions include built-in statistical testing:
 
 ```python
-# Boxplot with Mann-Whitney U test
-cns.boxplot(data=df, x="group", y="value", pairs="all")
+# Boxplot with Mann-Whitney U test and Holm correction
+cns.boxplot(
+    data=df,
+    x="group",
+    y="value",
+    pairs="all",
+    test="Mann-Whitney",
+    p_adjust="holm",
+)
 
-# Barplot with Welch's t-test
-cns.barplot(data=df, x="group", y="value", pairs=[("A", "B")])
+# Barplot with Mann-Whitney U test and false-discovery-rate correction
+cns.barplot(
+    data=df,
+    x="group",
+    y="value",
+    pairs=[("A", "B"), ("A", "C")],
+    test="Mann-Whitney",
+    p_adjust="fdr_bh",
+)
 
-# Stackplot with Fisher's exact test
-cns.stackplot(data=df, x="group", stack="category", pairs=[("A", "B")])
+# Stackplot with an explicit chi-squared test and Bonferroni correction
+cns.stackplot(
+    data=df,
+    x="group",
+    stack="category",
+    pairs="all",
+    test="chi-squared",
+    p_adjust="bonferroni",
+)
 ```
 
 ### Export for Publication

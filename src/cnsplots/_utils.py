@@ -74,6 +74,7 @@ _ContinuousPaletteName = Literal[
     "parula",
 ]
 _RGBColor = tuple[float, float, float]
+_P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
 
 RED = "#D6372E"
 BLUE = "#5189BB"
@@ -785,6 +786,15 @@ def _add_count_helper(data, attr, ax, axis="x"):
     set_ticklabels(new_tick_labels)
 
 
+def _validate_statistical_options(test, p_adjust, *, valid_tests):
+    if test not in valid_tests:
+        choices = ", ".join(repr(value) for value in valid_tests)
+        raise ValueError(f"test must be one of: {choices}")
+    if p_adjust is not None and p_adjust not in _P_ADJUST_METHODS:
+        choices = ", ".join(repr(value) for value in _P_ADJUST_METHODS)
+        raise ValueError(f"p_adjust must be one of: {choices}, or None")
+
+
 def _p_value_helper(
     test,
     data,
@@ -794,6 +804,7 @@ def _p_value_helper(
     contingency=None,
     format=None,
     label_clearance=None,
+    p_adjust=None,
 ):
     resolved_format = settings.pvalue_format if format is None else format
     if resolved_format not in {"star", "threshold", "full"}:
@@ -923,6 +934,7 @@ def _p_value_helper(
     annotator._pvalue_format = PValueFormatNew()
     annotator.configure(
         test=test if contingency is None else None,
+        comparisons_correction=p_adjust,
         text_format="full" if resolved_format == "full" else "star",
         loc=settings.pvalue_loc,
         line_width=0.5,
