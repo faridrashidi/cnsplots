@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import Any
+from itertools import combinations
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
+import num2tex
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -11,7 +13,9 @@ from matplotlib.axes import Axes
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.metrics import auc, roc_curve
+from statsmodels.stats.multitest import multipletests
 
+import cnsplots.helpers._roc as helper_roc
 import cnsplots.helpers._sankey as helper_sankey
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
@@ -32,6 +36,7 @@ _FOREST_PVALUE = "_forest_pvalue"
 _FOREST_GROUP = "_forest_group"
 _FOREST_HUE = "_forest_hue"
 _FOREST_ALL = "__forest_all__"
+_P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
 
 
 def placeholderplot(description: str, *, ax: Axes | None = None) -> Axes:
@@ -798,11 +803,85 @@ def forestplot(
     )
 
 
+def _resolve_roc_pairs(
+    pred_prob_cols: list[str],
+    pairs: Literal["all"] | list[tuple[str, str]] | None,
+) -> list[tuple[str, str]]:
+    """Validate and resolve requested ROC comparisons."""
+    if pairs is None:
+        return []
+    if len(set(pred_prob_cols)) != len(pred_prob_cols):
+        raise ValueError(
+            "[rocplot] Prediction columns must be unique when requesting comparisons."
+        )
+    if pairs == "all":
+        if len(pred_prob_cols) < 2:
+            raise ValueError(
+                "[rocplot] pairs='all' requires at least two prediction columns."
+            )
+        return list(combinations(pred_prob_cols, 2))
+    if not isinstance(pairs, list):
+        raise ValueError(
+            "[rocplot] 'pairs' must be a list of tuples, \"all\", or None."
+        )
+
+    resolved_pairs: list[tuple[str, str]] = []
+    seen_pairs: set[frozenset[str]] = set()
+    for pair in pairs:
+        if not isinstance(pair, tuple) or len(pair) != 2:
+            raise ValueError(
+                "[rocplot] Each item in 'pairs' must contain exactly two prediction "
+                "columns as a tuple."
+            )
+        first, second = pair
+        if first == second:
+            raise ValueError(
+                "[rocplot] Comparison pairs must contain two distinct prediction "
+                "columns."
+            )
+        missing = [column for column in pair if column not in pred_prob_cols]
+        if missing:
+            raise ValueError(
+                "[rocplot] Comparison pair contains prediction column(s) not plotted: "
+                f"{missing}."
+            )
+        pair_key = frozenset(pair)
+        if pair_key in seen_pairs:
+            raise ValueError(
+                "[rocplot] Comparison pairs must be unique regardless of order."
+            )
+        seen_pairs.add(pair_key)
+        resolved_pairs.append(pair)
+    return resolved_pairs
+
+
+def _validate_roc_scores(data: pd.DataFrame, columns: list[str]) -> None:
+    """Require complete, finite, real-valued ROC scores."""
+    validate_no_nulls(data, columns, "rocplot")
+    for column in columns:
+        values = data[column]
+        if (
+            not pd.api.types.is_numeric_dtype(values.dtype)
+            or pd.api.types.is_bool_dtype(values.dtype)
+            or np.iscomplexobj(values.to_numpy())
+        ):
+            raise ValueError(
+                f"[rocplot] Column '{column}' must contain real numeric scores."
+            )
+        if not np.isfinite(values.to_numpy(dtype=float)).all():
+            raise ValueError(
+                f"[rocplot] Column '{column}' must contain only finite scores."
+            )
+
+
 def rocplot(
     data: pd.DataFrame,
     true_label_col: str,
     pred_prob_cols: str | list[str],
     *,
+    ci_show: bool = False,
+    pairs: Literal["all"] | list[tuple[str, str]] | None = None,
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
 ) -> Axes:
     """
@@ -816,6 +895,13 @@ def rocplot(
         Column name for the true binary labels (0 or 1).
     pred_prob_cols : str or list of str
         Column name(s) for predicted probabilities.
+    ci_show : bool, default: False
+        Whether to display deterministic pointwise 95% bootstrap confidence bands.
+    pairs : list of tuple of str or {'all'}, optional
+        Prediction-column pairs to compare with paired, two-sided DeLong tests. Use
+        ``'all'`` to compare every plotted pair. No comparisons are run by default.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
+        Multiple-comparison correction applied across the resolved DeLong tests.
     ax : matplotlib.axes.Axes, optional
         Axes to draw on. If None, uses the current axes.
 
@@ -842,6 +928,9 @@ def rocplot(
     ...     data=df,
     ...     true_label_col="outcome",
     ...     pred_prob_cols=["model_a_prob", "model_b_prob", "model_c_prob"],
+    ...     ci_show=True,
+    ...     pairs="all",
+    ...     p_adjust="holm",
     ... )
     """
     # Validate inputs
@@ -856,14 +945,46 @@ def rocplot(
     validate_columns_exist(data, columns_to_check, "rocplot")
 
     # Validate binary labels
+    validate_no_nulls(data, true_label_col, "rocplot")
     validate_binary_column(data, true_label_col, "rocplot")
+    _validate_roc_scores(data, pred_prob_cols)
+    resolved_pairs = _resolve_roc_pairs(pred_prob_cols, pairs)
+    if p_adjust is not None and p_adjust not in _P_ADJUST_METHODS:
+        choices = ", ".join(repr(value) for value in _P_ADJUST_METHODS)
+        raise ValueError(f"[rocplot] 'p_adjust' must be one of: {choices}, or None.")
+    if resolved_pairs:
+        class_counts = data[true_label_col].value_counts()
+        if (class_counts < 2).any():
+            raise ValueError(
+                "[rocplot] DeLong comparisons require at least two positive and two "
+                "negative observations."
+            )
 
     if ax is None:
         ax = plt.gca()
     for col in pred_prob_cols:
         fpr, tpr, _ = roc_curve(data[true_label_col], data[col])
         roc_auc = auc(fpr, tpr)
-        ax.plot(fpr, tpr, label=f"{col} (AUC={roc_auc:.2f})", linewidth=1)
+        (curve,) = ax.plot(
+            fpr,
+            tpr,
+            label=f"{col} (AUC={roc_auc:.2f})",
+            linewidth=1,
+        )
+        if ci_show:
+            ci_fpr, ci_lower, ci_upper = helper_roc._bootstrap_roc_confidence_band(
+                data[true_label_col].to_numpy(),
+                data[col].to_numpy(),
+            )
+            ax.fill_between(
+                ci_fpr,
+                ci_lower,
+                ci_upper,
+                color=curve.get_color(),
+                alpha=0.2,
+                linewidth=0,
+                zorder=curve.get_zorder() - 1,
+            )
 
     ax.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5))
     ax.set_xlim((-0.02, 1.02))
@@ -880,5 +1001,38 @@ def rocplot(
             set_linewidth = getattr(handle, "set_linewidth", None)
             if callable(set_linewidth):
                 set_linewidth(1.7)
+
+    if resolved_pairs:
+        raw_pvalues = [
+            helper_roc._delong_roc_test(
+                data[true_label_col].to_numpy(),
+                data[first].to_numpy(),
+                data[second].to_numpy(),
+            )
+            for first, second in resolved_pairs
+        ]
+        displayed_pvalues = raw_pvalues
+        annotation_header = "DeLong test"
+        if p_adjust is not None:
+            displayed_pvalues = multipletests(raw_pvalues, method=p_adjust)[1].tolist()
+            annotation_header += f" ({p_adjust}-adjusted)"
+        annotation_lines = [annotation_header]
+        annotation_lines.extend(
+            f"{first} vs {second}: P = "
+            + rf"${num2tex.num2tex(pvalue, precision=2):.2g}$"
+            for (first, second), pvalue in zip(
+                resolved_pairs, displayed_pvalues, strict=True
+            )
+        )
+        ax.text(
+            0.02,
+            0.02,
+            "\n".join(annotation_lines),
+            transform=ax.transAxes,
+            ha="left",
+            va="bottom",
+            fontsize=_legend_fontsize(),
+            linespacing=1.25,
+        )
 
     return ax
