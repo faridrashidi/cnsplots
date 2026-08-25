@@ -59,18 +59,17 @@ def _delong_auc_covariance(
     negative_ranks = np.vstack([rankdata(row, method="average") for row in negative])
     combined_ranks = np.vstack([rankdata(row, method="average") for row in combined])
 
-    aucs = combined_ranks[:, :n_positive].sum(axis=1) / (
-        n_positive * n_negative
-    ) - (n_positive + 1) / (2 * n_negative)
-    positive_placements = (
-        combined_ranks[:, :n_positive] - positive_ranks
-    ) / n_negative
-    negative_placements = 1 - (
-        combined_ranks[:, n_positive:] - negative_ranks
-    ) / n_positive
-    covariance = np.cov(positive_placements) / n_positive + np.cov(
-        negative_placements
-    ) / n_negative
+    aucs = combined_ranks[:, :n_positive].sum(axis=1) / (n_positive * n_negative) - (
+        n_positive + 1
+    ) / (2 * n_negative)
+    positive_placements = (combined_ranks[:, :n_positive] - positive_ranks) / n_negative
+    negative_placements = (
+        1 - (combined_ranks[:, n_positive:] - negative_ranks) / n_positive
+    )
+    covariance = (
+        np.cov(positive_placements) / n_positive
+        + np.cov(negative_placements) / n_negative
+    )
     return aucs, np.atleast_2d(covariance)
 
 

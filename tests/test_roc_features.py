@@ -4,7 +4,6 @@ import inspect
 from typing import Any, cast
 
 import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
@@ -97,16 +96,15 @@ def _slow_delong_reference(
     negative_placements = np.empty_like(negative, dtype=float)
     for model_index in range(predictions.shape[0]):
         placements = (
-            (positive[model_index, :, None] > negative[model_index, None, :])
-            + 0.5
-            * (positive[model_index, :, None] == negative[model_index, None, :])
-        )
+            positive[model_index, :, None] > negative[model_index, None, :]
+        ) + 0.5 * (positive[model_index, :, None] == negative[model_index, None, :])
         positive_placements[model_index] = placements.mean(axis=1)
         negative_placements[model_index] = placements.mean(axis=0)
     aucs = positive_placements.mean(axis=1)
-    covariance = np.cov(positive_placements) / positive.shape[1] + np.cov(
-        negative_placements
-    ) / negative.shape[1]
+    covariance = (
+        np.cov(positive_placements) / positive.shape[1]
+        + np.cov(negative_placements) / negative.shape[1]
+    )
     return aucs, covariance
 
 
@@ -181,9 +179,7 @@ def test_rocplot_runs_requested_delong_comparison(roc_df: pd.DataFrame) -> None:
     )
 
     annotation = ax.texts[0]
-    assert annotation.get_text() == (
-        "DeLong test\nmodel_a vs model_b: P = $1$"
-    )
+    assert annotation.get_text() == ("DeLong test\nmodel_a vs model_b: P = $1$")
     assert annotation.get_position() == (0.02, 0.02)
     assert annotation.get_transform() is ax.transAxes
     assert annotation.get_horizontalalignment() == "left"
