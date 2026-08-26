@@ -39,6 +39,23 @@ ax.set_title("Total Bill by Day (plasma cmap)")
 
 
 # %%
+# Ridge plot with hue and custom overlap
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Overlay distributions within each ridge and customize the filled curves.
+cns.figure(150, 150)
+ax = cns.ridgeplot(
+    data=tips,
+    x="total_bill",
+    y="day",
+    hue="sex",
+    overlap=0.7,
+    alpha=0.65,
+    linewidth=0.8,
+)
+ax.set_title("Total Bill by Day and Sex")
+
+
+# %%
 # Ridge plot for iris data
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare species distributions.

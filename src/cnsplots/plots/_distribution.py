@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from numbers import Real
 from typing import Any, Literal
 
 import matplotlib as mpl
@@ -733,7 +734,10 @@ def ridgeplot(
     y: str,
     cmap: str = "viridis",
     *,
+    hue: str | None = None,
+    overlap: float = 0.5,
     ax: Axes | None = None,
+    **kwargs: Any,
 ) -> Axes:
     """
     Create a ridge plot (joyplot) showing distributions across categories.
@@ -752,8 +756,16 @@ def ridgeplot(
     cmap : str, optional
         Name of a matplotlib colormap to use for coloring the ridges.
         Default is ``"viridis"``.
+    hue : str, optional
+        Column name for grouping density estimates within each ridge. Each observed
+        hue level is drawn at the same vertical offset and included in a legend.
+    overlap : float, default: 0.5
+        Fractional overlap between adjacent ridges. Must be between 0 and 1,
+        inclusive. Zero makes adjacent ridges touch and one fully aligns them.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
+    **kwargs
+        Additional keyword arguments passed to `matplotlib.axes.Axes.fill_between`.
 
     Returns
     -------
@@ -774,62 +786,117 @@ def ridgeplot(
 
     >>> # Time series data with a custom colormap
     >>> ax = cns.ridgeplot(data=df, x="temperature", y="month", cmap="plasma")
+
+    >>> # Compare groups within each ridge and adjust their overlap
+    >>> ax = cns.ridgeplot(
+    ...     data=df,
+    ...     x="expression",
+    ...     y="tissue_type",
+    ...     hue="treatment",
+    ...     overlap=0.7,
+    ...     alpha=0.6,
+    ... )
     """
     # Validate inputs
     validate_dataframe(data, "data", "ridgeplot")
-    validate_columns_exist(data, [x, y], "ridgeplot")
+    columns = [x, y] if hue is None else [x, y, hue]
+    validate_columns_exist(data, columns, "ridgeplot")
     validate_dataframe_not_empty(data, "ridgeplot")
-    validate_no_nulls(data, [x, y], "ridgeplot")
+    validate_no_nulls(data, columns, "ridgeplot")
 
-    categories = data[y].unique()
-    grouped_values: list[tuple[Any, np.ndarray]] = []
-    for category in categories:
-        values = data.loc[data[y] == category, x].to_numpy()
-        if values.size < 2:
-            raise ValueError(
-                f"[ridgeplot] Group {category!r} must contain at least two "
-                "observations."
+    if isinstance(overlap, (bool, np.bool_)) or not isinstance(overlap, Real):
+        raise TypeError(
+            "[ridgeplot] Parameter 'overlap' must be a number between 0 and 1"
+        )
+    if not np.isfinite(overlap) or not 0 <= overlap <= 1:
+        raise ValueError(
+            "[ridgeplot] Parameter 'overlap' must be finite and between 0 and 1"
+        )
+
+    categories = list(data[y].unique())
+    hue_levels = [] if hue is None else list(data[hue].unique())
+    grouped_values: list[tuple[int, Any, Any | None, np.ndarray]] = []
+    for category_index, category in enumerate(categories):
+        category_data = data.loc[data[y] == category]
+        group_hues: list[Any | None] = [None] if hue is None else hue_levels
+        for hue_value in group_hues:
+            values = (
+                category_data[x].to_numpy()
+                if hue is None
+                else category_data.loc[category_data[hue] == hue_value, x].to_numpy()
             )
-        if pd.Series(values).nunique() < 2:
-            raise ValueError(
-                f"[ridgeplot] Group {category!r} is constant; kernel density "
-                "estimation requires varying values."
+            if values.size == 0:
+                continue
+            group_description = (
+                f"{category!r}"
+                if hue is None
+                else f"{category!r} with {hue}={hue_value!r}"
             )
-        grouped_values.append((category, values))
+            if values.size < 2:
+                raise ValueError(
+                    f"[ridgeplot] Group {group_description} must contain at least two "
+                    "observations."
+                )
+            if pd.Series(values).nunique() < 2:
+                raise ValueError(
+                    f"[ridgeplot] Group {group_description} is constant; kernel "
+                    "density estimation requires varying values."
+                )
+            grouped_values.append((category_index, category, hue_value, values))
 
     n = len(categories)
-    colors = utils._get_hex_colors_from_colorbar(cmap, n)
+    color_levels = categories if hue is None else hue_levels
+    colors = utils._get_hex_colors_from_colorbar(cmap, len(color_levels))
+    color_map = dict(zip(color_levels, colors))
     if ax is None:
         ax = plt.gca()
 
     from scipy.stats import gaussian_kde
 
-    overlap = 0.5
     x_min, x_max = data[x].min(), data[x].max()
     x_grid = np.linspace(x_min, x_max, 200)
+    hue_handles: dict[Any, Any] = {}
 
-    for i, (cat, x_v) in enumerate(grouped_values):
+    for category_index, _, hue_value, x_v in grouped_values:
         kde = gaussian_kde(x_v)
         y_vals = kde(x_grid)
         y_vals = y_vals / y_vals.max()
-        offset = (n - 1 - i) * (1 - overlap)
-        ax.fill_between(
+        offset = (n - 1 - category_index) * (1 - overlap)
+        color_level = categories[category_index] if hue is None else hue_value
+        color = color_map[color_level]
+        fill_kwargs: dict[str, Any] = {
+            "alpha": 1,
+            "color": color,
+            "zorder": category_index,
+            "linewidth": 0.5,
+            "edgecolor": color,
+        }
+        fill_kwargs.update(kwargs)
+        collection = ax.fill_between(
             x_grid,
             offset,
             y_vals + offset,
-            alpha=1,
-            color=colors[i],
-            zorder=i,
-            linewidth=0.5,
-            edgecolor=colors[i],
+            **fill_kwargs,
         )
+        if hue is not None and hue_value not in hue_handles:
+            hue_handles[hue_value] = collection
+
+    for category_index, category in enumerate(categories):
+        offset = (n - 1 - category_index) * (1 - overlap)
         ax.text(
             x_min,
             offset + 0.05,
-            cat,
+            category,
             ha="right",
             va="bottom",
             fontsize=_legend_fontsize(),
+        )
+
+    if hue is not None:
+        ax.legend(
+            [hue_handles[hue_value] for hue_value in hue_levels],
+            [str(hue_value) for hue_value in hue_levels],
+            title=hue,
         )
 
     ax.set_xlim(x_min, x_max)
