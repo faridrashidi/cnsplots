@@ -215,7 +215,7 @@ ax.set_title("Rocplot")
 
 # Panel N: sankeyplot
 mp.panel("N", 30, 100, pad_left=-30, color_cycle="Ecotyper4")
-ax = cns.sankeyplot(tips_df, x="day", y="sex", label_rotation=90)
+ax = cns.sankeyplot(tips_df, x=["day", "sex"], label_rotation=90)
 ax.set_title("Sankeyplot")
 
 # Panel O: ridgeplot

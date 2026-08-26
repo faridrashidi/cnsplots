@@ -709,7 +709,7 @@ def test_sets_and_specialized_plots(
     ]
 
     cns.figure(120, 120)
-    ax = cns.sankeyplot(sankey_df, x="source", y="target")
+    ax = cns.sankeyplot(sankey_df, x=["source", "target"])
     assert ax is plt.gca()
     assert (
         len(ax.texts) == sankey_df["source"].nunique() + sankey_df["target"].nunique()
@@ -717,7 +717,7 @@ def test_sets_and_specialized_plots(
     assert all(text.get_rotation() == 0 for text in ax.texts)
 
     cns.figure(120, 120)
-    ax_rotated = cns.sankeyplot(sankey_df, x="source", y="target", label_rotation=90)
+    ax_rotated = cns.sankeyplot(sankey_df, x=["source", "target"], label_rotation=90)
     assert ax_rotated is plt.gca()
     assert len(ax_rotated.texts) == len(ax.texts)
     assert all(text.get_rotation() == 90 for text in ax_rotated.texts)
@@ -759,12 +759,12 @@ def test_sets_and_specialized_plots(
 def test_sankey_annotations_use_legend_fontsize(sankey_df: pd.DataFrame) -> None:
     with cns.settings.context(legend_fontsize=13):
         cns.figure(120, 120)
-        ax = cns.sankeyplot(sankey_df, x="source", y="target")
+        ax = cns.sankeyplot(sankey_df, x=["source", "target"])
         assert ax.texts
         assert {text.get_fontsize() for text in ax.texts} == {13}
 
     with cns.settings.context(legend_fontsize=None, title_fontsize=12):
         cns.figure(120, 120)
-        ax = cns.sankeyplot(sankey_df, x="source", y="target")
+        ax = cns.sankeyplot(sankey_df, x=["source", "target"])
         assert ax.texts
         assert {text.get_fontsize() for text in ax.texts} == {12}

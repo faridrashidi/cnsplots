@@ -4,9 +4,9 @@ Sankey Diagram
 
 Create Sankey diagrams for visualizing flows between categories.
 
-Sankey diagrams show how quantities flow from one set of categories
-to another, useful for visualizing transitions, migrations, or
-relationships between categorical variables.
+Sankey diagrams show how quantities flow across ordered sets of categories,
+which is useful for visualizing transitions, migrations, or relationships
+between categorical variables.
 """
 
 # %%
@@ -33,7 +33,7 @@ data = pd.DataFrame(
 # ~~~~~~~~~~~~~~~~~~~~
 # Show flows from categories A, B, C to X, Y, Z.
 cns.figure(80, 100)
-ax = cns.sankeyplot(data=data, x="x", y="y")
+ax = cns.sankeyplot(data=data, x=["x", "y"])
 ax.set_title("Basic Sankey")
 
 
@@ -63,7 +63,7 @@ rotated_label_data = pd.DataFrame(
 )
 
 cns.figure(110, 90)
-ax = cns.sankeyplot(data=rotated_label_data, x="source", y="target", label_rotation=45)
+ax = cns.sankeyplot(data=rotated_label_data, x=["source", "target"], label_rotation=45)
 ax.set_title("Rotated Labels")
 
 
@@ -85,20 +85,25 @@ treatment_data = pd.DataFrame(
 )
 
 cns.figure(100, 120)
-ax = cns.sankeyplot(data=treatment_data, x="treatment", y="outcome")
+ax = cns.sankeyplot(data=treatment_data, x=["treatment", "outcome"])
 ax.set_title("Treatment to Outcome")
 
 
 # %%
-# Disease stage progression
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
-# Show how patients transition between stages.
+# Multi-stage disease progression
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Show how patients transition across three observations.
 stage_data = pd.DataFrame(
     {
         "baseline": np.random.choice(
             ["Stage I", "Stage II", "Stage III"], 100, p=[0.4, 0.35, 0.25]
         ),
-        "followup": np.random.choice(
+        "week_4": np.random.choice(
+            ["Stage I", "Stage II", "Stage III", "Stage IV"],
+            100,
+            p=[0.3, 0.3, 0.25, 0.15],
+        ),
+        "week_12": np.random.choice(
             ["Stage I", "Stage II", "Stage III", "Stage IV"],
             100,
             p=[0.25, 0.3, 0.25, 0.2],
@@ -106,8 +111,8 @@ stage_data = pd.DataFrame(
     }
 )
 
-cns.figure(100, 140)
-ax = cns.sankeyplot(data=stage_data, x="baseline", y="followup")
+cns.figure(150, 140)
+ax = cns.sankeyplot(data=stage_data, x=["baseline", "week_4", "week_12"])
 ax.set_title("Disease Stage Progression")
 
 
@@ -127,7 +132,7 @@ cell_transition = pd.DataFrame(
 )
 
 cns.figure(100, 120)
-ax = cns.sankeyplot(data=cell_transition, x="initial", y="final")
+ax = cns.sankeyplot(data=cell_transition, x=["initial", "final"])
 ax.set_title("Cell Differentiation")
 
 
@@ -147,7 +152,7 @@ cluster_comparison = pd.DataFrame(
 )
 
 cns.figure(100, 140)
-ax = cns.sankeyplot(data=cluster_comparison, x="method_A", y="method_B")
+ax = cns.sankeyplot(data=cluster_comparison, x=["method_A", "method_B"])
 ax.set_title("Clustering Comparison")
 
 
@@ -165,7 +170,7 @@ response_flow = pd.DataFrame(
 )
 
 cns.figure(100, 120)
-ax = cns.sankeyplot(data=response_flow, x="week_0", y="week_12")
+ax = cns.sankeyplot(data=response_flow, x=["week_0", "week_12"])
 ax.set_title("Response at Week 0 to Week 12")
 
 
@@ -181,7 +186,7 @@ binary_data = pd.DataFrame(
 )
 
 cns.figure(80, 100)
-ax = cns.sankeyplot(data=binary_data, x="before", y="after")
+ax = cns.sankeyplot(data=binary_data, x=["before", "after"])
 ax.set_title("Treatment Success")
 
 
@@ -197,5 +202,5 @@ biomarker_data = pd.DataFrame(
 )
 
 cns.figure(90, 120)
-ax = cns.sankeyplot(data=biomarker_data, x="biomarker", y="phenotype")
+ax = cns.sankeyplot(data=biomarker_data, x=["biomarker", "phenotype"])
 ax.set_title("Biomarker to Phenotype")

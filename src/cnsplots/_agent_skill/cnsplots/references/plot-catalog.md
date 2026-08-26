@@ -39,7 +39,7 @@ plain Matplotlib `Axes`.
 - `pieplot` and `donutplot`: parts of a whole when few categories are present.
 - `vennplot`: overlap among a small number of sets.
 - `upsetplot`: scalable set intersections.
-- `sankeyplot`: flow between source and target categories.
+- `sankeyplot`: flow across two or more ordered categorical stages.
 
 `upsetplot` returns panel axes and `vennplot` returns a matplotlib-venn diagram
 object.
