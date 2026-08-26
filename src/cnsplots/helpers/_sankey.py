@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.axes import Axes
 
 from cnsplots._validation import (
     validate_column_type,
@@ -142,6 +143,146 @@ def sankeyplot(
         plt.gcf().set_size_inches(figSize)
     if closePlot:
         plt.close()
+    return ax
+
+
+def multistage_sankeyplot(
+    data: pd.DataFrame,
+    columns: list[str],
+    colorDict: dict[str, str] | None = None,
+    fontsize: int | float = 14,
+    label_rotation: float = 0,
+    aspect: int = 4,
+    ax: Axes | None = None,
+) -> Axes:
+    """Draw a Sankey diagram across three or more categorical columns."""
+    if len(columns) < 3:
+        raise ValueError("multistage_sankeyplot requires at least three columns")
+    if ax is None:
+        ax = plt.gca()
+
+    stage_labels = [data[column].unique().tolist() for column in columns]
+    all_labels = pd.unique(
+        pd.concat([data[column] for column in columns], ignore_index=True)
+    )
+    colors = create_colors(all_labels, colorDict)
+
+    gap = 0.02 * len(data)
+    stage_positions: list[dict[str, dict[str, float]]] = []
+    top_edges: list[float] = []
+    for column, labels in zip(columns, stage_labels):
+        counts = data[column].value_counts(sort=False)
+        positions: dict[str, dict[str, float]] = {}
+        bottom = 0.0
+        for label in labels:
+            width = float(counts[label])
+            top = bottom + width
+            positions[label] = {"bottom": bottom, "top": top, "width": width}
+            bottom = top + gap
+        stage_positions.append(positions)
+        top_edges.append(positions[labels[-1]]["top"])
+
+    x_step = max(top_edges) / aspect
+    x_positions = np.arange(len(columns)) * x_step
+    smoothing_kernel = 0.05 * np.ones(20)
+
+    # Draw links first so opaque nodes cover their endpoints.
+    for stage_index, (left_column, right_column) in enumerate(
+        zip(columns, columns[1:])
+    ):
+        grouped = cast(
+            "pd.Series",
+            data.groupby([left_column, right_column], sort=False, observed=True).size(),
+        )
+        links_by_left: dict[str, list[tuple[str, float]]] = defaultdict(list)
+        for pair, width in grouped.items():
+            left_label, right_label = cast("tuple[str, str]", pair)
+            links_by_left[left_label].append((right_label, float(width)))
+
+        right_order = {
+            label: index for index, label in enumerate(stage_labels[stage_index + 1])
+        }
+        for links in links_by_left.values():
+            links.sort(key=lambda link: right_order[link[0]])
+
+        left_cursor = {
+            label: stage_positions[stage_index][label]["bottom"]
+            for label in stage_labels[stage_index]
+        }
+        right_cursor = {
+            label: stage_positions[stage_index + 1][label]["bottom"]
+            for label in stage_labels[stage_index + 1]
+        }
+        for left_label in stage_labels[stage_index]:
+            for right_label, width in links_by_left[left_label]:
+                lower = np.array(
+                    50 * [left_cursor[left_label]] + 50 * [right_cursor[right_label]]
+                )
+                lower = np.convolve(lower, smoothing_kernel, mode="valid")
+                lower = np.convolve(lower, smoothing_kernel, mode="valid")
+                upper = np.array(
+                    50 * [left_cursor[left_label] + width]
+                    + 50 * [right_cursor[right_label] + width]
+                )
+                upper = np.convolve(upper, smoothing_kernel, mode="valid")
+                upper = np.convolve(upper, smoothing_kernel, mode="valid")
+
+                left_cursor[left_label] += width
+                right_cursor[right_label] += width
+                ax.fill_between(
+                    np.linspace(
+                        x_positions[stage_index],
+                        x_positions[stage_index + 1],
+                        len(lower),
+                    ),
+                    lower,
+                    upper,
+                    alpha=0.65,
+                    color=colors[left_label],
+                )
+
+    rotation_padding = fontsize * abs(np.sin(np.deg2rad(label_rotation)))
+    last_stage = len(columns) - 1
+    for stage_index, labels in enumerate(stage_labels):
+        x_position = x_positions[stage_index]
+        if stage_index == 0:
+            bar_x = [x_position - 0.02 * x_step, x_position]
+            label_x = x_position - 0.05 * x_step
+            text_offset = (-rotation_padding, 0)
+            horizontal_alignment = "right"
+        elif stage_index == last_stage:
+            bar_x = [x_position, x_position + 0.02 * x_step]
+            label_x = x_position + 0.05 * x_step
+            text_offset = (rotation_padding, 0)
+            horizontal_alignment = "left"
+        else:
+            bar_x = [x_position - 0.01 * x_step, x_position + 0.01 * x_step]
+            label_x = x_position
+            text_offset = (0, 0)
+            horizontal_alignment = "center"
+
+        for label in labels:
+            position = stage_positions[stage_index][label]
+            ax.fill_between(
+                bar_x,
+                2 * [position["bottom"]],
+                2 * [position["top"]],
+                color=colors[label],
+                alpha=1,
+            )
+            ax.annotate(
+                label,
+                xy=(label_x, position["bottom"] + 0.5 * position["width"]),
+                xytext=text_offset,
+                textcoords="offset points",
+                ha=horizontal_alignment,
+                va="center",
+                fontsize=fontsize,
+                rotation=label_rotation,
+                rotation_mode="anchor",
+            )
+
+    ax.axis("off")
     return ax
 
 

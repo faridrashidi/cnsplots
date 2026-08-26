@@ -38,6 +38,8 @@ if TYPE_CHECKING:
         assert_type(cns.histplot(data, x="x", ax=ax), Axes)
         assert_type(cns.lineplot(data, x="x", y="y", ax=ax), Axes)
         assert_type(cns.regplot(data, x="x", y="y", color=(0.1, 0.2, 0.3)), Axes)
+        assert_type(cns.sankeyplot(data, x=["source", "target"], ax=ax), Axes)
+        assert_type(cns.sankeyplot(data, x=["baseline", "week_4", "week_12"]), Axes)
         assert_type(
             cns.dumbbellplot(data, x="value", y="group", hue="condition", ax=ax),
             Axes,

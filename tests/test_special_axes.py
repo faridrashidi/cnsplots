@@ -98,7 +98,7 @@ def test_single_axes_special_plots_use_supplied_axes(
     )
     plotters = [
         lambda ax: cns.placeholderplot("Reserved", ax=ax),
-        lambda ax: cns.sankeyplot(sankey_df, x="source", y="target", ax=ax),
+        lambda ax: cns.sankeyplot(sankey_df, x=["source", "target"], ax=ax),
         lambda ax: cns.rocplot(roc_df, "truth", "model_a", ax=ax),
         lambda ax: cns.volcanoplot(volcano_df, n_show=1, ax=ax),
         lambda ax: cns.survivalplot(

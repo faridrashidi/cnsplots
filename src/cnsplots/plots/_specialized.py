@@ -161,29 +161,25 @@ def placeholderplot(description: str, *, ax: Axes | None = None) -> Axes:
 
 def sankeyplot(
     data: pd.DataFrame,
-    x: str,
-    y: str,
+    x: list[str],
     label_rotation: float = 0,
     *,
     ax: Axes | None = None,
 ) -> Axes:
     """
-    Create a Sankey diagram showing flows between two categorical variables.
+    Create a Sankey diagram showing flows across categorical variables.
 
     This function generates a Sankey (alluvial) diagram visualizing the flow
-    and connections between categories in two variables.
+    and connections between categories in two or more ordered stages.
 
     Parameters
     ----------
     data : pd.DataFrame
         The input DataFrame containing the data to visualize.
-    x : str
-        Column name for the source (left-side) categorical variable.
-    y : str
-        Column name for the target (right-side) categorical variable.
+    x : list of str
+        Ordered list of two or more stage columns.
     label_rotation : float, default: 0
-        Rotation angle, in degrees, applied to both left and right Sankey
-        labels.
+        Rotation angle, in degrees, applied to all Sankey category labels.
     ax : matplotlib.axes.Axes, optional
         Axes to draw on. If None, uses the current axes.
 
@@ -200,35 +196,56 @@ def sankeyplot(
     Examples
     --------
     >>> import cnsplots as cns
-    >>> ax = cns.sankeyplot(data=df, x="initial_diagnosis", y="final_diagnosis")
+    >>> ax = cns.sankeyplot(data=df, x=["initial_diagnosis", "final_diagnosis"])
     >>> ax.set_title("Diagnosis Flow")
 
     >>> # Patient flow across treatment stages
     >>> ax = cns.sankeyplot(
     ...     data=df,
-    ...     x="stage_1_response",
-    ...     y="stage_2_response",
+    ...     x=["baseline_response", "week_4_response", "week_12_response"],
     ...     label_rotation=90,
     ... )
     """
     # Validate inputs
     validate_dataframe(data, "data", "sankeyplot")
-    validate_columns_exist(data, [x, y], "sankeyplot")
     validate_dataframe_not_empty(data, "sankeyplot")
+
+    if not isinstance(x, list):
+        raise TypeError("[sankeyplot] 'x' must be a list of column names.")
+    if len(x) < 2:
+        raise ValueError("[sankeyplot] 'x' must contain at least two stage columns.")
+    if not all(isinstance(column, str) for column in x):
+        raise TypeError("[sankeyplot] Every stage column in 'x' must be a string.")
+
+    validate_columns_exist(data, x, "sankeyplot")
 
     if ax is None:
         ax = plt.gca()
-    keys = np.union1d(data[x].unique(), data[y].unique())
+    if len(x) == 2:
+        keys = np.union1d(data[x[0]].unique(), data[x[1]].unique())
+    else:
+        validate_no_nulls(data, x, "sankeyplot")
+        keys = pd.unique(pd.concat([data[column] for column in x], ignore_index=True))
     colors = sns.color_palette(n_colors=len(keys))
     color_dict = dict(zip(keys, colors))
-    helper_sankey.sankeyplot(
-        data[x],
-        data[y],
-        fontsize=_legend_fontsize(),
-        colorDict=color_dict,
-        label_rotation=label_rotation,
-        ax=ax,
-    )
+    if len(x) == 2:
+        helper_sankey.sankeyplot(
+            data[x[0]],
+            data[x[1]],
+            fontsize=_legend_fontsize(),
+            colorDict=color_dict,
+            label_rotation=label_rotation,
+            ax=ax,
+        )
+    else:
+        helper_sankey.multistage_sankeyplot(
+            data,
+            x,
+            fontsize=_legend_fontsize(),
+            colorDict=color_dict,
+            label_rotation=label_rotation,
+            ax=ax,
+        )
     return ax
 
 

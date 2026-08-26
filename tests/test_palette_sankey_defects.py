@@ -50,7 +50,7 @@ def test_sankeyplot_assigns_color_to_every_label(
     monkeypatch.setattr(_specialized.helper_sankey, "sankeyplot", capture_colors)
 
     with plt.rc_context({"axes.prop_cycle": cycler(color=["#111111", "#eeeeee"])}):
-        _specialized.sankeyplot(data, x="source", y="target")
+        _specialized.sankeyplot(data, x=["source", "target"])
 
     assert set(captured_colors) == {
         "source_a",
