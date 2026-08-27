@@ -334,7 +334,8 @@ class multipanel:
         self.fig = None
         self.axes = []
         self._created_axes = {}
-        self._label_texts = {}
+        self._label_texts: dict[str, Text] = {}
+        self._label_inherited_fontfamilies: dict[str, list[str]] = {}
         self._title_text: Text | None = None
         self._labels = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         self._panel_index = 0
@@ -471,6 +472,7 @@ class multipanel:
             return None
         if label_text.figure is not self.fig or label_text.axes is not ax:
             self._label_texts.pop(label, None)
+            self._label_inherited_fontfamilies.pop(label, None)
             return None
         return label_text
 
@@ -854,10 +856,14 @@ class multipanel:
                     transform=label_transform,
                     fontsize=settings.title_fontsize,
                     fontweight=settings.panel_label_fontweight,
-                    fontname=settings.panel_label_fontname,
                     ha="right",
                     va="bottom",
                 )
+                if settings.panel_label_fontname is not None:
+                    self._label_inherited_fontfamilies[label] = (
+                        label_text.get_fontfamily()
+                    )
+                    label_text.set_fontname(settings.panel_label_fontname)
                 self._label_texts[label] = label_text
             else:
                 label_text.set_position((0, 1))
@@ -865,7 +871,19 @@ class multipanel:
                 label_text.set_transform(label_transform)
                 label_text.set_fontsize(settings.title_fontsize)
                 label_text.set_fontweight(settings.panel_label_fontweight)
-                label_text.set_fontname(settings.panel_label_fontname)
+                if settings.panel_label_fontname is not None:
+                    self._label_inherited_fontfamilies.setdefault(
+                        label,
+                        label_text.get_fontfamily(),
+                    )
+                    label_text.set_fontname(settings.panel_label_fontname)
+                else:
+                    inherited_fontfamily = self._label_inherited_fontfamilies.pop(
+                        label,
+                        None,
+                    )
+                    if inherited_fontfamily is not None:
+                        label_text.set_fontfamily(inherited_fontfamily)
                 label_text.set_horizontalalignment("right")
                 label_text.set_verticalalignment("bottom")
 
