@@ -847,6 +847,9 @@ class multipanel:
                 top_label_offset,
             )
             if label_text is None:
+                font_kwargs: dict[str, Any] = {}
+                if settings.panel_label_fontname is not None:
+                    font_kwargs["fontname"] = settings.panel_label_fontname
                 label_text = ax.text(
                     0,
                     1,
@@ -854,9 +857,9 @@ class multipanel:
                     transform=label_transform,
                     fontsize=settings.title_fontsize,
                     fontweight=settings.panel_label_fontweight,
-                    fontname=settings.panel_label_fontname,
                     ha="right",
                     va="bottom",
+                    **font_kwargs,
                 )
                 self._label_texts[label] = label_text
             else:
@@ -865,7 +868,10 @@ class multipanel:
                 label_text.set_transform(label_transform)
                 label_text.set_fontsize(settings.title_fontsize)
                 label_text.set_fontweight(settings.panel_label_fontweight)
-                label_text.set_fontname(settings.panel_label_fontname)
+                if settings.panel_label_fontname is None:
+                    label_text.set_fontfamily(plt.rcParams["font.family"])
+                else:
+                    label_text.set_fontname(settings.panel_label_fontname)
                 label_text.set_horizontalalignment("right")
                 label_text.set_verticalalignment("bottom")
 

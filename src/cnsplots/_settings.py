@@ -95,6 +95,12 @@ def _validate_string(name: str, value: Any) -> str:
     return value
 
 
+def _validate_optional_string(name: str, value: Any) -> str | None:
+    if value is None:
+        return None
+    return _validate_string(name, value)
+
+
 def _validate_string_choice(name: str, value: Any, choices: Sequence[str]) -> str:
     value = _validate_string(name, value)
     if value not in choices:
@@ -263,6 +269,8 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
             "Helvetica",
             "Helvetica Neue",
             "Arial",
+            "Nimbus Sans",
+            "Liberation Sans",
             "DejaVu Sans",
         ),
         lambda value: _validate_string_sequence("font_sans_serif", value),
@@ -599,9 +607,9 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         "Default right margin in pixels for multipanel.panel().",
     ),
     "panel_label_fontname": _spec(
-        "Helvetica",
-        lambda value: _validate_string("panel_label_fontname", value),
-        "Font name used for panel labels.",
+        None,
+        lambda value: _validate_optional_string("panel_label_fontname", value),
+        "Optional font name for panel labels. Use None to inherit the configured font family and sans-serif fallbacks.",
     ),
     "panel_label_fontweight": _spec(
         "bold",
@@ -741,7 +749,7 @@ class CNSSettings:
         panel_margin_bottom: _Number
         panel_margin_left: _Number
         panel_margin_right: _Number
-        panel_label_fontname: str
+        panel_label_fontname: str | None
         panel_label_fontweight: str | int
 
         @property

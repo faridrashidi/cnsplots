@@ -25,6 +25,7 @@ if TYPE_CHECKING:
         assert_type(cns.settings.legend_fontsize, int | float | None)
         assert_type(cns.settings.savefig_transparent, bool)
         assert_type(cns.settings.font_sans_serif, tuple[str, ...])
+        assert_type(cns.settings.panel_label_fontname, str | None)
 
         assert_type(cns.figure(width=120, height=80), None)
         assert_type(cns.savefig("figure.svg"), None)

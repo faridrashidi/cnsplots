@@ -390,9 +390,11 @@ def test_settings_behavior() -> None:
         "Helvetica",
         "Helvetica Neue",
         "Arial",
+        "Nimbus Sans",
+        "Liberation Sans",
         "DejaVu Sans",
     )
-    assert settings.panel_label_fontname == "Helvetica"
+    assert settings.panel_label_fontname is None
 
 
 def test_settings_validation_errors() -> None:
@@ -454,6 +456,9 @@ def test_settings_validation_errors() -> None:
         setattr(settings, "font_sans_serif", ["Arial", 1])
     with pytest.raises(ValueError):
         settings.font_sans_serif = []
+    settings.panel_label_fontname = None
+    with pytest.raises(TypeError):
+        setattr(settings, "panel_label_fontname", 1)
     with pytest.raises(TypeError):
         setattr(settings, "scanpy_figsize", "big")
     with pytest.raises(ValueError):
@@ -1348,6 +1353,27 @@ def test_utils_helpers_and_showcase_data(
     assert isinstance(data[12], dict)
     assert len(data_with_assets) == 14
     assert data_with_assets[-1].name == "showcase"
+
+
+def test_panel_labels_inherit_configured_sans_serif_by_default() -> None:
+    with cns.settings.context(
+        font_family="sans-serif",
+        font_sans_serif=("DejaVu Sans",),
+        panel_label_fontname=None,
+    ):
+        cns.figure()
+        cns.add_panel_label("A")
+        helper_label = plt.gca().texts[-1]
+
+        assert helper_label.get_fontfamily() == ["sans-serif"]
+        assert helper_label.get_fontproperties().get_name() == "DejaVu Sans"
+
+        mp = cns.multipanel(max_width=300)
+        mp.panel("B", 90, 90)
+        multipanel_label = mp._label_texts["B"]
+
+        assert multipanel_label.get_fontfamily() == ["sans-serif"]
+        assert multipanel_label.get_fontproperties().get_name() == "DejaVu Sans"
 
 
 def test_figure_keeps_fixed_size_with_overflowing_artists() -> None:

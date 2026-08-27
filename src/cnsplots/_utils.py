@@ -603,8 +603,9 @@ def add_panel_label(
     Unlike ``multipanel.panel()``, this helper does not measure rendered axis
     decorations or relayout the figure. It is purely an axes-relative offset.
 
-    The label uses Arial font (bold) at 8pt size (`title_fontsize`) for
-    consistency with publication standards.
+    The label uses the configured font family (bold) at 8pt size
+    (``title_fontsize``) for consistency with publication standards. Set
+    ``panel_label_fontname`` to explicitly override the family.
 
     Examples
     --------
@@ -631,16 +632,20 @@ def add_panel_label(
         fig.dpi_scale_trans,
     )
 
+    font_kwargs: dict[str, Any] = {}
+    if settings.panel_label_fontname is not None:
+        font_kwargs["fontname"] = settings.panel_label_fontname
+
     ax.text(
         0,
         1,
         name,
         transform=transform,
         fontsize=settings.title_fontsize,
-        fontname=settings.panel_label_fontname,
         fontweight=settings.panel_label_fontweight,
         ha="right",
         va="bottom",
+        **font_kwargs,
     )
 
 
