@@ -868,9 +868,7 @@ class multipanel:
                 label_text.set_transform(label_transform)
                 label_text.set_fontsize(settings.title_fontsize)
                 label_text.set_fontweight(settings.panel_label_fontweight)
-                if settings.panel_label_fontname is None:
-                    label_text.set_fontfamily(plt.rcParams["font.family"])
-                else:
+                if settings.panel_label_fontname is not None:
                     label_text.set_fontname(settings.panel_label_fontname)
                 label_text.set_horizontalalignment("right")
                 label_text.set_verticalalignment("bottom")
