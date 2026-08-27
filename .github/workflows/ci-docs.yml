@@ -55,9 +55,11 @@ jobs:
               "Helvetica",
               "Helvetica Neue",
               "Arial",
+              "Nimbus Sans",
+              "Liberation Sans",
               "DejaVu Sans",
           )
-          assert cns.settings.panel_label_fontname == "Helvetica"
+          assert cns.settings.panel_label_fontname is None
           font_props = fm.FontProperties(
               family=mpl.rcParams["font.family"],
               style="normal",
