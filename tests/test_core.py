@@ -1395,6 +1395,25 @@ def test_multipanel_relayout_preserves_inherited_font_across_figures() -> None:
         assert panel_label.get_fontfamily() == inherited_family
 
 
+def test_multipanel_relayout_restores_inherited_font_after_override() -> None:
+    with cns.settings.context(
+        font_family="sans-serif",
+        font_sans_serif=("DejaVu Sans",),
+        panel_label_fontname=None,
+    ):
+        mp = cns.multipanel(max_width=300)
+        with cns.settings.context(panel_label_fontname="DejaVu Serif"):
+            mp.panel("A", 90, 90)
+            first_label = mp._label_texts["A"]
+            assert first_label.get_fontfamily() == ["DejaVu Serif"]
+
+        mp.panel("B", 90, 90)
+        second_label = mp._label_texts["B"]
+
+        assert first_label.get_fontfamily() == ["sans-serif"]
+        assert second_label.get_fontfamily() == ["sans-serif"]
+
+
 def test_figure_keeps_fixed_size_with_overflowing_artists() -> None:
     cns.figure(100, 120)
     fig = plt.gcf()
