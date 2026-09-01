@@ -121,6 +121,7 @@ filterwarnings = [
   "error",
   "ignore:Could not find the number of physical cores.*:UserWarning:joblib[.]externals[.]loky[.]backend[.]context",
   "ignore:vert.*bool will be deprecated in a future version[.] Use orientation.*instead[.]:PendingDeprecationWarning:seaborn[.]categorical",
+  "ignore:vert.*bool was deprecated in Matplotlib 3[.]11 and will be removed in 3[.]13[.] Use orientation.*instead[.]:matplotlib.MatplotlibDeprecationWarning:seaborn[.]categorical",
   "ignore:Downcasting object dtype arrays on .* is deprecated and will change in a future version[.].*:FutureWarning:upsetplot[.]data",
   "ignore:A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method[.]:FutureWarning:upsetplot[.]plotting",
   "ignore:The default of observed=False is deprecated and will be changed to True in a future version of pandas[.].*:FutureWarning:PyComplexHeatmap[.]clustermap",
@@ -128,6 +129,7 @@ filterwarnings = [
   "ignore:The provided callable .* is currently using DataFrameGroupBy[.]mean[.].*:FutureWarning:PyComplexHeatmap[.]dotHeatmap",
   "ignore:DataFrame[.]applymap has been deprecated[.] Use DataFrame[.]map instead[.]:FutureWarning:PyComplexHeatmap[.]dotHeatmap",
   "ignore:The previous implementation of stack is deprecated and will be removed in a future version of pandas[.].*:FutureWarning:PyComplexHeatmap[.]dotHeatmap",
+  "ignore:The set_bad function will be deprecated in a future version[.] Use cmap[.]with_extremes[(]bad=[.]{3}[)] or Colormap[(]bad=[.]{3}[)] instead[.]:PendingDeprecationWarning:PyComplexHeatmap[.]utils",
   "ignore:This figure was using a layout engine that is incompatible with subplots_adjust and/or tight_layout; not calling subplots_adjust[.]:UserWarning:PyComplexHeatmap[.]utils",
 ]
 mpl-default-style = "default"
