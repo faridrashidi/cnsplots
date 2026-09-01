@@ -737,6 +737,7 @@ def cumulativeincidenceplot(
         finally:
             np.random.set_state(random_state)
         fitters.append(fitter)
+        df = df.astype({duration: float})
         df = pd.merge(
             fitter.cumulative_density_.reset_index(drop=False),
             df,
@@ -745,7 +746,7 @@ def cumulativeincidenceplot(
             right_on=duration,
         )
         df = df.loc[df[event] == 0].copy()
-        fitter.plot(ax=ax, linewidth=1, ci_show=False)
+        fitter.plot_cumulative_density(ax=ax, linewidth=1, ci_show=False)
         line_color = ax.get_lines()[-1].get_color()
         group_censor_mark_position = _resolve_censor_mark_position(
             censor_mark_position, i

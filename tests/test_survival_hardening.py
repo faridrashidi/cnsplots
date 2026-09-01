@@ -27,7 +27,7 @@ def test_survivalplot_requires_valid_durations(
     invalid_duration: float,
     message: str,
 ) -> None:
-    invalid = survival_df.copy()
+    invalid = survival_df.astype({"time": float})
     invalid.loc[0, "time"] = invalid_duration
 
     with pytest.raises(ValueError, match=message):
@@ -54,7 +54,7 @@ def test_cumulativeincidenceplot_requires_valid_event_codes(
     competing_risk_df: pd.DataFrame,
     invalid_code: float,
 ) -> None:
-    invalid = competing_risk_df.copy()
+    invalid = competing_risk_df.astype({"event": float})
     invalid.loc[0, "event"] = invalid_code
 
     with pytest.raises(ValueError, match="non-negative integer event codes"):

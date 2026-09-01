@@ -117,6 +117,19 @@ fail_under = 100
 
 [tool.pytest.ini_options]
 addopts = "--cov=cnsplots --cov-report=term-missing --cov-fail-under=100"
+filterwarnings = [
+  "error",
+  "ignore:Could not find the number of physical cores.*:UserWarning:joblib[.]externals[.]loky[.]backend[.]context",
+  "ignore:vert.*bool will be deprecated in a future version[.] Use orientation.*instead[.]:PendingDeprecationWarning:seaborn[.]categorical",
+  "ignore:Downcasting object dtype arrays on .* is deprecated and will change in a future version[.].*:FutureWarning:upsetplot[.]data",
+  "ignore:A value is trying to be set on a copy of a DataFrame or Series through chained assignment using an inplace method[.]:FutureWarning:upsetplot[.]plotting",
+  "ignore:The default of observed=False is deprecated and will be changed to True in a future version of pandas[.].*:FutureWarning:PyComplexHeatmap[.]clustermap",
+  "ignore:DataFrameGroupBy[.]apply operated on the grouping columns[.].*:FutureWarning:PyComplexHeatmap[.]clustermap",
+  "ignore:The provided callable .* is currently using DataFrameGroupBy[.]mean[.].*:FutureWarning:PyComplexHeatmap[.]dotHeatmap",
+  "ignore:DataFrame[.]applymap has been deprecated[.] Use DataFrame[.]map instead[.]:FutureWarning:PyComplexHeatmap[.]dotHeatmap",
+  "ignore:The previous implementation of stack is deprecated and will be removed in a future version of pandas[.].*:FutureWarning:PyComplexHeatmap[.]dotHeatmap",
+  "ignore:This figure was using a layout engine that is incompatible with subplots_adjust and/or tight_layout; not calling subplots_adjust[.]:UserWarning:PyComplexHeatmap[.]utils",
+]
 mpl-default-style = "default"
 mpl-deterministic = true
 mpl-generate-summary = "html"

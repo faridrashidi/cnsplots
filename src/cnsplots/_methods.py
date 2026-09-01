@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     import numpy as np
     import pandas as pd
 
+import inspect
 import re
 import warnings
 
@@ -444,6 +445,12 @@ class LogisticModel:
 
         df = self.data.copy()
         all_results = []
+        regularization_options: dict[str, Any] = (
+            {"l1_ratios": (1,), "use_legacy_attributes": False}
+            if "use_legacy_attributes"
+            in inspect.signature(LogisticRegressionCV).parameters
+            else {"penalty": "l1"}
+        )
 
         if self.hue is None:
             hue_groups = [("All", df)]
@@ -494,10 +501,10 @@ class LogisticModel:
                         StandardScaler(),
                         LogisticRegressionCV(
                             cv=n_splits,
-                            penalty="l1",
                             solver="liblinear",
                             random_state=42,
                             scoring="roc_auc",
+                            **regularization_options,
                         ),
                     )
                     y_pred_proba = cross_val_predict(

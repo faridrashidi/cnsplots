@@ -205,15 +205,16 @@ def test_sankey_helpers(sankey_df: pd.DataFrame) -> None:
         )
 
     fig2, ax2 = plt.subplots()
-    result_ax = _sankey.sankeyplot(
-        sankey_df["source"],
-        sankey_df["target"],
-        label_rotation=90,
-        figureName="figure",
-        closePlot=True,
-        figSize=(2, 2),
-        ax=ax2,
-    )
+    with pytest.warns(DeprecationWarning):
+        result_ax = _sankey.sankeyplot(
+            sankey_df["source"],
+            sankey_df["target"],
+            label_rotation=90,
+            figureName="figure",
+            closePlot=True,
+            figSize=(2, 2),
+            ax=ax2,
+        )
     assert result_ax is ax2
     assert len(ax2.texts) == len(left_labels) + len(right_labels)
     assert all(text.get_rotation() == 90 for text in ax2.texts)

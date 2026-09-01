@@ -8,6 +8,7 @@ import lifelines as ll
 import numpy as np
 import pandas as pd
 import pytest
+from lifelines.exceptions import ConvergenceWarning
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -98,7 +99,11 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
         scaler, classifier = (step for _, step in estimator.steps)
         assert isinstance(scaler, StandardScaler)
         assert isinstance(classifier, LogisticRegressionCV)
-        assert classifier.penalty == "l1"
+        if classifier.penalty == "deprecated":
+            assert classifier.l1_ratios == (1,)
+            assert classifier.use_legacy_attributes is False
+        else:
+            assert classifier.penalty == "l1"
         assert classifier.solver == "liblinear"
         assert classifier.cv == 5
 
@@ -155,9 +160,12 @@ def test_logistic_model_validates_each_nested_cv_layer(
     data = pd.DataFrame({"event": event, "score": np.arange(len(event))})
     model = cns.LogisticModel(data, event="event", variates=["score"])
 
-    with pytest.warns(RuntimeWarning, match=message):
+    with pytest.warns(RuntimeWarning) as caught:
         model.fit()
 
+    messages = [str(warning.message) for warning in caught]
+    assert any(message in warning_message for warning_message in messages)
+    assert "No successful model fits" in messages
     assert model.results is None
 
 
@@ -165,9 +173,15 @@ def test_logistic_model_rejects_more_than_two_outcome_classes() -> None:
     data = pd.DataFrame({"event": [0, 1, 2] * 7, "score": np.arange(21, dtype=float)})
     model = cns.LogisticModel(data, event="event", variates=["score"])
 
-    with pytest.warns(RuntimeWarning, match="requires exactly two outcome classes"):
+    with pytest.warns(RuntimeWarning) as caught:
         model.fit()
 
+    messages = [str(warning.message) for warning in caught]
+    assert any(
+        "requires exactly two outcome classes" in warning_message
+        for warning_message in messages
+    )
+    assert "No successful model fits" in messages
     assert model.results is None
 
 
@@ -234,7 +248,8 @@ def test_cox_model_retains_all_categorical_formula_coefficients(
         variates=["C(stage)"],
     )
 
-    model.fit()
+    with pytest.warns(ConvergenceWarning):
+        model.fit()
 
     assert model.results is not None
     results = model.results.sort_values("covariate").reset_index(drop=True)
