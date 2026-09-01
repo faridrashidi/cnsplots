@@ -7,7 +7,7 @@
   "test_visual_regressions.test_visual_dumbbellplot": "04474fdf657dee7005b59889d760b6aeba19f81c3f8bd9581ac957db3b897957",
   "test_visual_regressions.test_visual_ridgeplot": "2a05f1c093bc3f6ac5b6d8681b5e495912cc5d227b2468d691f5666b0f60b3ea",
   "test_visual_regressions.test_visual_bivariate_histplot": "346e63d01daabec1fafbbebdf88b3e24c8f59ef6539d79bd1ad93244841703fd",
-  "test_visual_regressions.test_visual_grouped_regplot": "f2f2659a6c66d2792685e13c5a8725d11a5ee9529979b9241c33dfbde64e31d6",
+  "test_visual_regressions.test_visual_grouped_regplot": "3ed6b7364cd37a8548378960bd215cb3cde752137ce10002654ad071e7471caa",
   "test_visual_regressions.test_visual_slopeplot": "97bc988e32499a23c5b7d0c9b3cb27cf69a1f7303bd9bd6a60895cba752e448e",
   "test_visual_regressions.test_visual_annotated_heatmap": "c41566855c3b0496564e742c5e1c8d60dc06daeda1f612b145e2d2881e4982d0",
   "test_visual_regressions.test_visual_dotplot": "32b97bad3bdc95fedfea087ba6f5c13f1f73773b897e93ad0de0b1397b573f27",

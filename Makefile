@@ -39,7 +39,7 @@ test:
 	uv run pytest ./tests
 
 test-visual:
-	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 uv run pytest tests/test_visual_regressions.py --mpl --no-cov
+	uv run pytest tests/test_visual_regressions.py --mpl --no-cov
 
 doc: clean
 	cd docs && $(MAKE) html

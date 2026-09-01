@@ -217,8 +217,7 @@ def test_visual_grouped_regplot() -> Figure:
         y="y",
         hue="group",
         hue_order=["A", "B"],
-        add_equation=True,
-        ci=None,
+        fit_reg=False,
     )
     return figure
 
