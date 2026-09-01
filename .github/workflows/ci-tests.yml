@@ -58,6 +58,21 @@ jobs:
       - name: Run tests
         run: make test
 
+      - name: Run visual regression tests
+        if: ${{ matrix.python-version == '3.12' }}
+        id: visual_tests
+        env:
+          CNSPLOTS_REQUIRE_VISUAL_ENV: "1"
+        run: make test-visual
+
+      - name: Upload visual regression results
+        if: ${{ always() && steps.visual_tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpl-results-python-3.12
+          path: mpl-results/
+          if-no-files-found: warn
+
   docs:
     name: docs-validation
     runs-on: ubuntu-latest

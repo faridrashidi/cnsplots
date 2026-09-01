@@ -63,6 +63,7 @@ dev = [
   "pre-commit",
   "pytest",
   "pytest-cov",
+  "pytest-mpl>=0.19,<0.20",
   "furo",
   "myst-parser",
   "sphinx<9; python_version < '3.11'",
@@ -116,6 +117,12 @@ fail_under = 100
 
 [tool.pytest.ini_options]
 addopts = "--cov=cnsplots --cov-report=term-missing --cov-fail-under=100"
+mpl-default-style = "default"
+mpl-deterministic = true
+mpl-generate-summary = "html"
+mpl-hash-library = "tests/mpl310_ft261.json"
+mpl-results-path = "mpl-results"
+mpl-use-full-test-name = true
 pythonpath = ["src"]
 testpaths = ["tests"]
 

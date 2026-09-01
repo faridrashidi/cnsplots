@@ -6,6 +6,7 @@ help:
 	@echo " - clean        : clean the repo"
 	@echo " - lint         : run linting and flaking"
 	@echo " - test         : run all unit tests"
+	@echo " - test-visual  : run visual regression tests"
 	@echo " - doc          : build the documentation"
 	@echo " - doc-linkcheck: check documentation links"
 	@echo " - install      : install the package"
@@ -36,6 +37,9 @@ lint:
 
 test:
 	uv run pytest ./tests
+
+test-visual:
+	uv run pytest tests/test_visual_regressions.py --mpl --no-cov
 
 doc: clean
 	cd docs && $(MAKE) html

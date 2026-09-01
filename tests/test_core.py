@@ -716,12 +716,38 @@ def test_setup_functions(monkeypatch: pytest.MonkeyPatch) -> None:
         ggplot_font_face="bold",
         ggplot_text_color="gray20",
     ):
-        gg = _setup.setup_ggplot()
+        gg = cns.setup_ggplot()
     assert "theme_custom" in gg
     assert "fontsize <- 11" in gg
     assert 'family = "mono"' in gg
     assert 'face = "bold"' in gg
     assert 'color = "gray20"' in gg
+    assert "panel.grid.major = element_blank()" in gg
+    assert "panel.grid.minor = element_blank()" in gg
+    assert "axis.title.x = element_text(" in gg
+    assert "axis.title.y = element_text(" in gg
+    assert "legend.text = element_text(size = fontsize)" in gg
+    assert "legend.title = element_text(size = fontsize)" in gg
+
+
+def test_savefig_preserves_editable_svg_text(output_dir: Path) -> None:
+    svg_path = output_dir / "editable.svg"
+    cns.figure(160, 120)
+    ax = plt.gca()
+    ax.set_axis_off()
+    ax.text(0.5, 0.5, "Editable SVG Text", ha="center", va="center")
+
+    cns.savefig(svg_path)
+
+    root = etree.parse(str(svg_path)).getroot()
+    namespace = {"svg": "http://www.w3.org/2000/svg"}
+    text_values = {
+        "".join(element.itertext()).strip()
+        for element in root.xpath(".//svg:text", namespaces=namespace)
+    }
+    assert "Editable SVG Text" in text_values
+    assert not root.xpath(".//svg:defs/svg:path[@id]", namespaces=namespace)
+    assert not root.xpath(".//svg:use", namespaces=namespace)
 
 
 def test_svg_helpers_and_export(
