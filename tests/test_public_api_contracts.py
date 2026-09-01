@@ -463,8 +463,16 @@ def test_public_validation_contract(heatmap_adata: object) -> None:
         cns.validation.validate_column_exists(df, "missing", "x", "func")
 
     cns.validation.validate_columns_exist(df, ["a", "b"], "func")
+    cns.validation.validate_columns_exist(df, ["a", "a"], "func")
     with pytest.raises(ValueError, match="Column\\(s\\)"):
         cns.validation.validate_columns_exist(df, ["a", "missing"], "func")
+    duplicate_columns = pd.DataFrame([[1, 2]], columns=pd.Index(["a", "a"]))
+    with pytest.raises(ValueError) as exc_info:
+        cns.validation.validate_columns_exist(duplicate_columns, ["a", "a"], "func")
+    assert str(exc_info.value) == (
+        "[func] Duplicate column name(s) ['a'] found in data. "
+        "Referenced columns must have unique names."
+    )
 
     cns.validation.validate_adata_layer(heatmap_adata, "scaled", "func")
     with pytest.raises(ValueError, match="Available layers"):

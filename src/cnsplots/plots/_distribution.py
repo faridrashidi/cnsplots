@@ -115,6 +115,7 @@ def boxplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "boxplot")
     validate_dataframe_not_empty(data, "boxplot")
+    validate_no_nulls(data, columns, "boxplot", allow_partial=True)
     utils._validate_statistical_options(
         test,
         p_adjust,
@@ -301,6 +302,7 @@ def violinplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "violinplot")
     validate_dataframe_not_empty(data, "violinplot")
+    validate_no_nulls(data, columns, "violinplot", allow_partial=True)
     utils._validate_statistical_options(
         test,
         p_adjust,
@@ -802,7 +804,8 @@ def ridgeplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "ridgeplot")
     validate_dataframe_not_empty(data, "ridgeplot")
-    validate_no_nulls(data, columns, "ridgeplot")
+    validate_no_nulls(data, columns, "ridgeplot", allow_partial=True)
+    data = data.dropna(subset=columns)
 
     if isinstance(overlap, (bool, np.bool_)) or not isinstance(overlap, Real):
         raise TypeError(

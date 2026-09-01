@@ -127,7 +127,8 @@ def validate_columns_exist(
     Raises
     ------
     ValueError
-        If any column does not exist in the DataFrame.
+        If any column does not exist or a requested column name is duplicated in
+        the DataFrame.
     """
     missing = [col for col in columns if col not in data.columns]
     if missing:
@@ -140,6 +141,14 @@ def validate_columns_exist(
         raise ValueError(
             f"[{function_name}] Column(s) {missing} not found in data. "
             f"Available columns: {available_str}"
+        )
+
+    duplicate_labels = data.columns[data.columns.duplicated(keep=False)]
+    duplicates = [col for col in dict.fromkeys(columns) if col in duplicate_labels]
+    if duplicates:
+        raise ValueError(
+            f"[{function_name}] Duplicate column name(s) {duplicates} found in data. "
+            "Referenced columns must have unique names."
         )
 
 
@@ -308,7 +317,8 @@ def validate_no_nulls(
     function_name : str
         The name of the calling function for error messages.
     allow_partial : bool, default False
-        If True, only warn if ALL values are null. If False, raise error if ANY null exists.
+        If True, allow nulls when every column has valid values and at least one
+        complete row remains. If False, raise an error if any null exists.
 
     Raises
     ------
@@ -340,6 +350,11 @@ def validate_no_nulls(
                 raise ValueError(
                     f"[{function_name}] Column(s) {all_null_cols} contain only null values. "
                     "At least some valid data is required."
+                )
+            if data[columns].dropna().empty:
+                raise ValueError(
+                    f"[{function_name}] Columns {columns} contain no complete rows. "
+                    "At least one row without null values is required."
                 )
 
 

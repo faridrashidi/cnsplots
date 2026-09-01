@@ -1129,6 +1129,7 @@ def stripplot(
     columns = [x, y] if hue is None else [x, y, hue]
     validate_columns_exist(data, columns, "stripplot")
     validate_dataframe_not_empty(data, "stripplot")
+    validate_no_nulls(data, columns, "stripplot", allow_partial=True)
 
     if "addcount" in kwargs:
         raise TypeError(
