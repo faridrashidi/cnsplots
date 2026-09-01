@@ -16,12 +16,6 @@ import cnsplots as cns
     ("data", "message"),
     [
         (
-            pd.DataFrame(
-                {"value": [1.0, None, 2.0, 3.0], "group": ["A", "A", "B", "B"]}
-            ),
-            "Null values",
-        ),
-        (
             pd.DataFrame({"value": [2.0, 3.0, 1.0], "group": ["B", "B", "A"]}),
             "at least two observations",
         ),
@@ -47,11 +41,26 @@ def test_ridgeplot_rejects_invalid_groups_before_kde(
         cns.ridgeplot(data, x="value", y="group")
 
 
-def test_ridgeplot_rejects_null_group_labels() -> None:
-    data = pd.DataFrame({"value": [1.0, 2.0, 3.0, 4.0], "group": ["A", "A", None, "B"]})
+@pytest.mark.parametrize("categorical_dtype", [False, True])
+def test_ridgeplot_drops_incomplete_rows(categorical_dtype: bool) -> None:
+    data = pd.DataFrame(
+        {
+            "value": [0.0, 1.0, 2.0, np.nan, 99.0, 3.0, 4.0, 5.0, 100.0],
+            "group": ["A", "A", "A", "A", None, "B", "B", "B", "B"],
+            "condition": ["H", "H", "H", "H", "H", "H", "H", "H", None],
+        }
+    )
+    if categorical_dtype:
+        data["group"] = pd.Categorical(data["group"], categories=["A", "B", "C"])
 
-    with pytest.raises(ValueError, match="Null values"):
-        cns.ridgeplot(data, x="value", y="group")
+    ax = cns.ridgeplot(data, x="value", y="group", hue="condition")
+
+    assert len(ax.collections) == 2
+    assert [text.get_text() for text in ax.texts] == ["A", "B"]
+    legend = ax.get_legend()
+    assert legend is not None
+    assert [text.get_text() for text in legend.get_texts()] == ["H"]
+    assert ax.get_xlim() == pytest.approx((0.0, 5.0))
 
 
 def test_ridgeplot_customization_parameters_are_keyword_only() -> None:
@@ -202,7 +211,7 @@ def test_ridgeplot_rejects_invalid_overlap_before_kde(
                     "condition": ["H1", None, "H1", "H1"],
                 }
             ),
-            "Null values",
+            "at least two observations",
         ),
         (
             pd.DataFrame(
