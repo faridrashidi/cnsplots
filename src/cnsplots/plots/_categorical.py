@@ -358,7 +358,16 @@ def barplot(
     plotting.update(kwargs)
     if ax is None:
         ax = plt.gca()
-    ax = sns.barplot(ax=ax, **plotting)
+    seaborn_plotting = plotting
+    if palette is not None and hue is None:
+        category_column = y if pd.api.types.is_numeric_dtype(data[x]) else x
+        seaborn_plotting = {
+            **plotting,
+            "hue": category_column,
+            "hue_order": order,
+            "legend": False,
+        }
+    ax = sns.barplot(ax=ax, **seaborn_plotting)
     bar_labels = []
     if add_tip:
         for container in (
@@ -575,11 +584,9 @@ def lollipopplot(
     else:
         resolved_colors = sns.color_palette(n_colors=len(categories))
 
-    agg_func = np.median if estimator == "median" else np.mean
-
     if hue is None:
         grouped = data.groupby(cat_col, sort=False)[val_col]
-        means = grouped.agg(agg_func).reindex(categories)
+        means = grouped.agg(estimator).reindex(categories)
         errors = _lollipop_errors(
             grouped,
             categories,
@@ -617,7 +624,7 @@ def lollipopplot(
         for i, hue_val in enumerate(hue_levels):
             subset = data[data[hue] == hue_val]
             grouped = subset.groupby(cat_col, sort=False)[val_col]
-            means = grouped.agg(agg_func).reindex(categories)
+            means = grouped.agg(estimator).reindex(categories)
             positions = cat_positions + offsets[i]
             errors = _lollipop_errors(
                 grouped,

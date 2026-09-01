@@ -439,6 +439,7 @@ def test_utils_internal_coverage(
 
     fig, ax = plt.subplots()
     plt.sca(ax)
+    ax.plot([], [], label="series")
     _utils.take_legend_out()
     legend = ax.get_legend()
     assert legend is not None

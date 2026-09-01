@@ -383,7 +383,7 @@ def validate_column_type(
         if (
             not pd.api.types.is_object_dtype(dtype)
             and not pd.api.types.is_string_dtype(dtype)
-            and not pd.api.types.is_categorical_dtype(dtype)
+            and not isinstance(dtype, pd.CategoricalDtype)
         ):
             raise ValueError(
                 f"[{function_name}] Column '{column}' must be categorical/string, "

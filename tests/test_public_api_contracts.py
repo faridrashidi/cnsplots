@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import seaborn as sns
+from lifelines.exceptions import ConvergenceWarning
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.text import Text
@@ -598,7 +599,8 @@ def test_public_cox_model_and_forestplot_contract(
         event="event",
         variates=["age", "C(stage)"],
     )
-    model.fit()
+    with pytest.warns(ConvergenceWarning):
+        model.fit()
     assert model.results is not None
     assert set(model.results.columns) == {
         "display_label",
@@ -621,7 +623,8 @@ def test_public_cox_model_and_forestplot_contract(
         variates=["age"],
         hue="group",
     )
-    model_hue.fit()
+    with pytest.warns(ConvergenceWarning):
+        model_hue.fit()
     cns.figure(120, 120)
     ax = cns.forestplot(model_hue)
     assert ax.get_xlabel() == "Hazard ratio (95% CI)"
