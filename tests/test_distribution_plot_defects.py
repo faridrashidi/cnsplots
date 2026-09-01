@@ -89,7 +89,5 @@ def test_distribution_plot_rejects_duplicate_column_names(
         columns=pd.Index(["group", "value", "value"]),
     )
 
-    with pytest.raises(
-        ValueError, match=rf"\[{function_name}\] Duplicate column name"
-    ):
+    with pytest.raises(ValueError, match=rf"\[{function_name}\] Duplicate column name"):
         plotter(data, x="group", y="value")
