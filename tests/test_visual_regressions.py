@@ -28,19 +28,20 @@ def _assert_visual_hash_environment(
     if request.node.get_closest_marker("mpl_image_compare") is None or not visual_mode:
         return
 
+    mpl_minor = ".".join(mpl.__version__.split(".")[:2])
     actual = (
         sys.platform,
         platform.machine(),
         sys.version_info[:2],
-        mpl.__version__,
+        mpl_minor,
         ft2font.__freetype_version__,
     )
-    expected = ("linux", "x86_64", (3, 12), "3.10.8", "2.6.1")
+    expected = ("linux", "x86_64", (3, 12), "3.10", "2.6.1")
     if actual == expected:
         return
 
     message = (
-        "visual hashes require Linux x86_64, Python 3.12, Matplotlib 3.10.8, "
+        "visual hashes require Linux x86_64, Python 3.12, Matplotlib 3.10.x, "
         f"and FreeType 2.6.1; got {actual!r}"
     )
     if os.environ.get("CNSPLOTS_REQUIRE_VISUAL_ENV") == "1":

@@ -1,0 +1,41 @@
+name: CI / Latest Dependencies
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ci-latest-dependencies.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+  schedule:
+    - cron: "0 5 * * 0"
+  workflow_dispatch:
+
+jobs:
+  latest-dependencies:
+    runs-on: ubuntu-latest
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync latest dependencies
+        # Avoid pairing prerelease Numba with an unsupported NumPy release.
+        run: uv sync --upgrade --extra dev --prerelease-package numba=disallow
+
+      - name: Install mutool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mupdf-tools
+
+      - name: Run tests
+        run: make test
