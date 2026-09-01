@@ -582,7 +582,7 @@ def _draw_forestplot(
         ax.errorbar(
             estimates,
             y_coords,
-            xerr=[lower_errors, upper_errors],
+            xerr=np.vstack((lower_errors, upper_errors)),
             fmt="s",
             color=color_map[hue_value],
             markeredgewidth=0.8,

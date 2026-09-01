@@ -120,6 +120,7 @@ addopts = "--cov=cnsplots --cov-report=term-missing --cov-fail-under=100"
 filterwarnings = [
   "error",
   "ignore:Could not find the number of physical cores.*:UserWarning:joblib[.]externals[.]loky[.]backend[.]context",
+  "ignore:Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future[.] Ensure you extract a single element from your array before performing this operation[.] [(]Deprecated NumPy 1[.]25[.][)]:DeprecationWarning:lifelines[.]plotting",
   "ignore:vert.*bool will be deprecated in a future version[.] Use orientation.*instead[.]:PendingDeprecationWarning:seaborn[.]categorical",
   "ignore:vert.*bool was deprecated in Matplotlib 3[.]11 and will be removed in 3[.]13[.] Use orientation.*instead[.]:matplotlib.MatplotlibDeprecationWarning:seaborn[.]categorical",
   "ignore:Downcasting object dtype arrays on .* is deprecated and will change in a future version[.].*:FutureWarning:upsetplot[.]data",
