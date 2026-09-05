@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pandas import Series
 
+import numpy as np
 import pandas as pd
 
 from cnsplots._validation import (
@@ -56,4 +57,9 @@ def cuminc(
         rho=0.0,
     )
 
+    if (
+        not np.isfinite(result.var).all()
+        or np.linalg.matrix_rank(result.var) < result.df
+    ):
+        raise ValueError("Gray's test comparison variance is zero or singular")
     return float(result.pvalue)

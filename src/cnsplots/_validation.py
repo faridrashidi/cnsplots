@@ -470,9 +470,8 @@ def validate_time_to_event_data(
     function_name: str,
     *,
     competing_risks: bool = False,
-    min_groups: int = 1,
 ) -> None:
-    """Validate durations, event codes, and per-group sample adequacy."""
+    """Validate the data domain for descriptive time-to-event estimates."""
     validate_column_type(data, duration, ["numeric"], function_name)
     validate_no_nulls(data, [duration, event, group], function_name)
 
@@ -516,35 +515,12 @@ def validate_time_to_event_data(
                 "events)."
             )
     else:
-        validate_binary_column(data, event, function_name)
-
-    group_sizes = data.groupby(group, observed=True).size()
-    if len(group_sizes) < min_groups:
-        raise ValueError(
-            f"[{function_name}] Column '{group}' must contain at least {min_groups} "
-            f"groups, found {len(group_sizes)}."
-        )
-
-    small_groups = group_sizes[group_sizes < 2]
-    if not small_groups.empty:
-        raise ValueError(
-            f"[{function_name}] Each group in column '{group}' must contain at least 2 "
-            f"observations; insufficient groups: {list(small_groups.index)}."
-        )
-
-    event_counts = (
-        data.loc[data[event] == 1]
-        .groupby(group, observed=True)
-        .size()
-        .reindex(group_sizes.index, fill_value=0)
-    )
-    groups_without_events = event_counts[event_counts < 1]
-    if not groups_without_events.empty:
-        raise ValueError(
-            f"[{function_name}] Each group in column '{group}' must contain at least one "
-            f"event of interest (event code 1); groups without events: "
-            f"{list(groups_without_events.index)}."
-        )
+        event_values = data[event].to_numpy()
+        if np.iscomplexobj(event_values) or not data[event].isin([0, 1]).all():
+            raise ValueError(
+                f"[{function_name}] Column '{event}' must contain only event codes "
+                "0 and 1 (0 = censored, 1 = event)."
+            )
 
 
 def validate_categorical_has_levels(
