@@ -13,9 +13,13 @@ import warnings
 import numpy as np
 import pandas as pd
 import sklearn as skl
+from patsy.build import build_design_matrices
+from patsy.desc import ModelDesc
+from patsy.eval import EvalEnvironment
 from patsy.highlevel import dmatrix
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.model_selection import cross_val_predict
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, cross_val_predict
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -302,13 +306,31 @@ class CoxModel:
         ]
 
 
+class _LogisticDesign(TransformerMixin, BaseEstimator):
+    """Learn Patsy encoding on training rows and reuse it for held-out rows."""
+
+    def __init__(self, formula: str) -> None:
+        self.formula = formula
+
+    def fit(self, X: pd.DataFrame, y: np.ndarray | None = None) -> _LogisticDesign:
+        design = dmatrix(self.formula, X, return_type="dataframe", NA_action="raise")
+        self.design_info_ = design.design_info
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        design = build_design_matrices(
+            [self.design_info_], X, return_type="dataframe", NA_action="raise"
+        )[0]
+        return design.drop("Intercept", axis=1)
+
+
 class LogisticModel:
     """
     Logistic regression model with cross-validation for binary classification.
 
-    This class fits L1-regularized logistic regression models with 5-fold
-    cross-validation to predict binary outcomes and assess predictor performance
-    using ROC-AUC with bootstrap confidence intervals.
+    This class fits L1-regularized logistic regression models with nested
+    5-fold cross-validation to predict binary outcomes and assess predictor
+    performance using ROC-AUC with bootstrap confidence intervals.
 
     Parameters
     ----------
@@ -319,7 +341,8 @@ class LogisticModel:
     variates : list of str
         List of formula strings specifying the predictors to test. Each formula
         can be a simple variable name or a Patsy formula (e.g., 'age',
-        'C(treatment)', 'age + stage').
+        'C(treatment)', 'age + stage'). Stateful Patsy transforms such as
+        ``bs``, ``cr``, ``center``, and ``standardize`` are not supported.
     hue : str, optional
         Column name for grouping variable. If provided, fits separate models
         for each group. Default is None (single model for all data).
@@ -341,12 +364,13 @@ class LogisticModel:
     Notes
     -----
     The fit() method performs:
-    - L1-regularized logistic regression with 5-fold cross-validation
-    - Automatic penalty parameter selection via cross-validation
+    - Outer 5-fold cross-validation for out-of-fold predictions
+    - Inner 5-fold ROC-AUC tuning of the complete preprocessing/model pipeline
     - Bootstrap confidence intervals for AUC (1000 iterations, alpha=0.05)
 
     Models use the liblinear solver optimized for L1 regularization and are
-    scored using ROC-AUC during cross-validation.
+    scored using ROC-AUC during cross-validation. See :meth:`fit` for the
+    preprocessing boundaries and supported formula behavior.
 
     AUC interpretation:
     - AUC = 1.0: Perfect discrimination
@@ -437,7 +461,7 @@ class LogisticModel:
         Fit logistic regression models for all specified variates.
 
         This method fits a separate L1-regularized logistic regression model
-        with 5-fold cross-validation for each variate, optionally stratified
+        with nested 5-fold cross-validation for each variate, optionally stratified
         by hue groups. Results are stored in the results attribute.
 
         Returns
@@ -455,10 +479,27 @@ class LogisticModel:
         - hue_group: Group name (or 'All' if no grouping)
 
         For each model:
-        1. Design matrix is created using Patsy (supports formulas)
-        2. Predictors are standardized within each cross-validation fold
-        3. LogisticRegressionCV fits with L1 penalty and 5-fold CV
-        4. AUC is computed from all out-of-fold predictions, with a bootstrap 95% CI
+
+        1. Stateful Patsy transforms are rejected before learning any design state.
+           A stateless formula evaluation identifies complete predictor rows and
+           aligns their outcomes; its design information is discarded.
+        2. Outer 5-fold stratified CV holds out each row once. Within each outer
+           training fold, inner 5-fold stratified CV tunes 10 values of C,
+           logarithmically spaced from 1e-4 to 1e4, using ROC-AUC.
+        3. Each inner fit learns Patsy encoding and standardization on its training
+           rows only, followed by L1 logistic regression. The selected pipeline
+           is refitted on the outer training rows to predict the outer held-out
+           rows. Both CV levels use unshuffled folds; the solver seed is 42.
+        4. AUC is computed from all out-of-fold predictions. The existing 1000
+           bootstrap resamples of these predictions provide the 95% CI.
+
+        Formulas must use row-wise expressions. Stateful Patsy transforms
+        (including splines, centering, and standardization) are unsupported until
+        fold-local state and missing-value handling are implemented together.
+        Categorical levels are learned from training rows and reused for
+        validation. An unseen validation level causes a fitting warning; known
+        levels can be declared in advance with ``C(column, levels=[...])`` or a
+        pandas categorical dtype.
 
         Runtime warnings are emitted for hue groups with no outcome variance.
         Errors during fitting are caught and surfaced as warnings.
@@ -481,9 +522,8 @@ class LogisticModel:
         df = self.data.copy()
         all_results = []
         regularization_options: dict[str, Any] = (
-            {"l1_ratios": (1,), "use_legacy_attributes": False}
-            if "use_legacy_attributes"
-            in inspect.signature(LogisticRegressionCV).parameters
+            {"l1_ratio": 1}
+            if inspect.signature(LogisticRegression).parameters["l1_ratio"].default == 0
             else {"penalty": "l1"}
         )
 
@@ -499,10 +539,24 @@ class LogisticModel:
             hue_data = hue_data.reset_index(drop=True)
             for var in self.variates:
                 try:
-                    X = dmatrix(var, hue_data, return_type="dataframe").drop(
-                        "Intercept", axis=1
+                    formula = ModelDesc.from_formula(var)
+                    eval_env = EvalEnvironment.capture(0)
+                    for term in formula.rhs_termlist:
+                        for factor in term.factors:
+                            if factor.memorize_passes_needed({}, eval_env):
+                                raise ValueError(
+                                    "Stateful Patsy transforms are not supported by "
+                                    "LogisticModel; use a formula with row-wise "
+                                    "predictor expressions"
+                                )
+                    # Use this evaluation only for row selection, never encoding.
+                    complete_rows = (
+                        dmatrix(var, hue_data, return_type="dataframe")
+                        .drop("Intercept", axis=1)
+                        .index
                     )
-                    y = hue_data.loc[X.index, self.event].to_numpy()
+                    X = hue_data.loc[complete_rows]
+                    y = X[self.event].to_numpy()
                     class_counts = pd.Series(y).value_counts()
                     if len(class_counts) < 2:
                         warnings.warn(
@@ -532,15 +586,20 @@ class LogisticModel:
                             "observations in each outcome class in every outer training "
                             "fold; at least 7 observations per class are required"
                         )
-                    model = make_pipeline(
-                        StandardScaler(),
-                        LogisticRegressionCV(
-                            cv=n_splits,
-                            solver="liblinear",
-                            random_state=42,
-                            scoring="roc_auc",
-                            **regularization_options,
+                    model = GridSearchCV(
+                        make_pipeline(
+                            _LogisticDesign(var),
+                            StandardScaler(),
+                            LogisticRegression(
+                                solver="liblinear",
+                                random_state=42,
+                                **regularization_options,
+                            ),
                         ),
+                        {"logisticregression__C": np.logspace(-4, 4, 10)},
+                        cv=n_splits,
+                        scoring="roc_auc",
+                        error_score="raise",
                     )
                     y_pred_proba = cross_val_predict(
                         model, X, y, cv=n_splits, method="predict_proba"

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any
 from unittest.mock import Mock
 import warnings
@@ -11,8 +12,10 @@ import numpy as np
 import pandas as pd
 import pytest
 from lifelines.exceptions import ConvergenceWarning
-from sklearn.linear_model import LogisticRegressionCV
-from sklearn.pipeline import Pipeline
+from patsy import PatsyError
+from patsy.splines import BS
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 import cnsplots as cns
@@ -68,10 +71,10 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
             "group": ["A"] * 14 + ["B"] * 14,
         }
     )
-    seen_estimators: list[Pipeline] = []
+    seen_estimators: list[GridSearchCV] = []
 
     def fake_cross_val_predict(
-        estimator: Pipeline,
+        estimator: GridSearchCV,
         X: pd.DataFrame,
         y: np.ndarray,
         *,
@@ -98,32 +101,42 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
 
     assert len(seen_estimators) == (1 if hue is None else 2)
     for estimator in seen_estimators:
-        scaler, classifier = (step for _, step in estimator.steps)
+        assert isinstance(estimator, GridSearchCV)
+        design, scaler, classifier = (step for _, step in estimator.estimator.steps)
+        assert design.formula == "score"
         assert isinstance(scaler, StandardScaler)
-        assert isinstance(classifier, LogisticRegressionCV)
+        assert isinstance(classifier, LogisticRegression)
         if classifier.penalty == "deprecated":
-            assert classifier.l1_ratios == (1,)
-            assert classifier.use_legacy_attributes is False
+            assert classifier.l1_ratio == 1
         else:
             assert classifier.penalty == "l1"
         assert classifier.solver == "liblinear"
-        assert classifier.cv == 5
+        assert classifier.random_state == 42
+        assert estimator.cv == 5
+        assert estimator.scoring == "roc_auc"
+        assert estimator.error_score == "raise"
+        np.testing.assert_array_equal(
+            estimator.param_grid["logisticregression__C"], np.logspace(-4, 4, 10)
+        )
 
 
+@pytest.mark.parametrize("formula", ["score", 'Q("score") + C(group)', "I(score ** 2)"])
 def test_logistic_model_aligns_outcome_after_patsy_drops_rows(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, formula: str
 ) -> None:
     data = pd.DataFrame(
         {
             "event": [0, 1] * 8,
             "score": np.arange(16, dtype=float),
+            "group": ["A", "B"] * 8,
+            "unused": [np.nan] * 16,
         },
-        index=np.arange(100, 116),
+        index=np.full(16, 100),
     )
-    data.loc[[100, 101], "score"] = np.nan
+    data.iloc[:2, data.columns.get_loc("score")] = np.nan
 
     def fake_cross_val_predict(
-        estimator: Pipeline,
+        estimator: GridSearchCV,
         X: pd.DataFrame,
         y: np.ndarray,
         *,
@@ -142,10 +155,170 @@ def test_logistic_model_aligns_outcome_after_patsy_drops_rows(
         lambda self, y, predictions: (0.5, 0.4, 0.6),
     )
 
-    model = cns.LogisticModel(data, event="event", variates=["score"])
+    model = cns.LogisticModel(data, event="event", variates=[formula])
     model.fit()
 
     assert model.results is not None
+
+
+def test_logistic_model_scaler_fits_only_nested_training_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame({"event": [0, 1] * 30, "score": np.arange(60, dtype=float)})
+    fitted_rows: list[tuple[int, ...]] = []
+    design_rows: list[tuple[int, ...]] = []
+    original_fit = _methods._LogisticDesign.fit
+
+    def track_design_fit(self, X, y=None):
+        design_rows.append(tuple(X.index))
+        return original_fit(self, X, y)
+
+    monkeypatch.setattr(_methods._LogisticDesign, "fit", track_design_fit)
+
+    class TrackingScaler(StandardScaler):
+        def fit(self, X, y=None, sample_weight=None):
+            fitted_rows.append(tuple(X.index))
+            return super().fit(X, y, sample_weight=sample_weight)
+
+    monkeypatch.setattr(_methods, "StandardScaler", TrackingScaler)
+    predictions: list[np.ndarray] = []
+
+    def capture_auc(self, y, probabilities):
+        np.testing.assert_array_equal(y, data["event"])
+        predictions.append(probabilities.copy())
+        return 0.5, 0.4, 0.6
+
+    monkeypatch.setattr(cns.LogisticModel, "_compute_auc_ci", capture_auc)
+    model = cns.LogisticModel(data, event="event", variates=["score"])
+    model.fit()
+
+    expected_rows: Counter[tuple[int, ...]] = Counter()
+    for outer_train, outer_test in StratifiedKFold(5).split(data, data["event"]):
+        expected_rows[tuple(outer_train)] += 1
+        for inner_train, inner_test in StratifiedKFold(5).split(
+            data.iloc[outer_train], data["event"].iloc[outer_train]
+        ):
+            training_rows = tuple(outer_train[inner_train])
+            assert set(training_rows).isdisjoint(outer_test)
+            assert set(training_rows).isdisjoint(outer_train[inner_test])
+            expected_rows[training_rows] += 10
+
+    assert Counter(fitted_rows) == expected_rows
+    assert Counter(design_rows) == expected_rows
+    assert len(fitted_rows) == 255
+    assert model.results is not None
+    assert len(predictions) == 1
+    assert predictions[0].shape == (60,)
+    assert np.isfinite(predictions[0]).all()
+
+    model.fit()
+    np.testing.assert_array_equal(predictions[0], predictions[1])
+
+
+@pytest.mark.parametrize(
+    "formula",
+    ["bs(score, df=4)", "cr(score, df=4)", "center(score)", "standardize(score)"],
+)
+def test_logistic_model_rejects_stateful_formulas_before_learning(
+    monkeypatch: pytest.MonkeyPatch, formula: str
+) -> None:
+    data = pd.DataFrame({"event": [0, 1] * 30, "score": np.arange(60, dtype=float)})
+    memorize = Mock(side_effect=AssertionError("Spline knots must not be learned"))
+    design = Mock(
+        side_effect=AssertionError("Formula must be rejected before evaluation")
+    )
+    monkeypatch.setattr(BS, "memorize_chunk", memorize)
+    monkeypatch.setattr(_methods, "dmatrix", design)
+    model = cns.LogisticModel(data, event="event", variates=[formula])
+
+    with pytest.warns(RuntimeWarning) as caught:
+        model.fit()
+
+    assert any(
+        "Stateful Patsy transforms are not supported" in str(w.message) for w in caught
+    )
+    memorize.assert_not_called()
+    design.assert_not_called()
+    assert model.results is None
+
+
+def test_logistic_design_reuses_training_categorical_encoding() -> None:
+    training = pd.DataFrame({"group": ["B", "A", "B", "A"]})
+    validation = pd.DataFrame({"group": ["B", "B"]}, index=np.array([10, 11]))
+    design = _methods._LogisticDesign("C(group)").fit(training)
+
+    encoded = design.transform(validation)
+
+    assert encoded.columns.tolist() == ["C(group)[T.B]"]
+    assert encoded.index.tolist() == [10, 11]
+    np.testing.assert_array_equal(encoded.to_numpy(), [[1], [1]])
+    with pytest.raises(PatsyError, match="does not match any of the expected levels"):
+        design.transform(pd.DataFrame({"group": ["new"]}))
+
+
+@pytest.mark.parametrize("declared_levels", [None, "formula", "dtype"])
+def test_logistic_model_handles_held_out_categorical_levels(
+    monkeypatch: pytest.MonkeyPatch, declared_levels: str | None
+) -> None:
+    data = pd.DataFrame(
+        {
+            "event": [0, 1] * 30,
+            "score": np.arange(60, dtype=float),
+            "group": ["A", "B"] * 30,
+        }
+    )
+    data.loc[0, "group"] = "new"
+    formula = "score + C(group)"
+    if declared_levels == "formula":
+        formula = "score + C(group, levels=['A', 'B', 'new'])"
+    elif declared_levels == "dtype":
+        data["group"] = pd.Categorical(data["group"], categories=["A", "B", "new"])
+    monkeypatch.setattr(
+        cns.LogisticModel, "_compute_auc_ci", lambda self, y, p: (0.5, 0.4, 0.6)
+    )
+    model = cns.LogisticModel(data, event="event", variates=[formula])
+
+    if declared_levels is None:
+        with pytest.warns(RuntimeWarning) as caught:
+            model.fit()
+        assert any("expected levels" in str(w.message) for w in caught)
+        assert model.results is None
+    else:
+        model.fit()
+        assert model.results is not None
+
+
+def test_logistic_model_fits_stateless_formula_with_missing_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = pd.DataFrame(
+        {
+            "event": [0, 1] * 30,
+            "score": np.linspace(0.1, 1, 60),
+            "group": ["A", "B", "B", "A"] * 15,
+            "unused": [np.nan] * 60,
+        },
+        index=np.full(60, 5),
+    )
+    data.iloc[:2, data.columns.get_loc("score")] = np.nan
+    data.iloc[2:4, data.columns.get_loc("group")] = None
+    received_predictions = []
+
+    def capture_auc(self, y, probabilities):
+        np.testing.assert_array_equal(y, data["event"].iloc[4:])
+        assert probabilities.shape == (56,)
+        assert np.isfinite(probabilities).all()
+        received_predictions.append(probabilities)
+        return 0.5, 0.4, 0.6
+
+    monkeypatch.setattr(cns.LogisticModel, "_compute_auc_ci", capture_auc)
+    model = cns.LogisticModel(
+        data, event="event", variates=['np.log(Q("score")) * C(group)']
+    )
+    model.fit()
+
+    assert model.results is not None
+    assert len(received_predictions) == 1
 
 
 @pytest.mark.parametrize(
