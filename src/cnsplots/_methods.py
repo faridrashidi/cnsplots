@@ -479,6 +479,7 @@ class LogisticModel:
         - hue_group: Group name (or 'All' if no grouping)
 
         For each model:
+
         1. Stateful Patsy transforms are rejected before learning any design state.
            A stateless formula evaluation identifies complete predictor rows and
            aligns their outcomes; its design information is discarded.
