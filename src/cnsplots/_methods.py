@@ -42,8 +42,10 @@ class CoxModel:
         Input DataFrame containing survival data and covariates.
     duration : str
         Column name for the time-to-event or time-to-censoring variable.
+        Values must be finite, real, non-negative numbers, excluding booleans.
     event : str
-        Column name for the event indicator (1 = event occurred, 0 = censored).
+        Column name for the event indicator (1 or True = event occurred,
+        0 or False = censored). Cohorts with all events observed are supported.
     variates : list of str
         List of formula strings specifying the covariates to test. Each formula
         can be a simple variable name or a Patsy formula (e.g., 'age',
@@ -136,6 +138,13 @@ class CoxModel:
         None
             Results are stored in self.results as a DataFrame.
 
+        Raises
+        ------
+        ValueError
+            If durations or event indicators are invalid. Input validation
+            occurs before fitting any models; individual fitting failures
+            instead emit RuntimeWarning.
+
         Notes
         -----
         The results DataFrame contains:
@@ -171,6 +180,32 @@ class CoxModel:
         validate_columns_exist(self.data, required_columns, "CoxModel.fit")
         validate_no_nulls(self.data, required_columns, "CoxModel.fit")
         validate_column_type(self.data, self.duration, ["numeric"], "CoxModel.fit")
+
+        durations = self.data[self.duration]
+        if pd.api.types.is_complex_dtype(durations.dtype) or pd.api.types.is_bool_dtype(
+            durations.dtype
+        ):
+            raise ValueError(
+                f"[CoxModel.fit] Column '{self.duration}' must contain real-valued "
+                "numeric durations."
+            )
+        if not np.isfinite(durations).all():
+            raise ValueError(
+                f"[CoxModel.fit] Column '{self.duration}' must contain only finite "
+                "durations."
+            )
+        if (durations < 0).any():
+            raise ValueError(
+                f"[CoxModel.fit] Column '{self.duration}' must contain only "
+                "non-negative durations."
+            )
+
+        events = self.data[self.event]
+        if np.iscomplexobj(events.to_numpy()) or not events.isin([0, 1]).all():
+            raise ValueError(
+                f"[CoxModel.fit] Column '{self.event}' must contain only 0 and 1 "
+                "event indicators (False = censored, True = event occurred)."
+            )
 
         df = self.data.copy()
         all_results = []
