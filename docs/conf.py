@@ -111,7 +111,6 @@ _intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "seaborn": ("https://seaborn.pydata.org/", None),
     "anndata": ("https://anndata.readthedocs.io/en/latest/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 intersphinx_mapping = _intersphinx_mapping if _docs_online else {}
 # This image target is emitted as a valid HTML anchor, but linkcheck interprets
