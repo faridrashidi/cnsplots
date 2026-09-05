@@ -1092,7 +1092,7 @@ def test_plot_internal_coverage(
         "multivariate_logrank_test",
         lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("bad")),
     )
-    with pytest.raises(RuntimeError, match="Log-rank test failed"):
+    with pytest.warns(UserWarning, match="Log-rank unavailable: bad"):
         cns.survivalplot(survival_df, "time", "event", "group")
     monkeypatch.setattr(
         lifelines_statistics,
@@ -1105,7 +1105,7 @@ def test_plot_internal_coverage(
             raise RuntimeError("bad")
 
     monkeypatch.setattr(lifelines, "CoxPHFitter", BadCox)
-    with pytest.raises(RuntimeError, match="Cox proportional hazards model failed"):
+    with pytest.warns(UserWarning, match="Cox trend unavailable: bad"):
         cns.survivalplot(
             pd.DataFrame(
                 {
@@ -1120,7 +1120,7 @@ def test_plot_internal_coverage(
             hue_order=["A", "B", "C"],
             overall_test="trend",
         )
-    with pytest.raises(RuntimeError, match="Could not compute hazard ratios"):
+    with pytest.warns(UserWarning, match="Cox HR.*unavailable: bad"):
         cns.survivalplot(survival_df, "time", "event", "group")
 
     cns.figure(120, 120)

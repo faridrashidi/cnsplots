@@ -14,7 +14,7 @@ def test_survivalplot_requires_zero_one_event_semantics(
     invalid = survival_df.copy()
     invalid["event"] += 1
 
-    with pytest.raises(ValueError, match="specifically 0 and 1"):
+    with pytest.raises(ValueError, match="only event codes 0 and 1"):
         cns.survivalplot(invalid, "time", "event", "group")
 
 
@@ -80,17 +80,19 @@ def test_cumulativeincidenceplot_requires_numeric_event_codes(
         cns.cumulativeincidenceplot(invalid, "time", "event", "group")
 
 
-def test_survivalplot_requires_two_groups(survival_df: pd.DataFrame) -> None:
-    invalid = survival_df.assign(group="only")
+def test_survivalplot_preserves_single_group_curve(survival_df: pd.DataFrame) -> None:
+    data = survival_df.assign(group="only")
 
-    with pytest.raises(ValueError, match="at least 2 groups"):
-        cns.survivalplot(invalid, "time", "event", "group")
+    with pytest.warns(UserWarning, match="Log-rank unavailable.*at least two groups"):
+        ax = cns.survivalplot(data, "time", "event", "group")
+    assert ax.texts[0].get_text() == "Log-rank unavailable"
+    assert any(line.get_label() == "only (n=12)" for line in ax.lines)
 
 
-def test_survivalplot_requires_two_observations_per_group(
+def test_survivalplot_accepts_single_observation_groups(
     survival_df: pd.DataFrame,
 ) -> None:
-    invalid = pd.concat(
+    data = pd.concat(
         [
             survival_df[survival_df["group"] == "Control"],
             survival_df[survival_df["group"] == "Treatment"].iloc[[0]],
@@ -98,18 +100,18 @@ def test_survivalplot_requires_two_observations_per_group(
         ignore_index=True,
     )
 
-    with pytest.raises(ValueError, match="at least 2 observations"):
-        cns.survivalplot(invalid, "time", "event", "group")
+    ax = cns.survivalplot(data, "time", "event", "group", descriptive_only=True)
+    assert any(line.get_label() == "Treatment (n=1)" for line in ax.lines)
 
 
-def test_survivalplot_requires_an_event_per_group(
+def test_survivalplot_accepts_all_censored_group(
     survival_df: pd.DataFrame,
 ) -> None:
-    invalid = survival_df.copy()
-    invalid.loc[invalid["group"] == "Treatment", "event"] = 0
+    data = survival_df.copy()
+    data.loc[data["group"] == "Treatment", "event"] = 0
 
-    with pytest.raises(ValueError, match="at least one event of interest"):
-        cns.survivalplot(invalid, "time", "event", "group")
+    ax = cns.survivalplot(data, "time", "event", "group", show_hazard_ratio=False)
+    assert ax.texts[0].get_text().startswith("Log-rank P =")
 
 
 def test_survival_time_labels_are_explicit_and_endpoint_neutral(

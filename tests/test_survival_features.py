@@ -105,21 +105,23 @@ def test_survivalplot_can_run_two_group_landmark_analysis(
     assert any(np.array_equal(line.get_xdata(), [6, 6]) for line in ax.lines)
 
 
-def test_survivalplot_skips_landmark_test_at_survival_boundary(
+def test_survivalplot_reports_unavailable_landmark_test_at_survival_boundary(
     survival_df: pd.DataFrame,
 ) -> None:
-    ax = cns.survivalplot(
-        survival_df,
-        "time",
-        "event",
-        "group",
-        landmark_time=1,
-    )
+    with pytest.warns(UserWarning, match="Landmark test unavailable.*between 0 and 1"):
+        ax = cns.survivalplot(
+            survival_df,
+            "time",
+            "event",
+            "group",
+            landmark_time=1,
+        )
 
-    assert ax.texts[0].get_text().splitlines()[-3:] == [
+    assert ax.texts[0].get_text().splitlines()[-4:] == [
         "Survival at 1",
         "Control = 1.00",
         "Treatment = 1.00",
+        "Landmark test unavailable",
     ]
 
 

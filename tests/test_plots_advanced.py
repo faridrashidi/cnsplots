@@ -225,8 +225,12 @@ def test_survival_plots(
 
     cns.figure(120, 120)
     single_group = competing_risk_df[competing_risk_df["group"] == "A"].copy()
-    ax4 = cns.cumulativeincidenceplot(single_group, "time", "event", "group")
+    with pytest.warns(
+        UserWarning, match="Gray's test unavailable.*at least two groups"
+    ):
+        ax4 = cns.cumulativeincidenceplot(single_group, "time", "event", "group")
     assert ax4 is plt.gca()
+    assert ax4.texts[0].get_text() == "Gray's test unavailable"
 
 
 @pytest.mark.parametrize(

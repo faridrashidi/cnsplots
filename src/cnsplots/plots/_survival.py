@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from collections.abc import Sequence
 from typing import Any, Literal
 
@@ -54,6 +55,71 @@ _PVALUE_LOCATIONS: dict[
     "lower center": (0.5, 0.02, "center", "bottom"),
     "lower right": (0.98, 0.02, "right", "bottom"),
 }
+
+
+def _unavailable_inference(function_name: str, label: str, reason: Exception) -> str:
+    """Report failed optional inference without discarding descriptive estimates."""
+    warnings.warn(
+        f"[{function_name}] {label} unavailable: {reason}", UserWarning, stacklevel=3
+    )
+    return f"{label} unavailable"
+
+
+def _format_inference_pvalue(pvalue: float) -> str:
+    if not np.isfinite(pvalue) or not 0 <= pvalue <= 1:
+        raise ValueError("the test did not return a finite p-value between 0 and 1")
+    p = num2tex.num2tex(pvalue, precision=2)
+    return rf"${p:.2g}$"
+
+
+def _validate_comparison(data: pd.DataFrame, event: str, group: str) -> None:
+    if data[group].nunique() < 2:
+        raise ValueError("at least two groups are required")
+    if not (data[event] == 1).any():
+        raise ValueError("there are no events of interest (event code 1)")
+
+
+def _validate_logrank_variance(
+    data: pd.DataFrame, duration: str, event: str, group: str
+) -> None:
+    from lifelines.utils import group_survival_table_from_events
+
+    _validate_comparison(data, event, group)
+    _, removed, observed, _ = group_survival_table_from_events(
+        data[group], data[duration], data[event]
+    )
+    at_risk = removed.sum().to_numpy() - removed.cumsum().shift(fill_value=0).to_numpy()
+    total_at_risk = at_risk.sum(axis=1)
+    events = observed.sum(axis=1).to_numpy()
+    # Hypergeometric covariance of group event counts at each pooled event time.
+    weight = events * (total_at_risk - events) / np.maximum(total_at_risk - 1, 1)
+    proportions = at_risk / total_at_risk[:, None]
+    weighted = weight[:, None] * proportions
+    covariance = np.diag(weighted.sum(axis=0)) - proportions.T @ weighted
+    if np.linalg.matrix_rank(covariance[:-1, :-1]) < at_risk.shape[1] - 1:
+        raise ValueError("the log-rank comparison variance is zero or singular")
+
+
+def _fit_cox_inference(data: pd.DataFrame, covariate: str) -> Any:
+    import lifelines as ll
+
+    _validate_comparison(data, "_event", covariate)
+    if (
+        data[covariate].nunique() == 2
+        and (data.groupby(covariate, observed=True)["_event"].sum() == 0).any()
+    ):
+        raise ValueError("a comparison group has no observed events")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        cph = ll.CoxPHFitter()
+        cph.fit(data, duration_col="_duration", event_col="_event")
+        summary = cph.summary.loc[covariate]
+    estimates = summary[
+        ["se(coef)", "exp(coef)", "exp(coef) lower 95%", "exp(coef) upper 95%"]
+    ].to_numpy(dtype=float)
+    if not np.isfinite(estimates).all() or (estimates <= 0).any():
+        raise ValueError("the Cox model did not return finite positive estimates")
+    return cph
 
 
 def _add_pvalue_annotation(
@@ -184,6 +250,7 @@ def survivalplot(
     overall_test: Literal["logrank", "trend"] = "logrank",
     pairs: list[tuple[str, str]] | None = None,
     show_hazard_ratio: bool = True,
+    descriptive_only: bool = False,
     pvalue_loc: PValueLoc = "lower left",
     ax: Axes | None = None,
 ) -> Axes:
@@ -247,6 +314,13 @@ def survivalplot(
         Whether to show pairwise hazard ratios, confidence intervals, and Cox
         p-values. If False, pairwise Cox inference is skipped and only the overall
         log-rank or trend p-value is shown. Any value passed to ``pairs`` is ignored.
+    descriptive_only : bool, default: False
+        Skip all statistical tests and Cox fitting, ignoring ``overall_test``,
+        ``pairs``, and ``show_hazard_ratio``. Curves, confidence bands, risk tables,
+        medians, landmark estimates, and RMST remain available, including for a
+        single group or an all-censored cohort. Otherwise, unavailable inference
+        emits a UserWarning with the reason and is annotated as ``unavailable``;
+        valid curves and other estimates are retained.
     pvalue_loc : str, default: 'lower left'
         Axes-relative location for the p-value and hazard-ratio annotation. Accepts
         the fixed Matplotlib legend locations: ``'upper left'``, ``'upper center'``,
@@ -296,7 +370,6 @@ def survivalplot(
         event,
         hue,
         "survivalplot",
-        min_groups=2,
     )
 
     import lifelines as ll
@@ -314,12 +387,12 @@ def survivalplot(
         and len(hue_order) == len(observed_groups)
         and set(hue_order) == set(observed_groups)
     )
-    if overall_test not in {"logrank", "trend"}:
+    if not descriptive_only and overall_test not in {"logrank", "trend"}:
         raise ValueError(
             "[survivalplot] Parameter 'overall_test' must be one of "
             "'logrank' or 'trend'."
         )
-    if overall_test == "trend" and not has_explicit_order:
+    if not descriptive_only and overall_test == "trend" and not has_explicit_order:
         raise ValueError(
             "[survivalplot] The trend test requires a complete explicit 'hue_order' "
             "because category order defines the trend scores."
@@ -352,7 +425,7 @@ def survivalplot(
             )
 
     resolved_pairs: list[tuple[str, str]] = []
-    if show_hazard_ratio:
+    if show_hazard_ratio and not descriptive_only:
         resolved_pairs = (
             [(hue_order[0], hue_order[1])]
             if pairs is None and len(hue_order) == 2
@@ -411,20 +484,24 @@ def survivalplot(
                 max(current_xlim[1], specified_xticks.max()),
             )
 
-    if overall_test == "logrank":
+    annotation_lines = []
+    if not descriptive_only and overall_test == "logrank":
         try:
-            logrank_result = multivariate_logrank_test(
-                data[duration], data[hue], data[event]
+            _validate_logrank_variance(data, duration, event, hue)
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", RuntimeWarning)
+                logrank_result = multivariate_logrank_test(
+                    data[duration], data[hue], data[event]
+                )
+            annotation_lines.append(
+                "Log-rank P = " + _format_inference_pvalue(logrank_result.p_value)
             )
-            overall_p = num2tex.num2tex(logrank_result.p_value, precision=2)
-            overall_label = "Log-rank"
             logger.info("P-value was determined by two-sided omnibus log-rank test.")
-        except Exception as e:
-            raise RuntimeError(
-                "[survivalplot] Log-rank test failed. This may indicate insufficient data "
-                f"or invalid event/duration values. Details: {e}"
-            ) from e
-    else:
+        except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
+            annotation_lines.append(
+                _unavailable_inference("survivalplot", "Log-rank", e)
+            )
+    elif not descriptive_only:
         trend_data = pd.DataFrame(
             {
                 "_duration": data[duration].to_numpy(),
@@ -433,22 +510,20 @@ def survivalplot(
             }
         )
         try:
-            cph = ll.CoxPHFitter()
-            cph.fit(trend_data, duration_col="_duration", event_col="_event")
+            cph = _fit_cox_inference(trend_data, "_group_score")
             trend_result = cph.log_likelihood_ratio_test()
-            overall_p = num2tex.num2tex(trend_result.p_value, precision=2)
-            overall_label = "Cox trend"
+            annotation_lines.append(
+                "Cox trend P = " + _format_inference_pvalue(trend_result.p_value)
+            )
             logger.info(
                 "P-value was determined by a one-degree-of-freedom Cox proportional "
                 "hazards trend test using hue_order scores."
             )
-        except Exception as e:
-            raise RuntimeError(
-                "[survivalplot] Cox proportional hazards model failed. This may indicate "
-                f"insufficient data or model convergence issues. Details: {e}"
-            ) from e
+        except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
+            annotation_lines.append(
+                _unavailable_inference("survivalplot", "Cox trend", e)
+            )
 
-    annotation_lines = [f"{overall_label} P = " + rf"${overall_p:.2g}$"]
     for reference, comparison in resolved_pairs:
         pair_data = data[data[hue].isin([reference, comparison])]
         cox_data = pd.DataFrame(
@@ -459,29 +534,28 @@ def survivalplot(
             }
         )
         try:
-            cph = ll.CoxPHFitter()
-            cph.fit(cox_data, duration_col="_duration", event_col="_event")
+            cph = _fit_cox_inference(cox_data, "_comparison")
             summary = cph.summary.loc["_comparison"]
             hazard_ratio = summary["exp(coef)"]
             ci1 = summary["exp(coef) lower 95%"]
             ci2 = summary["exp(coef) upper 95%"]
-            pair_p = num2tex.num2tex(summary["p"], precision=2)
-        except Exception as e:
-            raise RuntimeError(
-                "[survivalplot] Could not compute hazard ratios for contrast "
-                f"{comparison!r} vs {reference!r}. This may indicate insufficient "
-                f"data or model convergence issues. Details: {e}"
-            ) from e
+            pair_p = _format_inference_pvalue(summary["p"])
+        except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
+            annotation_lines.append(
+                _unavailable_inference(
+                    "survivalplot", f"Cox HR ({comparison} vs {reference})", e
+                )
+            )
+            continue
         if len(hue_order) > 2:
             annotation_lines.append(f"{comparison} vs {reference}")
         annotation_lines.extend(
             [
                 f"HR = {hazard_ratio:.2f}",
                 f"95% CI {ci1:.2f}-{ci2:.2f}",
-                "Cox P = " + rf"${pair_p:.2g}$",
+                "Cox P = " + pair_p,
             ]
         )
-    if resolved_pairs:
         logger.info(
             "Pairwise hazard ratios and unadjusted two-sided P-values were determined "
             "by Cox proportional hazards models."
@@ -531,18 +605,28 @@ def survivalplot(
                 s=12,
                 zorder=3,
             )
-        if len(fitters) == 2 and all(
-            0 < estimate < 1 for estimate in landmark_estimates
-        ):
-            landmark_result = survival_difference_at_fixed_point_in_time_test(
-                landmark_time, fitters[0], fitters[1]
-            )
-            landmark_p = num2tex.num2tex(landmark_result.p_value, precision=2)
-            annotation_lines.append("Landmark P = " + rf"${landmark_p:.2g}$")
-            logger.info(
-                "Landmark P-value was determined by a two-sided fixed-time "
-                "log-minus-log test."
-            )
+        if not descriptive_only and len(fitters) == 2:
+            try:
+                if not all(0 < estimate < 1 for estimate in landmark_estimates):
+                    raise ValueError(
+                        "survival estimates must be strictly between 0 and 1"
+                    )
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error", RuntimeWarning)
+                    landmark_result = survival_difference_at_fixed_point_in_time_test(
+                        landmark_time, fitters[0], fitters[1]
+                    )
+                annotation_lines.append(
+                    "Landmark P = " + _format_inference_pvalue(landmark_result.p_value)
+                )
+                logger.info(
+                    "Landmark P-value was determined by a two-sided fixed-time "
+                    "log-minus-log test."
+                )
+            except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
+                annotation_lines.append(
+                    _unavailable_inference("survivalplot", "Landmark test", e)
+                )
 
     if rmst_time is not None:
         rmst_time = float(rmst_time)
@@ -555,7 +639,8 @@ def survivalplot(
     for analysis_time in sorted(analysis_guide_times):
         ax.axvline(analysis_time, color="0.5", linestyle="--", linewidth=0.8)
 
-    _add_pvalue_annotation(ax, "\n".join(annotation_lines), pvalue_loc)
+    if annotation_lines:
+        _add_pvalue_annotation(ax, "\n".join(annotation_lines), pvalue_loc)
 
     legend = ax.get_legend()
     if legend is not None:
@@ -599,6 +684,7 @@ def cumulativeincidenceplot(
     time_label: str = "Time",
     seed: int | None = 0,
     *,
+    descriptive_only: bool = False,
     pvalue_loc: PValueLoc = "center left",
     ax: Axes | None = None,
 ) -> Axes:
@@ -649,6 +735,13 @@ def cumulativeincidenceplot(
         Seed used by lifelines when tied event times require jittering. The default
         makes tied-data plots deterministic. The caller's NumPy random state is
         restored after fitting.
+    descriptive_only : bool, default: False
+        Skip Gray's test and its annotation. Single groups, all-censored groups,
+        and groups without the event of interest have valid descriptive curves.
+        Event code 0 always means censored, 1 is the event of interest, and all
+        higher codes remain competing events, even when code 0 or 1 is absent.
+        Otherwise, unavailable inference emits a UserWarning with the reason and
+        is annotated as ``unavailable`` while preserving the curves.
     pvalue_loc : str, default: 'center left'
         Axes-relative location for the Gray's test p-value. Accepts the fixed
         Matplotlib legend locations: ``'upper left'``, ``'upper center'``,
@@ -781,15 +874,23 @@ def cumulativeincidenceplot(
                 max(current_xlim[1], specified_xticks.max()),
             )
             ax.set_xlim(new_xlim)
-    if data[hue].nunique() > 1:
-        pvalue = helper_cmprsk.cuminc(
-            data[duration], data[event], group=data[hue].cat.codes
-        )
-        p = num2tex.num2tex(pvalue, precision=2)
-        logger.info("P-value was determined by Gray's K-sample test.")
+    if not descriptive_only:
+        try:
+            _validate_comparison(data, event, hue)
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", RuntimeWarning)
+                pvalue = helper_cmprsk.cuminc(
+                    data[duration], data[event], group=data[hue].cat.codes
+                )
+            annotation = "P = " + _format_inference_pvalue(pvalue)
+            logger.info("P-value was determined by Gray's K-sample test.")
+        except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
+            annotation = _unavailable_inference(
+                "cumulativeincidenceplot", "Gray's test", e
+            )
         _add_pvalue_annotation(
             ax,
-            "P = " + rf"${p:.2g}$",
+            annotation,
             pvalue_loc,
             data_position=pvalue_position,
         )
