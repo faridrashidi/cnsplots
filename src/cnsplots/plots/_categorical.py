@@ -333,12 +333,13 @@ def barplot(
         "err_kws": {"color": "black", "linewidth": 0.7},
         "capsize": 0.2,
     }
+    orient = utils._resolve_categorical_orientation(data, x, y, kwargs.get("orient"))
+    category_column = y if orient == "h" else x
     palette = kwargs.pop("palette", None)
     show_legend = False
     legend_handles = []
     if isinstance(palette, str) and palette in data.columns:
         group_col = palette
-        category_column = x if not pd.api.types.is_numeric_dtype(data[x]) else y
         palette, legend_handles = _resolve_palette_column(
             data,
             category_column,
@@ -356,11 +357,11 @@ def barplot(
     }
     plotting.update(args)
     plotting.update(kwargs)
+    plotting["orient"] = orient
     if ax is None:
         ax = plt.gca()
     seaborn_plotting = plotting
     if palette is not None and hue is None:
-        category_column = y if pd.api.types.is_numeric_dtype(data[x]) else x
         seaborn_plotting = {
             **plotting,
             "hue": category_column,
@@ -389,7 +390,6 @@ def barplot(
     if pairs is not None:
         pvalue_kwargs = {}
         if bar_labels:
-            orient = "h" if pd.api.types.is_numeric_dtype(data[x]) else "v"
             pvalue_kwargs["label_clearance"] = _bar_label_pvalue_clearance(
                 ax,
                 bar_labels,
@@ -666,21 +666,23 @@ def lollipopplot(
             "ax": ax,
             "alpha": 0,
             "edgecolor": "none",
+            "orient": orient,
+            "order": categories,
         }
-        if order is not None:
-            bar_kw["order"] = order
         if hue is not None:
             bar_kw["hue"] = hue
-        if hue_order is not None:
-            bar_kw["hue_order"] = hue_order
+            bar_kw["hue_order"] = hue_levels
         sns.barplot(**bar_kw)
-        plotting: dict[str, Any] = {"data": data, "x": x, "y": y}
-        if order is not None:
-            plotting["order"] = order
+        plotting: dict[str, Any] = {
+            "data": data,
+            "x": x,
+            "y": y,
+            "orient": orient,
+            "order": categories,
+        }
         if hue is not None:
             plotting["hue"] = hue
-        if hue_order is not None:
-            plotting["hue_order"] = hue_order
+            plotting["hue_order"] = hue_levels
         utils._p_value_helper(
             test,
             data,
@@ -1033,6 +1035,8 @@ def stackplot(
             plotting = {"data": data2, "x": "count", "y": bar, "order": order}
         else:
             plotting = {"data": data2, "x": bar, "y": "count", "order": order}
+        plotting["orient"] = "h" if y is not None else "v"
+        plotting["order"] = list(df.index)
         resolved_test = (
             ("fisher-exact" if contingency.shape[1] == 2 else "chi-squared")
             if test == "auto"

@@ -26,6 +26,7 @@ from matplotlib.typing import ColorType
 from palettable.cartocolors.qualitative import get_map as _get_cartocolor_map
 from palettable.colorbrewer.colorbrewer import get_map as _get_colorbrewer_map
 from palettable.tableau.tableau import get_map as _get_tableau_map
+from seaborn._base import categorical_order, infer_orient
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
@@ -800,6 +801,11 @@ def _validate_statistical_options(test, p_adjust, *, valid_tests):
         raise ValueError(f"p_adjust must be one of: {choices}, or None")
 
 
+def _resolve_categorical_orientation(data, x, y, orient=None):
+    """Use Seaborn's orientation rules, normalized for statannotations."""
+    return "h" if infer_orient(data[x], data[y], orient) == "y" else "v"
+
+
 def _p_value_helper(
     test,
     data,
@@ -855,17 +861,16 @@ def _p_value_helper(
 
             return super().format_data(result)
 
-    x_is_numeric = pd.api.types.is_numeric_dtype(data[plotting["x"]])
-    if x_is_numeric:
-        plotting["orient"] = "h"
-        primary_col = plotting["y"]
-    else:
-        primary_col = plotting["x"]
-
-    primary_levels = list(pd.unique(data[primary_col].dropna()))
-    order = plotting.get("order")
-    if order is not None:
-        primary_levels = [level for level in order if level in primary_levels]
+    plotting["orient"] = _resolve_categorical_orientation(
+        data, plotting["x"], plotting["y"], plotting.get("orient")
+    )
+    primary_col = plotting["y"] if plotting["orient"] == "h" else plotting["x"]
+    present_levels = data[primary_col].dropna().unique()
+    primary_levels = [
+        level
+        for level in categorical_order(data[primary_col], plotting.get("order"))
+        if level in present_levels
+    ]
 
     if pairs == "all":
         pairs = list(itertools.combinations(primary_levels, 2))
@@ -875,10 +880,7 @@ def _p_value_helper(
             raise ValueError(
                 "`pairs='hue'` requires a hue column in the plotting data."
             )
-        hue_levels = list(pd.unique(data[hue_col].dropna()))
-        hue_order = plotting.get("hue_order")
-        if hue_order is not None:
-            hue_levels = [level for level in hue_order if level in hue_levels]
+        hue_levels = categorical_order(data[hue_col], plotting.get("hue_order"))
         hue_pairs = []
         for category in primary_levels:
             subset = data[data[primary_col] == category]

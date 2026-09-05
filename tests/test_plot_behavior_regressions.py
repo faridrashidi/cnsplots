@@ -393,6 +393,7 @@ def test_stackplot_y_axis_preserves_bar_and_stack_semantics(
         "x": "count",
         "y": "patient",
         "order": ["P2", "P1"],
+        "orient": "h",
     }
     assert calls[0][4] == [("P2", "P1")]
     contingency = calls[0][5]
