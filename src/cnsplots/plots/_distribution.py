@@ -497,6 +497,18 @@ def kdeplot(
     >>> # Compare two groups with automatic statistics
     >>> ax = cns.kdeplot(data=df, x="score", hue="treatment", fill=True)
     >>> ax.set_xlabel("Score")
+
+    Notes
+    -----
+    For unweighted, univariate plots, plotting and testing use finite ``x`` values
+    with nonmissing hue labels, restricted to ``hue_order`` when supplied.
+    Logarithmic x axes additionally require positive values. Unused categorical
+    levels do not enter the test.
+    A two-sided Kolmogorov-Smirnov test is annotated only for unweighted,
+    univariate plots with exactly two observed hue groups and two drawn densities.
+    Groups with fewer than two observations or zero variance cannot produce a
+    density; seaborn's ``warn_singular`` controls their warning. If either density
+    is skipped, no comparison is annotated. Empty cleaned data produces no density.
     """
     # Validate inputs
     validate_dataframe(data, "data", "kdeplot")
@@ -507,6 +519,23 @@ def kdeplot(
     linewidth = kwargs.pop("linewidth", 1)
     if ax is None:
         ax = plt.gca()
+    unweighted_univariate = kwargs.get("weights") is None and kwargs.get("y") is None
+    if unweighted_univariate:
+        values = data[x].to_numpy(dtype=float, na_value=np.nan)
+        data = data.loc[np.isfinite(values)]
+        if hue is not None:
+            data = data.loc[data[hue].notna()]
+            if hue_order is not None:
+                data = data.loc[data[hue].isin(hue_order)]
+        log_scale = kwargs.get("log_scale")
+        log_x = log_scale[0] if isinstance(log_scale, (tuple, list)) else log_scale
+        if log_x or ax.get_xscale() == "log":
+            data = data.loc[data[x] > 0]
+        if data.empty:
+            return ax
+
+    line_count = len(ax.lines)
+    artist_count = line_count + len(ax.collections)
     ax = sns.kdeplot(
         data=data,
         x=x,
@@ -518,22 +547,28 @@ def kdeplot(
     )
     modes = []
     if hue is not None:
-        if data[hue].nunique() == 2:
-            grouped = data.groupby(hue)
-            args = [group_df[x].values for _, group_df in grouped]
-            p_value = sp.stats.ks_2samp(*args)
+        drawn_densities = len(ax.lines) + len(ax.collections) - artist_count
+        if data[hue].nunique() == 2 and drawn_densities == 2 and unweighted_univariate:
+            grouped = data.groupby(hue, observed=True, sort=False)
+            args = [group_df[x].to_numpy(dtype=float) for _, group_df in grouped]
+            p_value = sp.stats.ks_2samp(*args).pvalue
+            if not np.isfinite(p_value):
+                logger.warning(
+                    "[kdeplot] KS test returned a nonfinite p-value; omitted."
+                )
+                return ax
             x_lim = ax.get_xlim()
             y_lim = ax.get_ylim()
             ax.text(
                 x_lim[1],
                 y_lim[1],
-                rf"$P={num2tex.num2tex(p_value[-1], precision=2):.2g}$",
+                rf"$P={num2tex.num2tex(p_value, precision=2):.2g}$",
                 ha="right",
                 va="top",
             )
             logger.info("P-value was determined by two-sided Kolmogorov-Smirnov test.")
     else:
-        if add_mode and ax.get_lines():
+        if add_mode and len(ax.lines) > line_count:
             kde_data = ax.get_lines()[-1].get_data()
             x_vals = np.asarray(kde_data[0], dtype=float)
             y_vals = np.asarray(kde_data[1], dtype=float)
