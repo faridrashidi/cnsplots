@@ -80,8 +80,8 @@ liver.head()
 # Display hazard ratios stratified by a grouping variable.
 model = cns.methods.CoxModel(
     data=liver,
-    duration="Event",
-    event="Survival",
+    duration="Survival",
+    event="Event",
     variates=[
         "C(Predictor, levels=['low risk', 'high risk'])",
         "C(AFP_cat, levels=['<=300 ng/mL', '>300 ng/mL'])",
@@ -296,8 +296,8 @@ ax.set_title("Univariate Logistic Regression")
 # Use different colors for effect estimates.
 model = cns.methods.CoxModel(
     data=liver,
-    duration="Event",
-    event="Survival",
+    duration="Survival",
+    event="Event",
     variates=[
         "C(Predictor, levels=['low risk', 'high risk'])",
         "C(AFP_cat, levels=['<=300 ng/mL', '>300 ng/mL'])",

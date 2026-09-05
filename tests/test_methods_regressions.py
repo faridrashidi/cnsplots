@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import Any
+from unittest.mock import Mock
+import warnings
 
 import lifelines as ll
 import numpy as np
@@ -183,6 +185,112 @@ def test_logistic_model_rejects_more_than_two_outcome_classes() -> None:
     )
     assert "No successful model fits" in messages
     assert model.results is None
+
+
+@pytest.fixture
+def cox_df() -> pd.DataFrame:
+    rng = np.random.default_rng(123)
+    n = 80
+    return pd.DataFrame(
+        {
+            "time": rng.exponential(10, n),
+            "event": rng.integers(0, 2, n),
+            "x": rng.normal(size=n),
+            "group": ["A"] * (n // 2) + ["B"] * (n // 2),
+        }
+    )
+
+
+@pytest.mark.parametrize("hue", [None, "group"])
+@pytest.mark.parametrize(
+    ("column", "values", "message"),
+    [
+        ("event", [0, 2], "only 0 and 1"),
+        ("event", [0, -1], "only 0 and 1"),
+        ("event", [0, 0.5], "only 0 and 1"),
+        ("event", [0, np.inf], "only 0 and 1"),
+        ("event", [0, -np.inf], "only 0 and 1"),
+        ("event", [0, np.nan], "Null values"),
+        ("event", ["0", "1"], "only 0 and 1"),
+        ("event", [0j, 1 + 0j], "only 0 and 1"),
+        ("time", [1, -1], "non-negative durations"),
+        ("time", [1, np.inf], "finite durations"),
+        ("time", [1, -np.inf], "finite durations"),
+        ("time", [1, np.nan], "Null values"),
+        ("time", [1 + 0j, 2 + 0j], "real-valued numeric durations"),
+        ("time", [False, True], "real-valued numeric durations"),
+        ("time", ["1", "2"], "must be numeric"),
+    ],
+)
+def test_cox_model_rejects_invalid_survival_inputs_before_fitting(
+    cox_df: pd.DataFrame,
+    monkeypatch: pytest.MonkeyPatch,
+    hue: str | None,
+    column: str,
+    values: list[Any],
+    message: str,
+) -> None:
+    data = cox_df.copy()
+    # Put invalid input in the last group to catch partial fitting as well.
+    data[column] = pd.Series([values[0]] * (len(data) - 1) + [values[1]])
+    fitter = Mock()
+    monkeypatch.setattr(ll, "CoxPHFitter", fitter)
+    model = cns.CoxModel(data, "time", "event", ["x"], hue=hue)
+    model.results = pd.DataFrame({"stale": [True]})
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        with pytest.raises(ValueError, match=message) as exc_info:
+            model.fit()
+
+    assert "[CoxModel.fit]" in str(exc_info.value)
+    assert f"'{column}'" in str(exc_info.value)
+    assert not caught
+    fitter.assert_not_called()
+    assert model.results is None
+
+
+@pytest.mark.parametrize("event_dtype", ["int64", "float64", "bool", "boolean"])
+@pytest.mark.parametrize("uncensored", [False, True])
+def test_cox_model_preserves_valid_event_encodings(
+    cox_df: pd.DataFrame, event_dtype: str, uncensored: bool
+) -> None:
+    data = cox_df.copy()
+    if uncensored:
+        data["event"] = 1
+    reference = ll.CoxPHFitter().fit(
+        data, duration_col="time", event_col="event", formula="x"
+    )
+    data["event"] = data["event"].astype(event_dtype)
+    original = data.copy(deep=True)
+    model = cns.CoxModel(data, "time", "event", ["x"])
+
+    model.fit()
+
+    assert model.results is not None
+    columns = ["exp(coef)", "exp(coef) lower 95%", "exp(coef) upper 95%", "p"]
+    pd.testing.assert_frame_equal(
+        model.results.set_index("covariate")[columns], reference.summary[columns]
+    )
+    if not uncensored:
+        assert model.results["exp(coef)"].iloc[0] == pytest.approx(0.855151, abs=1e-6)
+    pd.testing.assert_frame_equal(data, original)
+
+
+@pytest.mark.parametrize("duration_dtype", ["int64", "float64", "Int64", "Float64"])
+def test_cox_model_accepts_zero_and_nullable_durations(
+    cox_df: pd.DataFrame, duration_dtype: str
+) -> None:
+    data = cox_df.copy()
+    # Keep lifelines' median duration representable as a nullable integer.
+    data["time"] = (2 * data["time"].astype("int64")).astype(duration_dtype)
+    assert (data["time"] == 0).any()
+    model = cns.CoxModel(data, "time", "event", ["x"])
+
+    model.fit()
+
+    assert model.results is not None
+    assert np.isfinite(model.results["exp(coef)"]).all()
 
 
 def test_cox_model_warns_for_failed_unstratified_fit(
