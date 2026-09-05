@@ -157,6 +157,9 @@ def boxplot(
     }
     plotting.update(args)
     plotting.update(kwargs)
+    plotting["orient"] = utils._resolve_categorical_orientation(
+        data, x, y, plotting.get("orient")
+    )
     if ax is None:
         ax = plt.gca()
     ax = sns.boxplot(ax=ax, **plotting)
@@ -346,11 +349,14 @@ def violinplot(
         "hue_order": hue_order,
     }
     plotting.update(kwargs)
+    plotting["orient"] = utils._resolve_categorical_orientation(
+        data, x, y, plotting.get("orient")
+    )
     if ax is None:
         ax = plt.gca()
     ax = sns.violinplot(ax=ax, linewidth=0.001, width=width, **plotting)
     plotting.update(args)
-    plotting.update(kwargs)
+    plotting.update({k: v for k, v in kwargs.items() if k != "orient"})
     # Remove violin-only arguments that boxplot doesn't support
     boxplot_kwargs = {k: v for k, v in plotting.items() if k not in ("split", "inner")}
     if add_box:
