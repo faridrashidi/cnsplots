@@ -100,60 +100,6 @@ composed into an existing Matplotlib layout. Most return the target
 retain their backend-native return objects so callers can access their
 multi-panel layout or diagram elements.
 
-## Descriptive Survival Curves
-
-Use `descriptive_only=True` to draw survival curves without statistical tests or
-Cox model fitting. This mode supports a single group, groups with only censored
-observations, and cohorts in which every event was observed. Confidence bands,
-risk tables, median survival, landmark survival estimates, and restricted mean
-survival time (RMST) remain available.
-
-```python
-import pandas as pd
-
-survival_data = pd.DataFrame(
-    {
-        "time": [1, 2, 3, 4, 1, 2, 3, 4],
-        "event": [0, 0, 0, 0, 1, 0, 1, 0],
-        "group": ["A"] * 4 + ["B"] * 4,
-    }
-)
-cns.figure(180, 150)
-cns.survivalplot(
-    survival_data,
-    "time",
-    "event",
-    "group",
-    descriptive_only=True,
-    show_risk_table=True,
-)
-```
-
-`survivalplot` accepts event codes 0 (censored) and 1 (event observed); either
-code may be absent. Durations must still be finite, non-negative real numbers,
-and duration, event, and group values cannot be missing.
-
-`cumulativeincidenceplot(..., descriptive_only=True)` similarly skips Gray's
-test while drawing Aalen–Johansen estimates. Its event codes always mean
-0 = censored, 1 = event of interest, and 2 or higher = competing events.
-These meanings do not change when a code is absent: a group with no events of
-interest has a flat cumulative-incidence curve at zero. Competing events are
-never recoded as censoring.
-
-With the default `descriptive_only=False`, each requested comparison checks
-whether it can be estimated. Unavailable results are marked `unavailable` on
-the plot, and a `UserWarning` explains why; valid curves and other comparisons
-are retained. Log-rank and Gray's tests require multiple groups, events of
-interest, and a nonsingular comparison variance. An all-censored group can
-still contribute to these tests. Cox results require a converged fit and finite
-estimates; a two-group contrast with no events in one group is unavailable.
-The two-group landmark test requires survival estimates strictly between 0
-and 1. Pairwise Cox p-values remain unadjusted.
-
-For `survivalplot`, `show_hazard_ratio=False` skips pairwise Cox fitting while
-retaining the overall test. `descriptive_only=True` skips all tests, including
-the landmark test, and ignores `overall_test`, `pairs`, and `show_hazard_ratio`.
-
 ## Saving Figures
 
 For publication, save figures in vector formats:
