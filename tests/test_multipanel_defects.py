@@ -13,6 +13,84 @@ import cnsplots as cns
 from cnsplots import _multipanels as multipanel_mod
 
 
+@pytest.mark.parametrize("break_count", [1, 3])
+def test_multipanel_newline_starts_a_lower_row(break_count: int) -> None:
+    mp = cns.multipanel(max_width=400)
+    first = mp.panel("A", width=80, height=80)
+    first.set_ylabel("Measured axis decoration")
+    for _ in range(break_count):
+        mp.newline()
+    second = mp.panel("B", width=80, height=80)
+    third = mp.panel("C", width=80, height=80)
+    assert mp.fig is not None
+    mp.fig.canvas.draw()
+
+    a, b, c = (ax.get_position() for ax in (first, second, third))
+    assert b.y1 <= a.y0
+    assert b.y0 == pytest.approx(c.y0)
+    assert b.x1 <= c.x0
+    assert b.width == pytest.approx(a.width)
+    assert b.height == pytest.approx(a.height)
+    assert len(mp._rows) == 2
+
+
+def test_multipanel_newline_on_empty_layout_adds_no_blank_row() -> None:
+    mp = cns.multipanel(max_width=400)
+    mp.newline()
+    mp.newline()
+    ax = mp.panel("A", width=80, height=80)
+    assert mp.fig is not None
+    mp.fig.canvas.draw()
+
+    control = cns.multipanel(max_width=400)
+    expected = control.panel("A", width=80, height=80)
+    assert control.fig is not None
+    control.fig.canvas.draw()
+    assert ax.get_position().bounds == pytest.approx(expected.get_position().bounds)
+    assert mp.fig.get_size_inches() == pytest.approx(control.fig.get_size_inches())
+
+
+def test_multipanel_newline_after_full_row_preserves_automatic_wrapping() -> None:
+    mp = cns.multipanel(max_width=400)
+    first = mp.panel("A", width=80, height=80)
+    assert mp.fig is not None
+    mp.fig.canvas.draw()
+    mp._max_width = mp._get_panel_total_size(mp._panels[0])[0]
+    mp.newline()
+    second = mp.panel("B", width=80, height=80)
+    third = mp.panel("C", width=80, height=80)
+    mp.fig.canvas.draw()
+
+    a, b, c = (ax.get_position() for ax in (first, second, third))
+    assert b.y1 <= a.y0
+    assert c.y1 <= b.y0
+    assert a.height == pytest.approx(b.height)
+    assert b.height == pytest.approx(c.height)
+    assert len(mp._rows) == 3
+
+
+@pytest.mark.parametrize("child_before_break", [True, False])
+def test_multipanel_newline_clears_below_subtrees(child_before_break: bool) -> None:
+    mp = cns.multipanel(max_width=600)
+    first = mp.panel("A", width=80, height=80)
+    if not child_before_break:
+        mp.newline()
+    child = mp.panel("B", width=100, height=60, below="A")
+    mp.newline()
+    second = mp.panel("C", width=80, height=80)
+    grandchild = mp.panel("D", width=120, height=40, below="B")
+    assert mp.fig is not None
+    mp.fig.canvas.draw()
+
+    a, b, c, d = (ax.get_position() for ax in (first, child, second, grandchild))
+    assert b.y1 <= a.y0
+    assert d.y1 <= b.y0
+    assert c.y1 <= d.y0
+    assert c.width == pytest.approx(a.width)
+    assert c.height == pytest.approx(a.height)
+    assert len(mp._rows) == 2
+
+
 @pytest.mark.parametrize("max_width", [0, -1, np.nan, np.inf, -np.inf])
 def test_multipanel_rejects_non_positive_or_non_finite_max_width(
     max_width: float,

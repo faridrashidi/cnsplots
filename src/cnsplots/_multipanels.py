@@ -172,6 +172,14 @@ def _layout_panels(
 
     root_indices = [idx for idx, panel in enumerate(panels) if panel.below is None]
     for panel_idx in root_indices:
+        if panels[panel_idx].is_spacer:
+            if current_row:
+                rows.append(current_row)
+                row_heights.append(current_row_height)
+                current_row = []
+                current_row_width = 0.0
+                current_row_height = 0.0
+            continue
         subtree_width, subtree_height = get_subtree_size(panel_idx)
         if current_row and current_row_width + subtree_width > max_width:
             rows.append(current_row)
@@ -1091,10 +1099,13 @@ class multipanel:
 
     def newline(self) -> None:
         """
-        Force the next panel to start on a new row.
+        Force the next panel without ``below`` to start on a new row.
 
         This is useful when you want to manually control row breaks
         instead of relying on the automatic wrapping behavior.
+        Empty layouts and repeated calls do not add blank rows. Panels
+        attached with ``below`` stay with their parent, and the new row
+        starts beneath the entire stack.
 
         Examples
         --------
@@ -1103,36 +1114,18 @@ class multipanel:
         >>> mp.newline()  # Force B to start on new row
         >>> mp.panel("B", width=100, height=100)
         """
-        # Add a zero-width panel to force wrapping
-        # We do this by adding a spacer panel that takes up remaining width
-        if self._panels:
-            self._calculate_layout()
-            if self._rows:
-                # Calculate remaining width in current row
-                current_row = self._rows[-1]
-                used_width = 0
-                for idx in current_row:
-                    p = self._panels[idx]
-                    used_width += (
-                        p["margin_left"]
-                        + self._get_left_reserve_px(p)
-                        + p["width"]
-                        + p["margin_right"]
-                    )
-                remaining = self._max_width - used_width
-                if remaining > 0:
-                    # Add invisible spacer
-                    self._panels.append(
-                        _Panel(
-                            label=f"_spacer_{len(self._panels)}",
-                            width=0,
-                            height=0,
-                            pad_left=0,
-                            pad_top=0,
-                            margin_left=0,
-                            margin_top=0,
-                            margin_right=0,
-                            margin_bottom=0,
-                            _is_spacer=True,
-                        )
-                    )
+        if self._panels and not self._panels[-1].get("_is_spacer"):
+            self._panels.append(
+                _Panel(
+                    label=f"_spacer_{len(self._panels)}",
+                    width=0,
+                    height=0,
+                    pad_left=0,
+                    pad_top=0,
+                    margin_left=0,
+                    margin_top=0,
+                    margin_right=0,
+                    margin_bottom=0,
+                    _is_spacer=True,
+                )
+            )
