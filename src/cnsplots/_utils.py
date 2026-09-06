@@ -786,6 +786,8 @@ def _add_count_helper(data, attr, ax, axis="x"):
     new_tick_labels = []
     for label in tick_labels:
         label_text = label.get_text()
+        if label_text not in counts:
+            label_text = re.sub(r"\n\(n=\d+\)$", "", label_text)
         n = int(counts.get(label_text, 0))
         new_tick_labels.append(f"{label_text}\n(n={n})")
     set_ticks(tick_positions)
@@ -804,6 +806,30 @@ def _validate_statistical_options(test, p_adjust, *, valid_tests):
 def _resolve_categorical_orientation(data, x, y, orient=None):
     """Use Seaborn's orientation rules, normalized for statannotations."""
     return "h" if infer_orient(data[x], data[y], orient) == "y" else "v"
+
+
+def _prepare_categorical_plot_data(plotting):
+    """Share complete displayed rows across rendering, summaries, and counts."""
+    data = plotting["data"]
+    x, y, hue = plotting["x"], plotting["y"], plotting.get("hue")
+    plotting["orient"] = _resolve_categorical_orientation(
+        data, x, y, plotting.get("orient")
+    )
+    category = y if plotting["orient"] == "h" else x
+    # Resolve levels before cleaning so empty categories keep their tick positions.
+    plotting["order"] = categorical_order(data[category], plotting.get("order"))
+    columns = [x, y] if hue is None else [x, y, hue]
+    cleaned = data.dropna(subset=columns)
+    cleaned = cleaned.loc[cleaned[category].isin(plotting["order"])]
+    if hue is not None:
+        plotting["hue_order"] = categorical_order(data[hue], plotting.get("hue_order"))
+        cleaned = cleaned.loc[cleaned[hue].isin(plotting["hue_order"])]
+    if cleaned.empty:
+        raise ValueError(
+            "No complete observations remain in the selected category and hue levels."
+        )
+    plotting["data"] = cleaned
+    return cleaned
 
 
 def _p_value_helper(
