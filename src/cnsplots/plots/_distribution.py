@@ -229,6 +229,7 @@ def violinplot(
     add_count: bool = False,
     *,
     box_color: ColorType | None = "white",
+    box_kws: dict[str, Any] | None = None,
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
@@ -266,6 +267,12 @@ def violinplot(
     box_color : matplotlib color or None, default: "white"
         Color of the embedded box plots. Set to ``None`` to color boxes according
         to *hue*.
+    box_kws : dict, optional
+        Keyword arguments passed only to the `seaborn.boxplot` overlay, such as
+        ``whis``, ``width``, ``boxprops``, and ``medianprops``. Property dictionaries
+        are merged with the overlay defaults; an explicit ``boxprops.facecolor``
+        overrides ``box_color``. Shared data, category, and hue settings come from
+        the main arguments. Ignored when ``add_box=False``.
     hue : str, optional
         Column name for grouping violins within each category.
     order : list of str, optional
@@ -279,7 +286,12 @@ def violinplot(
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
     **kwargs
-        Additional keyword arguments passed to `seaborn.violinplot`.
+        Additional keyword arguments passed to `seaborn.violinplot`, including
+        density options such as ``bw_adjust``, ``cut``, and ``density_norm`` and
+        violin styling such as ``linewidth`` and ``inner_kws``. The overlay also
+        receives shared ``orient``, ``color``, ``palette``, ``saturation``,
+        ``hue_norm``, ``dodge``, ``gap``, ``log_scale``, ``native_scale``,
+        ``formatter``, and ``legend`` settings. Use ``box_kws`` for box styling.
 
     Returns
     -------
@@ -302,6 +314,8 @@ def violinplot(
     ...     pairs=[("control", "treated")],
     ...     p_adjust="fdr_bh",
     ...     add_box=True,
+    ...     bw_adjust=0.5,
+    ...     box_kws={"whis": (0, 100), "medianprops": {"linewidth": 1}},
     ... )
     >>> ax.set_title("Expression by Condition")
     """
@@ -345,6 +359,11 @@ def violinplot(
         },
         "width": 0.2,
     }
+    for key, value in (box_kws or {}).items():
+        if key in args and isinstance(args[key], dict):
+            args[key] = {**args[key], **value}
+        else:
+            args[key] = value
     plotting: dict[str, Any] = {
         "data": data,
         "x": x,
@@ -353,23 +372,41 @@ def violinplot(
         "order": order,
         "hue_order": hue_order,
     }
-    plotting.update(kwargs)
+    # Share only category geometry and color semantics, never layer-specific options.
+    for key in (
+        "orient",
+        "color",
+        "palette",
+        "saturation",
+        "hue_norm",
+        "dodge",
+        "gap",
+        "log_scale",
+        "native_scale",
+        "formatter",
+        "legend",
+    ):
+        if key in kwargs:
+            plotting[key] = kwargs.pop(key)
     data = utils._prepare_categorical_plot_data(plotting)
     if ax is None:
         ax = plt.gca()
-    ax = sns.violinplot(ax=ax, linewidth=0.001, width=width, **plotting)
-    plotting.update(args)
-    plotting.update({k: v for k, v in kwargs.items() if k != "orient"})
-    # Remove violin-only arguments that boxplot doesn't support
-    boxplot_kwargs = {k: v for k, v in plotting.items() if k not in ("split", "inner")}
+    violin_kwargs = {"linewidth": 0.001, "width": width, **kwargs, **plotting}
+    ax = sns.violinplot(ax=ax, **violin_kwargs)
     if add_box:
-        sns.boxplot(ax=ax, **boxplot_kwargs)
+        sns.boxplot(ax=ax, **{**args, **plotting})
     if pairs is not None:
+        annotation_kwargs = {
+            key: value
+            for key, value in plotting.items()
+            if key in ("data", "x", "y", "hue", "order", "hue_order", "orient", "dodge")
+        }
+        annotation_kwargs["width"] = args["width"] if add_box else width
         utils._p_value_helper(
             test,
             data,
             ax,
-            plotting,
+            annotation_kwargs,
             pairs,
             p_adjust=p_adjust,
         )
