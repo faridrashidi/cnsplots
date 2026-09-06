@@ -819,22 +819,31 @@ class CNSSettings:
 
         Notes
         -----
-        Previous values are restored after the context exits, even if an
-        exception is raised inside the block.
+        The overridden settings and Matplotlib rcParams are restored on exit,
+        including when contexts are nested or an exception is raised. Call
+        ``cns.figure()`` or ``cns.setup_matplotlib()`` inside the block to apply
+        the temporary settings to Matplotlib. Existing artists retain their
+        assigned properties after the context exits.
+
+        Matplotlib state is scoped with ``matplotlib.rc_context``: backend
+        changes and font/colormap registrations are not undone.
         """
+        import matplotlib as mpl
+
         for key in kwargs:
             if key not in self._defaults:
                 raise AttributeError(self._invalid_setting_message(key))
 
         old_values = {key: deepcopy(getattr(self, key)) for key in kwargs}
 
-        try:
-            for key, value in kwargs.items():
-                setattr(self, key, value)
-            yield self
-        finally:
-            for key, value in old_values.items():
-                setattr(self, key, value)
+        with mpl.rc_context():
+            try:
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
+                yield self
+            finally:
+                for key, value in old_values.items():
+                    setattr(self, key, value)
 
     def __repr__(self) -> str:
         """Return a string representation of current settings."""
