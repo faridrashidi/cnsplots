@@ -43,8 +43,20 @@ with cns.settings.context(
     figure_width=200,
     figure_height=120,
 ):
-    ...
+    cns.figure()
+    # Create plots using the temporary settings.
 ```
+
+The context restores both the overridden settings and Matplotlib's previous
+`rcParams` when it exits, including for nested contexts and exceptions. Later
+Matplotlib or seaborn figures use the style from before the context; artists
+created inside it retain their assigned properties.
+
+Entering the context updates the settings object. Call `cns.figure()` or
+`cns.setup_matplotlib()` inside it to apply those settings to Matplotlib. This
+also works with `cns.settings.context()` without overrides when you want to
+temporarily apply explicit `setup_matplotlib()` arguments. Restoration follows
+`matplotlib.rc_context`: backend changes and font/colormap registrations persist.
 
 ## Methods
 
