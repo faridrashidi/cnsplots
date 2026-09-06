@@ -14,35 +14,8 @@ import subprocess
 
 import matplotlib.pyplot as plt
 from lxml import etree  # ty: ignore[unresolved-import]
-from matplotlib.text import Text
 
 _PDF_SUBSET_FONT_PREFIX = re.compile(r"^[A-Z]{6}\+")
-
-
-def _collect_bold_texts() -> set[str]:
-    """Collect text strings that are bold in the current matplotlib figure."""
-    bold_texts: set[str] = set()
-    fig = plt.gcf()
-    text_artists = list(fig.texts)
-    for ax in fig.get_axes():
-        for artist in ax.get_children():
-            if isinstance(artist, Text):
-                text_artists.append(artist)
-
-    for artist in text_artists:
-        txt = artist.get_text().strip()
-        if not txt:
-            continue
-        weight = artist.get_fontweight()
-        if weight in ("bold", "heavy", "extra bold", "semibold", "demibold") or (
-            isinstance(weight, (int, float)) and weight >= 600
-        ):
-            bold_texts.add(txt)
-            for line in txt.split("\n"):
-                line = line.strip()
-                if line:
-                    bold_texts.add(line)
-    return bold_texts
 
 
 def _save_plain_svg(filepath: str, message: str, bbox_inches=None) -> None:
@@ -58,7 +31,6 @@ def _save_plain_svg(filepath: str, message: str, bbox_inches=None) -> None:
 
 
 def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
-    bold_texts = _collect_bold_texts()
     stem = Path(root).name or Path(filepath).stem or "cnsplots"
     savefig_kwargs: dict[str, object] = {}
     if bbox_inches is not None:
@@ -96,7 +68,7 @@ def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
                 check=True,
                 capture_output=True,
             )
-            _correct_svg(str(tmp_svg), filepath, bold_texts)
+            _correct_svg(str(tmp_svg), filepath)
         except FileNotFoundError:
             _save_plain_svg(
                 filepath,
@@ -114,16 +86,13 @@ def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
             )
 
 
-def _correct_svg(
-    input_file: str, output_file: str, bold_texts: set[str] | None = None
-) -> None:
+def _correct_svg(input_file: str, output_file: str) -> None:
     """
     Process an SVG file to ungroup both text elements and clipped elements.
 
     Args:
         input_file (str): Path to the input SVG file
         output_file (str): Path to save the processed SVG file
-        bold_texts (set[str] | None): Text strings that should have font-weight bold
     """
     # Read the SVG file
     with open(input_file) as f:
@@ -144,10 +113,7 @@ def _correct_svg(
     # Process text elements
     _process_text_elements_lxml(root, ns)
 
-    # Restore bold font-weight lost during PDF→SVG conversion
-    _restore_bold_fonts(root, ns, bold_texts or set())
-
-    # Normalize PDF subset font names for better SVG editor compatibility
+    # Preserve each element's style, including styles encoded in PDF font names.
     _normalize_text_fonts(root, ns)
 
     # Flatten any remaining g elements
@@ -192,23 +158,6 @@ def _process_text_elements_lxml(root: _Element, ns: dict[str, str]) -> None:
 
         # Remove the original text element
         parent.remove(text)
-
-
-def _restore_bold_fonts(
-    root: _Element, ns: dict[str, str], bold_texts: set[str]
-) -> None:
-    """Restore font-weight="bold" on text elements whose content was bold in matplotlib.
-
-    Mutool drops bold information during PDF→SVG conversion, so we match text
-    content against the set collected from matplotlib before saving.
-    """
-    if not bold_texts:
-        return
-
-    for text_el in root.xpath(".//svg:text", namespaces=ns):
-        content = (text_el.text or "").strip()
-        if content in bold_texts:
-            text_el.set("font-weight", "bold")
 
 
 def _normalize_pdf_font_family(

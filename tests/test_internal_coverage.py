@@ -416,9 +416,6 @@ def test_svg_internal_coverage() -> None:
             return [FakeGroup()]
 
     _svg._flatten_groups(FakeGroupRoot(), {"svg": "http://www.w3.org/2000/svg"})
-    _svg._restore_bold_fonts(
-        types.SimpleNamespace(), {"svg": "http://www.w3.org/2000/svg"}, set()
-    )
 
 
 def test_utils_internal_coverage(
