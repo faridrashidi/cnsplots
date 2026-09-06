@@ -755,15 +755,6 @@ def test_svg_helpers_and_export(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     output_dir.mkdir(parents=True)
-    mp = cns.multipanel(max_width=220, title="Figure Bold")
-    ax = mp.panel("A", width=80, height=60)
-    ax.set_title("Panel Bold")
-    ax.text(0.5, 0.3, "Plain")
-    bold_texts = _svg._collect_bold_texts()
-    assert "Figure Bold" in bold_texts
-    assert "Panel Bold" in bold_texts
-    assert "A" in bold_texts
-
     svg_in = output_dir / "input.svg"
     svg_out = output_dir / "output.svg"
     svg_in.write_text(
@@ -777,7 +768,7 @@ def test_svg_helpers_and_export(
 </svg>""",
         encoding="utf-8",
     )
-    _svg._correct_svg(str(svg_in), str(svg_out), {"Panel Bold", "Figure Bold"})
+    _svg._correct_svg(str(svg_in), str(svg_out))
     root = etree.parse(str(svg_out)).getroot()
     ns = {"svg": "http://www.w3.org/2000/svg"}
     text_els = root.xpath(".//svg:text", namespaces=ns)
@@ -919,11 +910,8 @@ def test_svg_helpers_and_export(
         )
         return types.SimpleNamespace(returncode=0)
 
-    def fake_correct(
-        input_file: str, output_file: str, bold_texts: set[str] | None = None
-    ) -> None:
+    def fake_correct(input_file: str, output_file: str) -> None:
         corrected["input_file"] = input_file
-        corrected["bold_texts"] = bold_texts
         Path(output_file).write_text(
             "<svg xmlns='http://www.w3.org/2000/svg' />", encoding="utf-8"
         )
@@ -933,7 +921,6 @@ def test_svg_helpers_and_export(
     _svg._save_svg(str(success_path), str(output_dir / "optimized"))
     assert success_path.exists()
     assert str(corrected["input_file"]).endswith("1.svg")
-    assert isinstance(corrected["bold_texts"], set)
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
