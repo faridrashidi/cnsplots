@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.pieplot
+
+cnsplots.pieplot
+================
+
+.. autofunction:: cnsplots.pieplot
+
+.. _sphx_glr_backref_cnsplots.pieplot:
+
+.. minigallery:: cnsplots.pieplot
+   :add-heading: Examples
+   :heading-level: -

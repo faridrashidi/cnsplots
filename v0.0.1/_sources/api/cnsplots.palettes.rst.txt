@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.palettes
+
+cnsplots.palettes
+=================
+
+.. autofunction:: cnsplots.palettes
+
+.. _sphx_glr_backref_cnsplots.palettes:
+
+.. minigallery:: cnsplots.palettes
+   :add-heading: Examples
+   :heading-level: -

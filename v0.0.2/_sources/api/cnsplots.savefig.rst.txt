@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.savefig
+
+cnsplots.savefig
+================
+
+.. autofunction:: cnsplots.savefig
+
+.. _sphx_glr_backref_cnsplots.savefig:
+
+.. minigallery:: cnsplots.savefig
+   :add-heading: Examples
+   :heading-level: -

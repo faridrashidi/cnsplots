@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.prerank
+
+cnsplots.prerank
+================
+
+.. autofunction:: cnsplots.prerank
+
+.. _sphx_glr_backref_cnsplots.prerank:
+
+.. minigallery:: cnsplots.prerank
+   :add-heading: Examples
+   :heading-level: -

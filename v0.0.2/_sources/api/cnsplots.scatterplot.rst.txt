@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.scatterplot
+
+cnsplots.scatterplot
+====================
+
+.. autofunction:: cnsplots.scatterplot
+
+.. _sphx_glr_backref_cnsplots.scatterplot:
+
+.. minigallery:: cnsplots.scatterplot
+   :add-heading: Examples
+   :heading-level: -

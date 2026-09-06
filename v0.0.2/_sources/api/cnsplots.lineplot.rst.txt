@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.lineplot
+
+cnsplots.lineplot
+=================
+
+.. autofunction:: cnsplots.lineplot
+
+.. _sphx_glr_backref_cnsplots.lineplot:
+
+.. minigallery:: cnsplots.lineplot
+   :add-heading: Examples
+   :heading-level: -

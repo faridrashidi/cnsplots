@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.figure
+
+cnsplots.figure
+===============
+
+.. autofunction:: cnsplots.figure
+
+.. _sphx_glr_backref_cnsplots.figure:
+
+.. minigallery:: cnsplots.figure
+   :add-heading: Examples
+   :heading-level: -

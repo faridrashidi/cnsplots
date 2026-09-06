@@ -1,0 +1,133 @@
+
+:orphan:
+
+.. _sphx_glr_sg_execution_times:
+
+
+Computation times
+=================
+**02:18.311** total execution time for 33 files **from all galleries**:
+
+.. container::
+
+  .. raw:: html
+
+    <style scoped>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" class="init">
+    $(document).ready( function () {
+        $('table.sg-datatable').DataTable({order: [[1, 'desc']]});
+    } );
+    </script>
+
+  .. list-table::
+   :header-rows: 1
+   :class: table table-striped sg-datatable
+
+   * - Example
+     - Time
+     - Mem (MB)
+   * - :ref:`sphx_glr_examples_plot_200_gseaplot.py` (``../examples/plot_200_gseaplot.py``)
+     - 00:47.750
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_090_heatmapplot.py` (``../examples/plot_090_heatmapplot.py``)
+     - 00:19.356
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_190_forestplot.py` (``../examples/plot_190_forestplot.py``)
+     - 00:13.587
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_310_scanpy.py` (``../examples/plot_310_scanpy.py``)
+     - 00:11.189
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_030_palettes.py` (``../examples/plot_030_palettes.py``)
+     - 00:10.105
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_290_qqplot.py` (``../examples/plot_290_qqplot.py``)
+     - 00:07.137
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_320_multipanel.py` (``../examples/plot_320_multipanel.py``)
+     - 00:05.083
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_210_volcanoplot.py` (``../examples/plot_210_volcanoplot.py``)
+     - 00:03.279
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_170_lineplot.py` (``../examples/plot_170_lineplot.py``)
+     - 00:02.775
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_110_regplot.py` (``../examples/plot_110_regplot.py``)
+     - 00:01.786
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_100_dotplot.py` (``../examples/plot_100_dotplot.py``)
+     - 00:01.354
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_060_barplot.py` (``../examples/plot_060_barplot.py``)
+     - 00:01.177
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_130_kdeplot.py` (``../examples/plot_130_kdeplot.py``)
+     - 00:01.143
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_280_slopeplot.py` (``../examples/plot_280_slopeplot.py``)
+     - 00:01.074
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_180_survivalplot.py` (``../examples/plot_180_survivalplot.py``)
+     - 00:01.030
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_160_histplot.py` (``../examples/plot_160_histplot.py``)
+     - 00:00.984
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_080_violinplot.py` (``../examples/plot_080_violinplot.py``)
+     - 00:00.894
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_040_boxplot.py` (``../examples/plot_040_boxplot.py``)
+     - 00:00.887
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_070_stripplot.py` (``../examples/plot_070_stripplot.py``)
+     - 00:00.880
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_050_stackplot.py` (``../examples/plot_050_stackplot.py``)
+     - 00:00.851
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_120_scatterplot.py` (``../examples/plot_120_scatterplot.py``)
+     - 00:00.842
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_020_figure_setup.py` (``../examples/plot_020_figure_setup.py``)
+     - 00:00.773
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_010_settings.py` (``../examples/plot_010_settings.py``)
+     - 00:00.581
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_270_upsetplot.py` (``../examples/plot_270_upsetplot.py``)
+     - 00:00.578
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_300_rocplot.py` (``../examples/plot_300_rocplot.py``)
+     - 00:00.552
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_140_distplot.py` (``../examples/plot_140_distplot.py``)
+     - 00:00.507
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_065_lollipopplot.py` (``../examples/plot_065_lollipopplot.py``)
+     - 00:00.482
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_250_donutplot.py` (``../examples/plot_250_donutplot.py``)
+     - 00:00.357
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_220_sankeyplot.py` (``../examples/plot_220_sankeyplot.py``)
+     - 00:00.302
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_230_confusionplot.py` (``../examples/plot_230_confusionplot.py``)
+     - 00:00.298
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_240_pieplot.py` (``../examples/plot_240_pieplot.py``)
+     - 00:00.258
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_150_ridgeplot.py` (``../examples/plot_150_ridgeplot.py``)
+     - 00:00.246
+     - 0.0
+   * - :ref:`sphx_glr_examples_plot_260_vennplot.py` (``../examples/plot_260_vennplot.py``)
+     - 00:00.214
+     - 0.0

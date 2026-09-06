@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.sankeyplot
+
+cnsplots.sankeyplot
+===================
+
+.. autofunction:: cnsplots.sankeyplot
+
+.. _sphx_glr_backref_cnsplots.sankeyplot:
+
+.. minigallery:: cnsplots.sankeyplot
+   :add-heading: Examples
+   :heading-level: -

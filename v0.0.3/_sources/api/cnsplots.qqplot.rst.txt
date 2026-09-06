@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.qqplot
+
+cnsplots.qqplot
+===============
+
+.. autofunction:: cnsplots.qqplot
+
+.. _sphx_glr_backref_cnsplots.qqplot:
+
+.. minigallery:: cnsplots.qqplot
+   :add-heading: Examples
+   :heading-level: -

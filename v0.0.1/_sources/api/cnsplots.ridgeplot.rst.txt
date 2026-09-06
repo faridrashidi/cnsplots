@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.ridgeplot
+
+cnsplots.ridgeplot
+==================
+
+.. autofunction:: cnsplots.ridgeplot
+
+.. _sphx_glr_backref_cnsplots.ridgeplot:
+
+.. minigallery:: cnsplots.ridgeplot
+   :add-heading: Examples
+   :heading-level: -

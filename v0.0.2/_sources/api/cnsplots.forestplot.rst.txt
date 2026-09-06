@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.forestplot
+
+cnsplots.forestplot
+===================
+
+.. autofunction:: cnsplots.forestplot
+
+.. _sphx_glr_backref_cnsplots.forestplot:
+
+.. minigallery:: cnsplots.forestplot
+   :add-heading: Examples
+   :heading-level: -

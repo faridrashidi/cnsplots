@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.histplot
+
+cnsplots.histplot
+=================
+
+.. autofunction:: cnsplots.histplot
+
+.. _sphx_glr_backref_cnsplots.histplot:
+
+.. minigallery:: cnsplots.histplot
+   :add-heading: Examples
+   :heading-level: -

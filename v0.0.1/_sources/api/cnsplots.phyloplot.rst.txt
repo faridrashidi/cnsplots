@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.phyloplot
+
+cnsplots.phyloplot
+==================
+
+.. autofunction:: cnsplots.phyloplot
+
+.. _sphx_glr_backref_cnsplots.phyloplot:
+
+.. minigallery:: cnsplots.phyloplot
+   :add-heading: Examples
+   :heading-level: -
