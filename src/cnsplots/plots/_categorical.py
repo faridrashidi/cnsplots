@@ -1188,6 +1188,28 @@ def stripplot(
     return ax
 
 
+def _circular_plot_counts(
+    data: pd.DataFrame,
+    x: str,
+    order: list[str] | None,
+    function_name: str,
+) -> pd.Series:
+    """Resolve category counts consistently for pie and donut charts."""
+    counts = data[x].value_counts()
+    if order is not None:
+        if pd.Index(order).has_duplicates:
+            raise ValueError(
+                f"[{function_name}] 'order' contains duplicate categories."
+            )
+        counts = counts.reindex(index=order, fill_value=0)
+    if counts.sum() == 0:
+        raise ValueError(
+            f"[{function_name}] No non-missing observations remain in '{x}' "
+            "for the selected categories."
+        )
+    return counts
+
+
 def pieplot(
     data: pd.DataFrame,
     x: str,
@@ -1204,11 +1226,15 @@ def pieplot(
     data : pd.DataFrame
         The input DataFrame containing the data to be plotted.
     x : str
-        Column name for the categorical variable to visualize.
+        Column name for the categorical variable to visualize. Missing values
+        are excluded from the counts.
     legend : {'right', 'left', 'top', 'bottom'}, default: 'bottom'
         Position of the legend relative to the pie chart.
     order : list, optional
-        Order of categories to display in the pie chart.
+        Categories to display, in order. Defaults to decreasing frequency.
+        Subsets are supported; proportions are normalized over the selected
+        counts. Absent categories are retained with zero counts and legend
+        entries. Duplicate categories are not allowed.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
 
@@ -1216,6 +1242,12 @@ def pieplot(
     -------
     matplotlib.axes.Axes
         The matplotlib Axes object containing the plot.
+
+    Raises
+    ------
+    ValueError
+        If ``order`` contains duplicates or no observations remain, including
+        an empty ``order``, only absent categories, or all-missing values in ``x``.
 
     See Also
     --------
@@ -1237,12 +1269,10 @@ def pieplot(
     validate_column_exists(data, x, "x", "pieplot")
     validate_dataframe_not_empty(data, "pieplot")
 
-    df = data[x].value_counts()
-    if order is None:
-        order = df.index
+    df = _circular_plot_counts(data, x, order, "pieplot")
     if ax is None:
         ax = plt.gca()
-    ax = df.reindex(index=order).plot.pie(
+    ax = df.plot.pie(
         shadow=False,
         autopct="%1.0f%%",
         explode=[0] * df.shape[0],
@@ -1263,7 +1293,7 @@ def pieplot(
         "bottom": {"loc": "upper center", "bbox_to_anchor": (0.5, -0.05)},
     }
     pos = legend_positions.get(legend, legend_positions["right"])
-    ax.legend(**pos, title=x)
+    ax.legend(handles=ax.patches[-len(df) :], labels=df.index.tolist(), **pos, title=x)
     return ax
 
 
@@ -1283,11 +1313,15 @@ def donutplot(
     data : pd.DataFrame
         The input DataFrame containing the data to be plotted.
     x : str
-        Column name for the categorical variable to visualize.
+        Column name for the categorical variable to visualize. Missing values
+        are excluded from the counts.
     legend : {'right', 'left', 'top', 'bottom'}, default: 'bottom'
         Position of the legend relative to the pie chart.
     order : list, optional
-        Order of categories to display in the donut chart.
+        Categories to display, in order. Defaults to decreasing frequency.
+        Subsets are supported; proportions are normalized over the selected
+        counts. Absent categories are retained with zero counts and legend
+        entries. Duplicate categories are not allowed.
     ax : matplotlib.axes.Axes, optional
         Axes on which to draw the plot. Defaults to the current Axes.
 
@@ -1295,6 +1329,12 @@ def donutplot(
     -------
     matplotlib.axes.Axes
         The matplotlib Axes object containing the plot.
+
+    Raises
+    ------
+    ValueError
+        If ``order`` contains duplicates or no observations remain, including
+        an empty ``order``, only absent categories, or all-missing values in ``x``.
 
     See Also
     --------
@@ -1316,12 +1356,10 @@ def donutplot(
     validate_column_exists(data, x, "x", "donutplot")
     validate_dataframe_not_empty(data, "donutplot")
 
-    df = data[x].value_counts()
-    if order is None:
-        order = df.index
+    df = _circular_plot_counts(data, x, order, "donutplot")
     if ax is None:
         ax = plt.gca()
-    ax = df.reindex(index=order).plot.pie(
+    ax = df.plot.pie(
         labeldistance=None,
         ax=ax,
         ylabel="",
@@ -1337,5 +1375,5 @@ def donutplot(
         "bottom": {"loc": "upper center", "bbox_to_anchor": (0.5, -0.05)},
     }
     pos = legend_positions.get(legend, legend_positions["right"])
-    ax.legend(**pos, title=x)
+    ax.legend(handles=ax.patches[-len(df) :], labels=df.index.tolist(), **pos, title=x)
     return ax
