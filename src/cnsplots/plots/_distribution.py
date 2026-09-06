@@ -66,7 +66,10 @@ def boxplot(
     showoutliers : bool, default: False
         Whether to display outlier points beyond the whiskers.
     add_count : bool, default: False
-        Whether to add sample size (n) labels above each box.
+        Append sample sizes to the categorical axis tick labels. Counts include
+        rows with non-missing x, y, and hue (when used), restricted to ``order``
+        and ``hue_order``. Hue levels are pooled within each category. The same
+        complete rows are used for rendering; hidden outliers still count.
     whis : float or tuple of float, default: 1.5
         The proportion of the IQR past the low and high quartiles to extend the
         plot whiskers.
@@ -157,9 +160,7 @@ def boxplot(
     }
     plotting.update(args)
     plotting.update(kwargs)
-    plotting["orient"] = utils._resolve_categorical_orientation(
-        data, x, y, plotting.get("orient")
-    )
+    data = utils._prepare_categorical_plot_data(plotting)
     if ax is None:
         ax = plt.gca()
     ax = sns.boxplot(ax=ax, **plotting)
@@ -212,7 +213,8 @@ def boxplot(
         )
 
     if add_count:
-        utils._add_count_helper(data, x, ax)
+        axis = "y" if plotting["orient"] == "h" else "x"
+        utils._add_count_helper(data, plotting[axis], ax, axis=axis)
 
     return ax
 
@@ -257,7 +259,10 @@ def violinplot(
     add_box : bool, default: True
         Whether to overlay a narrow box plot inside each violin.
     add_count : bool, default: False
-        Whether to add sample size (n) labels above each violin.
+        Append sample sizes to the categorical axis tick labels. Counts include
+        rows with non-missing x, y, and hue (when used), restricted to ``order``
+        and ``hue_order``. Hue levels are pooled within each category. The same
+        complete rows are used for rendering.
     box_color : matplotlib color or None, default: "white"
         Color of the embedded box plots. Set to ``None`` to color boxes according
         to *hue*.
@@ -349,9 +354,7 @@ def violinplot(
         "hue_order": hue_order,
     }
     plotting.update(kwargs)
-    plotting["orient"] = utils._resolve_categorical_orientation(
-        data, x, y, plotting.get("orient")
-    )
+    data = utils._prepare_categorical_plot_data(plotting)
     if ax is None:
         ax = plt.gca()
     ax = sns.violinplot(ax=ax, linewidth=0.001, width=width, **plotting)
@@ -372,7 +375,8 @@ def violinplot(
         )
 
     if add_count:
-        utils._add_count_helper(data, x, ax)
+        axis = "y" if plotting["orient"] == "h" else "x"
+        utils._add_count_helper(data, plotting[axis], ax, axis=axis)
 
     return ax
 

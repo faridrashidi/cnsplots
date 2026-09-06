@@ -1091,7 +1091,10 @@ def stripplot(
     showmeans : bool, default: False
         Whether to overlay a marker at the mean for each category.
     add_count : bool, default: False
-        Whether to add sample size (n) labels above each category.
+        Append sample sizes to the categorical axis tick labels. Counts include
+        rows with non-missing x, y, and hue (when used), restricted to ``order``
+        and ``hue_order``. Hue levels are pooled within each category. The same
+        complete rows are used for points and summary markers.
     hue : str, optional
         Column name for grouping points within each category.
     order : list of str, optional
@@ -1141,24 +1144,25 @@ def stripplot(
             "use 'add_count' instead"
         )
 
+    plotting: dict[str, Any] = {
+        "data": data,
+        "x": x,
+        "y": y,
+        "hue": hue,
+        "order": order,
+        "hue_order": hue_order,
+    }
+    plotting.update(kwargs)
+    data = utils._prepare_categorical_plot_data(plotting)
     if ax is None:
         ax = plt.gca()
-    ax = sns.stripplot(
-        data=data,
-        x=x,
-        y=y,
-        hue=hue,
-        order=order,
-        hue_order=hue_order,
-        size=size,
-        ax=ax,
-        **kwargs,
-    )
+    ax = sns.stripplot(size=size, ax=ax, **plotting)
     sns.boxplot(
         data=data,
         x=x,
         y=y,
-        order=order,
+        order=plotting["order"],
+        orient=plotting["orient"],
         medianprops={"visible": showmedian, "color": "black", "lw": 1},
         meanprops={
             "markerfacecolor": "white",
@@ -1176,7 +1180,8 @@ def stripplot(
         showmeans=showmeans,
     )
     if add_count:
-        utils._add_count_helper(data, x, ax)
+        axis = "y" if plotting["orient"] == "h" else "x"
+        utils._add_count_helper(data, plotting[axis], ax, axis=axis)
 
     _resize_legend_markers(ax.get_legend(), size**2, marker_size=size * 2)
 
