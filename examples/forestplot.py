@@ -145,7 +145,7 @@ model.results.head()
 # %%
 # Logistic regression forest plot
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Display odds ratios from logistic regression.
+# Display cross-validated ROC-AUC from logistic regression.
 model = cns.methods.LogisticModel(
     data=gbsg2,
     event="cens",
@@ -167,6 +167,46 @@ model.fit()
 cns.figure(150, 150)
 cns.forestplot(model)
 model.results.head()
+
+
+# %%
+# Inspect logistic analysis diagnostics
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Each formula and hue group has a diagnostic row, including failed fits.
+# Counts describe the rows remaining after formula-specific missing values
+# are dropped; ``failure_reason`` explains analyses missing from results.
+model.diagnostics
+
+# %%
+# Nested cross-validation defaults to five unshuffled stratified folds at both
+# levels. Use ``inner_cv`` and ``outer_cv`` to supply fold counts or scikit-learn
+# splitters. Repeated observations need group-aware splitters at both levels,
+# for example with a dataset containing a ``patient_id`` column:
+#
+# .. code-block:: python
+#
+#    from sklearn.model_selection import GroupKFold
+#
+#    grouped_model = cns.LogisticModel(
+#        data=repeated_data,
+#        event="outcome",
+#        variates=["age"],
+#        inner_cv=GroupKFold(3),
+#        outer_cv=GroupKFold(5),
+#        groups="patient_id",
+#        random_state=42,
+#        retain_estimators=True,
+#    )
+#    grouped_model.fit()
+#    analysis_id = grouped_model.diagnostics.query("status == 'success'").iloc[0][
+#        "analysis_id"
+#    ]
+#    fold_models = grouped_model.estimators[analysis_id]
+#
+# ``retain_estimators=True`` keeps the selected fitted pipeline for each outer
+# training fold, keyed by the diagnostic ``analysis_id``. It adds no full-data
+# refit. By default, ``estimators`` is empty. Each call to ``fit()`` replaces
+# previous results, diagnostics, and retained models.
 
 
 # %%

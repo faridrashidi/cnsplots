@@ -73,23 +73,21 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
     )
     seen_estimators: list[GridSearchCV] = []
 
-    def fake_cross_val_predict(
+    def fake_fit(
         estimator: GridSearchCV,
         X: pd.DataFrame,
         y: np.ndarray,
-        *,
-        cv: int,
-        method: str,
-        **kwargs: Any,
-    ) -> np.ndarray:
-        assert cv == 5
-        assert method == "predict_proba"
-        assert kwargs == {}
+    ) -> GridSearchCV:
+        np.testing.assert_array_equal(y, data.loc[X.index, "event"])
         seen_estimators.append(estimator)
-        probabilities = np.linspace(0.1, 0.9, len(y))
+        return estimator
+
+    def fake_predict_proba(estimator: GridSearchCV, X: pd.DataFrame) -> np.ndarray:
+        probabilities = np.linspace(0.1, 0.9, len(X))
         return np.column_stack((1 - probabilities, probabilities))
 
-    monkeypatch.setattr(_methods, "cross_val_predict", fake_cross_val_predict)
+    monkeypatch.setattr(GridSearchCV, "fit", fake_fit)
+    monkeypatch.setattr(GridSearchCV, "predict_proba", fake_predict_proba)
     monkeypatch.setattr(
         cns.LogisticModel,
         "_compute_auc_ci",
@@ -99,7 +97,7 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
     model = cns.LogisticModel(data, event="event", variates=["score"], hue=hue)
     model.fit()
 
-    assert len(seen_estimators) == (1 if hue is None else 2)
+    assert len(seen_estimators) == (5 if hue is None else 10)
     for estimator in seen_estimators:
         assert isinstance(estimator, GridSearchCV)
         design, scaler, classifier = (step for _, step in estimator.estimator.steps)
@@ -112,7 +110,8 @@ def test_logistic_model_uses_scaled_out_of_fold_predictions(
             assert classifier.penalty == "l1"
         assert classifier.solver == "liblinear"
         assert classifier.random_state == 42
-        assert estimator.cv == 5
+        assert isinstance(estimator.cv, list)
+        assert len(estimator.cv) == 5
         assert estimator.scoring == "roc_auc"
         assert estimator.error_score == "raise"
         np.testing.assert_array_equal(
@@ -135,25 +134,13 @@ def test_logistic_model_aligns_outcome_after_patsy_drops_rows(
     )
     data.iloc[:2, data.columns.get_loc("score")] = np.nan
 
-    def fake_cross_val_predict(
-        estimator: GridSearchCV,
-        X: pd.DataFrame,
-        y: np.ndarray,
-        *,
-        cv: int,
-        method: str,
-    ) -> np.ndarray:
-        assert X.index.tolist() == list(range(2, 16))
+    def capture_auc(self, y, probabilities):
         np.testing.assert_array_equal(y, data["event"].to_numpy()[2:])
-        probabilities = np.linspace(0.1, 0.9, len(y))
-        return np.column_stack((1 - probabilities, probabilities))
+        assert probabilities.shape == (14,)
+        assert np.isfinite(probabilities).all()
+        return 0.5, 0.4, 0.6
 
-    monkeypatch.setattr(_methods, "cross_val_predict", fake_cross_val_predict)
-    monkeypatch.setattr(
-        cns.LogisticModel,
-        "_compute_auc_ci",
-        lambda self, y, predictions: (0.5, 0.4, 0.6),
-    )
+    monkeypatch.setattr(cns.LogisticModel, "_compute_auc_ci", capture_auc)
 
     model = cns.LogisticModel(data, event="event", variates=[formula])
     model.fit()
