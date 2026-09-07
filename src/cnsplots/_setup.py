@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -45,10 +46,16 @@ def _ensure_helvetica_bold() -> None:
     except Exception:
         return
 
-    bold_ttf_path = Path.home() / ".cache" / "cnsplots" / "fonts" / "Helvetica-Bold.ttf"
     try:
-        bold_ttf_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_home = os.environ.get("XDG_CACHE_HOME", "")
+        cache_root = (
+            Path(cache_home)
+            if cache_home and Path(cache_home).is_absolute()
+            else Path.home() / ".cache"
+        )
+        bold_ttf_path = cache_root / "cnsplots" / "fonts" / "Helvetica-Bold.ttf"
         if not bold_ttf_path.exists():
+            bold_ttf_path.parent.mkdir(parents=True, exist_ok=True)
             ttc = TTCollection(str(ttc_path))
             bold_face = None
             for face in ttc.fonts:
@@ -170,6 +177,12 @@ def setup_matplotlib(
     - Math text: Custom fontset
     - Sizes: title=8pt, legend/ticks=7pt (by default)
     - Title weight: bold (by default)
+
+    On macOS, the extracted Helvetica bold face is cached under
+    ``$XDG_CACHE_HOME/cnsplots/fonts`` when ``XDG_CACHE_HOME`` is an absolute
+    path. If it is unset, empty, or relative, ``~/.cache/cnsplots/fonts`` is
+    used. If the cache is unavailable, plotting continues with the available
+    fonts without writing to another location.
 
     **Axes:**
     - Spines: Bottom and left only (top and right hidden)

@@ -780,7 +780,9 @@ def test_svg_helpers_and_export(
     assert text_els[2].get("font-family") == "Helvetica"
     assert text_els[2].get("font-style") == "italic"
     assert text_els[3].get("font-family") is None
-    assert all(text_el.get("clip-path") == "url(#c1)" for text_el in text_els)
+    assert all(
+        text_el.getparent().get("clip-path") == "url(#c1)" for text_el in text_els
+    )
 
     svg_image_in = output_dir / "input-image.svg"
     svg_image_out = output_dir / "output-image.svg"
@@ -795,9 +797,9 @@ def test_svg_helpers_and_export(
     _svg._correct_svg(str(svg_image_in), str(svg_image_out))
     image_root = etree.parse(str(svg_image_out)).getroot()
     image_el = image_root.xpath(".//svg:image", namespaces=ns)[0]
-    assert not image_root.xpath(".//svg:g", namespaces=ns)
-    assert image_el.get("clip-path") == "url(#img-clip)"
-    assert image_el.get("transform") == "translate(10 20) scale(4)"
+    image_group = image_el.getparent()
+    assert image_group.get("clip-path") == "url(#img-clip)"
+    assert image_group.get("transform") == "translate(10 20) scale(4)"
 
     root2 = etree.fromstring(
         b'<svg xmlns="http://www.w3.org/2000/svg"><g><g><text>hello</text></g></g></svg>'

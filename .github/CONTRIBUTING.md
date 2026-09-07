@@ -189,6 +189,29 @@ def example_function(param1, param2):
 make test
 ```
 
+### Final PDF and SVG exports
+
+`tests/test_export_pipeline.py` checks saved files after export processing. It
+renders PDF with MuPDF's `mutool` and SVG with headless Chrome or Chromium, which
+supports SVG clipping and transparency masks. These optional executables are
+discovered locally; cases requiring an unavailable renderer explicitly skip.
+Missing and failed SVG conversion paths are also tested, including when `mutool`
+is absent but Chrome is available.
+
+```bash
+uv run pytest tests/test_export_pipeline.py tests/test_svg_font_weights.py --no-cov
+```
+
+The suite checks bounds, clipped geometry, alpha, rasterized layers, multipanel
+helper axes, and repeated text with different font weights. Geometric tolerances
+and ink coverage allow platform font and antialiasing differences; these checks
+do not require the pinned environment used for exact visual hashes. On failure,
+`mpl-results/export-pipeline/` retains the exported file, Agg reference, rendered
+PNG, enhanced difference image, and renderer log when available. Chrome profiles
+stay in the test's temporary directory and are excluded from comparison artifacts.
+Optimized SVG retains groups that carry clipping or masks, preserving the
+coordinate system and shared bounds needed by transformed and rasterized artists.
+
 ### Writing Tests
 
 - Place tests in the `tests/` directory
