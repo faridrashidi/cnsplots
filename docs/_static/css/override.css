@@ -685,6 +685,10 @@ article[role="main"] .highlight span.linenos {
   }
 }
 
+.sphx-glr-thumbnail-title {
+  text-align: center;
+}
+
 .sphx-glr-single-img {
   margin: auto;
   display: block;
