@@ -158,6 +158,7 @@ def test_multipanel_calculate_layout_wraps_to_new_row() -> None:
 def test_setup_internal_coverage(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
     real_import = builtins.__import__
     real_exists = Path.exists
 
