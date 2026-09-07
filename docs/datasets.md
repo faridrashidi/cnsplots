@@ -4,7 +4,7 @@
 access. `cns.datasets.get_showcase_data` combines two of those datasets with
 synthetic examples and, optionally, four bundled images.
 
-The [packaged data notices](https://github.com/faridrashidi/cnsplots/blob/main/NOTICE-DATA.md)
+The [packaged data notices](https://github.com/faridrashidi/cnsplots/blob/ef82066d5269116b4d51044c75ac52184754e6fc/NOTICE-DATA.md)
 record each file's source, snapshot, attribution, upstream transformations, and
 redistribution terms. They are shipped as `NOTICE-DATA.md` in the source archive
 and in the wheel's `.dist-info/licenses` directory. The software's BSD license

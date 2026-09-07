@@ -1,9 +1,9 @@
 # Citing cnsplots
 
 If you use cnsplots in your research, cite the software version used to produce
-your results. The repository's
-[CITATION.cff](https://github.com/faridrashidi/cnsplots/blob/main/CITATION.cff)
-provides machine-readable metadata for the most recent published release.
+your results. The
+[CITATION.cff snapshot](https://github.com/faridrashidi/cnsplots/blob/ef82066d5269116b4d51044c75ac52184754e6fc/CITATION.cff)
+provides machine-readable metadata for the release documented here.
 
 For version 0.7.0:
 
@@ -44,7 +44,7 @@ dataset.
 ## Metadata sources and maintenance
 
 The author and citation title follow the existing
-[release README](https://github.com/faridrashidi/cnsplots/blob/v0.7.0/README.md#citation);
+[release README](https://github.com/faridrashidi/cnsplots/blob/v0.7.0/README.md);
 the author is also recorded in
 [the documentation configuration](https://github.com/faridrashidi/cnsplots/blob/v0.7.0/docs/conf.py).
 The project name, version, repository URL, and license are recorded in
@@ -58,7 +58,7 @@ Citation metadata is maintained manually for published releases. Maintainers
 update `CITATION.cff` and both displayed examples together, using the published
 version and UTC release date; documentation rebuilds do not change that date.
 See the
-[contributor instructions](https://github.com/faridrashidi/cnsplots/blob/main/.github/CONTRIBUTING.md#citation-metadata)
+[contributor instructions](https://github.com/faridrashidi/cnsplots/blob/ef82066d5269116b4d51044c75ac52184754e6fc/.github/CONTRIBUTING.md)
 for validation and release maintenance. Creating citation metadata does not
 publish or deposit the software with any external archive; a deposit requires
 separate maintainer authorization.
