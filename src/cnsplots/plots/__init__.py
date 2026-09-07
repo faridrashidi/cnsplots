@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from ._distribution import qqplot as qqplot
     from ._distribution import ridgeplot as ridgeplot
     from ._distribution import violinplot as violinplot
+    from ._genomics import enrichmentbarplot as enrichmentbarplot
     from ._genomics import gseaplot as gseaplot
     from ._genomics import volcanoplot as volcanoplot
     from ._heatmap import confusionplot as confusionplot
@@ -52,6 +53,7 @@ _LAZY_IMPORTS = {
     "donutplot": ("cnsplots.plots._categorical", "donutplot"),
     "dotplot": ("cnsplots.plots._heatmap", "dotplot"),
     "dumbbellplot": ("cnsplots.plots._categorical", "dumbbellplot"),
+    "enrichmentbarplot": ("cnsplots.plots._genomics", "enrichmentbarplot"),
     "forestplot": ("cnsplots.plots._specialized", "forestplot"),
     "gseaplot": ("cnsplots.plots._genomics", "gseaplot"),
     "heatmapplot": ("cnsplots.plots._heatmap", "heatmapplot"),

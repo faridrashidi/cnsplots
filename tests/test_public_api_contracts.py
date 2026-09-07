@@ -36,6 +36,7 @@ _PUBLIC_PLOT_NAMES = frozenset(
         "donutplot",
         "dotplot",
         "dumbbellplot",
+        "enrichmentbarplot",
         "forestplot",
         "gseaplot",
         "heatmapplot",
@@ -211,13 +212,17 @@ assert not {
     "cnsplots.plots._sets",
     "cnsplots.plots._survival",
 } & set(sys.modules)
+
+_ = cnsplots.enrichmentbarplot
+assert "cnsplots.plots._genomics" in sys.modules
+assert "gseapy" not in sys.modules
 """
     subprocess.run([sys.executable, "-c", script], check=True)
 
     src_path = Path(__file__).parents[1] / "src"
     no_site_script = (
         f"import sys; sys.path.insert(0, {str(src_path)!r}); "
-        "import cnsplots; assert len(cnsplots.__all__) == 77"
+        "import cnsplots; assert len(cnsplots.__all__) == 78"
     )
     subprocess.run([sys.executable, "-S", "-c", no_site_script], check=True)
 

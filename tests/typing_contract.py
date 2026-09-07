@@ -103,6 +103,30 @@ if TYPE_CHECKING:
         assert_type(cns.palettes("Set1"), list[tuple[float, float, float]])
         assert_type(cns.palettes("parula"), Colormap)
         assert_type(cns.boxplot(data, x="group", y="value"), Axes)
+        assert_type(
+            cns.enrichmentbarplot(
+                data,
+                y="Term",
+                significance_column="FDR q-val",
+                count="Count",
+                cutoff=None,
+                top_term=None,
+                order="input",
+                ax=ax,
+            ),
+            Axes,
+        )
+        assert_type(
+            cns.prerank(
+                data,
+                {"Pathway": ["A", "B"]},
+                "gene",
+                "rank",
+                fdr_cutoff=None,
+                min_abs_nes=None,
+            ),
+            pd.DataFrame,
+        )
         assert_type(cns.get_comparison_results(ax), pd.DataFrame)
         assert_type(cns.get_comparison_results(), pd.DataFrame)
         assert_type(

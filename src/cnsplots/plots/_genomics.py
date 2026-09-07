@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
@@ -342,4 +342,179 @@ def gseaplot(
     )
     setup_ax(ax, colorbar_label="")
     ax.set_xlabel("Normalized Enrichment Score (NES)")
+    return ax
+
+
+def enrichmentbarplot(
+    data: pd.DataFrame,
+    y: str,
+    significance_column: str = "FDR q-val",
+    *,
+    count: str | None = None,
+    cutoff: float | None = 0.05,
+    top_term: int | None = 20,
+    order: Literal["significance", "input"] = "significance",
+    ax: Axes | None = None,
+) -> Axes:
+    """
+    Plot horizontal enrichment bars from a computed results table.
+
+    Bar lengths are dimensionless -log10 significance values. No enrichment
+    test, multiple-testing correction, or network lookup is performed, and
+    the caller's DataFrame is not modified.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Computed enrichment results, with one row per term. Duplicate term
+        labels remain separate bars. Empty tables return labeled, empty axes.
+    y : str
+        Column containing term names. Missing term names are rejected.
+    significance_column : str, default: 'FDR q-val'
+        Column of adjusted p-values or FDR values, used for both selection and
+        bar lengths. Raw p-values can be supplied explicitly but are not
+        adjusted by this function. The column name appears in the x-axis label.
+        Values must be numeric, finite, nonmissing, and between 0 and 1.
+    count : str, optional
+        Column of overlapping-gene counts to annotate as ``n=<count>`` at each
+        bar's endpoint. Counts must be finite, nonnegative integers; missing
+        values omit the annotation. Gene ratios are not accepted as counts.
+    cutoff : float or None, default: 0.05
+        Retain significance values less than or equal to this threshold in
+        [0, 1]. Use None for prefiltered results or to disable filtering.
+    top_term : int or None, default: 20
+        Select at most this many rows with the lowest significance values,
+        preserving input order for ties. Use None to retain all passing rows
+        or 0 to display no rows.
+    order : {'significance', 'input'}, default: 'significance'
+        Display the selected rows from top to bottom by ascending significance
+        or in their original input order. This does not change top-term
+        selection. Duplicate DataFrame index values do not affect ordering.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, uses the current axes, including the current
+        ``multipanel`` panel.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        Target axes. Bars are available through ``ax.patches`` and their
+        ``BarContainer`` in ``ax.containers``; count annotations are in
+        ``ax.texts``. Empty post-filter results produce no bars or annotations.
+
+    Notes
+    -----
+    Exact zeros are replaced only for the logarithm with
+    ``numpy.finfo(float).tiny`` (about 2.225e-308), giving a finite bar length
+    of about 307.65. Positive values, including subnormal values, are unchanged.
+    Filtering and ranking always use the original values. Invalid significance
+    values or counts anywhere in the input are rejected before filtering.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> import pandas as pd
+    >>> results = pd.DataFrame(
+    ...     {"Term": ["Repair", "Signaling"], "FDR": [0.001, 0.02], "Count": [8, 12]}
+    ... )
+    >>> ax = cns.enrichmentbarplot(
+    ...     results, y="Term", significance_column="FDR", count="Count", top_term=10
+    ... )
+    """
+    validate_dataframe(data, "data", "enrichmentbarplot")
+    numeric_columns = [significance_column] + ([] if count is None else [count])
+    validate_columns_exist(data, [y, *numeric_columns], "enrichmentbarplot")
+    if data[y].isna().any():
+        raise ValueError(
+            f"[enrichmentbarplot] Column '{y}' must not contain missing terms"
+        )
+    if top_term is not None:
+        if isinstance(top_term, bool) or not isinstance(top_term, (int, np.integer)):
+            raise TypeError(
+                "[enrichmentbarplot] Parameter 'top_term' must be an integer or None"
+            )
+        if top_term < 0:
+            raise ValueError(
+                "[enrichmentbarplot] Parameter 'top_term' must be non-negative"
+            )
+    if cutoff is not None:
+        if isinstance(cutoff, bool) or not isinstance(
+            cutoff, (int, float, np.integer, np.floating)
+        ):
+            raise TypeError(
+                "[enrichmentbarplot] Parameter 'cutoff' must be a number or None"
+            )
+        if not 0 <= cutoff <= 1:
+            raise ValueError(
+                "[enrichmentbarplot] Parameter 'cutoff' must be between 0 and 1"
+            )
+    if order not in ("significance", "input"):
+        raise ValueError(
+            "[enrichmentbarplot] Parameter 'order' must be 'significance' or 'input'"
+        )
+    for column in numeric_columns:
+        values = data[column].dropna()
+        if any(
+            isinstance(value, (bool, np.bool_))
+            or not isinstance(value, (int, float, np.integer, np.floating))
+            for value in values
+        ):
+            raise ValueError(
+                f"[enrichmentbarplot] Column '{column}' must be real numeric values"
+            )
+    significance = data[significance_column].to_numpy(dtype=float, na_value=np.nan)
+    if (
+        not np.isfinite(significance).all()
+        or ((significance < 0) | (significance > 1)).any()
+    ):
+        raise ValueError(
+            f"[enrichmentbarplot] Column '{significance_column}' must contain finite, "
+            "nonmissing significance values between 0 and 1"
+        )
+    counts = None
+    if count is not None:
+        counts = data[count].to_numpy(dtype=float, na_value=np.nan)
+        present_counts = counts[~np.isnan(counts)]
+        if (
+            not np.isfinite(present_counts).all()
+            or (present_counts < 0).any()
+            or (present_counts % 1 != 0).any()
+        ):
+            raise ValueError(
+                f"[enrichmentbarplot] Column '{count}' must contain finite, nonnegative integer counts"
+            )
+
+    selected = np.argsort(significance, kind="stable")
+    if cutoff is not None:
+        selected = selected[significance[selected] <= cutoff]
+    selected = selected[:top_term]
+    if order == "input":
+        selected = np.sort(selected)
+    selected_significance = significance[selected]
+    widths = -np.log10(
+        np.where(
+            selected_significance == 0, np.finfo(float).tiny, selected_significance
+        )
+    )
+
+    if ax is None:
+        ax = plt.gca()
+    positions = np.arange(len(selected))
+    ax.barh(positions, widths)
+    ax.set_yticks(positions, data.iloc[selected][y].astype(str).tolist())
+    ax.set_xlabel(f"\u2013log10({significance_column})")
+    ax.set_ylabel(y)
+    ax.set_ylim(max(len(selected) - 0.5, 0.5), -0.5)
+    if counts is not None:
+        for position, width, value in zip(positions, widths, counts[selected]):
+            if not np.isnan(value):
+                ax.annotate(
+                    f"n={int(value)}",
+                    (width, position),
+                    xytext=(2, 0),
+                    textcoords="offset points",
+                    va="center",
+                    fontsize=_legend_fontsize(),
+                )
+        ax.margins(x=0.2)
+    ax.set_xlim(left=0)
     return ax

@@ -70,6 +70,7 @@ GALLERY_CATEGORIES = [
             "survivalplot",
             "forestplot",
             "gseaplot",
+            "enrichmentbarplot",
             "volcanoplot",
             "confusionplot",
             "rocplot",

@@ -62,6 +62,8 @@ before plotting.
 
 - `volcanoplot`: effect size versus transformed adjusted significance.
 - `gseaplot`: gene-set enrichment results.
+- `enrichmentbarplot`: horizontal -log10 significance bars from computed enrichment
+  tables, with optional overlapping-gene count labels and explicit term selection.
 - `rocplot`: receiver operating characteristic curves with optional pointwise
   bootstrap confidence bands and paired DeLong AUC comparisons. Retrieve exact
   coordinates, AUCs, bands, and tests with `get_roc_results(ax)`.

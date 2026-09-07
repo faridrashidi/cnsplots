@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from .plots import donutplot as donutplot
     from .plots import dotplot as dotplot
     from .plots import dumbbellplot as dumbbellplot
+    from .plots import enrichmentbarplot as enrichmentbarplot
     from .plots import forestplot as forestplot
     from .plots import gseaplot as gseaplot
     from .plots import heatmapplot as heatmapplot
@@ -160,6 +161,7 @@ _LAZY_IMPORTS = {
     "donutplot": ("cnsplots.plots._categorical", "donutplot"),
     "dotplot": ("cnsplots.plots._heatmap", "dotplot"),
     "dumbbellplot": ("cnsplots.plots._categorical", "dumbbellplot"),
+    "enrichmentbarplot": ("cnsplots.plots._genomics", "enrichmentbarplot"),
     "forestplot": ("cnsplots.plots._specialized", "forestplot"),
     "gseaplot": ("cnsplots.plots._genomics", "gseaplot"),
     "heatmapplot": ("cnsplots.plots._heatmap", "heatmapplot"),

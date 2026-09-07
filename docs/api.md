@@ -95,12 +95,38 @@ diagram object, respectively.
 
    volcanoplot
    gseaplot
+   enrichmentbarplot
    rocplot
    precisionrecallplot
    calibrationplot
    qqplot
    forestplot
 ```
+
+`enrichmentbarplot` draws horizontal bars with lengths equal to
+`-log10(FDR q-val)` by default. Supply already adjusted p-values or FDR values;
+the plot does not perform enrichment tests or multiple-testing correction.
+Use `significance_column` for another significance column. Raw p-values are
+accepted only as supplied, and the axis names that column without implying
+adjustment. Larger, dimensionless values indicate greater significance.
+
+The default selection is FDR **less than or equal to** `0.05`, followed by the
+20 lowest values. Set `cutoff=None` for prefiltered data and `top_term=None`
+to display every retained row. Selection always ranks by significance; ties
+keep input order. `order="significance"` displays the smallest values at the
+top, while `order="input"` displays the selected rows in their original order.
+Duplicate term labels remain separate bars. Optional `count="Count"` labels
+show nonnegative integer overlapping-gene counts; missing counts omit the
+label. Gene ratios are not converted into counts.
+
+Missing term labels and missing, nonfinite, or out-of-range significance
+values raise an error. Exact zero significance values use the smallest
+positive normal float for plotting (about 307.65 on the transformed axis);
+positive values remain unchanged. This is a finite display convention, not
+an estimate of an unreported p-value. Empty selections return labeled axes
+without bars. The function leaves all input rows and values unchanged and
+returns the target `Axes`; bars and count annotations are available through
+its `containers` and `texts`. Pass `ax` to compose it in `multipanel`.
 
 ### Specialized Plots
 
@@ -399,6 +425,32 @@ the same columns. Omitting `ax` selects the current axes.
    LogisticModel
    prerank
 ```
+
+`prerank` preserves its existing defaults: **FDR q-val < 0.25** and
+**abs(NES) > 1.5**. Equality at either boundary is excluded. The keyword-only
+`fdr_cutoff` and `min_abs_nes` make these selection rules explicit; `None`
+disables either filter independently. To obtain every enrichment summary row
+in one computation and select terms later:
+
+```python
+all_results = cns.prerank(
+    ranked_genes,
+    gene_sets,
+    name_gene="gene",
+    name_rank="rank",
+    fdr_cutoff=None,
+    min_abs_nes=None,
+)
+selected = all_results.loc[all_results["FDR q-val"] <= 0.05].copy()
+cns.enrichmentbarplot(selected, y="Clean_Term", cutoff=None, top_term=None)
+```
+
+Every returned table retains the original backend columns and index, adds
+`Clean_Term`, and sorts by descending absolute NES, with ties in backend
+order. Existing `gseaplot` calls continue to work with selected results;
+its own inclusive significance cutoff and top-term limit still apply.
+The full summary table does not contain the running-score arrays needed for
+a GSEA running-enrichment plot.
 
 ## Figure & Layout Utilities
 
