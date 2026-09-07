@@ -5,10 +5,10 @@ pushd %~dp0
 REM Command file for Sphinx documentation
 
 if "%SPHINXBUILD%" == "" (
-	set SPHINXBUILD=uv run --extra dev sphinx-build
+	set SPHINXBUILD=uv run --locked --extra docs sphinx-build
 )
 if "%STAGEDBUILD%" == "" (
-	set STAGEDBUILD=uv run --extra dev python _scripts/build_versioned_docs.py
+	set STAGEDBUILD=uv run --locked --extra docs python _scripts/build_versioned_docs.py
 )
 set SOURCEDIR=.
 set BUILDDIR=build

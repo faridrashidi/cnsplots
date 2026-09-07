@@ -29,7 +29,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
       - name: Sync docs dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --locked --extra docs
       - name: Prepare multiversion refs
         run: |
           git fetch --force --tags origin +refs/heads/main:refs/remotes/origin/main
@@ -43,7 +43,7 @@ jobs:
           fi
       - name: Verify docs font
         run: |
-          uv run python - <<'PY'
+          uv run --locked --extra docs python - <<'PY'
           import matplotlib as mpl
 
           import cnsplots as cns
@@ -72,13 +72,13 @@ jobs:
           PY
       - name: Check documentation links
         run: |
-          uv run python docs/_scripts/build_versioned_docs.py \
+          uv run --locked --extra docs python docs/_scripts/build_versioned_docs.py \
             --builder linkcheck \
             site-build-linkcheck/output
       - name: Build versioned documentation
         run: |
           rm -rf site-build
-          uv run python docs/_scripts/build_versioned_docs.py \
+          uv run --locked --extra docs python docs/_scripts/build_versioned_docs.py \
             --mode "${DOCS_BUILD_MODE}" \
             site-build
       - name: Publish to gh-pages

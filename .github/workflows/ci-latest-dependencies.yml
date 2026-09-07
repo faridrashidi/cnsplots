@@ -30,7 +30,7 @@ jobs:
 
       - name: Sync latest dependencies
         # Avoid pairing prerelease Numba with an unsupported NumPy release.
-        run: uv sync --upgrade --extra dev --prerelease-package numba=disallow
+        run: uv sync --upgrade --extra test --prerelease-package numba=disallow
 
       - name: Install mutool
         run: |
