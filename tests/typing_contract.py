@@ -20,6 +20,38 @@ if TYPE_CHECKING:
     import cnsplots as cns
     from cnsplots._settings import CNSSettings
 
+    def _check_comparison_types(data: pd.DataFrame) -> None:
+        string_pairs: list[tuple[str, str]] = [("A", "B")]
+        numeric_pairs: list[tuple[int, float]] = [(0, 1.5)]
+        hue_pairs: list[tuple[tuple[int, str], tuple[int, str]]] = [
+            ((0, "control"), (0, "treated"))
+        ]
+        for plotter in (
+            cns.boxplot,
+            cns.violinplot,
+            cns.barplot,
+            cns.lollipopplot,
+        ):
+            assert_type(plotter(data, x="group", y="value", pairs="all"), Axes)
+            assert_type(
+                plotter(data, x="group", y="value", hue="condition", pairs="hue"),
+                Axes,
+            )
+            assert_type(plotter(data, x="group", y="value", pairs=string_pairs), Axes)
+            assert_type(plotter(data, x="group", y="value", pairs=numeric_pairs), Axes)
+            assert_type(
+                plotter(data, x="group", y="value", hue="condition", pairs=hue_pairs),
+                Axes,
+            )
+            assert_type(plotter(data, x="group", y="value", pairs=(("A", "B"),)), Axes)
+        assert_type(cns.stackplot(data, x="group", stack="outcome", pairs="all"), Axes)
+        assert_type(
+            cns.stackplot(data, x="group", stack="outcome", pairs=string_pairs), Axes
+        )
+        assert_type(
+            cns.stackplot(data, y="group", stack="outcome", pairs=numeric_pairs), Axes
+        )
+
     def _check_public_types(data: pd.DataFrame, ax: Axes, include_images: bool) -> None:
         assert_type(cns.settings, CNSSettings)
         assert_type(cns.settings.palette_qual, str)
@@ -71,6 +103,8 @@ if TYPE_CHECKING:
         assert_type(cns.palettes("Set1"), list[tuple[float, float, float]])
         assert_type(cns.palettes("parula"), Colormap)
         assert_type(cns.boxplot(data, x="group", y="value"), Axes)
+        assert_type(cns.get_comparison_results(ax), pd.DataFrame)
+        assert_type(cns.get_comparison_results(), pd.DataFrame)
         assert_type(cns.histplot(data, x="x", ax=ax), Axes)
         assert_type(cns.lineplot(data, x="x", y="y", ax=ax), Axes)
         assert_type(cns.regplot(data, x="x", y="y", color=(0.1, 0.2, 0.3)), Axes)

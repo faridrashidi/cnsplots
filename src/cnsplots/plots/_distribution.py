@@ -16,6 +16,7 @@ from matplotlib.axes import Axes
 from matplotlib.typing import ColorType
 
 import cnsplots._utils as utils
+from cnsplots._comparison_types import HueComparisons
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_column_exists,
@@ -32,7 +33,7 @@ def boxplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    pairs: list[tuple[str, str]] | None = None,
+    pairs: HueComparisons | None = None,
     showoutliers: bool = False,
     add_count: bool = False,
     whis: float | tuple[float, float] = 1.5,
@@ -60,9 +61,13 @@ def boxplot(
         Column name for the categorical variable on the x-axis.
     y : str
         Column name for the continuous variable on the y-axis.
-    pairs : list of tuple of str, optional
-        List of pairs of category names from x for pairwise statistical comparisons
-        using Mann-Whitney U test.
+    pairs : sequence of pairs or {'all', 'hue'}, optional
+        Category pairs for statistical comparisons, using string or numeric labels.
+        Without ``hue``, use pairs such as ``[("A", "B")]`` or ``"all"`` to
+        compare all displayed categories. With ``hue``, use nested pairs such as
+        ``[(("A", "control"), ("A", "treated"))]`` or ``"hue"`` to compare
+        hue levels within each displayed category. The categorical axis follows
+        the plot orientation. ``None`` disables comparisons.
     showoutliers : bool, default: False
         Whether to display outlier points beyond the whiskers.
     add_count : bool, default: False
@@ -98,6 +103,12 @@ def boxplot(
     violinplot : Create a violin plot showing full distribution shape.
     stripplot : Create a strip plot showing all individual points.
     barplot : Create a bar plot showing means with error bars.
+    get_comparison_results : Retrieve the statistics and rendered comparison labels.
+
+    Notes
+    -----
+    When ``pairs`` is provided, ``get_comparison_results(ax)`` returns the
+    comparison table without rerunning the statistical tests.
 
     Examples
     --------
@@ -223,7 +234,7 @@ def violinplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    pairs: list[tuple[str, str]] | None = None,
+    pairs: HueComparisons | None = None,
     width: float = 0.6,
     add_box: bool = True,
     add_count: bool = False,
@@ -253,8 +264,13 @@ def violinplot(
         Column name for the categorical variable on the x-axis.
     y : str
         Column name for the continuous variable on the y-axis.
-    pairs : list of tuple of str, optional
-        List of pairs of category names from x for pairwise statistical comparisons.
+    pairs : sequence of pairs or {'all', 'hue'}, optional
+        Category pairs for statistical comparisons, using string or numeric labels.
+        Without ``hue``, use pairs such as ``[("A", "B")]`` or ``"all"`` to
+        compare all displayed categories. With ``hue``, use nested pairs such as
+        ``[(("A", "control"), ("A", "treated"))]`` or ``"hue"`` to compare
+        hue levels within each displayed category. The categorical axis follows
+        the plot orientation. ``None`` disables comparisons.
     width : float, default: 0.6
         Width of each violin body.
     add_box : bool, default: True
@@ -303,6 +319,12 @@ def violinplot(
     boxplot : Create a box plot showing quartiles without density.
     kdeplot : Create a kernel density plot.
     distplot : Create a distribution plot with histogram and KDE.
+    get_comparison_results : Retrieve the statistics and rendered comparison labels.
+
+    Notes
+    -----
+    When ``pairs`` is provided, ``get_comparison_results(ax)`` returns the
+    comparison table without rerunning the statistical tests.
 
     Examples
     --------
