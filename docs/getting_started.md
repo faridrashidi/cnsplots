@@ -168,6 +168,7 @@ independent of `unit`. Omitted `max_width`, panel width, or panel height always
 use their settings values in points. Changing units alone does not reinterpret
 these defaults.
 
+(saving-figures)=
 ## Saving Figures
 
 For publication, save figures in vector formats:
