@@ -25,14 +25,12 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from matplotlib.typing import ColorType
-from palettable.cartocolors.qualitative import get_map as _get_cartocolor_map
-from palettable.colorbrewer.colorbrewer import get_map as _get_colorbrewer_map
-from palettable.tableau.tableau import get_map as _get_tableau_map
 from seaborn._base import categorical_order, infer_orient
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
 from statannotations.utils import DEFAULT
 
+import cnsplots._palettes as _palettes
 from cnsplots._settings import settings
 from cnsplots._setup import setup_matplotlib
 from cnsplots._sizing import _SizeUnit, _dimension_to_points
@@ -762,11 +760,9 @@ def add_panel_label(
     )
 
 
-def get_hexcolors_from_apalette(
-    alist: Sequence[int],
-    palette: str | Sequence[ColorType] = _get_colorbrewer_map(
-        "Set1", "qualitative", 9
-    ).hex_colors,
+def get_palette_colors(
+    indices: Sequence[int],
+    palette: str | Sequence[ColorType] | None = None,
 ) -> list[str]:
     """
     Extract specific colors from a palette by index.
@@ -776,12 +772,12 @@ def get_hexcolors_from_apalette(
 
     Parameters
     ----------
-    alist : list of int
-        List of indices specifying which colors to extract from the palette.
-        Indices are 0-based.
-    palette : str or list, default: Set1_9.hex_colors
+    indices : sequence of int
+        Indices specifying which colors to extract, in the requested order.
+        Indices are 0-based; negative indices and repeated indices are supported.
+    palette : str or sequence of colors, optional
         Either a palette name (str) that can be resolved by the palettes() function,
-        or a list of hex color codes.
+        or a sequence of Matplotlib colors. Defaults to Set1, resolved on each call.
 
     Returns
     -------
@@ -791,6 +787,7 @@ def get_hexcolors_from_apalette(
     See Also
     --------
     palettes : Get a complete color palette by name.
+    get_hexcolors_from_apalette : Compatible wrapper using the old parameter name.
 
     Notes
     -----
@@ -805,22 +802,55 @@ def get_hexcolors_from_apalette(
     --------
     >>> import cnsplots as cns
     >>> # Extract first two colors from Set1
-    >>> colors = cns.get_hexcolors_from_apalette([0, 1], "Set1")
+    >>> colors = cns.get_palette_colors([0, 1], "Set1")
     >>> colors
     ['#e41a1c', '#377eb8']
 
     >>> # Extract specific colors from custom palette
     >>> custom = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00"]
-    >>> selected = cns.get_hexcolors_from_apalette([0, 2], custom)
+    >>> selected = cns.get_palette_colors([0, 2], custom)
     >>> selected
     ['#ff0000', '#0000ff']
     """
+    if palette is None:
+        palette = "Set1"
     colors = (
         cast(Sequence[ColorType], palettes(palette))
         if isinstance(palette, str)
         else palette
     )
-    return [mcolors.to_hex(colors[index]) for index in alist]
+    return [mcolors.to_hex(colors[index]) for index in indices]
+
+
+def get_hexcolors_from_apalette(
+    alist: Sequence[int],
+    palette: str | Sequence[ColorType] | None = None,
+) -> list[str]:
+    """Extract palette colors using the original, compatible API.
+
+    Parameters
+    ----------
+    alist : sequence of int
+        Zero-based indices to select, including negative or repeated indices.
+    palette : str or sequence of colors, optional
+        Palette name or explicit Matplotlib colors. Defaults to Set1, resolved
+        on each call.
+
+    Returns
+    -------
+    list of str
+        Selected hexadecimal colors in the requested order.
+
+    See Also
+    --------
+    get_palette_colors : Preferred name for palette color selection.
+
+    Notes
+    -----
+    This wrapper preserves positional calls and the ``alist`` and ``palette``
+    keyword arguments. It returns the same colors as ``get_palette_colors``.
+    """
+    return get_palette_colors(alist, palette)
 
 
 def _is_qualitative_cmap(cmap_name):
@@ -1126,6 +1156,64 @@ def _p_value_helper(
         logger.info("P-values were determined by two-sided Chi-squared test.")
 
 
+def register_palette(name: str, colors: Sequence[ColorType]) -> None:
+    """Register a custom qualitative palette for the current Python process.
+
+    Parameters
+    ----------
+    name : str
+        Nonblank, case-sensitive palette name. Existing cnsplots and Matplotlib
+        palette names cannot be replaced.
+    colors : sequence of Matplotlib colors
+        Nonempty sequence of valid colors. Colors are copied into immutable RGB
+        tuples so later changes to the input cannot alter the palette.
+
+    Raises
+    ------
+    TypeError
+        If ``name`` is not a string or ``colors`` is not a color sequence.
+    ValueError
+        If the name is blank or already in use, or colors are empty or invalid.
+
+    See Also
+    --------
+    available_palettes : List built-in and registered palette names.
+    palettes : Resolve a palette by name.
+
+    Notes
+    -----
+    Registered palettes are available to :func:`palettes`, :func:`figure`, and
+    :func:`get_palette_colors` until the Python process exits. Each
+    lookup returns a fresh palette. Registration does not persist to disk.
+
+    Examples
+    --------
+    >>> import cnsplots as cns
+    >>> cns.register_palette("MyPalette", ["#336699", "#CC6633"])
+    >>> cns.palettes("MyPalette")
+    [(0.2, 0.4, 0.6), (0.8, 0.4, 0.2)]
+    """
+    if not isinstance(name, str):
+        raise TypeError("name must be a string.")
+    if not name.strip():
+        raise ValueError("name must not be blank.")
+    if name in _palettes._PALETTE_REGISTRY or name in mpl.colormaps:
+        raise ValueError(f"Palette name {name!r} is already in use.")
+    if isinstance(colors, (str, bytes)) or not isinstance(colors, Sequence):
+        raise TypeError("colors must be a sequence of Matplotlib colors.")
+    if not colors:
+        raise ValueError("colors must not be empty.")
+    try:
+        copied_colors = tuple(mcolors.to_rgb(color) for color in colors)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("colors must contain valid Matplotlib colors.") from exc
+    if not all(math.isfinite(channel) for color in copied_colors for channel in color):
+        raise ValueError("colors must contain finite RGB values.")
+    _palettes._PALETTE_REGISTRY[name] = _palettes._PaletteSpec(
+        "qualitative", lambda: sns.color_palette(copied_colors)
+    )
+
+
 @overload
 def palettes(color: _QualitativePaletteName) -> list[_RGBColor]: ...
 
@@ -1154,7 +1242,8 @@ def palettes(color: str | Sequence[ColorType]) -> list[_RGBColor] | Colormap:
     ----------
     color : str or list
         Palette name or list of color values. If a list is provided, it is
-        converted to a seaborn color palette.
+        converted to a seaborn color palette. Registered custom palette names
+        are also accepted; use :func:`available_palettes` to discover names.
 
         **Supported palette names:**
 
@@ -1190,7 +1279,9 @@ def palettes(color: str | Sequence[ColorType]) -> list[_RGBColor] | Colormap:
 
     See Also
     --------
-    get_hexcolors_from_apalette : Extract specific colors from a palette by index.
+    available_palettes : List built-in and registered palette names.
+    register_palette : Register a custom qualitative palette.
+    get_palette_colors : Extract specific colors from a palette by index.
     figure : Initialize a figure with custom color cycle.
 
     Notes
@@ -1223,440 +1314,7 @@ def palettes(color: str | Sequence[ColorType]) -> list[_RGBColor] | Colormap:
     """
     if not isinstance(color, str):
         return sns.color_palette(color)
-    else:
-        if color == "Set1":
-            return _get_colorbrewer_map("Set1", "qualitative", 9).mpl_colors
-        elif color == "Set2":
-            return _get_colorbrewer_map("Set2", "qualitative", 8).mpl_colors
-        elif color == "Set3":
-            return _get_colorbrewer_map("Set3", "qualitative", 12).mpl_colors
-        elif color == "Pastel1":
-            return _get_colorbrewer_map("Pastel1", "qualitative", 9).mpl_colors
-        elif color == "Pastel2":
-            return _get_colorbrewer_map("Pastel2", "qualitative", 8).mpl_colors
-        elif color == "Paired":
-            return _get_colorbrewer_map("Paired", "qualitative", 12).mpl_colors
-        elif color == "Dark2":
-            return _get_colorbrewer_map("Dark2", "qualitative", 8).mpl_colors
-        elif color == "Accent":
-            return _get_colorbrewer_map("Accent", "qualitative", 8).mpl_colors
-        elif color == "Tableau":
-            return _get_tableau_map("Tableau_10").mpl_colors
-        elif color == "Bold":
-            return _get_cartocolor_map("Bold_10").mpl_colors
-        elif color == "BlueRed":
-            return _get_tableau_map("BlueRed_6").mpl_colors
-        elif color == "Cell":
-            colors = [
-                "#C84C3A",
-                "#2F7E8F",
-                "#E1A22E",
-                "#4E5A8A",
-                "#5F9862",
-                "#D07A6A",
-                "#8B6FA8",
-                "#7B8C9E",
-                "#B85F7A",
-                "#6B6B6B",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Nature":
-            colors = [
-                "#E64B35",
-                "#4DBBD5",
-                "#00A087",
-                "#3C5488",
-                "#F39B7F",
-                "#8491B4",
-                "#91D1C2",
-                "#DC0000",
-                "#7E6148",
-                "#B09C85",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Science":
-            colors = [
-                "#3B4992",
-                "#EE0000",
-                "#008B45",
-                "#631879",
-                "#008280",
-                "#BB0021",
-                "#5F559B",
-                "#A20056",
-                "#808180",
-                "#1B1919",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Lancet":
-            colors = [
-                "#00468B",
-                "#ED0000",
-                "#42B540",
-                "#0099B4",
-                "#925E9F",
-                "#FDAF91",
-                "#AD002A",
-                "#ADB6B6",
-                "#1B1919",
-            ]
-            return sns.color_palette(colors)
-        elif color == "NEJM":
-            colors = [
-                "#BC3C29",
-                "#0072B5",
-                "#E18727",
-                "#20854E",
-                "#7876B1",
-                "#6F99AD",
-                "#FFDC91",
-                "#EE4C97",
-            ]
-            return sns.color_palette(colors)
-        elif color == "JAMA":
-            colors = [
-                "#374E55",
-                "#DF8F44",
-                "#00A1D5",
-                "#B24745",
-                "#79AF97",
-                "#6A6599",
-                "#80796B",
-            ]
-            return sns.color_palette(colors)
-        elif color == "JCO":
-            colors = [
-                "#0073C2",
-                "#EFC000",
-                "#868686",
-                "#CD534C",
-                "#7AA6DC",
-                "#003C67",
-                "#8F7700",
-                "#3B3B3B",
-                "#A73030",
-                "#4A6990",
-            ]
-            return sns.color_palette(colors)
-        elif color == "OkabeIto":
-            colors = [
-                "#E69F00",
-                "#56B4E9",
-                "#009E73",
-                "#F0E442",
-                "#0072B2",
-                "#D55E00",
-                "#CC79A7",
-                "#000000",
-            ]
-            return sns.color_palette(colors)
-        elif color == "TolBright":
-            colors = [
-                "#4477AA",
-                "#EE6677",
-                "#228833",
-                "#CCBB44",
-                "#66CCEE",
-                "#AA3377",
-                "#BBBBBB",
-            ]
-            return sns.color_palette(colors)
-        elif color == "TolMuted":
-            colors = [
-                "#332288",
-                "#88CCEE",
-                "#44AA99",
-                "#117733",
-                "#999933",
-                "#DDCC77",
-                "#CC6677",
-                "#882255",
-                "#AA4499",
-                "#DDDDDD",
-            ]
-            return sns.color_palette(colors)
-        elif color == "ECharts":
-            colors = [
-                "#5470c6",
-                "#91cc75",
-                "#fac858",
-                "#ee6666",
-                "#9a60b4",
-                "#73c0de",
-                "#3ba272",
-                "#fc8452",
-                "#27727b",
-                "#ea7ccc",
-                "#d7504b",
-                "#e87c25",
-                "#b5c334",
-                "#fe8463",
-                "#26c0c0",
-                "#f4e001",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Ecotyper1":
-            colors = [
-                "#D6372E",
-                "#5189BB",
-                "#70B460",
-                "#985EA8",
-                "#F08F35",
-                "#FADD4B",
-                "#A3A3A3",
-                "#B7D3E5",
-                "#E6D8C2",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Ecotyper2":
-            colors = ["#EB7D5B", "#FED23F", "#B5D33D", "#6CA2EA", "#442288"]
-            return sns.color_palette(colors)
-        elif color == "Ecotyper3":
-            colors = [
-                "#D13570",
-                "#569AB4",
-                "#70AC58",
-                "#74509D",
-                "#ED7E30",
-                "#F5C945",
-                "#9C5732",
-                "#E787E5",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Ecotyper4":
-            colors = [
-                "#386cb0",
-                "#fdb462",
-                "#7fc97f",
-                "#ef3b2c",
-                "#662506",
-                "#a6cee3",
-                "#fb9a99",
-                "#984ea3",
-                "#ffff33",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Ecotyper5":
-            colors = [
-                "#E41A71",
-                "#379DB8",
-                "#5BAF4A",
-                "#7B4EA3",
-                "#FF7600",
-                "#FFC800",
-                "#A65328",
-                "#F781EC",
-                "#999999",
-                "#A6DCE3",
-                "#BBDF8A",
-                "#FB9A99",
-                "#FDB96F",
-                "#BEB2D6",
-                "#1B9E5E",
-                "#D95802",
-                "#707EB3",
-                "#E729D3",
-                "#E69F02",
-                "#8DD3B9",
-                "#FFFAB3",
-                "#BABFDA",
-                "#FB7F72",
-                "#80C5D3",
-                "#FDAE62",
-                "#BEDE69",
-                "#FCCDF7",
-            ]
-            return sns.color_palette(colors)
-        elif color == "Ecotyper6":
-            colors = [
-                "#FDC086",
-                "#386CB0",
-                "#F0027F",
-                "#FFFF99",
-                "#BF5B17",
-                "#7FC97F",
-                "lightblue",
-                "#BEAED4",
-                "#66C2A5",
-                "#FC8D62",
-                "#8DA0CB",
-                "#E78AC3",
-                "#A6D854",
-                "#FFD92F",
-                "#E5C494",
-                "#B3B3B3",
-                "#FBB4AE",
-                "#B3CDE3",
-                "#CCEBC5",
-                "#DECBE4",
-                "#FED9A6",
-                "#FFFFCC",
-                "#E5D8BD",
-                "#FDDAEC",
-            ]
-            return sns.color_palette(colors)
-        elif color == "BuRd_custom":
-            cm_data = [
-                [0.0588, 0.3412, 0.6157],
-                [0.1220, 0.3940, 0.6610],
-                [0.1843, 0.4471, 0.7059],
-                [0.2650, 0.5000, 0.7450],
-                [0.3451, 0.5529, 0.7843],
-                [0.5412, 0.6902, 0.8667],
-                [0.7294, 0.8275, 0.9333],
-                [0.8863, 0.9255, 0.9765],
-                [0.9500, 0.9700, 0.9900],
-                [1.0000, 1.0000, 1.0000],
-                [0.9900, 0.9500, 0.9400],
-                [0.9882, 0.9020, 0.8863],
-                [0.9650, 0.8200, 0.7900],
-                [0.9412, 0.7412, 0.6980],
-                [0.9080, 0.6330, 0.5840],
-                [0.8745, 0.5255, 0.4706],
-                [0.7961, 0.3137, 0.2784],
-                [0.7137, 0.1216, 0.1686],
-                [0.6196, 0.0588, 0.1373],
-            ]
-            return mpl.colors.LinearSegmentedColormap.from_list("BuRd_custom", cm_data)
-        elif color == "WhYlOrRd_custom":
-            cm_data = [
-                [1.0000, 1.0000, 1.0000],
-                [1.0000, 1.0000, 0.8500],
-                [1.0000, 0.9800, 0.7000],
-                [1.0000, 0.9400, 0.5000],
-                [1.0000, 0.8500, 0.3000],
-                [0.9961, 0.7200, 0.2000],
-                [0.9961, 0.5500, 0.1000],
-                [0.9922, 0.4000, 0.0500],
-                [0.9882, 0.2500, 0.0200],
-                [0.9500, 0.1500, 0.0100],
-                [0.9000, 0.0800, 0.0100],
-                [0.8000, 0.0200, 0.0100],
-                [0.6500, 0.0000, 0.0100],
-                [0.5019, 0.0000, 0.0000],
-                [0.4000, 0.0000, 0.0000],
-            ]
-            return mpl.colors.LinearSegmentedColormap.from_list(
-                "WhYlOrRd_custom", cm_data
-            )
-        elif color == "OrBu_custom":
-            cm_data = [
-                [0.8500, 0.3800, 0.0500],
-                [1.0000, 0.4980, 0.0549],
-                [1.0000, 0.5841, 0.2169],
-                [1.0000, 0.6702, 0.3790],
-                [1.0000, 0.7563, 0.5410],
-                [1.0000, 0.8424, 0.7031],
-                [1.0000, 0.9284, 0.8651],
-                [1.0000, 1.0000, 1.0000],
-                [0.8608, 0.9235, 0.9745],
-                [0.7216, 0.8471, 0.9490],
-                [0.5824, 0.7706, 0.9235],
-                [0.4431, 0.6941, 0.8980],
-                [0.3039, 0.6176, 0.8725],
-                [0.1647, 0.5412, 0.8471],
-                [0.1216, 0.4667, 0.7059],
-            ]
-            return mpl.colors.LinearSegmentedColormap.from_list("OrBu_custom", cm_data)
-        elif color == "YlGnBu_custom":
-            cm_data = [
-                [1.00, 1.00, 0.80],
-                [0.98, 0.99, 0.75],
-                [0.95, 0.98, 0.70],
-                [0.91, 0.97, 0.66],
-                [0.87, 0.96, 0.62],
-                [0.83, 0.95, 0.59],
-                [0.77, 0.93, 0.58],
-                [0.71, 0.91, 0.59],
-                [0.64, 0.89, 0.62],
-                [0.56, 0.87, 0.66],
-                [0.48, 0.84, 0.69],
-                [0.40, 0.81, 0.72],
-                [0.32, 0.78, 0.74],
-                [0.26, 0.74, 0.76],
-                [0.21, 0.70, 0.77],
-                [0.18, 0.65, 0.78],
-                [0.15, 0.60, 0.78],
-                [0.13, 0.55, 0.78],
-                [0.12, 0.50, 0.76],
-                [0.13, 0.44, 0.73],
-                [0.13, 0.39, 0.70],
-                [0.14, 0.33, 0.66],
-                [0.14, 0.28, 0.62],
-                [0.14, 0.22, 0.58],
-                [0.05, 0.18, 0.52],
-                [0.03, 0.15, 0.45],
-            ]
-            return mpl.colors.LinearSegmentedColormap.from_list(
-                "YlGnBu_custom", cm_data
-            )
-        elif color == "parula":
-            cm_data = [
-                [0.2081, 0.1663, 0.5292],
-                [0.2116, 0.1898, 0.5777],
-                [0.2123, 0.2138, 0.6270],
-                [0.2081, 0.2386, 0.6771],
-                [0.1959, 0.2645, 0.7279],
-                [0.1707, 0.2919, 0.7792],
-                [0.1253, 0.3242, 0.8303],
-                [0.0591, 0.3598, 0.8683],
-                [0.0117, 0.3875, 0.8820],
-                [0.0060, 0.4086, 0.8828],
-                [0.0165, 0.4266, 0.8786],
-                [0.0329, 0.4430, 0.8720],
-                [0.0498, 0.4586, 0.8641],
-                [0.0629, 0.4737, 0.8554],
-                [0.0723, 0.4887, 0.8467],
-                [0.0779, 0.5040, 0.8384],
-                [0.0793, 0.5200, 0.8312],
-                [0.0749, 0.5375, 0.8263],
-                [0.0641, 0.5570, 0.8240],
-                [0.0488, 0.5772, 0.8228],
-                [0.0343, 0.5966, 0.8199],
-                [0.0265, 0.6137, 0.8135],
-                [0.0239, 0.6287, 0.8038],
-                [0.0231, 0.6418, 0.7913],
-                [0.0228, 0.6535, 0.7768],
-                [0.0267, 0.6642, 0.7607],
-                [0.0384, 0.6743, 0.7436],
-                [0.0590, 0.6838, 0.7254],
-                [0.0843, 0.6928, 0.7062],
-                [0.1133, 0.7015, 0.6859],
-                [0.1453, 0.7098, 0.6646],
-                [0.1801, 0.7177, 0.6424],
-                [0.2178, 0.7250, 0.6193],
-                [0.2586, 0.7317, 0.5954],
-                [0.3022, 0.7376, 0.5712],
-                [0.3482, 0.7424, 0.5473],
-                [0.3953, 0.7459, 0.5244],
-                [0.4420, 0.7481, 0.5033],
-                [0.4871, 0.7491, 0.4840],
-                [0.5300, 0.7491, 0.4661],
-                [0.5709, 0.7485, 0.4494],
-                [0.6099, 0.7473, 0.4337],
-                [0.6473, 0.7456, 0.4188],
-                [0.6834, 0.7435, 0.4044],
-                [0.7184, 0.7411, 0.3905],
-                [0.7525, 0.7384, 0.3768],
-                [0.7858, 0.7356, 0.3633],
-                [0.8185, 0.7327, 0.3498],
-                [0.8507, 0.7299, 0.3360],
-                [0.8824, 0.7274, 0.3217],
-                [0.9139, 0.7258, 0.3063],
-                [0.9450, 0.7261, 0.2886],
-                [0.9739, 0.7314, 0.2666],
-                [0.9938, 0.7455, 0.2403],
-                [0.9990, 0.7653, 0.2164],
-                [0.9955, 0.7861, 0.1967],
-                [0.9880, 0.8066, 0.1794],
-                [0.9789, 0.8271, 0.1633],
-                [0.9697, 0.8481, 0.1475],
-                [0.9626, 0.8705, 0.1309],
-                [0.9589, 0.8949, 0.1132],
-                [0.9598, 0.9218, 0.0948],
-                [0.9661, 0.9514, 0.0755],
-                [0.9763, 0.9831, 0.0538],
-            ]
-            return mpl.colors.LinearSegmentedColormap.from_list("parula", cm_data)
-        else:
-            raise RuntimeError("Wrong Choice!")
+    spec = _palettes._PALETTE_REGISTRY.get(color)
+    if spec is None:
+        raise RuntimeError("Wrong Choice!")
+    return spec.factory()

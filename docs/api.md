@@ -220,12 +220,49 @@ settings
 
 ## Color Palettes
 
+Discover built-in and registered cnsplots palettes, optionally filtering by
+`"qualitative"` or `"continuous"`. Names available only in Matplotlib or Seaborn
+are outside this registry.
+
+```python
+cns.available_palettes()
+cns.available_palettes(kind="qualitative")
+cns.available_palettes(kind="continuous")
+```
+
+Register a nonempty sequence of Matplotlib-compatible colors to reuse a
+qualitative palette by name. Registration copies the colors and lasts for the
+current Python process. Existing cnsplots and Matplotlib palette names cannot
+be overwritten.
+
+```python
+cns.register_palette("MyLab", ["#4477AA", "#EE6677", "#228833"])
+colors = cns.palettes("MyLab")
+cns.figure(color_cycle="MyLab")
+```
+
+Use `get_palette_colors()` to select colors by zero-based index from a named
+palette or an explicit color sequence. It returns hex strings and defaults to
+`"Set1"` when `palette` is omitted or `None`. The original
+`get_hexcolors_from_apalette()` name remains supported, including its `alist`
+keyword.
+
+```python
+cns.get_palette_colors([0, 2])
+cns.get_palette_colors(indices=[2, 0], palette="MyLab")
+cns.get_palette_colors([1], palette=["red", "blue"])
+cns.get_hexcolors_from_apalette(alist=[0, 2], palette="Set1")
+```
+
 ```{eval-rst}
 .. apirootsummary::
    :toctree: api
    :nosignatures:
 
    palettes
+   available_palettes
+   register_palette
+   get_palette_colors
    get_hexcolors_from_apalette
 ```
 

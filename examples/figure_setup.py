@@ -159,8 +159,9 @@ print(f"  GRAY: {cns.GRAY}")
 # %%
 # Selecting specific colors from palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``get_hexcolors_from_apalette()`` to pick specific colors.
-selected_colors = cns.get_hexcolors_from_apalette([0, 2, 4, 6])
+# Use ``get_palette_colors()`` to pick specific colors; the default is Set1.
+# The original ``get_hexcolors_from_apalette()`` name remains supported.
+selected_colors = cns.get_palette_colors([0, 2, 4, 6])
 cns.figure(100, 150, color_cycle=selected_colors)
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Selected Colors from Set1")

@@ -25,6 +25,16 @@ iris = cns.datasets.load_dataset("iris")
 
 
 # %%
+# Discover palettes
+# ~~~~~~~~~~~~~~~~~
+# List built-in and registered cnsplots palettes, with optional kind filtering.
+# Names available only in Matplotlib or Seaborn are outside this registry.
+print(cns.available_palettes())
+print(cns.available_palettes(kind="qualitative"))
+print(cns.available_palettes(kind="continuous"))
+
+
+# %%
 # Visualize all available palettes
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Display all built-in palettes as color gradients.
@@ -65,43 +75,7 @@ def plot_palettes(cmap_list, width, height, title="", ncols=1):
 
 cns.setup_matplotlib()
 plot_palettes(
-    [
-        "Set1",
-        "Set2",
-        "Set3",
-        "Pastel1",
-        "Pastel2",
-        "Paired",
-        "Dark2",
-        "Accent",
-        "Tableau",
-        "Bold",
-        "BlueRed",
-        "ECharts",
-        "Ecotyper1",
-        "Ecotyper2",
-        "Ecotyper3",
-        "Ecotyper4",
-        "Ecotyper5",
-        "Ecotyper6",
-        "Cell",
-        "Nature",
-        "Science",
-        "Lancet",
-        "NEJM",
-        "JAMA",
-        "JCO",
-        "OkabeIto",
-        "TolBright",
-        "TolMuted",
-        "parula",
-        "gnuplot",
-        "hot",
-        "WhYlOrRd_custom",
-        "BuRd_custom",
-        "OrBu_custom",
-        "YlGnBu_custom",
-    ],
+    cns.available_palettes(),
     1200,
     1020,
     ncols=2,
@@ -246,8 +220,9 @@ ax.set_title("Ecotyper3 Palette")
 # %%
 # Selecting specific colors from palette
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Use ``get_hexcolors_from_apalette()`` to pick specific indices.
-cns.figure(color_cycle=cns.get_hexcolors_from_apalette([0, 2, 4, 6]))
+# Use ``get_palette_colors()`` to pick specific indices; the default is Set1.
+# ``get_hexcolors_from_apalette()`` remains supported with its ``alist`` keyword.
+cns.figure(color_cycle=cns.get_palette_colors([0, 2, 4, 6]))
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Selected Colors from Default Palette")
 
@@ -257,7 +232,7 @@ ax.set_title("Selected Colors from Default Palette")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Choose colors from any palettable palette.
 cns.figure(
-    color_cycle=cns.get_hexcolors_from_apalette(
+    color_cycle=cns.get_palette_colors(
         [5, 1, 3, 7], palette=palettable.colorbrewer.qualitative.Paired_12.hex_colors
     )
 )
@@ -282,6 +257,19 @@ custom_colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3"]
 cns.figure(100, 150, color_cycle=custom_colors)
 ax = cns.barplot(data=tips, x="day", y="total_bill")
 ax.set_title("Custom Color List")
+
+
+# %%
+# Register a reusable palette
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Register once per Python process, then reuse the name. Registration copies
+# a nonempty color sequence and rejects existing cnsplots or Matplotlib names.
+cns.register_palette("MyLab", custom_colors)
+print("MyLab" in cns.available_palettes(kind="qualitative"))
+print(cns.get_palette_colors([0, 2], palette="MyLab"))
+cns.figure(100, 150, color_cycle="MyLab")
+ax = cns.barplot(data=tips, x="day", y="total_bill")
+ax.set_title("Registered MyLab Palette")
 
 
 # %%
