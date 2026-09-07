@@ -105,6 +105,20 @@ if TYPE_CHECKING:
         assert_type(cns.boxplot(data, x="group", y="value"), Axes)
         assert_type(cns.get_comparison_results(ax), pd.DataFrame)
         assert_type(cns.get_comparison_results(), pd.DataFrame)
+        assert_type(
+            cns.survivalplot(
+                data,
+                duration="time",
+                event="event",
+                hue="group",
+                pairs=[("A", "B"), ("A", "C")],
+                p_adjust="holm",
+                ax=ax,
+            ),
+            Axes,
+        )
+        assert_type(cns.get_survival_results(ax), pd.DataFrame)
+        assert_type(cns.get_survival_results(), pd.DataFrame)
         assert_type(cns.histplot(data, x="x", ax=ax), Axes)
         assert_type(cns.lineplot(data, x="x", y="y", ax=ax), Axes)
         assert_type(cns.regplot(data, x="x", y="y", color=(0.1, 0.2, 0.3)), Axes)

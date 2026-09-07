@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import warnings
 from collections.abc import Sequence
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import matplotlib.pyplot as plt
 import num2tex
@@ -36,6 +36,34 @@ PValueLoc = Literal[
 ]
 HorizontalAlignment = Literal["left", "center", "right"]
 VerticalAlignment = Literal["top", "center", "bottom"]
+
+_P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
+_SURVIVAL_COLUMNS = (
+    "kind",
+    "test",
+    "groups",
+    "group1",
+    "group2",
+    "n",
+    "events",
+    "n1",
+    "events1",
+    "n2",
+    "events2",
+    "time",
+    "estimate",
+    "ci_lower",
+    "ci_upper",
+    "ci_level",
+    "statistic",
+    "pvalue_raw",
+    "pvalue_adjusted",
+    "p_adjust",
+    "family_size",
+    "status",
+    "reason",
+    "annotation",
+)
 
 _CIF_Y_LIMITS = (-0.05, 1.01)
 _DEFAULT_CENSOR_MARK_LENGTH = 0.02
@@ -231,6 +259,69 @@ def _censor_mark_extents(
     )
 
 
+def get_survival_results(ax: Axes | None = None) -> pd.DataFrame:
+    """Return the estimates and tests annotated by the latest survivalplot call.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        Axes returned by survivalplot. Defaults to the current axes.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A detached table in annotation order. ``kind`` identifies ``overall``,
+        ``pairwise_cox``, ``median_survival``, ``landmark_survival``,
+        ``landmark_test``, or ``rmst``. Only requested, enabled analyses appear.
+        ``test`` names the inferential method; ``groups`` preserves its group
+        order. For pairwise Cox rows, ``group1`` is the reference and ``group2``
+        the comparison: ``estimate`` is the hazard ratio of group2 versus group1.
+        Single-group estimates use ``group1``. ``n``/``events`` count contributing
+        observations/events over full follow-up, even for landmark and RMST rows;
+        ``n1``/``events1`` and ``n2``/``events2`` give group counts for non-overall
+        rows. ``time`` is the landmark or RMST horizon.
+        ``estimate`` holds the HR, median, survival probability, or RMST;
+        ``ci_lower``, ``ci_upper``, and ``ci_level`` describe unadjusted 95% Cox
+        intervals only. ``statistic`` is chi-square for log-rank, fixed-time, and
+        Cox likelihood-ratio trend tests, or Wald z for Cox pairs. ``trend`` uses
+        equally spaced scores in the order recorded in ``groups``.
+        ``pvalue_raw`` and ``pvalue_adjusted`` agree without correction;
+        ``p_adjust`` and ``family_size`` describe the requested Cox family only.
+        ``status`` is ``available``, ``unavailable``, or ``not_reached``;
+        ``reason`` explains missing inference or an infinite median. Inapplicable
+        numeric fields and unavailable inference are NaN. ``annotation`` contains
+        the row's displayed text. An empty table retains the same columns.
+
+    Notes
+    -----
+    No models or tests are rerun. Each call returns a copy; each survivalplot call
+    replaces the stored results. Clearing the axes or removing its annotation
+    makes the results unavailable. DataFrame ``attrs`` record ``duration``,
+    ``event``, ``hue``, ``time_label``, ``event_observed=1``, ``event_censored=0``,
+    and ``common_follow_up`` (the minimum group maximum duration).
+
+    Survival estimates include events at the landmark time. RMST integrates the
+    Kaplan-Meier curve from zero through the requested horizon, in input time
+    units. Unreached medians retain lifelines' positive infinity. Pairwise
+    corrections exclude the overall and landmark tests and never adjust CIs.
+
+    Examples
+    --------
+    >>> ax = cns.survivalplot(df, "time", "event", "group", p_adjust="holm")
+    >>> results = cns.get_survival_results(ax)
+    >>> results.to_csv("survival_results.csv", index=False)
+    """
+    if ax is None:
+        ax = plt.gca()
+    stored = getattr(ax, "_cnsplots_survival_results", None)
+    if stored is None:
+        return pd.DataFrame(columns=pd.Index(_SURVIVAL_COLUMNS))
+    results, artists = stored
+    if any(artist not in ax.texts for artist in artists):
+        return pd.DataFrame(columns=pd.Index(_SURVIVAL_COLUMNS))
+    return results.copy(deep=True)
+
+
 def survivalplot(
     data: pd.DataFrame,
     duration: str,
@@ -249,6 +340,7 @@ def survivalplot(
     rmst_time: float | None = None,
     overall_test: Literal["logrank", "trend"] = "logrank",
     pairs: list[tuple[str, str]] | None = None,
+    p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     show_hazard_ratio: bool = True,
     descriptive_only: bool = False,
     pvalue_loc: PValueLoc = "lower left",
@@ -266,7 +358,8 @@ def survivalplot(
     data : pd.DataFrame
         The input DataFrame containing survival data.
     duration : str
-        Column name for the time-to-event or time-to-censoring variable.
+        Column name for finite, nonnegative time to event or right censoring.
+        All times and analysis horizons use the same units; no rows are dropped.
     event : str
         Column name for the event indicator (1 = event occurred, 0 = censored).
     hue : str
@@ -293,11 +386,13 @@ def survivalplot(
         ``not reached``.
     landmark_time : float, optional
         Time at which to mark and report each group's Kaplan-Meier survival
-        probability. For exactly two groups, also reports the two-sided fixed-time
-        log-minus-log comparison p-value.
+        probability, including events at that time. Must be finite, positive, and
+        at most the minimum group maximum follow-up. For exactly two groups,
+        also reports the two-sided fixed-time log-minus-log comparison p-value.
     rmst_time : float, optional
         Truncation time through which to compute and report each group's restricted
-        mean survival time (RMST).
+        mean survival time (RMST), integrating from zero in input time units. Must
+        be finite, positive, and at most the minimum group maximum follow-up.
     overall_test : {'logrank', 'trend'}, default: 'logrank'
         Test used for the overall p-value. ``'logrank'`` performs a categorical
         omnibus log-rank test. ``'trend'`` performs a one-degree-of-freedom Cox
@@ -309,7 +404,15 @@ def survivalplot(
         95% confidence interval, and an unadjusted two-sided Cox Wald p-value.
         When omitted, the sole contrast is reported automatically for two groups;
         no contrast is inferred for three or more groups. Pass an empty list to
-        suppress pairwise inference.
+        suppress pairwise inference. Duplicate contrasts, including reversed
+        duplicates, are rejected.
+    p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'} or None, default: None
+        Adjust two-sided Cox Wald p-values across all requested pairwise contrasts
+        in this call. Annotations show raw and adjusted values, the method and
+        family size. Failed contrasts remain unavailable and count in the family
+        using p=1 only during correction. Overall and landmark tests remain raw,
+        and Cox confidence intervals remain unadjusted 95% intervals. Ignored
+        when ``show_hazard_ratio=False`` or ``descriptive_only=True``.
     show_hazard_ratio : bool, default: True
         Whether to show pairwise hazard ratios, confidence intervals, and Cox
         p-values. If False, pairwise Cox inference is skipped and only the overall
@@ -333,12 +436,14 @@ def survivalplot(
     Returns
     -------
     matplotlib.axes.Axes
-        The matplotlib Axes object containing the plot.
+        The matplotlib Axes object containing the plot. Use
+        ``get_survival_results(ax)`` to retrieve its estimates and test results.
 
     See Also
     --------
     cumulativeincidenceplot : Create a cumulative incidence plot for competing risks.
     forestplot : Create a forest plot from a Cox model.
+    get_survival_results : Retrieve the estimates and tests used for annotations.
 
     Examples
     --------
@@ -426,11 +531,17 @@ def survivalplot(
 
     resolved_pairs: list[tuple[str, str]] = []
     if show_hazard_ratio and not descriptive_only:
+        if p_adjust is not None and p_adjust not in _P_ADJUST_METHODS:
+            raise ValueError(
+                "[survivalplot] Parameter 'p_adjust' must be one of "
+                f"{_P_ADJUST_METHODS} or None."
+            )
         resolved_pairs = (
             [(hue_order[0], hue_order[1])]
             if pairs is None and len(hue_order) == 2
             else ([] if pairs is None else pairs)
         )
+    seen_pairs: set[frozenset[str]] = set()
     for pair in resolved_pairs:
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise ValueError(
@@ -447,6 +558,13 @@ def survivalplot(
                 "[survivalplot] Pairwise contrast contains group(s) not present in "
                 f"'{hue}': {missing_groups}."
             )
+        pair_key = frozenset(pair)
+        if pair_key in seen_pairs:
+            raise ValueError(
+                "[survivalplot] Duplicate pairwise contrasts (including reversed "
+                "pairs) are not allowed."
+            )
+        seen_pairs.add(pair_key)
 
     if ax is None:
         ax = plt.gca()
@@ -484,8 +602,39 @@ def survivalplot(
                 max(current_xlim[1], specified_xticks.max()),
             )
 
+    result_rows: list[dict[str, Any]] = []
+
+    def record_result(
+        kind: str, groups: Sequence[str], **values: Any
+    ) -> dict[str, Any]:
+        subset = data[data[hue].isin(groups)]
+        row: dict[str, Any] = dict.fromkeys(_SURVIVAL_COLUMNS, np.nan)
+        row.update(
+            kind=kind,
+            test=None,
+            groups=tuple(groups),
+            group1=None,
+            group2=None,
+            n=len(subset),
+            events=int(subset[event].sum()),
+            p_adjust=None,
+            status="available",
+            reason=None,
+            annotation="",
+        )
+        if kind != "overall":
+            for index, group in enumerate(groups, start=1):
+                group_data = subset[subset[hue] == group]
+                row[f"group{index}"] = group
+                row[f"n{index}"] = len(group_data)
+                row[f"events{index}"] = int(group_data[event].sum())
+        row.update(values)
+        result_rows.append(row)
+        return row
+
     annotation_lines = []
     if not descriptive_only and overall_test == "logrank":
+        row = record_result("overall", hue_order, test="logrank")
         try:
             _validate_logrank_variance(data, duration, event, hue)
             with warnings.catch_warnings():
@@ -493,15 +642,24 @@ def survivalplot(
                 logrank_result = multivariate_logrank_test(
                     data[duration], data[hue], data[event]
                 )
-            annotation_lines.append(
-                "Log-rank P = " + _format_inference_pvalue(logrank_result.p_value)
+            row["annotation"] = "Log-rank P = " + _format_inference_pvalue(
+                logrank_result.p_value
+            )
+            row.update(
+                statistic=float(logrank_result.test_statistic),
+                pvalue_raw=float(logrank_result.p_value),
+                pvalue_adjusted=float(logrank_result.p_value),
             )
             logger.info("P-value was determined by two-sided omnibus log-rank test.")
         except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
-            annotation_lines.append(
-                _unavailable_inference("survivalplot", "Log-rank", e)
+            row.update(
+                status="unavailable",
+                reason=str(e),
+                annotation=_unavailable_inference("survivalplot", "Log-rank", e),
             )
+        annotation_lines.append(row["annotation"])
     elif not descriptive_only:
+        row = record_result("overall", hue_order, test="trend")
         trend_data = pd.DataFrame(
             {
                 "_duration": data[duration].to_numpy(),
@@ -512,19 +670,36 @@ def survivalplot(
         try:
             cph = _fit_cox_inference(trend_data, "_group_score")
             trend_result = cph.log_likelihood_ratio_test()
-            annotation_lines.append(
-                "Cox trend P = " + _format_inference_pvalue(trend_result.p_value)
+            row["annotation"] = "Cox trend P = " + _format_inference_pvalue(
+                trend_result.p_value
+            )
+            row.update(
+                statistic=float(trend_result.test_statistic),
+                pvalue_raw=float(trend_result.p_value),
+                pvalue_adjusted=float(trend_result.p_value),
             )
             logger.info(
                 "P-value was determined by a one-degree-of-freedom Cox proportional "
                 "hazards trend test using hue_order scores."
             )
         except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
-            annotation_lines.append(
-                _unavailable_inference("survivalplot", "Cox trend", e)
+            row.update(
+                status="unavailable",
+                reason=str(e),
+                annotation=_unavailable_inference("survivalplot", "Cox trend", e),
             )
+        annotation_lines.append(row["annotation"])
 
+    pair_rows = []
     for reference, comparison in resolved_pairs:
+        row = record_result(
+            "pairwise_cox",
+            (reference, comparison),
+            test="cox_wald",
+            p_adjust=p_adjust,
+            family_size=len(resolved_pairs),
+        )
+        pair_rows.append(row)
         pair_data = data[data[hue].isin([reference, comparison])]
         cox_data = pd.DataFrame(
             {
@@ -539,23 +714,68 @@ def survivalplot(
             hazard_ratio = summary["exp(coef)"]
             ci1 = summary["exp(coef) lower 95%"]
             ci2 = summary["exp(coef) upper 95%"]
-            pair_p = _format_inference_pvalue(summary["p"])
-        except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
-            annotation_lines.append(
-                _unavailable_inference(
-                    "survivalplot", f"Cox HR ({comparison} vs {reference})", e
-                )
+            _format_inference_pvalue(summary["p"])
+            row.update(
+                estimate=float(hazard_ratio),
+                ci_lower=float(ci1),
+                ci_upper=float(ci2),
+                ci_level=0.95,
+                statistic=float(summary["z"]),
+                pvalue_raw=float(summary["p"]),
+                pvalue_adjusted=float(summary["p"]),
             )
+        except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
+            row.update(
+                status="unavailable",
+                reason=str(e),
+                annotation=_unavailable_inference(
+                    "survivalplot", f"Cox HR ({comparison} vs {reference})", e
+                ),
+            )
+
+    if p_adjust is not None and pair_rows:
+        from statsmodels.stats.multitest import multipletests
+
+        # Keep the requested family intact when a contrast cannot be estimated.
+        correction_input = [
+            row["pvalue_raw"] if row["status"] == "available" else 1.0
+            for row in pair_rows
+        ]
+        adjusted = multipletests(correction_input, method=p_adjust)[1]
+        for row, pvalue in zip(pair_rows, adjusted, strict=True):
+            if row["status"] == "available":
+                row["pvalue_adjusted"] = float(pvalue)
+        annotation_lines.append(
+            f"Pairwise Cox ({p_adjust}-adjusted; {len(pair_rows)} contrasts)"
+        )
+
+    for row in pair_rows:
+        if row["status"] == "unavailable":
+            annotation_lines.append(row["annotation"])
             continue
+        pair_lines = []
         if len(hue_order) > 2:
-            annotation_lines.append(f"{comparison} vs {reference}")
-        annotation_lines.extend(
+            pair_lines.append(f"{row['group2']} vs {row['group1']}")
+        ci_label = "95% CI" if p_adjust is None else "95% CI (unadjusted)"
+        pair_lines.extend(
             [
-                f"HR = {hazard_ratio:.2f}",
-                f"95% CI {ci1:.2f}-{ci2:.2f}",
-                "Cox P = " + pair_p,
+                f"HR = {row['estimate']:.2f}",
+                f"{ci_label} {row['ci_lower']:.2f}-{row['ci_upper']:.2f}",
             ]
         )
+        raw_p = _format_inference_pvalue(row["pvalue_raw"])
+        if p_adjust is None:
+            pair_lines.append("Cox P = " + raw_p)
+        else:
+            pair_lines.extend(
+                [
+                    "Cox raw P = " + raw_p,
+                    f"Cox {p_adjust}-adjusted P = "
+                    + _format_inference_pvalue(row["pvalue_adjusted"]),
+                ]
+            )
+        row["annotation"] = "\n".join(pair_lines)
+        annotation_lines.extend(pair_lines)
         logger.info(
             "Pairwise hazard ratios and unadjusted two-sided P-values were determined "
             "by Cox proportional hazards models."
@@ -565,8 +785,9 @@ def survivalplot(
         annotation_lines.append("Median survival")
         for group, fitter, color in zip(hue_order, fitters, curve_colors, strict=True):
             median = float(fitter.median_survival_time_)
+            row = record_result("median_survival", (group,), estimate=median)
             if np.isfinite(median):
-                annotation_lines.append(f"{group} = {median:g}")
+                row["annotation"] = f"{group} = {median:g}"
                 ax.hlines(
                     0.5,
                     0,
@@ -584,7 +805,12 @@ def survivalplot(
                     linewidth=0.8,
                 )
             else:
-                annotation_lines.append(f"{group} = not reached")
+                row.update(
+                    status="not_reached",
+                    reason="the Kaplan-Meier curve does not reach 0.5",
+                    annotation=f"{group} = not reached",
+                )
+            annotation_lines.append(row["annotation"])
 
     analysis_guide_times = set()
     if landmark_time is not None:
@@ -597,7 +823,14 @@ def survivalplot(
         for group, estimate, color in zip(
             hue_order, landmark_estimates, curve_colors, strict=True
         ):
-            annotation_lines.append(f"{group} = {estimate:.2f}")
+            row = record_result(
+                "landmark_survival",
+                (group,),
+                time=landmark_time,
+                estimate=estimate,
+                annotation=f"{group} = {estimate:.2f}",
+            )
+            annotation_lines.append(row["annotation"])
             ax.scatter(
                 landmark_time,
                 estimate,
@@ -606,6 +839,12 @@ def survivalplot(
                 zorder=3,
             )
         if not descriptive_only and len(fitters) == 2:
+            row = record_result(
+                "landmark_test",
+                hue_order,
+                time=landmark_time,
+                test="fixed_time_log_minus_log",
+            )
             try:
                 if not all(0 < estimate < 1 for estimate in landmark_estimates):
                     raise ValueError(
@@ -616,29 +855,47 @@ def survivalplot(
                     landmark_result = survival_difference_at_fixed_point_in_time_test(
                         landmark_time, fitters[0], fitters[1]
                     )
-                annotation_lines.append(
-                    "Landmark P = " + _format_inference_pvalue(landmark_result.p_value)
+                row["annotation"] = "Landmark P = " + _format_inference_pvalue(
+                    landmark_result.p_value
+                )
+                row.update(
+                    statistic=float(landmark_result.test_statistic),
+                    pvalue_raw=float(landmark_result.p_value),
+                    pvalue_adjusted=float(landmark_result.p_value),
                 )
                 logger.info(
                     "Landmark P-value was determined by a two-sided fixed-time "
                     "log-minus-log test."
                 )
             except (ValueError, RuntimeError, ArithmeticError, RuntimeWarning) as e:
-                annotation_lines.append(
-                    _unavailable_inference("survivalplot", "Landmark test", e)
+                row.update(
+                    status="unavailable",
+                    reason=str(e),
+                    annotation=_unavailable_inference(
+                        "survivalplot", "Landmark test", e
+                    ),
                 )
+            annotation_lines.append(row["annotation"])
 
     if rmst_time is not None:
         rmst_time = float(rmst_time)
         analysis_guide_times.add(rmst_time)
         annotation_lines.append(f"RMST to {rmst_time:g}")
         for group, fitter in zip(hue_order, fitters, strict=True):
-            rmst = restricted_mean_survival_time(fitter, t=rmst_time)
-            annotation_lines.append(f"{group} = {rmst:.2f}")
+            rmst = cast(float, restricted_mean_survival_time(fitter, t=rmst_time))
+            row = record_result(
+                "rmst",
+                (group,),
+                time=rmst_time,
+                estimate=rmst,
+                annotation=f"{group} = {rmst:.2f}",
+            )
+            annotation_lines.append(row["annotation"])
 
     for analysis_time in sorted(analysis_guide_times):
         ax.axvline(analysis_time, color="0.5", linestyle="--", linewidth=0.8)
 
+    text_start = len(ax.texts)
     if annotation_lines:
         _add_pvalue_annotation(ax, "\n".join(annotation_lines), pvalue_loc)
 
@@ -665,6 +922,17 @@ def survivalplot(
             fig=ax.figure,
         )
 
+    results = pd.DataFrame(result_rows, columns=pd.Index(_SURVIVAL_COLUMNS))
+    results.attrs.update(
+        duration=duration,
+        event=event,
+        hue=hue,
+        time_label=time_label,
+        event_observed=1,
+        event_censored=0,
+        common_follow_up=common_follow_up,
+    )
+    setattr(ax, "_cnsplots_survival_results", (results, tuple(ax.texts)[text_start:]))
     return ax
 
 

@@ -71,6 +71,7 @@ if TYPE_CHECKING:
     from .plots import vennplot as vennplot
     from .plots import violinplot as violinplot
     from .plots import volcanoplot as volcanoplot
+    from .plots._survival import get_survival_results as get_survival_results
 
     methods = _methods
     save = savefig
@@ -108,6 +109,7 @@ _LAZY_IMPORTS = {
     "available_palettes": ("cnsplots._palettes", "available_palettes"),
     "figure": ("cnsplots._utils", "figure"),
     "get_comparison_results": ("cnsplots._utils", "get_comparison_results"),
+    "get_survival_results": ("cnsplots.plots._survival", "get_survival_results"),
     "multipanel": ("cnsplots._multipanels", "multipanel"),
     "save": ("cnsplots._utils", "savefig"),
     "savefig": ("cnsplots._utils", "savefig"),
