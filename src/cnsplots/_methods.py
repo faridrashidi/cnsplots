@@ -907,6 +907,9 @@ def prerank(
     name_gene: str | None = None,
     name_rank: str | None = None,
     permutation_num: int = 1000,
+    *,
+    fdr_cutoff: float | None = 0.25,
+    min_abs_nes: float | None = 1.5,
 ) -> pd.DataFrame:
     """
     Perform pre-ranked Gene Set Enrichment Analysis (GSEA).
@@ -929,11 +932,18 @@ def prerank(
         or a composite metric like log2FC * -log10(p)).
     permutation_num : int, default: 1000
         Number of permutations for significance testing.
+    fdr_cutoff : float or None, default: 0.25
+        Keep results with ``FDR q-val < fdr_cutoff`` (strictly below the cutoff).
+        Set to None to disable FDR filtering.
+    min_abs_nes : float or None, default: 1.5
+        Keep results with ``abs(NES) > min_abs_nes`` (strictly above the minimum).
+        Set to None to disable enrichment-score filtering. Set both filters to
+        None to return every result row from gseapy.
 
     Returns
     -------
     pd.DataFrame
-        Filtered and formatted GSEA results containing:
+        Formatted GSEA results with the requested filters applied, containing:
 
         - Term: Gene set name
         - Clean_Term: Cleaned gene set name with improved formatting
@@ -941,8 +951,10 @@ def prerank(
         - FDR q-val: False Discovery Rate q-value
         - Other columns from gseapy results
 
-        Results are filtered for FDR q-val < 0.25 and abs(NES) > 1.5, and sorted
-        by absolute NES value (descending).
+        By default, results are filtered for FDR q-val < 0.25 and abs(NES) > 1.5.
+        All result columns and the original index are retained. Results are
+        sorted by absolute NES value (descending), with ties retaining their
+        order in the gseapy result table.
 
     See Also
     --------
@@ -987,6 +999,19 @@ def prerank(
     >>>
     >>> # Visualize results
     >>> cns.gseaplot(gsea_results, y="Clean_Term", top_term=20)
+
+    >>> # Retain every tested pathway, then select terms explicitly
+    >>> all_results = cns.prerank(
+    ...     de_results,
+    ...     "KEGG_2021_Human",
+    ...     "gene_symbol",
+    ...     "rank",
+    ...     fdr_cutoff=None,
+    ...     min_abs_nes=None,
+    ... )
+    >>> selected = all_results[all_results["Term"].isin(terms_of_interest)]
+    >>> # Plot filtering is independent: cutoff=1 includes all valid FDR values
+    >>> cns.gseaplot(selected, y="Clean_Term", cutoff=1.0, top_term=len(selected))
     """
     validate_dataframe(data, "data", "prerank")
     validate_dataframe_not_empty(data, "prerank")
@@ -1041,6 +1066,9 @@ def prerank(
     assert gsea_res.res2d is not None
     gsea_df = gsea_res.res2d.copy()
     gsea_df["Clean_Term"] = gsea_df["Term"].apply(clean_term)
-    gsea_df = gsea_df[(gsea_df["FDR q-val"] < 0.25) & (gsea_df["NES"].abs() > 1.5)]
-    gsea_df = gsea_df.sort_values(by="NES", key=abs, ascending=False)
+    if fdr_cutoff is not None:
+        gsea_df = gsea_df[gsea_df["FDR q-val"] < fdr_cutoff]
+    if min_abs_nes is not None:
+        gsea_df = gsea_df[gsea_df["NES"].abs() > min_abs_nes]
+    gsea_df = gsea_df.sort_values(by="NES", key=abs, ascending=False, kind="stable")
     return gsea_df
