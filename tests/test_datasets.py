@@ -130,3 +130,41 @@ def test_showcase_data_moved_to_datasets_namespace() -> None:
     assert "return" in get_type_hints(cns.datasets.get_showcase_data)
     assert not hasattr(cns, "get_showcase_data")
     assert not hasattr(cns.utils, "get_showcase_data")
+
+
+@pytest.mark.parametrize("include_images", [False, True])
+def test_showcase_named_fields_preserve_tuple_positions(include_images: bool) -> None:
+    data = cns.datasets.get_showcase_data(include_showcase_images=include_images)
+    fields = (
+        "iris_df",
+        "tips_df",
+        "survival_df",
+        "blobs",
+        "volcano_df",
+        "gene_sets",
+        "roc_df",
+        "slope_df",
+        "confusion_df",
+        "line_df",
+        "cumulative_incidence_df",
+        "forest_df",
+        "upset_sets",
+    )
+    if include_images:
+        fields += ("showcase_images",)
+        assert isinstance(data, cns.datasets.ShowcaseDataWithImages)
+    else:
+        assert isinstance(data, cns.datasets.ShowcaseData)
+        assert not hasattr(data, "showcase_images")
+
+    assert isinstance(data, tuple)
+    assert data._fields == fields
+    assert len(data) == len(fields)
+    for index, name in enumerate(fields):
+        assert getattr(data, name) is data[index]
+
+    assert cns.datasets.ShowcaseData is cns.datasets.gallery.ShowcaseData
+    assert (
+        cns.datasets.ShowcaseDataWithImages
+        is cns.datasets.gallery.ShowcaseDataWithImages
+    )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from importlib import resources
-from typing import TYPE_CHECKING, Literal, TypeAlias, overload
+from typing import TYPE_CHECKING, Literal, NamedTuple, overload
 
 if sys.version_info >= (3, 11):
     from importlib.resources.abc import Traversable  # pragma: no cover
@@ -15,42 +15,42 @@ if TYPE_CHECKING:
     import pandas as pd
     from anndata import AnnData
 
-    _ShowcaseData: TypeAlias = tuple[
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        AnnData,
-        pd.DataFrame,
-        list[set[str]],
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        dict[str, set[str]],
-    ]
-    _ShowcaseDataWithImages: TypeAlias = tuple[
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        AnnData,
-        pd.DataFrame,
-        list[set[str]],
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        pd.DataFrame,
-        dict[str, set[str]],
-        Traversable,
-    ]
-else:
-    # Keep importing the datasets namespace lightweight while allowing
-    # typing.get_type_hints() to resolve the public function at runtime.
-    _ShowcaseData = tuple[object, ...]
-    _ShowcaseDataWithImages = tuple[object, ...]
+
+class ShowcaseData(NamedTuple):
+    """Named showcase datasets in the original 13-item sequence order."""
+
+    iris_df: pd.DataFrame
+    tips_df: pd.DataFrame
+    survival_df: pd.DataFrame
+    blobs: AnnData
+    volcano_df: pd.DataFrame
+    gene_sets: list[set[str]]
+    roc_df: pd.DataFrame
+    slope_df: pd.DataFrame
+    confusion_df: pd.DataFrame
+    line_df: pd.DataFrame
+    cumulative_incidence_df: pd.DataFrame
+    forest_df: pd.DataFrame
+    upset_sets: dict[str, set[str]]
+
+
+class ShowcaseDataWithImages(NamedTuple):
+    """The same 13 showcase datasets followed by packaged showcase images."""
+
+    iris_df: pd.DataFrame
+    tips_df: pd.DataFrame
+    survival_df: pd.DataFrame
+    blobs: AnnData
+    volcano_df: pd.DataFrame
+    gene_sets: list[set[str]]
+    roc_df: pd.DataFrame
+    slope_df: pd.DataFrame
+    confusion_df: pd.DataFrame
+    line_df: pd.DataFrame
+    cumulative_incidence_df: pd.DataFrame
+    forest_df: pd.DataFrame
+    upset_sets: dict[str, set[str]]
+    showcase_images: Traversable
 
 
 def _showcase_images() -> Traversable:
@@ -61,24 +61,24 @@ def _showcase_images() -> Traversable:
 @overload
 def get_showcase_data(
     *, include_showcase_images: Literal[False] = False
-) -> _ShowcaseData: ...
+) -> ShowcaseData: ...
 
 
 @overload
 def get_showcase_data(
     *, include_showcase_images: Literal[True]
-) -> _ShowcaseDataWithImages: ...
+) -> ShowcaseDataWithImages: ...
 
 
 @overload
 def get_showcase_data(
     *, include_showcase_images: bool
-) -> _ShowcaseData | _ShowcaseDataWithImages: ...
+) -> ShowcaseData | ShowcaseDataWithImages: ...
 
 
 def get_showcase_data(
     *, include_showcase_images: bool = False
-) -> _ShowcaseData | _ShowcaseDataWithImages:
+) -> ShowcaseData | ShowcaseDataWithImages:
     """Load deterministic showcase datasets and optional packaged images.
 
     Parameters
@@ -86,6 +86,23 @@ def get_showcase_data(
     include_showcase_images : bool, default: False
         When True, append the traversable packaged image directory to the
         returned tuple.
+
+    Returns
+    -------
+    ShowcaseData or ShowcaseDataWithImages
+        Named tuple containing, in order: ``iris_df``, ``tips_df``,
+        ``survival_df``, ``blobs``, ``volcano_df``, ``gene_sets``, ``roc_df``,
+        ``slope_df``, ``confusion_df``, ``line_df``, ``cumulative_incidence_df``,
+        ``forest_df``, and ``upset_sets``. With images enabled,
+        ``showcase_images`` is the 14th field. Existing positional indexing
+        and 13- or 14-item unpacking are supported.
+
+    Examples
+    --------
+    Access a dataset by name without unpacking the other values:
+
+    >>> survival_df = get_showcase_data().survival_df
+    >>> images = get_showcase_data(include_showcase_images=True).showcase_images
     """
     import numpy as np
     import pandas as pd
@@ -246,7 +263,7 @@ def get_showcase_data(
         | set(genes[44:52]),
     }
 
-    data = (
+    data = ShowcaseData(
         iris_df,
         tips_df,
         survival_df,
@@ -262,5 +279,5 @@ def get_showcase_data(
         upset_sets,
     )
     if include_showcase_images:
-        return (*data, _showcase_images())
+        return ShowcaseDataWithImages(*data, _showcase_images())
     return data
