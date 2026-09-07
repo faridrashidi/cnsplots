@@ -31,6 +31,17 @@ def load_dataset(name: str) -> pd.DataFrame:
     -------
     pandas.DataFrame
         A new data frame loaded from the package resources.
+
+    Notes
+    -----
+    The CSVs are bundled snapshots from seaborn-data. After CSV parsing,
+    ``tips`` labels become categorical, ``flights`` months become abbreviated
+    categorical labels, and ``penguins`` sex labels become title case. Numeric
+    measurements and rows are unchanged.
+
+    Original sources, snapshot revisions, and individual redistribution terms
+    are recorded in the distributed ``NOTICE-DATA.md`` and the
+    :doc:`example data guide </datasets>`.
     """
     if not isinstance(name, str):
         msg = "Dataset name must be a string."

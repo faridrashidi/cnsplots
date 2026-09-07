@@ -353,6 +353,35 @@ Before publishing the draft release, add a short human-written summary under
 the `Added`, `Changed`, and `Fixed` headings, then verify the generated PR list
 and changelog link.
 
+### Citation Metadata
+
+`CITATION.cff` describes the most recent published release, rather than every
+development commit. `make release` does not update this file automatically.
+After publishing a release, submit the citation updates through the normal PR
+process:
+
+1. Set `version` to the published package version and `date-released` to the
+   GitHub release's UTC publication date (`published_at`), in `YYYY-MM-DD`
+   format. Update the release URL as well. Do not use the documentation build
+   date, tag creation date, or an anticipated publication date.
+2. Update the citation examples and release-specific sources in `README.md`
+   and `docs/citation.md` to match. Keep author, title, repository, and license
+   information consistent with verified project records.
+3. Validate `CITATION.cff` against the
+   [CFF 1.2.0 schema](https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema.json),
+   using the official
+   [cffinit editor](https://citation-file-format.github.io/cff-initializer-javascript/#/update)
+   or `cffconvert --validate` if that tool is available. In cffinit, paste the
+   file, parse it, and check that its preview reports a valid citation. Run
+   `make test` and `make lint` before opening the PR. YAML syntax checks alone
+   do not validate the citation schema.
+
+Add a DOI only after verifying that an existing archival record identifies
+this software and the intended release; verify author identifiers with their
+owners before adding them. Never invent a DOI, ORCID, or author identity.
+Creating or updating citation metadata does not authorize an external
+publication or deposit; obtain separate maintainer authorization for one.
+
 ## Community
 
 ### Getting Help

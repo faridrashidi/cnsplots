@@ -355,20 +355,34 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ## Citation
 
-If you use cnsplots in your research, please cite:
+If you use cnsplots in your research, cite the version you used. For version
+0.7.0, released on August 28, 2026:
 
 ```bibtex
 @software{cnsplots,
   author = {Rashidi, Farid},
   title = {cnsplots: Publication-Ready Scientific Plots},
+  version = {0.7.0},
+  date = {2026-08-28},
   year = {2026},
-  url = {https://github.com/faridrashidi/cnsplots}
+  url = {https://github.com/faridrashidi/cnsplots/releases/tag/v0.7.0}
 }
 ```
+
+Machine-readable metadata is in [CITATION.cff](CITATION.cff). See the
+[citation guide](docs/citation.md) for other versions and metadata sources.
+Also cite the statistical methods and backend software used in your analysis;
+the cnsplots citation credits the plotting software and does not replace those
+references. The [statistical methods guide](docs/statistical_methods.md) links
+to the relevant methods and dependencies.
 
 ## License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE.md](LICENSE.md) file for details.
+
+Bundled third-party datasets and images have individual source terms and
+attribution requirements. See [NOTICE-DATA.md](NOTICE-DATA.md) and the
+[example data guide](docs/datasets.md), including unresolved permission records.
 
 ## Acknowledgments
 

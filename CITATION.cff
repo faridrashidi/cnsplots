@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use cnsplots in your research, please cite the software using these metadata."
+type: software
+title: "cnsplots: Publication-Ready Scientific Plots"
+authors:
+  - family-names: Rashidi
+    given-names: Farid
+version: 0.7.0
+date-released: "2026-08-28"
+repository-code: "https://github.com/faridrashidi/cnsplots"
+url: "https://github.com/faridrashidi/cnsplots/releases/tag/v0.7.0"
+license: BSD-3-Clause

@@ -422,6 +422,10 @@ the same columns. Omitting `ax` selects the current axes.
 The gallery datasets are bundled with cnsplots, so loading them does not
 require network access.
 
+See {doc}`Example data sources <datasets>` for provenance, redistribution
+terms, loader transformations, and the distinction between synthetic showcase
+data and third-party CSVs and images.
+
 Discover the packaged tabular datasets without loading them:
 
 ```python

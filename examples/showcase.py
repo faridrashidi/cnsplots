@@ -6,6 +6,9 @@ Create the showcase figures used in the README and examples gallery.
 
 These examples group the larger overview layouts separately from the
 focused per-feature examples in the rest of the gallery.
+
+See :doc:`/datasets` for the sources, image attribution and permission status,
+and synthetic data generation used in this showcase.
 """
 
 # %%

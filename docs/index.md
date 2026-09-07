@@ -85,6 +85,8 @@ Published release history and changelog highlights.
 getting_started
 installation
 statistical_methods
+datasets
+citation
 api
 release_notes
 examples/index
