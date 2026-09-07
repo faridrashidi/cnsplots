@@ -23,13 +23,35 @@ iris = cns.datasets.load_dataset("iris")
 # %%
 # Basic figure creation
 # ~~~~~~~~~~~~~~~~~~~~~
-# Create a figure with specified dimensions in pixels.
-# figure(width, height) uses the conventional width-first order, and those
-# requested dimensions are the final canvas size. The returned Matplotlib
-# Figure is also the current figure used by subsequent plotting calls.
+# Create a figure with specified dimensions in points (1/72 inch).
+# figure(width, height) uses width-first order and sizes the whole canvas.
+# Points are the legacy logical 72-DPI units; existing calls keep their size.
+# The returned Matplotlib Figure is also the current figure used by subsequent
+# plotting calls. Display and export DPI set pixel resolution, not physical size.
 fig = cns.figure(150, 150)
-ax = cns.placeholderplot("150x150 Figure")
+ax = cns.placeholderplot("150x150 pt Figure")
 ax.set_title("Figure Setup")
+
+
+# %%
+# Physical units and raster resolution
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ``unit="pt"`` (default), ``unit="in"``, and ``unit="mm"`` apply to explicitly
+# supplied dimensions. Omitted dimensions keep settings values in points.
+# These three calls all create a 2 x 1 inch canvas:
+for width, height, unit in [(144, 72, "pt"), (2, 1, "in"), (50.8, 25.4, "mm")]:
+    fig = cns.figure(width, height, unit=unit)
+    print(fig.get_size_inches())  # [2. 1.]
+    plt.close(fig)
+
+fig = cns.figure(100, 150)
+print(fig.get_size_inches())  # [1.38888889 2.08333333]
+print(fig.canvas.get_width_height())  # (200, 300) at default display DPI 144
+ax = cns.placeholderplot("100x150 pt Canvas")
+# At the default export DPI of 288, bbox_inches=None preserves a 400 x 600 px
+# full canvas. Default tight cropping instead encloses the artists and adds
+# pad_inches in inches, so the saved dimensions can differ from the canvas.
+# cns.savefig("full-canvas.png", fig=fig, bbox_inches=None)
 
 
 # %%
@@ -44,7 +66,7 @@ ax.set_title("Small Figure")
 # %%
 # Wider figure for more categories
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cns.figure(100, 200)  # Wide
+cns.figure(200, 100)  # Wide
 ax = cns.boxplot(data=tips, x="day", y="total_bill", hue="sex")
 cns.take_legend_out()
 ax.set_title("Wide Figure")
@@ -232,16 +254,16 @@ ax.set_title("Save Example")
 # %%
 # Figure dimensions reference
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Common figure sizes for different purposes:
+# Example publication widths (check the target journal's current guidelines):
 #
-# - Single column (Nature/Science): max 89mm = ~252 pixels
-# - 1.5 column: max 120mm = ~340 pixels
-# - Double column: max 183mm = ~518 pixels
-# - Full page: max 178mm = ~504 pixels (with margins)
+# - 89 mm = ~252 pt
+# - 120 mm = ~340 pt
+# - 183 mm = ~519 pt
+# - 178 mm = ~505 pt
 #
-# cnsplots uses pixels at 72 DPI base for sizing.
-# The default max_width=540 in multipanel matches double column.
+# The default multipanel max_width=540 pt corresponds to 190.5 mm.
+# Use bbox_inches=None on export to preserve the requested canvas size.
 
-cns.figure(150, 252)  # Single column width
+cns.figure(width=89, height=53, unit="mm")
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("Single Column Width (89mm)")

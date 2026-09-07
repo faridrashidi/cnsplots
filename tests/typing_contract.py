@@ -31,6 +31,9 @@ if TYPE_CHECKING:
 
         fig = cns.figure(width=120, height=80)
         assert_type(fig, Figure)
+        assert_type(cns.figure(2, 1.5, unit="in"), Figure)
+        assert_type(cns.figure(50.8, 38.1, unit="mm"), Figure)
+        assert_type(cns.figure(144, 108, unit="pt"), Figure)
         assert_type(cns.savefig("figure.svg"), None)
         assert_type(
             cns.savefig(
@@ -69,6 +72,12 @@ if TYPE_CHECKING:
 
         panels = cns.multipanel()
         assert_type(panels.panel("A", color_cycle=("red", "blue")), Axes)
+        sized_panels = cns.multipanel(max_width=7, unit="in")
+        assert_type(sized_panels, cns.multipanel)
+        assert_type(sized_panels.panel("A", width=2, height=1.5), Axes)
+        assert_type(sized_panels.panel("B", width=50.8, unit="mm"), Axes)
+        assert_type(sized_panels.panel("C", width=144, unit="pt"), Axes)
+        assert_type(sized_panels.panel("D", width=2, unit=None), Axes)
 
         showcase = cns.datasets.get_showcase_data()
         assert_type(showcase[0], pd.DataFrame)

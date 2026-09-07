@@ -25,7 +25,7 @@ cnsplots is a Python visualization library built on matplotlib and fully compati
 - **Publication-ready defaults** — Figures styled for Cell, Nature, and Science journals
 - **Adobe Illustrator compatible** — PDF fonts work seamlessly in publication workflows
 - **Familiar API** — Built on matplotlib/seaborn, easy to learn if you know these libraries
-- **Precise sizing** — Dimensions in pixels for exact control
+- **Precise sizing** — Dimensions in points, inches, or millimeters
 
 ## Quick Example
 
@@ -33,7 +33,7 @@ cnsplots is a Python visualization library built on matplotlib and fully compati
 import cnsplots as cns
 
 df = cns.datasets.load_dataset("tips")
-cns.figure(100, 150)  # Width x Height in pixels
+cns.figure(100, 150)  # Width x height in points (1/72 inch)
 cns.boxplot(data=df, x="day", y="total_bill")
 cns.savefig("figure.svg")
 ```

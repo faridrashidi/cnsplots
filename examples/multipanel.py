@@ -6,7 +6,7 @@ Create multi-panel figures in Cell, Nature, Science journal style.
 
 Multi-panel figures are essential for scientific publications. cnsplots
 provides automatic panel labeling (A, B, C...), flexible layouts, and
-precise control over figure dimensions in pixels.
+precise control over figure dimensions in points, inches, or millimeters.
 """
 
 # %%
@@ -23,7 +23,9 @@ iris = cns.datasets.load_dataset("iris")
 # Basic 2x2 multi-panel figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create a simple grid layout with different panel sizes.
-# Each panel has explicit size: ``mp.panel(label, width, height)``.
+# ``mp.panel(label, width, height)`` sizes each axes area in points by default.
+# ``max_width`` fixes the full figure width and controls row wrapping. Labels,
+# titles, and margins take additional space; the height grows with the layout.
 # Labels (A, B, C, D) are automatically added in bold, 8pt font.
 mp = cns.multipanel(max_width=265)
 
@@ -38,6 +40,27 @@ cns.violinplot(data=iris, x="species", y="sepal_width")
 
 mp.panel("D", 80, 120)
 cns.stripplot(data=tips, x="day", y="tip", hue="sex")
+
+
+# %%
+# Physical units
+# ~~~~~~~~~~~~~~
+# Explicit panel dimensions inherit ``unit`` from the multipanel constructor.
+# A panel can override the unit; both axes below are 2 x 1 inches.
+# Omitted dimensions still use settings values in points. Panel margins also
+# stay in points, while label pad_left/pad_top remain rendered display pixels.
+mp = cns.multipanel(max_width=180, unit="mm")
+
+mp.panel("A", width=50.8, height=25.4)
+cns.boxplot(data=tips, x="day", y="total_bill")
+
+mp.panel("B", width=2, height=1, unit="in")
+cns.barplot(data=tips, x="day", y="tip")
+
+# Display/export DPI set raster resolution without changing physical sizes.
+# bbox_inches=None preserves the complete 180 mm-wide canvas on export;
+# default tight cropping encloses artists plus pad_inches (in inches).
+# cns.savefig("multipanel-full.pdf", bbox_inches=None)
 
 
 # %%

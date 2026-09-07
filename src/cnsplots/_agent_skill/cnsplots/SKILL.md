@@ -1,6 +1,6 @@
 ---
 name: cnsplots
-description: Create, revise, and troubleshoot publication-ready scientific plots in Python with cnsplots, including distribution, regression, heatmap, genomics, survival, set, flow, and multi-panel figures. Use when a user asks for cnsplots code, Cell/Nature/Science-style visualization, precise pixel-sized figures, statistical plot annotations, or editable SVG/PDF publication output.
+description: Create, revise, and troubleshoot publication-ready scientific plots in Python with cnsplots, including distribution, regression, heatmap, genomics, survival, set, flow, and multi-panel figures. Use when a user asks for cnsplots code, Cell/Nature/Science-style visualization, precise physical figure dimensions, statistical plot annotations, or editable SVG/PDF publication output.
 ---
 
 # CNSPlots
@@ -43,9 +43,16 @@ artifact.
    - In headless execution, set `MPLBACKEND=Agg` or call
      `matplotlib.use("Agg")` before importing plotting backends.
    - Start single-panel figures with `fig = cns.figure(width=..., height=...)`.
-     Dimensions are in pixels. The returned Matplotlib `Figure` becomes current.
+     Dimensions size the whole canvas in points (1/72 inch) by default, with
+     `unit="pt"`, `unit="in"`, or `unit="mm"` for explicit dimensions.
+     Omitted dimensions always use settings stored in points. The returned
+     Matplotlib `Figure` becomes current.
    - Pass `ax=` explicitly when composing with existing Matplotlib axes.
-   - Use `cns.multipanel` for labeled publication panels.
+   - Use `cns.multipanel` for labeled publication panels. Its `max_width` sets
+     the full figure width; explicit panel dimensions inherit its `unit` or
+     override it per panel. Panel sizes describe axes area, with decorations
+     and margins adding layout space. Margins stay in points; label
+     `pad_left`/`pad_top` stay in rendered display pixels.
    - Add titles and axis labels through the returned Matplotlib axes.
    - Use `cns.settings.context(...)` for temporary style overrides rather than
      leaving global settings changed.
@@ -55,7 +62,11 @@ artifact.
      save the current figure. Prefer SVG or PDF for editable publication output
      and PNG for a raster preview. Per-save `dpi`, `transparent`, `bbox_inches`,
      and `pad_inches` override export settings; `bbox_inches=None` preserves
-     the full canvas, and padding applies only to tight cropping.
+     the full canvas, and padding in inches applies only to tight cropping.
+     DPI controls raster resolution, not physical size: `cns.figure(100, 150)`
+     is 100/72 × 150/72 inches, or a 200 × 300 pixel canvas at default display
+     DPI 144. At default export DPI 288 it saves as 400 × 600 pixels with
+     `bbox_inches=None`; default tight cropping changes the saved bounds.
    - Run the complete script, confirm the output exists and is non-empty, and
      inspect or render it when visual tools are available.
    - Check clipping, unreadable labels, misleading scales, legend collisions,

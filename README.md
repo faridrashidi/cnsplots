@@ -39,7 +39,7 @@ Create visually stunning, journal-quality figures with minimal code. Built on ma
 
 - 🎨 **Publication-Ready**: Pre-configured styles matching Cell, Nature, and Science journal requirements
 - 🎯 **Simple API**: Create complex multi-panel figures with just a few lines of code
-- 📐 **Precise Control**: Specify dimensions in pixels, perfect for journal submission guidelines
+- 📐 **Precise Control**: Specify dimensions in points, inches, or millimeters for publication layouts
 - 🖋️ **Adobe Illustrator Compatible**: SVG exports with editable fonts (no text-to-path conversion)
 - 📊 **Statistical Integration**: Built-in statistical tests and annotations
 - 🔧 **Highly Customizable**: Full control over colors, fonts, and styling
@@ -154,7 +154,7 @@ import cnsplots as cns
 # Load example data
 df = cns.datasets.load_dataset("tips")
 
-# Create a figure (width, height in pixels)
+# Create a figure (width, height in points)
 fig = cns.figure(width=100, height=150)
 
 # Create a publication-ready boxplot
@@ -211,11 +211,35 @@ Full documentation is available at [cnsplots.farid.one](https://cnsplots.farid.o
 
 ### Figure Dimensions
 
-Specify sizes in **pixels** for precise control:
+Specify width and height in **points** by default: one point is 1/72 inch.
+These are the legacy logical 72-DPI units, so existing numeric calls retain
+their physical size. Use `unit="pt"`, `unit="in"`, or `unit="mm"` explicitly:
 
 ```python
-cns.figure(width=100, height=150)  # Final canvas size is 100px × 150px
+fig = cns.figure(width=100, height=150)
+print(fig.get_size_inches())  # [1.38888889 2.08333333]
+print(fig.canvas.get_width_height())  # (200, 300) at the default display DPI of 144
+
+# Equivalent 2 × 1 inch canvases
+cns.figure(144, 72, unit="pt")
+cns.figure(2, 1, unit="in")
+cns.figure(50.8, 25.4, unit="mm")
 ```
+
+`figure` dimensions describe the whole canvas. Display DPI determines its
+pixel dimensions; export DPI determines raster resolution without changing
+the physical size. The 100 × 150 point canvas exports as 400 × 600 pixels at
+the default export DPI of 288 when saved with `bbox_inches=None`. The default
+`bbox_inches="tight"` instead crops around artists and adds `pad_inches`
+(in inches), so the saved dimensions can differ from the full canvas.
+
+`cns.multipanel(max_width=..., unit="mm")` sets the full canvas width and the
+unit inherited by explicit `mp.panel(..., width=..., height=...)` sizes.
+Panel sizes describe the axes area; labels, titles, and margins contribute
+to the layout and total height. A panel can override `unit` independently.
+Margins remain in points and label `pad_left`/`pad_top` remain in display
+pixels. Omitted dimensions always use settings stored in points, regardless
+of `unit`.
 
 `cns.figure(...)` returns the Matplotlib `Figure` and makes it current for
 subsequent plotting calls. Retain it to export a specific figure with `fig=`.

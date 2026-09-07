@@ -168,6 +168,14 @@ generate ggplot theme defaults.
 These defaults power figure sizing, multipanel layout, panel labels, and
 legend-placement helpers when explicit arguments are omitted.
 
+Figure and panel dimensions, multipanel width, title layout sizes, and panel
+margins are stored in points (1/72 inch). The `unit` argument on `figure`,
+`multipanel`, or `panel` converts only explicitly supplied dimensions;
+omitted dimensions keep these point-based defaults. Panel label padding
+(`panel_pad_left` and `panel_pad_top`) is in rendered display pixels.
+`figure_dpi` controls display resolution, while export DPI controls raster
+save resolution; neither changes the requested physical dimensions.
+
 ```{eval-rst}
 .. autoattribute:: cnsplots._settings.CNSSettings.figure_width
 .. autoattribute:: cnsplots._settings.CNSSettings.figure_height

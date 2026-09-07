@@ -279,17 +279,17 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
     "savefig_bbox": _spec(
         "tight",
         lambda value: _validate_string("savefig_bbox", value),
-        "Default savefig bounding box mode.",
+        "Default savefig bounds; 'tight' crops to artists, so output size can differ from the full canvas.",
     ),
     "savefig_pad_inches": _spec(
         0.01,
         lambda value: _validate_number("savefig_pad_inches", value, positive=True),
-        "Default savefig padding in inches.",
+        "Default savefig padding in inches around tight bounds.",
     ),
     "savefig_dpi": _spec(
         72 * 4,
         lambda value: _validate_number("savefig_dpi", value, positive=True),
-        "Default savefig DPI.",
+        "Default export pixels per inch for raster output and rasterized vector content.",
     ),
     "savefig_transparent": _spec(
         True,
@@ -528,22 +528,22 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
     "figure_width": _spec(
         150,
         lambda value: _validate_number("figure_width", value, positive=True),
-        "Default figure width in pixels for figure().",
+        "Default full figure width in points (1/72 inch) for figure().",
     ),
     "figure_height": _spec(
         150,
         lambda value: _validate_number("figure_height", value, positive=True),
-        "Default figure height in pixels for figure().",
+        "Default full figure height in points (1/72 inch) for figure().",
     ),
     "figure_dpi": _spec(
         72 * 2,
         lambda value: _validate_number("figure_dpi", value, positive=True),
-        "Default figure DPI for figure helpers.",
+        "Display pixels per inch for figure helpers; independent of physical size and export DPI.",
     ),
     "multipanel_max_width": _spec(
         540,
         lambda value: _validate_number("multipanel_max_width", value, positive=True),
-        "Default maximum width in pixels for multipanel figures.",
+        "Default figure width and wrapping limit in points (1/72 inch) for multipanel figures.",
     ),
     "multipanel_title_loc": _spec(
         "center",
@@ -557,54 +557,54 @@ _SETTING_SPECS: dict[str, _SettingSpec] = {
         lambda value: _validate_number(
             "multipanel_title_height_min", value, non_negative=True
         ),
-        "Minimum reserved title-band height for multipanel figures.",
+        "Minimum reserved title-band height in points for multipanel figures.",
     ),
     "multipanel_title_height_pad": _spec(
         4,
         lambda value: _validate_number(
             "multipanel_title_height_pad", value, non_negative=True
         ),
-        "Extra title-band padding added to title_fontsize in multipanel figures.",
+        "Extra title-band padding in points added to title_fontsize in multipanel figures.",
     ),
     "panel_width": _spec(
         150,
         lambda value: _validate_number("panel_width", value, positive=True),
-        "Default panel width in pixels for multipanel.panel().",
+        "Default axes width in points (1/72 inch) for multipanel.panel().",
     ),
     "panel_height": _spec(
         150,
         lambda value: _validate_number("panel_height", value, positive=True),
-        "Default panel height in pixels for multipanel.panel().",
+        "Default axes height in points (1/72 inch) for multipanel.panel().",
     ),
     "panel_pad_left": _spec(
         0,
         lambda value: _validate_number("panel_pad_left", value, non_negative=True),
-        "Default left padding in pixels for multipanel.panel() and add_panel_label().",
+        "Default left padding in display pixels for multipanel.panel() and add_panel_label().",
     ),
     "panel_pad_top": _spec(
         0,
         lambda value: _validate_number("panel_pad_top", value, non_negative=True),
-        "Default top padding in pixels for multipanel.panel() and add_panel_label().",
+        "Default top padding in display pixels for multipanel.panel() and add_panel_label().",
     ),
     "panel_margin_top": _spec(
         0,
         lambda value: _validate_number("panel_margin_top", value, non_negative=True),
-        "Default top margin in pixels for multipanel.panel().",
+        "Default top margin in points (1/72 inch) for multipanel.panel().",
     ),
     "panel_margin_bottom": _spec(
         10,
         lambda value: _validate_number("panel_margin_bottom", value, non_negative=True),
-        "Default bottom margin in pixels for multipanel.panel().",
+        "Default bottom margin in points (1/72 inch) for multipanel.panel().",
     ),
     "panel_margin_left": _spec(
         0,
         lambda value: _validate_number("panel_margin_left", value, non_negative=True),
-        "Default left margin in pixels for multipanel.panel().",
+        "Default left margin in points (1/72 inch) for multipanel.panel().",
     ),
     "panel_margin_right": _spec(
         10,
         lambda value: _validate_number("panel_margin_right", value, non_negative=True),
-        "Default right margin in pixels for multipanel.panel().",
+        "Default right margin in points (1/72 inch) for multipanel.panel().",
     ),
     "panel_label_fontname": _spec(
         None,

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Any, Literal, Optional, cast
 
@@ -16,22 +15,15 @@ from matplotlib.transforms import Bbox
 import cnsplots._utils as utils
 from cnsplots._settings import settings
 from cnsplots._setup import ColorCycle, setup_matplotlib
+from cnsplots._sizing import (
+    _SizeUnit,
+    _dimension_to_points,
+    _validate_positive_finite_dimension,
+)
 
 _LEFT_DECORATION_TOLERANCE_PX = 0.5
 _RELAYOUT_MAX_PASSES = 3
 _TitleLocation = Literal["left", "center", "right"]
-
-
-def _validate_positive_finite_dimension(
-    name: str,
-    value: int | float,
-) -> int | float:
-    """Validate a dimension used to construct a matplotlib figure or axes."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError(f"{name} must be a number")
-    if not math.isfinite(value) or value <= 0:
-        raise ValueError(f"{name} must be a positive finite number")
-    return value
 
 
 @dataclass
@@ -254,15 +246,28 @@ class multipanel:
 
     Parameters
     ----------
-    max_width : int, optional
-        Maximum figure width in pixels (default: 540). Panels wrap to new
-        rows when this width would be exceeded.
+    max_width : int or float, optional
+        Figure width and panel wrapping limit in ``unit``. If None, use
+        cns.settings.multipanel_max_width in points (default: 540), regardless
+        of ``unit``. Panels wrap to new rows when this width would be exceeded.
     title : str or None, optional
         Figure-level title shown above the panel grid (default: None).
     loc : {'left', 'center', 'right'}, optional
         Horizontal alignment for the figure title (default: 'center').
     title_fontweight : str or int, optional
         Font weight for the figure title (default: 'bold').
+    unit : {'pt', 'in', 'mm'}, default: 'pt'
+        Unit for explicit max_width and subsequent panel width/height values:
+        points (1/72 inch), inches, or millimeters. Each panel can override it.
+        Omitted dimensions use settings in points. Margins remain in points
+        and label padding remains in display pixels, independent of ``unit``.
+
+    Raises
+    ------
+    TypeError
+        If max_width is not numeric or is a boolean.
+    ValueError
+        If max_width is nonpositive or nonfinite, or the unit is unsupported.
 
     Attributes
     ----------
@@ -292,6 +297,15 @@ class multipanel:
 
     Notes
     -----
+    Default dimensions are logical 72-DPI units, numerically equal to points.
+    Panel width/height describe the axes area; figure height includes panel
+    margins, labels, axis decorations, and the optional title band. Display
+    pixels equal inches times ``cns.settings.figure_dpi`` (default: 144).
+    Export uses ``cns.settings.savefig_dpi`` (default: 288); default tight
+    cropping fits artists plus padding in inches, so saved dimensions can
+    differ from the full canvas. Use ``savefig(..., bbox_inches=None)`` to
+    preserve the full canvas bounds.
+
     Panel layout structure::
 
         +------------------------------------------------+
@@ -326,15 +340,18 @@ class multipanel:
         title: str | None = None,
         loc: str | None = None,
         title_fontweight: str | int = "bold",
+        *,
+        unit: _SizeUnit = "pt",
     ) -> None:
-        if max_width is None:
-            max_width = settings.multipanel_max_width
         if loc is None:
             loc = settings.multipanel_title_loc
-        self._max_width = _validate_positive_finite_dimension(
+        self._max_width = _dimension_to_points(
             "max_width",
             max_width,
+            unit,
+            default=settings.multipanel_max_width,
         )
+        self._unit = unit
         self._title = title
         self._title_loc = _validate_title_loc(loc)
         self._title_fontweight = _validate_title_fontweight(title_fontweight)
@@ -388,12 +405,12 @@ class multipanel:
         return float(panel.get("top_decoration_height_px", 0.0))
 
     def _get_layout_scale(self) -> float:
-        """Get the display-to-layout pixel scale used by multipanel geometry."""
+        """Get display pixels per logical point used by multipanel geometry."""
         dpi = self.fig.dpi if self.fig is not None else settings.figure_dpi
         return dpi / 72
 
     def _display_px_to_layout_px(self, value: float) -> float:
-        """Convert rendered pixels into multipanel layout pixels."""
+        """Convert rendered pixels into multipanel layout points."""
         return value / self._get_layout_scale()
 
     def _get_label_gap_px(self, panel: _Panel | dict[str, Any]) -> float:
@@ -401,7 +418,7 @@ class multipanel:
         return self._get_left_decoration_width_px(panel) + panel.get("pad_left", 0)
 
     def _get_left_reserve_px(self, panel: _Panel | dict[str, Any]) -> float:
-        """Get total left reserve in layout pixels for panel geometry."""
+        """Get total left reserve in layout points for panel geometry."""
         return self._display_px_to_layout_px(
             self._get_label_width_px(panel) + self._get_label_gap_px(panel)
         )
@@ -413,7 +430,7 @@ class multipanel:
         )
 
     def _get_top_reserve_px(self, panel: _Panel | dict[str, Any]) -> float:
-        """Get total top reserve in layout pixels for panel geometry."""
+        """Get total top reserve in layout points for panel geometry."""
         return self._display_px_to_layout_px(
             self._get_label_height_px(panel) + self._get_top_label_offset_px(panel)
         )
@@ -772,7 +789,7 @@ class multipanel:
         fig_height_px = title_height_px + sum(self._row_heights)
         fig_width_px = self._max_width
 
-        # Convert pixels to inches (72 dpi base)
+        # Convert logical layout points to inches.
         fig_width = fig_width_px / 72
         fig_height = fig_height_px / 72
 
@@ -912,6 +929,7 @@ class multipanel:
         color_cycle: ColorCycle | None = None,
         color_map: str | None = None,
         below: str | None = None,
+        unit: _SizeUnit | None = None,
     ) -> Axes:
         """
         Add a panel with specified dimensions, padding, and margins.
@@ -921,31 +939,33 @@ class multipanel:
         label : str or None, optional
             Panel label (e.g., "A", "B", "C"). If None, uses automatic
             sequential labeling (A, B, C, ...).
-        width : int, optional
-            Axes width in pixels. If None, uses cns.settings.panel_width.
-        height : int, optional
-            Axes height in pixels. If None, uses cns.settings.panel_height.
+        width : int or float, optional
+            Axes width in ``unit``. If None, use cns.settings.panel_width
+            in points, regardless of ``unit``.
+        height : int or float, optional
+            Axes height in ``unit``. If None, use cns.settings.panel_height
+            in points, regardless of ``unit``.
         pad_left : int, optional
-            Extra horizontal gap in pixels between the panel label and the
+            Extra horizontal gap in display pixels between the panel label and the
             leftmost visible left-side axis decoration. The layout reserves the
             rendered width of y-axis decorations plus this gap. If no left-side
             decorations are visible, the panel label sits ``pad_left`` pixels to
             the left of the axes. If None, uses cns.settings.panel_pad_left.
         pad_top : int, optional
-            Extra vertical gap in pixels between the panel label and the
+            Extra vertical gap in display pixels between the panel label and the
             topmost visible top-side axis decoration, such as the axes title.
             The layout reserves the rendered height of those decorations plus
             this gap. If no top-side decorations are visible, the panel label's
             bottom edge sits ``pad_top`` pixels above the axes. If None, uses
             cns.settings.panel_pad_top.
         margin_top : int, optional
-            Top margin in pixels. If None, uses cns.settings.panel_margin_top.
+            Top margin in points. If None, uses cns.settings.panel_margin_top.
         margin_bottom : int, optional
-            Bottom margin in pixels. If None, uses cns.settings.panel_margin_bottom.
+            Bottom margin in points. If None, uses cns.settings.panel_margin_bottom.
         margin_left : int, optional
-            Left margin in pixels. If None, uses cns.settings.panel_margin_left.
+            Left margin in points. If None, uses cns.settings.panel_margin_left.
         margin_right : int, optional
-            Right margin in pixels. If None, uses cns.settings.panel_margin_right.
+            Right margin in points. If None, uses cns.settings.panel_margin_right.
         color_cycle : str or sequence of matplotlib colors, optional
             Color palette name or explicit color sequence for this panel. If
             None, uses cns.settings.palette_qual.
@@ -955,11 +975,22 @@ class multipanel:
             Label of another panel to stack this panel below (e.g., "D").
             The panel is positioned directly below the specified panel
             instead of flowing in the normal left-to-right layout.
+        unit : {'pt', 'in', 'mm'} or None, optional
+            Unit for explicitly supplied width and height. If None, inherit
+            the unit passed to multipanel (default: 'pt'). Margins stay in
+            points and label padding stays in display pixels for all units.
 
         Returns
         -------
         ax : matplotlib.axes.Axes
             The matplotlib axes object for plotting.
+
+        Raises
+        ------
+        TypeError
+            If a dimension is not numeric or is a boolean.
+        ValueError
+            If a dimension is nonpositive or nonfinite, or the unit is unsupported.
 
         Examples
         --------
@@ -995,7 +1026,8 @@ class multipanel:
 
         Notes
         -----
-        Total panel dimensions are calculated as:
+        After converting dimensions, margins, and rendered measurements to
+        a common physical unit, total panel dimensions are calculated as:
 
         - Total width = margin_left + label width + left decorations + pad_left
           + width + margin_right
@@ -1010,10 +1042,6 @@ class multipanel:
             color_cycle = settings.palette_qual
         if color_map is None:
             color_map = settings.palette_seq
-        if width is None:
-            width = settings.panel_width
-        if height is None:
-            height = settings.panel_height
         if pad_left is None:
             pad_left = settings.panel_pad_left
         if pad_top is None:
@@ -1027,8 +1055,12 @@ class multipanel:
         if margin_bottom is None:
             margin_bottom = settings.panel_margin_bottom
 
-        width = _validate_positive_finite_dimension("width", width)
-        height = _validate_positive_finite_dimension("height", height)
+        if unit is None:
+            unit = self._unit
+        width = _dimension_to_points("width", width, unit, default=settings.panel_width)
+        height = _dimension_to_points(
+            "height", height, unit, default=settings.panel_height
+        )
 
         if label is None:
             if self._panel_index >= len(self._labels):

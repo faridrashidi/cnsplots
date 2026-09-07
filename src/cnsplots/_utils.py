@@ -35,6 +35,7 @@ from statannotations.utils import DEFAULT
 
 from cnsplots._settings import settings
 from cnsplots._setup import setup_matplotlib
+from cnsplots._sizing import _SizeUnit, _dimension_to_points
 from cnsplots._svg import _save_svg
 
 logger = logging.getLogger(__name__)
@@ -328,6 +329,8 @@ def figure(
     height: int | float | None = None,
     color_cycle: str | Sequence[ColorType] | None = None,
     color_map: str | None = None,
+    *,
+    unit: _SizeUnit = "pt",
 ) -> Figure:
     """
     Initialize a new figure with custom size and styling.
@@ -337,10 +340,12 @@ def figure(
 
     Parameters
     ----------
-    width : int, default: 150
-        Width of the figure in pixels.
-    height : int, default: 150
-        Height of the figure in pixels.
+    width : int or float, optional
+        Full figure width in ``unit``. If None, use cns.settings.figure_width
+        in points (default: 150), regardless of ``unit``.
+    height : int or float, optional
+        Full figure height in ``unit``. If None, use cns.settings.figure_height
+        in points (default: 150), regardless of ``unit``.
     color_cycle : str, default: None
         Name of the qualitative color palette to use for the color cycle.
         If None, uses cns.settings.palette_qual.
@@ -349,11 +354,21 @@ def figure(
         Name of the sequential colormap to use for continuous data.
         If None, uses cns.settings.palette_seq.
         Options include: 'gnuplot', 'parula', 'bwr', 'hot', etc.
+    unit : {'pt', 'in', 'mm'}, default: 'pt'
+        Unit for explicitly supplied width and height: points (1/72 inch),
+        inches, or millimeters. The default preserves legacy numerical sizes.
 
     Returns
     -------
     matplotlib.figure.Figure
         The newly created figure, which is also the current pyplot figure.
+
+    Raises
+    ------
+    TypeError
+        If a dimension is not numeric or is a boolean.
+    ValueError
+        If a dimension is nonpositive or nonfinite, or the unit is unsupported.
 
     See Also
     --------
@@ -363,10 +378,17 @@ def figure(
 
     Notes
     -----
-    The function converts pixel dimensions to inches assuming 72 DPI base
-    resolution and uses ``cns.settings.figure_dpi`` for the rendered DPI.
+    Default dimensions are logical 72-DPI units, numerically equal to points:
+    inches = points / 72. They describe the full canvas, including space around
+    the axes. In contrast, ``multipanel.panel`` sizes describe the axes area.
 
-    The figure size formula is: inches = pixels / 72.
+    Display pixels = inches * ``cns.settings.figure_dpi`` (default: 144).
+    Thus ``figure(100, 150)`` has size ``(100 / 72, 150 / 72)`` inches and a
+    200 by 300 pixel canvas at the default display DPI. Export uses
+    ``cns.settings.savefig_dpi`` (default: 288), yielding 400 by 600 pixels
+    when saved with ``bbox_inches=None``. The default tight export instead
+    crops to artists plus ``pad_inches`` (in inches), so its dimensions can
+    differ from the full canvas. DPI does not change the physical figure size.
 
     This function previously returned None. Callers that ignore the return value
     continue to work; callers or type checks relying on None must be updated.
@@ -381,11 +403,16 @@ def figure(
     >>> # With custom color scheme
     >>> cns.figure(width=150, height=150, color_cycle="Set2", color_map="parula")
     >>> cns.heatmapplot(adata)
+
+    >>> # Equivalent physical sizes
+    >>> fig = cns.figure(50.8, 25.4, unit="mm")
+    >>> fig = cns.figure(2, 1, unit="in")
+    >>> fig = cns.figure(144, 72, unit="pt")
     """
-    if width is None:
-        width = settings.figure_width
-    if height is None:
-        height = settings.figure_height
+    width = _dimension_to_points("width", width, unit, default=settings.figure_width)
+    height = _dimension_to_points(
+        "height", height, unit, default=settings.figure_height
+    )
     if color_cycle is None:
         color_cycle = settings.palette_qual
     if color_map is None:

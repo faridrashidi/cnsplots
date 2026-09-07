@@ -72,10 +72,13 @@ input columns expected by the installed version.
 
 ## Figure composition and export
 
-- `figure`: initialize a styled single-panel canvas in pixel dimensions and
-  return the Matplotlib `Figure`, which also becomes current.
-- `multipanel`: create labeled, pixel-sized panels; `panel(...)` returns the
-  target `Axes`.
+- `figure`: size a styled whole canvas in points (1/72 inch) by default, or
+  explicitly use `unit="pt"`, `unit="in"`, or `unit="mm"`. Return the
+  Matplotlib `Figure`, which also becomes current.
+- `multipanel`: set the full canvas width with `max_width` and create labeled
+  panels. Explicit panel dimensions inherit the constructor's `unit`, with
+  a per-panel override. `panel(...)` sizes the axes area and returns the target
+  `Axes`; decorations and margins occupy additional space in the layout.
 - `add_panel_label`: label an existing axes.
 - `take_legend_out`: position a legend outside its axes.
 - `savefig`: save the current figure or an explicit `fig=`, with per-save DPI,
@@ -98,6 +101,18 @@ cns.scatterplot(data=continuous, x="x", y="y", ax=ax_b)
 
 cns.savefig("multipanel.svg")
 ```
+
+All dimensions above are in points. For physical units, use, for example,
+`mp = cns.multipanel(max_width=180, unit="mm")` and
+`mp.panel("A", width=50.8, height=25.4)` for a 2 × 1 inch axes area, or
+`mp.panel("B", width=2, height=1, unit="in")` for an equivalent panel.
+Omitted dimensions always use settings stored in points. Panel margins remain
+in points, and label `pad_left`/`pad_top` remain in display pixels, regardless
+of `unit`.
+
+Display and export DPI determine raster resolution without changing physical
+size. Default tight cropping exports the artists' bounds plus `pad_inches`
+in inches; set `bbox_inches=None` to preserve the full canvas size.
 
 See the current API documentation at <https://cnsplots.farid.one/latest/api.html>
 when web access is available.
