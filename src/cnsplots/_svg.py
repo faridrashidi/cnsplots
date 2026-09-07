@@ -9,33 +9,51 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from lxml.etree import _Element  # ty: ignore[unresolved-import]
+    from matplotlib.figure import Figure
+    from matplotlib.transforms import Bbox
 
 import subprocess
 
-import matplotlib.pyplot as plt
 from lxml import etree  # ty: ignore[unresolved-import]
 
 _PDF_SUBSET_FONT_PREFIX = re.compile(r"^[A-Z]{6}\+")
 
 
-def _save_plain_svg(filepath: str, message: str, bbox_inches=None) -> None:
+def _save_plain_svg(
+    filepath: str,
+    message: str,
+    *,
+    fig: Figure,
+    dpi: float,
+    transparent: bool,
+    bbox_inches: Bbox,
+    pad_inches: float,
+) -> None:
     """Save a standard matplotlib SVG and surface why the optimized path was skipped."""
     warnings.warn(message, RuntimeWarning, stacklevel=2)
-    savefig_kwargs: dict[str, object] = {"format": "svg"}
-    if bbox_inches is not None:
-        savefig_kwargs["bbox_inches"] = bbox_inches
-        savefig_kwargs["pad_inches"] = 0
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        plt.savefig(filepath, **savefig_kwargs)
+        fig.savefig(
+            filepath,
+            format="svg",
+            dpi=dpi,
+            transparent=transparent,
+            bbox_inches=bbox_inches,
+            pad_inches=pad_inches,
+        )
 
 
-def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
+def _save_svg(
+    filepath: str,
+    root: str,
+    *,
+    fig: Figure,
+    dpi: float,
+    transparent: bool,
+    bbox_inches: Bbox,
+    pad_inches: float,
+) -> None:
     stem = Path(root).name or Path(filepath).stem or "cnsplots"
-    savefig_kwargs: dict[str, object] = {}
-    if bbox_inches is not None:
-        savefig_kwargs["bbox_inches"] = bbox_inches
-        savefig_kwargs["pad_inches"] = 0
 
     with TemporaryDirectory(prefix=f"{stem}-svg-") as tmp_dir:
         tmp_dir_path = Path(tmp_dir)
@@ -49,7 +67,13 @@ def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
             )
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                plt.savefig(tmp_pdf, **savefig_kwargs)
+                fig.savefig(
+                    tmp_pdf,
+                    dpi=dpi,
+                    transparent=transparent,
+                    bbox_inches=bbox_inches,
+                    pad_inches=pad_inches,
+                )
         finally:
             fonttools_logger.setLevel(previous_level)
         try:
@@ -73,7 +97,11 @@ def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
             _save_plain_svg(
                 filepath,
                 "MuPDF's `mutool` is unavailable; saved a standard matplotlib SVG instead.",
+                fig=fig,
+                dpi=dpi,
+                transparent=transparent,
                 bbox_inches=bbox_inches,
+                pad_inches=pad_inches,
             )
         except subprocess.CalledProcessError as exc:
             stderr = (exc.stderr or b"").decode(errors="replace").strip()
@@ -82,7 +110,11 @@ def _save_svg(filepath: str, root: str, bbox_inches=None) -> None:
                 filepath,
                 "MuPDF's `mutool` failed during SVG conversion"
                 f"{detail}; saved a standard matplotlib SVG instead.",
+                fig=fig,
+                dpi=dpi,
+                transparent=transparent,
                 bbox_inches=bbox_inches,
+                pad_inches=pad_inches,
             )
 
 

@@ -825,7 +825,7 @@ def test_svg_helpers_and_export(
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
     original_dpi = plt.gcf().dpi
-    original_plt_savefig = _utils.plt.savefig
+    original_figure_savefig = Figure.savefig
     saved_png_meta: dict[str, float] = {}
 
     def fake_png_savefig(*args: object, **kwargs: object) -> None:
@@ -844,7 +844,7 @@ def test_svg_helpers_and_export(
             assert isinstance(pad_inches, (int, float))
             saved_png_meta["pad_inches"] = float(pad_inches)
 
-    monkeypatch.setattr(_utils.plt, "savefig", fake_png_savefig)
+    monkeypatch.setattr(Figure, "savefig", fake_png_savefig)
     with cns.settings.context(savefig_dpi=300):
         cns.savefig(str(output_dir / "captured.png"))
     assert saved_png_meta["fig_dpi"] == pytest.approx(300)
@@ -853,7 +853,7 @@ def test_svg_helpers_and_export(
     assert saved_png_meta["bbox_y1"] > saved_png_meta["bbox_y0"]
     assert saved_png_meta["pad_inches"] == pytest.approx(0)
     assert plt.gcf().dpi == pytest.approx(original_dpi)
-    monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
+    monkeypatch.setattr(Figure, "savefig", original_figure_savefig)
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
@@ -863,20 +863,24 @@ def test_svg_helpers_and_export(
         standard_meta["bbox_inches"] = kwargs.get("bbox_inches")
         standard_meta["pad_inches"] = kwargs.get("pad_inches")
 
-    monkeypatch.setattr(_utils.plt, "savefig", fake_standard_savefig)
+    monkeypatch.setattr(Figure, "savefig", fake_standard_savefig)
     with cns.settings.context(savefig_bbox="standard"):
         cns.savefig(str(output_dir / "captured-standard.png"))
-    assert standard_meta["bbox_inches"] is None
-    assert standard_meta["pad_inches"] is None
-    monkeypatch.setattr(_utils.plt, "savefig", original_plt_savefig)
+    standard_bbox = standard_meta["bbox_inches"]
+    assert isinstance(standard_bbox, mtransforms.Bbox)
+    np.testing.assert_allclose(standard_bbox.bounds, plt.gcf().bbox_inches.bounds)
+    assert standard_meta["pad_inches"] == 0
+    monkeypatch.setattr(Figure, "savefig", original_figure_savefig)
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
     original_svg_dpi = plt.gcf().dpi
     saved_svg_meta: dict[str, float] = {}
 
-    def fake_save_svg(filepath: str, root: str, bbox_inches=None) -> None:
-        saved_svg_meta["fig_dpi"] = plt.gcf().dpi
+    def fake_save_svg(
+        filepath: str, root: str, *, fig: Figure, bbox_inches, **kwargs: object
+    ) -> None:
+        saved_svg_meta["fig_dpi"] = fig.dpi
         if bbox_inches is not None:
             saved_svg_meta["bbox_x0"] = float(bbox_inches.x0)
             saved_svg_meta["bbox_y0"] = float(bbox_inches.y0)
@@ -896,7 +900,10 @@ def test_svg_helpers_and_export(
     plt.plot([0, 1], [0, 1])
     fig = plt.gcf()
     monkeypatch.setattr(fig, "get_tightbbox", lambda renderer: None)
-    assert _utils._get_export_bbox_inches(fig) is None
+    np.testing.assert_allclose(
+        _utils._get_export_bbox_inches(fig, bbox_inches="tight", pad_inches=0).bounds,
+        fig.bbox_inches.bounds,
+    )
 
     cns.figure(120, 120)
     plt.plot([0, 1], [0, 1])
@@ -918,7 +925,15 @@ def test_svg_helpers_and_export(
 
     monkeypatch.setattr(_svg.subprocess, "run", fake_run)
     monkeypatch.setattr(_svg, "_correct_svg", fake_correct)
-    _svg._save_svg(str(success_path), str(output_dir / "optimized"))
+    _svg._save_svg(
+        str(success_path),
+        str(output_dir / "optimized"),
+        fig=plt.gcf(),
+        dpi=300,
+        transparent=True,
+        bbox_inches=plt.gcf().bbox_inches,
+        pad_inches=0,
+    )
     assert success_path.exists()
     assert str(corrected["input_file"]).endswith("1.svg")
 
@@ -934,6 +949,10 @@ def test_svg_helpers_and_export(
         _svg._save_svg(
             str(missing_path),
             str(output_dir / "missing-mutool"),
+            fig=plt.gcf(),
+            dpi=300,
+            transparent=True,
+            pad_inches=0,
             bbox_inches=mtransforms.Bbox.from_extents(0, 0, 1, 1),
         )
     assert missing_path.exists()
@@ -947,7 +966,15 @@ def test_svg_helpers_and_export(
     monkeypatch.setattr(_svg.subprocess, "run", fail_run)
     failed_path = output_dir / "failed.svg"
     with pytest.warns(RuntimeWarning, match="boom"):
-        _svg._save_svg(str(failed_path), str(output_dir / "failed"))
+        _svg._save_svg(
+            str(failed_path),
+            str(output_dir / "failed"),
+            fig=plt.gcf(),
+            dpi=300,
+            transparent=True,
+            bbox_inches=plt.gcf().bbox_inches,
+            pad_inches=0,
+        )
     assert failed_path.exists()
 
 
@@ -962,13 +989,13 @@ def test_svg_export_suppresses_fonttools_logs_and_restores_level(
     fonttools_logger.setLevel(expected_level)
 
     def fake_savefig(*args: object, **kwargs: object) -> None:
-        if str(args[0]).endswith(".pdf"):
+        if str(args[1]).endswith(".pdf"):
             logging.getLogger("fontTools.subset").info("maxp pruned")
 
     def missing_run(*args: object, **kwargs: object) -> object:
         raise FileNotFoundError("mutool")
 
-    monkeypatch.setattr(_svg.plt, "savefig", fake_savefig)
+    monkeypatch.setattr(Figure, "savefig", fake_savefig)
     monkeypatch.setattr(_svg.subprocess, "run", missing_run)
 
     try:
@@ -976,7 +1003,15 @@ def test_svg_export_suppresses_fonttools_logs_and_restores_level(
             caplog.at_level(logging.INFO),
             pytest.warns(RuntimeWarning, match="mutool"),
         ):
-            _svg._save_svg(str(output_dir / "plot.svg"), str(output_dir / "plot"))
+            _svg._save_svg(
+                str(output_dir / "plot.svg"),
+                str(output_dir / "plot"),
+                fig=plt.gcf(),
+                dpi=300,
+                transparent=True,
+                bbox_inches=plt.gcf().bbox_inches,
+                pad_inches=0,
+            )
 
         assert not [
             record for record in caplog.records if record.name.startswith("fontTools")
@@ -997,7 +1032,7 @@ def test_pdf_export_suppresses_fonttools_logs_and_restores_level(
     def fake_savefig(*args: object, **kwargs: object) -> None:
         logging.getLogger("fontTools.subset").info("maxp pruned")
 
-    monkeypatch.setattr(_utils.plt, "savefig", fake_savefig)
+    monkeypatch.setattr(Figure, "savefig", fake_savefig)
 
     try:
         cns.figure(120, 120)

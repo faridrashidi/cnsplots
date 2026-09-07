@@ -42,8 +42,8 @@ artifact.
 4. Build the figure.
    - In headless execution, set `MPLBACKEND=Agg` or call
      `matplotlib.use("Agg")` before importing plotting backends.
-   - Start single-panel figures with `cns.figure(width=..., height=...)`.
-     Dimensions are in pixels.
+   - Start single-panel figures with `fig = cns.figure(width=..., height=...)`.
+     Dimensions are in pixels. The returned Matplotlib `Figure` becomes current.
    - Pass `ax=` explicitly when composing with existing Matplotlib axes.
    - Use `cns.multipanel` for labeled publication panels.
    - Add titles and axis labels through the returned Matplotlib axes.
@@ -51,8 +51,11 @@ artifact.
      leaving global settings changed.
 
 5. Save and validate the result.
-   - Use `cns.savefig(...)`. Prefer SVG or PDF for editable publication output
-     and PNG for a raster preview.
+   - Use `cns.savefig(..., fig=fig)` to save a retained figure, or omit `fig` to
+     save the current figure. Prefer SVG or PDF for editable publication output
+     and PNG for a raster preview. Per-save `dpi`, `transparent`, `bbox_inches`,
+     and `pad_inches` override export settings; `bbox_inches=None` preserves
+     the full canvas, and padding applies only to tight cropping.
    - Run the complete script, confirm the output exists and is non-empty, and
      inspect or render it when visual tools are available.
    - Check clipping, unreadable labels, misleading scales, legend collisions,
@@ -68,10 +71,10 @@ matplotlib.use("Agg")
 
 import cnsplots as cns
 
-cns.figure(width=180, height=150)
+fig = cns.figure(width=180, height=150)
 ax = cns.boxplot(data=df, x="group", y="value")
 ax.set(xlabel="Group", ylabel="Value")
-cns.savefig("figure.svg")
+cns.savefig("figure.svg", fig=fig)
 ```
 
 Adapt this only after inspecting the selected function's installed signature and

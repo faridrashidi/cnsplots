@@ -25,8 +25,9 @@ iris = cns.datasets.load_dataset("iris")
 # ~~~~~~~~~~~~~~~~~~~~~
 # Create a figure with specified dimensions in pixels.
 # figure(width, height) uses the conventional width-first order, and those
-# requested dimensions are the final canvas size.
-cns.figure(150, 150)
+# requested dimensions are the final canvas size. The returned Matplotlib
+# Figure is also the current figure used by subsequent plotting calls.
+fig = cns.figure(150, 150)
 ax = cns.placeholderplot("150x150 Figure")
 ax.set_title("Figure Setup")
 
@@ -211,16 +212,21 @@ ax.set_title("Custom Font Sizes")
 # Saving figures
 # ~~~~~~~~~~~~~~
 # Use ``savefig()`` to save figures in various formats.
-# Supported formats: PDF, PNG, SVG, EPS, JPG
-cns.figure(100, 150)
+# Supported formats: PDF, PNG, SVG, EPS, JPG. Keep the returned figure so it
+# can be saved even when another figure becomes current.
+fig = cns.figure(100, 150)
 ax = cns.boxplot(data=tips, x="day", y="total_bill")
 ax.set_title("Save Example")
 
 # Example save commands (commented to avoid creating files):
-# cns.savefig("figure.pdf")   # PDF for publications
-# cns.savefig("figure.svg")   # SVG for editing in Illustrator
-# cns.savefig("figure.png")   # PNG for presentations
+# cns.savefig("figure.pdf", fig=fig)   # PDF for publications
+# cns.savefig("figure.svg", fig=fig)   # SVG for editing in Illustrator
+# cns.savefig("figure.png", fig=fig, dpi=300, transparent=False)
+# cns.savefig("figure-tight.pdf", fig=fig, bbox_inches="tight", pad_inches=0.1)
+# cns.savefig("figure-full.pdf", fig=fig, bbox_inches=None)  # Full canvas
 # cns.savefig("~/Desktop/figure.pdf")  # Supports ~ expansion
+# Omitted options use cns.settings. Per-save overrides leave settings unchanged.
+# Padding is in inches and applies only to tight cropping.
 
 
 # %%

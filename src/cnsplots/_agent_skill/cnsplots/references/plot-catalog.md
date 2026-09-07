@@ -72,12 +72,14 @@ input columns expected by the installed version.
 
 ## Figure composition and export
 
-- `figure`: initialize a styled single-panel canvas in pixel dimensions.
+- `figure`: initialize a styled single-panel canvas in pixel dimensions and
+  return the Matplotlib `Figure`, which also becomes current.
 - `multipanel`: create labeled, pixel-sized panels; `panel(...)` returns the
   target `Axes`.
 - `add_panel_label`: label an existing axes.
 - `take_legend_out`: position a legend outside its axes.
-- `savefig`: save the current figure and create parent directories as needed.
+- `savefig`: save the current figure or an explicit `fig=`, with per-save DPI,
+  transparency, crop, and padding options; create parent directories as needed.
 - `settings.context(...)`: apply temporary package-wide style settings.
 - `palettes`: retrieve curated categorical or continuous palettes.
 

@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from anndata import AnnData
     from matplotlib.axes import Axes
     from matplotlib.colors import Colormap
+    from matplotlib.figure import Figure
+    from matplotlib.transforms import Bbox
     from typing_extensions import assert_type
 
     import cnsplots as cns
@@ -27,8 +29,27 @@ if TYPE_CHECKING:
         assert_type(cns.settings.font_sans_serif, tuple[str, ...])
         assert_type(cns.settings.panel_label_fontname, str | None)
 
-        assert_type(cns.figure(width=120, height=80), None)
+        fig = cns.figure(width=120, height=80)
+        assert_type(fig, Figure)
         assert_type(cns.savefig("figure.svg"), None)
+        assert_type(
+            cns.savefig(
+                "figure.png",
+                fig=fig,
+                dpi=300,
+                transparent=False,
+                bbox_inches="tight",
+                pad_inches=0.1,
+            ),
+            None,
+        )
+        assert_type(cns.savefig("figure.pdf", fig=fig, bbox_inches=None), None)
+        assert_type(
+            cns.savefig(
+                "figure.svg", fig=fig, bbox_inches=Bbox.from_bounds(0, 0, 2, 1)
+            ),
+            None,
+        )
         assert_type(cns.add_panel_label("A"), None)
         assert_type(cns.apply_unicode_font(ax), None)
         assert_type(cns.take_legend_out("Group"), None)
