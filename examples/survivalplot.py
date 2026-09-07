@@ -204,21 +204,33 @@ clinical_df = pd.DataFrame(survival_data)
 # %%
 # Survival plot with three groups
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Compare multiple treatment arms with an omnibus test and an explicitly
-# requested Cox contrast. Pair tuples are (reference, comparison).
-cns.figure(150, 180)
+# Compare multiple treatment arms with an omnibus test and two Cox contrasts.
+# Pair tuples are (reference, comparison). Holm correction covers both requested
+# contrasts; the omnibus test is separate and HR confidence intervals remain 95%.
+cns.figure(260, 240)
 ax = cns.survivalplot(
     data=clinical_df,
     duration="time",
     event="event",
     hue="group",
     hue_order=["Control", "Treatment A", "Treatment B"],
-    pairs=[("Control", "Treatment B")],
+    pairs=[("Control", "Treatment A"), ("Control", "Treatment B")],
+    p_adjust="holm",
     pvalue_loc="upper right",
 )
 ax.set_xlabel("Time (Months)")
 cns.take_legend_out()
 plt.title("Three-Arm Clinical Trial")
+
+# Retrieve the statistics used in the annotation without refitting any models.
+# ``estimate`` is the comparison-versus-reference hazard ratio for these rows.
+results = cns.get_survival_results(ax)
+contrasts = results.loc[results["kind"] == "pairwise_cox"]
+print(
+    contrasts[
+        ["group1", "group2", "estimate", "pvalue_raw", "pvalue_adjusted", "status"]
+    ].to_string(index=False)
+)
 
 
 # %%

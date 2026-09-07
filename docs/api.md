@@ -178,6 +178,95 @@ same columns. Omitting `ax` selects the current axes.
    get_comparison_results
 ```
 
+## Survival Results
+
+After `survivalplot`, use `get_survival_results(ax)` to retrieve the estimates
+and tests used for its annotations. The plot still returns its Matplotlib axes.
+The accessor returns a DataFrame snapshot without refitting models or rerunning
+tests; it also works with `descriptive_only=True`.
+
+For example, compare stages in the synthetic showcase data, correcting two
+explicitly requested Cox contrasts as one family:
+
+```python
+survival = cns.datasets.get_showcase_data().survival_df
+cns.figure(width=260, height=240)
+ax = cns.survivalplot(
+    survival,
+    duration="time",
+    event="event",
+    hue="stage",
+    hue_order=["I", "II", "III"],
+    pairs=[("I", "II"), ("I", "III")],
+    p_adjust="holm",
+)
+results = cns.get_survival_results(ax)
+contrasts = results.loc[results["kind"] == "pairwise_cox"]
+print(contrasts[["group1", "group2", "estimate", "pvalue_raw", "pvalue_adjusted"]])
+```
+
+Pair tuples are `(reference, comparison)`: the hazard ratio estimates the
+comparison group's hazard relative to the reference. `p_adjust` accepts `None`
+(the default), `"bonferroni"`, `"holm"`, `"fdr_bh"`, or `"fdr_by"`. Correction
+covers the requested pairwise Cox contrasts in that call, excluding the overall
+and landmark tests. Duplicate contrasts, including reversed pairs, are rejected
+when pairwise inference is enabled. An unavailable contrast still counts toward
+the family size and contributes a placeholder p-value of 1 to correction; its
+returned p-values remain missing. Corrected annotations show the raw and adjusted
+p-values, method, and family size. Hazard-ratio confidence intervals remain
+unadjusted 95% intervals.
+
+The table has the same columns for every call:
+
+| Columns | Meaning |
+| --- | --- |
+| `kind` | `overall`, `pairwise_cox`, `median_survival`, `landmark_survival`, `landmark_test`, or `rmst`. |
+| `test` | `logrank`, `trend`, `cox_wald`, or `fixed_time_log_minus_log`; `None` for descriptive estimates. |
+| `groups` | Tuple of contributing groups, in `hue_order` for overall tests and `(reference, comparison)` order for Cox contrasts. |
+| `group1`, `group2` | The estimate's group, or reference and comparison groups; unused entries are `None`. |
+| `n`, `events` | Total contributing observations and observed events over full follow-up, not truncated at the landmark or RMST horizon. |
+| `n1`, `events1`, `n2`, `events2` | Counts for the named groups; unused entries, including for overall tests, are missing. |
+| `time` | Landmark or RMST horizon; missing for other rows. |
+| `estimate` | Hazard ratio, median survival time, landmark survival probability, or restricted mean survival time, as indicated by `kind`. |
+| `ci_lower`, `ci_upper`, `ci_level` | Hazard-ratio confidence interval and level (`0.95`); missing for other kinds. |
+| `statistic` | Chi-square for log-rank, landmark, or Cox likelihood-ratio trend tests; Wald z for pairwise Cox tests; missing for descriptive estimates. |
+| `pvalue_raw`, `pvalue_adjusted` | Raw and corrected p-values; equal when no correction applies and missing for descriptive estimates or unavailable tests. |
+| `p_adjust`, `family_size` | Pairwise correction method and number of requested Cox contrasts. |
+| `status`, `reason` | `available`, `unavailable`, or `not_reached`, with a reason when a result is unavailable. |
+| `annotation` | The exact annotation text for that result. |
+
+Only enabled annotations produce rows. For example, median rows require
+`show_median_survival=True`; `show_hazard_ratio=False` omits pairwise Cox rows,
+and `descriptive_only=True` omits all tests. A median that is not reached has
+`estimate=inf` and `status="not_reached"`. Numerical values retain their full
+precision independently of annotation formatting.
+
+The overall log-rank test treats groups as categories. The optional Cox trend
+test uses equally spaced scores in the explicit `hue_order`, recorded in
+`groups`, and reports a one-degree-of-freedom likelihood-ratio test.
+
+Durations are finite, nonnegative times to the event or censoring; event code 1
+means observed and 0 means censored. Landmark and RMST horizons must be finite,
+positive, and at most the smallest maximum follow-up among the plotted groups.
+The endpoint is inclusive: the right-continuous Kaplan-Meier estimate at a
+landmark includes events at that time. These summaries do not extrapolate beyond
+the common follow-up. The table's `attrs` record the `duration`, `event`, and
+`hue` column names, `time_label`, `event_observed=1`, `event_censored=0`, and
+`common_follow_up`.
+
+Every accessor call returns a copy. A new `survivalplot` call on the same axes
+replaces its results, including when no annotations are requested. Clearing the
+axes removes the stored results. Axes without survival results return an empty
+table with the same columns; omitting `ax` selects the current axes.
+
+```{eval-rst}
+.. apirootsummary::
+   :toctree: api
+   :nosignatures:
+
+   get_survival_results
+```
+
 ## Statistical Models
 
 ```{eval-rst}
