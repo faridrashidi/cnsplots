@@ -55,8 +55,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mupdf-tools
 
+      - name: Verify export renderers
+        run: |
+          mutool -v
+          google-chrome --version
+
       - name: Run tests
+        id: tests
         run: make test
+
+      - name: Upload export regression results
+        if: ${{ always() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-results-linux-python-${{ matrix.python-version }}
+          path: mpl-results/export-pipeline/
+          if-no-files-found: warn
 
       - name: Run visual regression tests
         if: ${{ matrix.python-version == '3.12' }}
@@ -70,6 +84,60 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mpl-results-python-3.12
+          path: mpl-results/
+          if-no-files-found: warn
+
+  platform-smoke:
+    name: Smoke / ${{ matrix.os }} / Python 3.12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      MPLBACKEND: Agg
+      MPLCONFIGDIR: ${{ github.workspace }}/.cache/matplotlib
+      XDG_CACHE_HOME: ${{ github.workspace }}/.cache
+      UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
+      UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python
+      UV_PYTHON_PREFERENCE: only-managed
+      TMPDIR: ${{ github.workspace }}/.cache/tmp
+      TEMP: ${{ github.workspace }}/.cache/tmp
+      TMP: ${{ github.workspace }}/.cache/tmp
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Prepare local temporary directory
+        run: mkdir -p "$TMPDIR"
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync dependencies
+        run: uv sync --locked --extra dev
+
+      - name: Run platform smoke tests
+        id: smoke_tests
+        run: >-
+          uv run pytest --no-cov -ra
+          --basetemp=mpl-results/platform-smoke
+          tests/test_platform_smoke.py
+          tests/test_font_cache.py
+          tests/test_export_pipeline.py
+          tests/test_svg_font_weights.py
+          tests/test_svg_masks.py
+          tests/test_figure_exports.py
+
+      - name: Upload export regression results
+        if: ${{ always() && steps.smoke_tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-results-${{ matrix.os }}-python-3.12
           path: mpl-results/
           if-no-files-found: warn
 
