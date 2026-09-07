@@ -120,7 +120,7 @@ def _save_svg(
 
 def _correct_svg(input_file: str, output_file: str) -> None:
     """
-    Process an SVG file to ungroup both text elements and clipped elements.
+    Ungroup SVG text and simplify groups while preserving clipping and masks.
 
     Args:
         input_file (str): Path to the input SVG file
@@ -130,10 +130,8 @@ def _correct_svg(input_file: str, output_file: str) -> None:
     with open(input_file) as f:
         svg_content = f.read()
 
-    # note clip-path attributes and clipPath definitions are intentionally
-    # preserved so that axes clipping (e.g. from set_xlim / set_ylim) is
-    # rendered correctly.  The _flatten_groups helper propagates clip-path
-    # from parent <g> elements to their children when groups are dissolved.
+    # Keep clipping and masking groups intact so their coordinate systems and
+    # compositing remain correct for transformed children and rasterized layers.
 
     # Parse the modified SVG with lxml
     parser = etree.XMLParser(remove_blank_text=True)
@@ -148,7 +146,7 @@ def _correct_svg(input_file: str, output_file: str) -> None:
     # Preserve each element's style, including styles encoded in PDF font names.
     _normalize_text_fonts(root, ns)
 
-    # Flatten any remaining g elements
+    # Flatten groups without clipping or masks
     _flatten_groups(root, ns)
 
     # Create an ElementTree from the root element
@@ -252,16 +250,18 @@ def _prepend_transform(
 
 
 def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
-    """Flatten all group elements by moving their children to parent.
+    """Flatten groups without clipping or masking into their parent.
 
-    When a ``<g>`` carries a ``clip-path`` or ``transform`` attribute the
-    attribute is propagated to each child element so that clipping and
-    positioning remain preserved after the group is removed.
+    Transforms propagate to children when a group is removed. Clipped and masked
+    groups stay intact: moving their attributes onto transformed children would
+    change the clipping coordinates or combined-child mask bounds.
     """
     # Iteratively flatten groups until no more flattening occurs
     while True:
         # Find g elements
-        g_elements = root.xpath("//svg:g", namespaces=ns)
+        g_elements = root.xpath(
+            "//svg:g[not(@clip-path) and not(@mask)]", namespaces=ns
+        )
 
         if not g_elements:
             break
@@ -272,7 +272,6 @@ def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
             if parent is None:
                 continue
 
-            clip_path = g.get("clip-path")
             transform = g.get("transform")
 
             # Get index of g in parent
@@ -281,10 +280,6 @@ def _flatten_groups(root: _Element, ns: dict[str, str]) -> None:
             # Move all children of g to parent
             children = list(g)
             for child in children:
-                # Propagate clip-path from the group to children that
-                # don't already have their own clip-path.
-                if clip_path is not None and child.get("clip-path") is None:
-                    child.set("clip-path", clip_path)
                 child_transform = _prepend_transform(transform, child.get("transform"))
                 if child_transform is not None:
                     child.set("transform", child_transform)
