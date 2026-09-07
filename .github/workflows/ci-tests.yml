@@ -104,14 +104,15 @@ jobs:
       UV_CACHE_DIR: ${{ github.workspace }}/.cache/uv
       UV_PYTHON_INSTALL_DIR: ${{ github.workspace }}/.cache/uv-python
       UV_PYTHON_PREFERENCE: only-managed
-      TMPDIR: ${{ github.workspace }}/.cache/tmp
-      TEMP: ${{ github.workspace }}/.cache/tmp
-      TMP: ${{ github.workspace }}/.cache/tmp
     steps:
       - uses: actions/checkout@v5
 
-      - name: Prepare local temporary directory
-        run: mkdir -p "$TMPDIR"
+      - name: Prepare local test directories
+        run: |
+          mkdir -p .cache/tmp mpl-results
+          for name in TMPDIR TEMP TMP; do
+            printf '%s=%s/.cache/tmp\n' "$name" "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          done
 
       - name: Set up uv and Python
         uses: astral-sh/setup-uv@v5
