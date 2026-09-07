@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     import cnsplots as cns
     from cnsplots._settings import CNSSettings
 
-    def _check_public_types(data: pd.DataFrame, ax: Axes) -> None:
+    def _check_public_types(data: pd.DataFrame, ax: Axes, include_images: bool) -> None:
         assert_type(cns.settings, CNSSettings)
         assert_type(cns.settings.palette_qual, str)
         assert_type(cns.settings.title_fontsize, int | float)
@@ -79,10 +79,51 @@ if TYPE_CHECKING:
         assert_type(sized_panels.panel("C", width=144, unit="pt"), Axes)
         assert_type(sized_panels.panel("D", width=2, unit=None), Axes)
 
+        assert_type(cns.datasets.get_dataset_names(), list[str])
         showcase = cns.datasets.get_showcase_data()
+        assert_type(showcase, cns.datasets.ShowcaseData)
+        assert_type(
+            cns.datasets.get_showcase_data(include_showcase_images=False),
+            cns.datasets.ShowcaseData,
+        )
         assert_type(showcase[0], pd.DataFrame)
         assert_type(showcase[3], AnnData)
+        assert_type(showcase.iris_df, pd.DataFrame)
+        assert_type(showcase.tips_df, pd.DataFrame)
+        assert_type(showcase.survival_df, pd.DataFrame)
+        assert_type(showcase.blobs, AnnData)
+        assert_type(showcase.volcano_df, pd.DataFrame)
+        assert_type(showcase.gene_sets, list[set[str]])
+        assert_type(showcase.roc_df, pd.DataFrame)
+        assert_type(showcase.slope_df, pd.DataFrame)
+        assert_type(showcase.confusion_df, pd.DataFrame)
+        assert_type(showcase.line_df, pd.DataFrame)
+        assert_type(showcase.cumulative_incidence_df, pd.DataFrame)
+        assert_type(showcase.forest_df, pd.DataFrame)
+        assert_type(showcase.upset_sets, dict[str, set[str]])
         showcase_with_images = cns.datasets.get_showcase_data(
             include_showcase_images=True
         )
+        assert_type(showcase_with_images, cns.datasets.ShowcaseDataWithImages)
         assert_type(showcase_with_images[-1], Traversable)
+        assert_type(showcase_with_images.showcase_images, Traversable)
+        optional_images = cns.datasets.get_showcase_data(
+            include_showcase_images=include_images
+        )
+        assert_type(
+            optional_images,
+            cns.datasets.ShowcaseData | cns.datasets.ShowcaseDataWithImages,
+        )
+        assert_type(optional_images.iris_df, pd.DataFrame)
+        assert_type(optional_images.tips_df, pd.DataFrame)
+        assert_type(optional_images.survival_df, pd.DataFrame)
+        assert_type(optional_images.blobs, AnnData)
+        assert_type(optional_images.volcano_df, pd.DataFrame)
+        assert_type(optional_images.gene_sets, list[set[str]])
+        assert_type(optional_images.roc_df, pd.DataFrame)
+        assert_type(optional_images.slope_df, pd.DataFrame)
+        assert_type(optional_images.confusion_df, pd.DataFrame)
+        assert_type(optional_images.line_df, pd.DataFrame)
+        assert_type(optional_images.cumulative_incidence_df, pd.DataFrame)
+        assert_type(optional_images.forest_df, pd.DataFrame)
+        assert_type(optional_images.upset_sets, dict[str, set[str]])

@@ -142,6 +142,28 @@ diagram object, respectively.
 The gallery datasets are bundled with cnsplots, so loading them does not
 require network access.
 
+Discover the packaged tabular datasets without loading them:
+
+```python
+import cnsplots as cns
+
+cns.datasets.get_dataset_names()
+# ['flights', 'fmri', 'iris', 'penguins', 'tips']
+tips = cns.datasets.load_dataset("tips")
+```
+
+Showcase results support named access as well as the existing positional
+indexing and unpacking. The default `ShowcaseData` has 13 fields;
+`include_showcase_images=True` returns `ShowcaseDataWithImages` with the same
+fields followed by `showcase_images` as the 14th field. Both modes generate
+all showcase datasets, so named access selects from the complete result:
+
+```python
+survival_df = cns.datasets.get_showcase_data().survival_df
+showcase = cns.datasets.get_showcase_data(include_showcase_images=True)
+images = showcase.showcase_images
+```
+
 ```{eval-rst}
 .. currentmodule:: cnsplots.datasets
 .. apirootsummary::
@@ -149,7 +171,10 @@ require network access.
    :nosignatures:
 
    load_dataset
+   get_dataset_names
    get_showcase_data
+   ShowcaseData
+   ShowcaseDataWithImages
 ```
 
 ## Configuration & Setup

@@ -7,6 +7,17 @@ import pandas as pd
 _DATASET_NAMES = frozenset({"flights", "fmri", "iris", "penguins", "tips"})
 
 
+def get_dataset_names() -> list[str]:
+    """List the packaged example datasets without loading data or using the network.
+
+    Returns
+    -------
+    list[str]
+        A new, alphabetically sorted list of names accepted by ``load_dataset``.
+    """
+    return sorted(_DATASET_NAMES)
+
+
 def load_dataset(name: str) -> pd.DataFrame:
     """Load a packaged example dataset without network access.
 
