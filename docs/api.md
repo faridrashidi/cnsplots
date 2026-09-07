@@ -96,6 +96,8 @@ diagram object, respectively.
    volcanoplot
    gseaplot
    rocplot
+   precisionrecallplot
+   calibrationplot
    qqplot
    forestplot
 ```
@@ -265,6 +267,125 @@ table with the same columns; omitting `ax` selects the current axes.
    :nosignatures:
 
    get_survival_results
+```
+
+## Prediction Evaluation Results
+
+`rocplot`, `precisionrecallplot`, and `calibrationplot` return the target
+Matplotlib axes. Their result accessors return typed dictionaries of detached
+DataFrames containing the numbers used to draw the plot, without recomputing
+metrics. Rows identify prediction columns using `model`; comparisons identify
+`model1` and `model2`. Models retain the supplied column order.
+
+```python
+import pandas as pd
+import cnsplots as cns
+
+data = pd.DataFrame(
+    {
+        "truth": [0, 0, 1, 1],
+        "model_a": [0.1, 0.4, 0.35, 0.8],
+        "model_b": [0.2, 0.3, 0.5, 0.7],
+    }
+)
+panels = cns.multipanel(max_width=800)
+roc_ax = panels.panel("A", width=200, height=180)
+cns.rocplot(data, "truth", ["model_a", "model_b"], pairs="all", ax=roc_ax)
+pr_ax = panels.panel("B", width=200, height=180)
+cns.precisionrecallplot(data, "truth", ["model_a", "model_b"], ax=pr_ax)
+cal_ax = panels.panel("C", width=200, height=180)
+cns.calibrationplot(data, "truth", ["model_a", "model_b"], n_bins=4, ax=cal_ax)
+
+roc = cns.get_roc_results(roc_ax)
+pr = cns.get_precision_recall_results(pr_ax)
+calibration = cns.get_calibration_results(cal_ax)
+print(roc["comparisons"])
+print(pr["metrics"])
+print(calibration["bins"])
+```
+
+### ROC coordinates and inference
+
+`get_roc_results(ax)` returns `ROCResults` with four tables:
+
+| Table | Contents |
+| --- | --- |
+| `curves` | `model`, `fpr`, `tpr`, and `threshold` in sklearn curve order; the initial threshold is infinity. |
+| `metrics` | Full-precision `auc`, `method`, `pos_label`, and sample counts per model. |
+| `bands` | `fpr`, `lower`, `upper`, `ci_level`, and `method` per model; empty unless `ci_show=True`. |
+| `comparisons` | Compared models and AUCs, `pvalue_raw`, `pvalue_adjusted`, `method`, `p_adjust`, `family_size`, and sample counts. Empty unless pairs are requested. |
+
+ROC truth remains encoded as 0/1, with 1 positive. Scores may be any finite real
+numbers; larger scores indicate the positive class. The default sklearn ROC
+coordinates omit redundant intermediate points. AUC is trapezoidal ROC area.
+Bands retain the existing deterministic, stratified 1,000-sample pointwise 95%
+bootstrap on 101 false-positive-rate grid points; they are neither simultaneous
+bands nor AUC confidence intervals. Comparisons remain paired, two-sided DeLong
+tests. `p_adjust` corrects the requested pairs as one family and adjusted p-values
+equal raw p-values when no correction is requested. DeLong comparisons require
+at least two observations of each class. Existing labels and axes returns are
+unchanged.
+
+### Precision and recall
+
+`precisionrecallplot` draws recall on the x-axis and precision on the y-axis,
+both as fractions from 0 to 1. Its reference line is positive-class prevalence.
+Legend labels explicitly report **AP**, sklearn average precision: a sum of
+precision values weighted by increases in recall, not trapezoidal PR area.
+The initial implementation has no PR confidence bands or comparison tests.
+
+`get_precision_recall_results(ax)` returns `PrecisionRecallResults` with
+`curves` (`model`, `recall`, `precision`, `threshold`) and `metrics`
+(`model`, `average_precision`, `prevalence`, `method`, `pos_label`, and counts).
+Coordinates preserve sklearn's order of increasing thresholds and decreasing
+recall. The final precision=1, recall=0 endpoint has a missing threshold.
+
+### Probability calibration
+
+Pass held-out or out-of-fold positive-class probabilities to `calibrationplot`;
+it never fits, refits, or recalibrates a model. The x-axis is mean predicted
+probability, the y-axis is observed positive-class frequency, and the diagonal
+is ideal calibration. Both axes use fractions from 0 to 1.
+
+`n_bins` defaults to 5. `strategy="uniform"` uses equal-width bins on `[0, 1]`;
+`strategy="quantile"` uses each model's empirical quantiles. Quantile bin edges
+can repeat with tied predictions, so counts need not be equal. Interior-edge
+values belong to the bin on their left; the first bin includes its lower edge.
+Endpoint probabilities 0 and 1 are accepted.
+
+`get_calibration_results(ax)` returns `CalibrationResults`. Its `bins` table
+contains `model`, zero-based `bin`, `bin_lower`, `bin_upper`, `count`,
+`mean_predicted_probability`, and `observed_frequency`. Every requested bin is
+included; empty bins have count 0 and missing means and are omitted from curves.
+The `metrics` table contains `brier_score`, `method`, `pos_label`, counts,
+`strategy`, and `n_bins` per model. The binary Brier score is the mean squared
+probability error, measuring overall probabilistic prediction quality rather
+than calibration alone. `brier_show=False` hides its legend value while keeping
+the score available in results.
+
+### Input and snapshot policies
+
+Both new plots accept `pos_label` (default 1), including string labels. Scores
+must refer to that class; changing `pos_label` does not invert the supplied
+scores. Both classes must be observed. Missing truth/scores and nonfinite,
+nonnumeric, complex, or Boolean scores are rejected without dropping rows.
+Precision–recall accepts unbounded decision scores; calibration requires
+probabilities in `[0, 1]`. The input DataFrame is left unchanged. The metrics
+tables record `n`, `n_positive`, and `n_negative` for the shared observations.
+
+Each accessor returns copies of the stored tables. A later call to the same
+plotter on the same axes replaces its snapshot. Axes without a corresponding
+plot, or whose stored plot artists have been removed, return empty tables with
+the same columns. Omitting `ax` selects the current axes.
+
+```{eval-rst}
+.. apirootsummary::
+   :toctree: api
+   :nosignatures:
+
+   get_roc_results
+   get_precision_recall_results
+   get_calibration_results
 ```
 
 ## Statistical Models

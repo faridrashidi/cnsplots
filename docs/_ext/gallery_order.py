@@ -73,6 +73,8 @@ GALLERY_CATEGORIES = [
             "volcanoplot",
             "confusionplot",
             "rocplot",
+            "precisionrecallplot",
+            "calibrationplot",
             "vennplot",
             "upsetplot",
         ],
