@@ -87,6 +87,13 @@ verbosity used by later helper and plotting calls.
 These settings control the default save behavior and font embedding choices for
 exported figures.
 
+Override export defaults for one call with `cns.savefig(..., dpi=300,
+transparent=False, bbox_inches="tight", pad_inches=0.1)`. These arguments leave
+`cns.settings` unchanged. Omitted options use the corresponding settings, as do
+`None` values for `dpi`, `transparent`, and `pad_inches`. Explicit
+`bbox_inches=None` saves the full figure canvas without cropping. Padding is in
+inches and applies only to tight cropping.
+
 ```{eval-rst}
 .. autoattribute:: cnsplots._settings.CNSSettings.savefig_bbox
 .. autoattribute:: cnsplots._settings.CNSSettings.savefig_pad_inches

@@ -209,8 +209,8 @@ def test_boxplot_basic():
     """Test basic boxplot creation."""
     df = pd.DataFrame({"x": ["A", "B"], "y": [1, 2]})
     fig = cns.figure(150, 150)
-    cns.boxplot(data=df, x="x", y="y")
-    assert fig is not None
+    ax = cns.boxplot(data=df, x="x", y="y")
+    assert ax.figure is fig
 
 
 def test_boxplot_invalid_data():

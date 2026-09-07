@@ -155,13 +155,13 @@ import cnsplots as cns
 df = cns.datasets.load_dataset("tips")
 
 # Create a figure (width, height in pixels)
-cns.figure(width=100, height=150)
+fig = cns.figure(width=100, height=150)
 
 # Create a publication-ready boxplot
 cns.boxplot(data=df, x="day", y="total_bill")
 
 # Save as vector graphic
-cns.savefig("figure.svg")
+cns.savefig("figure.svg", fig=fig)
 ```
 
 ### Statistical Comparisons
@@ -216,6 +216,9 @@ Specify sizes in **pixels** for precise control:
 ```python
 cns.figure(width=100, height=150)  # Final canvas size is 100px × 150px
 ```
+
+`cns.figure(...)` returns the Matplotlib `Figure` and makes it current for
+subsequent plotting calls. Retain it to export a specific figure with `fig=`.
 
 ### Color Palettes
 
@@ -281,11 +284,19 @@ cns.stackplot(
 cns.savefig("figure.svg")
 
 # High-resolution PNG
-cns.savefig("figure.png")
+cns.savefig("figure.png", dpi=300, transparent=False)
 
 # PDF with editable text
 cns.savefig("figure.pdf")
+
+# Keep the full figure canvas instead of cropping to its contents
+cns.savefig("figure-full.pdf", bbox_inches=None)
 ```
+
+`savefig` uses the current figure unless `fig=` is supplied. Omitted export
+options use `cns.settings`; per-call `dpi`, `transparent`, `bbox_inches`, and
+`pad_inches` overrides leave those settings unchanged. Use
+`bbox_inches="tight", pad_inches=0.1` for a tight crop with padding in inches.
 
 For Illustrator-optimized SVG post-processing, install MuPDF's `mutool`.
 Without it, `cns.savefig("figure.svg")` falls back to a standard matplotlib SVG

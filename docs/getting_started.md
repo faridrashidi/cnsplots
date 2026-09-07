@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 df = cns.datasets.load_dataset("tips")
 
 # Create a figure with specific dimensions (width x height in pixels)
-cns.figure(100, 150)
+fig = cns.figure(100, 150)
 
 # Create a boxplot
 cns.boxplot(data=df, x="day", y="total_bill")
 
 # Save the figure
-cns.savefig("my_figure.svg")
+cns.savefig("my_figure.svg", fig=fig)
 ```
 
 In these examples, `data` is a pandas DataFrame, and `x`, `y`, and `hue`
@@ -38,6 +38,22 @@ cns.figure(150, 200)
 
 `cns.figure(width, height)` uses the conventional width-first order, and those
 values are the final canvas size in pixels.
+
+`cns.figure(...)` returns the created `matplotlib.figure.Figure` and makes it
+the current figure, so subsequent cnsplots calls still draw on it. Keep this
+handle to save it later, even after creating another figure:
+
+```python
+fig = cns.figure(150, 100)
+cns.boxplot(data=df, x="day", y="total_bill")
+cns.figure(150, 100)
+cns.barplot(data=df, x="day", y="tip")
+cns.savefig("boxplot.svg", fig=fig)
+```
+
+Previously, `cns.figure(...)` returned `None`. Calls that ignore the return value
+continue to work, but code that checks for `None` or uses the result as a boolean
+must be updated for the returned `Figure`.
 
 ## Basic Plot Types
 
@@ -91,7 +107,7 @@ cns.barplot(data=df, x="day", y="total_bill", ax=axes[1])
 axes[1].set_title("Bar Plot")
 
 plt.tight_layout()
-cns.savefig("subplots.svg")
+cns.savefig("subplots.svg", fig=fig)
 ```
 
 All plotting functions accept `ax` as a keyword-only argument, so they can be
@@ -112,8 +128,33 @@ cns.savefig("figure.svg")
 cns.savefig("figure.pdf")
 
 # PNG for presentations or raster workflows
-cns.savefig("figure.png")
+cns.savefig("figure.png", dpi=300, transparent=False)
 ```
+
+By default, `cns.savefig(...)` saves the current figure. Pass `fig=fig` to save
+a retained `Figure` without changing which figure is current. Export options
+are keyword-only and apply to that save without changing `cns.settings`:
+
+```python
+# Tight crop with 0.1 inches of padding around the plotted contents
+cns.savefig("figure-tight.pdf", bbox_inches="tight", pad_inches=0.1)
+
+# Preserve the full figure canvas without cropping
+cns.savefig("figure-full.png", bbox_inches=None)
+
+# Export a specific rectangle in inches: left, bottom, width, height
+from matplotlib.transforms import Bbox
+
+cns.savefig("figure-region.pdf", bbox_inches=Bbox.from_bounds(0, 0, 1, 1))
+```
+
+Omitting `dpi`, `transparent`, `bbox_inches`, or `pad_inches` uses the matching
+export default in {doc}`settings`. Passing `None` for `dpi`, `transparent`, or
+`pad_inches` also uses the setting; explicit `bbox_inches=None` instead disables
+cropping. Padding applies only to `bbox_inches="tight"` and is ignored for
+`None` or a `Bbox`. Raster output dimensions depend on the figure's size in
+inches, export DPI, and any crop or padding; export DPI does not resize the
+figure itself.
 
 If MuPDF's `mutool` is available, `cnsplots` uses an enhanced SVG export path
 for Illustrator workflows. Otherwise it saves a standard matplotlib SVG and

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Sequence
+from enum import Enum
 from typing import Any, Literal, cast, overload
 
 import itertools
@@ -22,6 +23,7 @@ import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.colors import Colormap
+from matplotlib.figure import Figure
 from matplotlib.typing import ColorType
 from palettable.cartocolors.qualitative import get_map as _get_cartocolor_map
 from palettable.colorbrewer.colorbrewer import get_map as _get_colorbrewer_map
@@ -317,12 +319,16 @@ def _capture_detached_axes_layout(
     return new_layouts
 
 
+class _SavefigDefault(Enum):
+    SETTINGS = "settings"
+
+
 def figure(
     width: int | float | None = None,
     height: int | float | None = None,
     color_cycle: str | Sequence[ColorType] | None = None,
     color_map: str | None = None,
-) -> None:
+) -> Figure:
     """
     Initialize a new figure with custom size and styling.
 
@@ -346,8 +352,8 @@ def figure(
 
     Returns
     -------
-    None
-        This function creates a figure and returns nothing.
+    matplotlib.figure.Figure
+        The newly created figure, which is also the current pyplot figure.
 
     See Also
     --------
@@ -361,6 +367,9 @@ def figure(
     resolution and uses ``cns.settings.figure_dpi`` for the rendered DPI.
 
     The figure size formula is: inches = pixels / 72.
+
+    This function previously returned None. Callers that ignore the return value
+    continue to work; callers or type checks relying on None must be updated.
 
     Examples
     --------
@@ -382,14 +391,24 @@ def figure(
     if color_map is None:
         color_map = settings.palette_seq
     setup_matplotlib(color_cycle, color_map)
-    plt.figure(figsize=(width / 72, height / 72), dpi=settings.figure_dpi)
+    return plt.figure(figsize=(width / 72, height / 72), dpi=settings.figure_dpi)
 
 
-def savefig(filepath: str | os.PathLike[str]) -> None:
+def savefig(
+    filepath: str | os.PathLike[str],
+    *,
+    fig: Figure | None = None,
+    dpi: float | None = None,
+    transparent: bool | None = None,
+    bbox_inches: Literal["tight"] | mtransforms.Bbox | None | _SavefigDefault = (
+        _SavefigDefault.SETTINGS
+    ),
+    pad_inches: float | None = None,
+) -> None:
     """
-    Save the current figure to a file, creating directories if needed.
+    Save a figure to a file, creating directories if needed.
 
-    This function saves the current matplotlib figure to the specified file path,
+    This function saves a matplotlib figure to the specified file path,
     automatically creating any missing parent directories.
 
     Parameters
@@ -397,6 +416,23 @@ def savefig(filepath: str | os.PathLike[str]) -> None:
     filepath : str
         Path where the figure should be saved. Can include home directory shorthand
         (~). The file format is determined by the extension (e.g., .pdf, .png, .svg).
+    fig : matplotlib.figure.Figure, optional
+        Figure to export. If None, use the current pyplot figure. Exporting an
+        explicit figure does not change the current figure selection.
+    dpi : float, optional
+        Positive, finite export resolution. If None, use cns.settings.savefig_dpi.
+        Vector geometry retains its physical size; DPI controls rasterized content.
+    transparent : bool, optional
+        Whether figure and axes backgrounds are transparent. If None, use
+        cns.settings.savefig_transparent. Format support follows matplotlib.
+    bbox_inches : {'tight', None} or matplotlib.transforms.Bbox, optional
+        Export bounds in inches. If omitted, use cns.settings.savefig_bbox
+        ('tight' crops to the artists; other configured modes use the full figure).
+        Explicit None saves the full figure, even when the configured default is
+        'tight'. A Bbox specifies a fixed region in inches.
+    pad_inches : float, optional
+        Non-negative, finite padding around tight bounds, in inches. If None, use
+        cns.settings.savefig_pad_inches. Ignored for full-figure or fixed bounds.
 
     Returns
     -------
@@ -419,7 +455,10 @@ def savefig(filepath: str | os.PathLike[str]) -> None:
       is available, and falls back to matplotlib SVG output otherwise
 
     Supported formats include: PDF, PNG, SVG, JPG, EPS, and more (any format
-    supported by matplotlib.pyplot.savefig).
+    supported by matplotlib.figure.Figure.savefig). Explicit options take
+    precedence over current cnsplots settings. Other options retain matplotlib's
+    backend defaults. Settings, rcParams, figure DPI, and canvas are preserved,
+    including when export fails. This does not make matplotlib thread-safe.
 
     Examples
     --------
@@ -431,28 +470,64 @@ def savefig(filepath: str | os.PathLike[str]) -> None:
     >>> # Save in multiple formats
     >>> cns.savefig("plot.png")
     >>> cns.savefig("plot.svg")
+
+    >>> # Export a retained figure with per-call options
+    >>> fig = cns.figure(width=300, height=200)
+    >>> cns.boxplot(data=df, x="group", y="value")
+    >>> cns.savefig("plot.png", fig=fig, dpi=300, transparent=False, bbox_inches=None)
     """
+    if dpi is None:
+        dpi = settings.savefig_dpi
+    if isinstance(dpi, bool) or not isinstance(dpi, (int, float)):
+        raise TypeError("dpi must be a number")
+    if not math.isfinite(dpi) or dpi <= 0:
+        raise ValueError("dpi must be positive and finite")
+    if transparent is None:
+        transparent = settings.savefig_transparent
+    if not isinstance(transparent, bool):
+        raise TypeError("transparent must be a boolean")
+    if pad_inches is None:
+        pad_inches = settings.savefig_pad_inches
+    if isinstance(pad_inches, bool) or not isinstance(pad_inches, (int, float)):
+        raise TypeError("pad_inches must be a number")
+    if not math.isfinite(pad_inches) or pad_inches < 0:
+        raise ValueError("pad_inches must be non-negative and finite")
+    if bbox_inches is _SavefigDefault.SETTINGS:
+        bbox_inches = "tight" if settings.savefig_bbox == "tight" else None
+    if not (
+        bbox_inches is None
+        or isinstance(bbox_inches, mtransforms.Bbox)
+        or (isinstance(bbox_inches, str) and bbox_inches == "tight")
+    ):
+        raise ValueError("bbox_inches must be 'tight', None, or a Bbox")
+
     filepath = Path(filepath).expanduser()
     if filepath.parent != Path("."):
         filepath.parent.mkdir(parents=True, exist_ok=True)
-    fig = plt.gcf()
+    if fig is None:
+        fig = plt.gcf()
     for ax in fig.get_axes():
         apply_unicode_font(ax)
-    target_dpi = float(settings.savefig_dpi)
+    target_dpi = float(dpi)
     original_dpi = fig.dpi
+    original_canvas = fig.canvas
     root, ext = os.path.splitext(filepath)
     try:
         if target_dpi != original_dpi:
             fig.set_dpi(target_dpi)
         fig.canvas.draw()
-        bbox_inches = _get_export_bbox_inches(fig)
+        export_bbox = _get_export_bbox_inches(
+            fig, bbox_inches=bbox_inches, pad_inches=pad_inches
+        )
+        savefig_kwargs: dict[str, Any] = {
+            "dpi": target_dpi,
+            "transparent": transparent,
+            "bbox_inches": export_bbox,
+            "pad_inches": 0,
+        }
         if ext.lower() == ".svg":
-            _save_svg(str(filepath), root, bbox_inches=bbox_inches)
+            _save_svg(str(filepath), root, fig=fig, **savefig_kwargs)
         else:
-            savefig_kwargs: dict[str, object] = {"dpi": target_dpi}
-            if bbox_inches is not None:
-                savefig_kwargs["bbox_inches"] = bbox_inches
-                savefig_kwargs["pad_inches"] = 0
             if ext.lower() == ".pdf":
                 fonttools_logger = logging.getLogger("fontTools")
                 previous_level = fonttools_logger.level
@@ -460,21 +535,31 @@ def savefig(filepath: str | os.PathLike[str]) -> None:
                     fonttools_logger.setLevel(
                         max(fonttools_logger.getEffectiveLevel(), logging.ERROR)
                     )
-                    plt.savefig(filepath, **savefig_kwargs)
+                    fig.savefig(filepath, **savefig_kwargs)
                 finally:
                     fonttools_logger.setLevel(previous_level)
             else:
-                plt.savefig(filepath, **savefig_kwargs)
+                fig.savefig(filepath, **savefig_kwargs)
     finally:
+        fig.set_canvas(original_canvas)
         if fig.dpi != original_dpi:
             fig.set_dpi(original_dpi)
-            fig.canvas.draw()
+    # Refresh the original canvas after success without masking export failures.
+    fig.canvas.draw()
 
 
-def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
+def _get_export_bbox_inches(
+    fig: Figure,
+    *,
+    bbox_inches: Literal["tight"] | mtransforms.Bbox | None,
+    pad_inches: float,
+) -> mtransforms.Bbox:
     """Return a shared export bbox so raster and vector outputs align."""
-    if settings.savefig_bbox != "tight":
-        return None
+    if isinstance(bbox_inches, mtransforms.Bbox):
+        return bbox_inches.frozen()
+    if bbox_inches is None:
+        # Passing None to Figure.savefig would reapply rcParams['savefig.bbox'].
+        return fig.bbox_inches.frozen()
 
     original_canvas = fig.canvas
     agg_canvas = FigureCanvasAgg(fig)
@@ -482,9 +567,9 @@ def _get_export_bbox_inches(fig) -> mtransforms.Bbox | None:
         agg_canvas.draw()
         bbox_inches = fig.get_tightbbox(agg_canvas.get_renderer())
         if bbox_inches is None:
-            return None
-        if settings.savefig_pad_inches:
-            bbox_inches = bbox_inches.padded(float(settings.savefig_pad_inches))
+            return fig.bbox_inches.frozen()
+        if pad_inches:
+            bbox_inches = bbox_inches.padded(pad_inches)
         return mtransforms.Bbox.from_extents(*bbox_inches.extents)
     finally:
         fig.set_canvas(original_canvas)
