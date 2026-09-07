@@ -128,6 +128,7 @@ def heatmapplot(
     ylabel_labelpad: float = 3,
     *,
     ax: Axes | None = None,
+    max_cluster_bytes: int | None = 512 * 1024**2,
     **kwargs: Any,
 ) -> ClusterMapPlotterNew:
     """
@@ -192,6 +193,11 @@ def heatmapplot(
         Padding between the y-axis label and the tick labels.
     ax : matplotlib.axes.Axes, optional
         Host axes for the heatmap layout. If None, uses the current axes.
+    max_cluster_bytes : int or None, default: 536870912
+        Maximum estimated bytes for one condensed float64 distance array per
+        clustering call (512 MiB). Raises ValueError before a call exceeding this
+        limit. Increase the limit or use None to disable this check. This is not
+        a limit on total plot memory; inputs and backend working copies add to it.
     **kwargs
         Additional keyword arguments passed to `ClusterMapPlotterNew`.
 
@@ -210,6 +216,29 @@ def heatmapplot(
     Categorical annotations automatically use predefined color palettes (Set1, Set2, etc.),
     while continuous annotations use sequential colormaps (parula, gnuplot, bwr, hot).
     The function cycles through available palettes when multiple annotations are present.
+
+    Clustering checks rows and columns independently, including each split group
+    and clustering of group averages. Integer splits first cluster the entire
+    axis. Metadata splits cluster group averages even when ``row_cluster`` or
+    ``col_cluster`` is False, unless an explicit ``row_split_order`` or
+    ``col_split_order`` is supplied. Unclustered axes do not incur distance costs.
+
+    SciPy linkage uses quadratic memory for every method. When fastcluster is
+    available, PyComplexHeatmap uses its memory-saving vector implementation for
+    single linkage, and for centroid, median, or ward linkage with the Euclidean
+    metric; those paths do not allocate a condensed distance array and are exempt
+    from this check. Other fastcluster methods use quadratic distance storage.
+    For example, 50,000 items require 9,999,800,000 bytes (about 9.3 GiB) for one
+    condensed distance array alone. Subset or aggregate large data before plotting.
+    See the `SciPy linkage notes
+    <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html>`_.
+
+    For an unsplit axis, pass a precomputed SciPy-format linkage matrix using
+    ``row_dendrogram_kws={"linkage": Z}`` or ``col_dendrogram_kws={"linkage": Z}``.
+    It must match the corresponding input axis order and bypasses distance
+    computation. Precomputed distance matrices are not accepted as linkage;
+    PyComplexHeatmap does not support separate linkage matrices per split group.
+    The existing sparse-to-dense 512 MiB guard remains independent of this limit.
 
     Examples
     --------
@@ -381,6 +410,7 @@ def heatmapplot(
             xlabel_kws={"labelpad": xlabel_labelpad},
             verbose=0,
             ax=ax,
+            max_cluster_bytes=max_cluster_bytes,
             row_names_side="left" if left_annotation is None else "right",
             xticklabels=True,
             yticklabels=True,

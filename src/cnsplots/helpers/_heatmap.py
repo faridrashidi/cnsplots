@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+import importlib
 from typing import Any
 
 import matplotlib as mpl
@@ -13,6 +14,42 @@ from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
 from PyComplexHeatmap.clustermap import mm2inch
 
 import cnsplots._utils as utils
+
+
+def _check_cluster_memory(
+    n_items: int,
+    method: str,
+    metric: str,
+    max_cluster_bytes: int | None,
+    axis: str,
+) -> None:
+    """Guard one linkage run using its condensed float64 distance-array size."""
+    distance_bytes = n_items * (n_items - 1) // 2 * np.dtype(np.float64).itemsize
+    if max_cluster_bytes is None or distance_bytes <= max_cluster_bytes:
+        return
+
+    # Mirror PyComplexHeatmap's optional backend and linkage_vector selection.
+    try:
+        importlib.import_module("fastcluster")
+    except ImportError:
+        backend = "SciPy"
+    else:
+        if method == "single" or (
+            metric == "euclidean" and method in {"centroid", "median", "ward"}
+        ):
+            return
+        backend = "fastcluster"
+
+    raise ValueError(
+        f"{axis.capitalize()} clustering of {n_items:,} items using {backend} "
+        f"({method}, {metric}) would require approximately "
+        f"{distance_bytes / 1024**2:.1f} MiB for one condensed distance array, "
+        f"exceeding max_cluster_bytes={max_cluster_bytes}. "
+        "Subset or aggregate data, disable clustering (including between split "
+        "groups by setting an explicit split order), or supply "
+        f"{axis}_dendrogram_kws={{'linkage': Z}} for an unsplit axis. "
+        "Increase max_cluster_bytes or set it to None to override this guard."
+    )
 
 
 def _get_canvas_renderer(canvas: Any) -> Any | None:
@@ -363,8 +400,19 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         legend_delta_x: float | None = None,
         verbose: int = 1,
         ax: Axes | None = None,
+        max_cluster_bytes: int | None = 512 * 1024**2,
         **kwargs: Any,
     ) -> None:
+        if max_cluster_bytes is not None:
+            if isinstance(max_cluster_bytes, bool) or not isinstance(
+                max_cluster_bytes, int
+            ):
+                raise TypeError(
+                    "max_cluster_bytes must be a nonnegative integer or None"
+                )
+            if max_cluster_bytes < 0:
+                raise ValueError("max_cluster_bytes must be nonnegative")
+        self.max_cluster_bytes = max_cluster_bytes
         self.data = data
         self.legend_gap = legend_gap
         self._host_ax = ax
@@ -434,6 +482,32 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
         )
         if not plot:
             self.post_processing()
+
+    def calculate_row_dendrograms(
+        self, data: pd.DataFrame, sizes: Any = None, use_linkage: bool = True
+    ) -> None:
+        if not (use_linkage and self.row_dendrogram_kws.get("linkage") is not None):
+            _check_cluster_memory(
+                data.shape[0],
+                self.row_cluster_method,
+                self.row_cluster_metric,
+                self.max_cluster_bytes,
+                "row",
+            )
+        super().calculate_row_dendrograms(data, sizes=sizes, use_linkage=use_linkage)
+
+    def calculate_col_dendrograms(
+        self, data: pd.DataFrame, sizes: Any = None, use_linkage: bool = True
+    ) -> None:
+        if not (use_linkage and self.col_dendrogram_kws.get("linkage") is not None):
+            _check_cluster_memory(
+                data.shape[1],
+                self.col_cluster_method,
+                self.col_cluster_metric,
+                self.max_cluster_bytes,
+                "col",
+            )
+        super().calculate_col_dendrograms(data, sizes=sizes, use_linkage=use_linkage)
 
     def plot(
         self,

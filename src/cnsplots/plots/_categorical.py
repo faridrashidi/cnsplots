@@ -27,6 +27,7 @@ from cnsplots._validation import (
 LollipopError = float | tuple[float, float]
 
 _LOLLIPOP_BOOTSTRAP_SAMPLES = 1000
+_LOLLIPOP_BOOTSTRAP_BATCH_SIZE = 64
 _LOLLIPOP_BOOTSTRAP_SEED = 0
 _BAR_LABEL_PADDING = 2
 _BAR_LABEL_PVALUE_GAP = 2
@@ -114,12 +115,15 @@ def _compute_lollipop_error(
     if estimator == "median":
         samples = values.to_numpy(dtype=float)
         rng = np.random.default_rng(_LOLLIPOP_BOOTSTRAP_SEED)
-        indices = rng.integers(
-            0,
-            sample_size,
-            size=(_LOLLIPOP_BOOTSTRAP_SAMPLES, sample_size),
-        )
-        bootstrap_medians = np.median(samples[indices], axis=1)
+        bootstrap_medians = np.empty(_LOLLIPOP_BOOTSTRAP_SAMPLES)
+        for start in range(
+            0, _LOLLIPOP_BOOTSTRAP_SAMPLES, _LOLLIPOP_BOOTSTRAP_BATCH_SIZE
+        ):
+            stop = min(
+                start + _LOLLIPOP_BOOTSTRAP_BATCH_SIZE, _LOLLIPOP_BOOTSTRAP_SAMPLES
+            )
+            indices = rng.integers(0, sample_size, size=(stop - start, sample_size))
+            bootstrap_medians[start:stop] = np.median(samples[indices], axis=1)
         if errorbar == "se":
             return float(bootstrap_medians.std(ddof=1))
         lower, upper = np.percentile(bootstrap_medians, [2.5, 97.5])
@@ -524,6 +528,11 @@ def lollipopplot(
     -----
     When ``pairs`` is provided, ``get_comparison_results(ax)`` returns the
     comparison table without rerunning the statistical tests.
+
+    Median standard errors and confidence intervals use 1,000 deterministic
+    bootstrap replicates in batches of at most 64. Each index or resampled-value
+    array therefore holds at most ``64 * n`` elements for ``n`` non-missing
+    observations in a group, rather than ``1000 * n``.
 
     Examples
     --------
