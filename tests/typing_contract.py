@@ -57,6 +57,17 @@ if TYPE_CHECKING:
         assert_type(cns.apply_unicode_font(ax), None)
         assert_type(cns.take_legend_out("Group"), None)
         assert_type(cns.get_hexcolors_from_apalette([0], "Set1"), list[str])
+        assert_type(
+            cns.get_hexcolors_from_apalette(alist=[0], palette="Set1"), list[str]
+        )
+        assert_type(cns.get_palette_colors([0]), list[str])
+        assert_type(cns.get_palette_colors([0], palette=None), list[str])
+        assert_type(cns.get_palette_colors(indices=(0, 2), palette="Set1"), list[str])
+        assert_type(cns.get_palette_colors([1], ["red", (0.1, 0.2, 0.3)]), list[str])
+        assert_type(cns.available_palettes(), list[str])
+        assert_type(cns.available_palettes(kind="qualitative"), list[str])
+        assert_type(cns.available_palettes(kind="continuous"), list[str])
+        assert_type(cns.register_palette("MyLab", ["red", (0.1, 0.2, 0.3)]), None)
         assert_type(cns.palettes("Set1"), list[tuple[float, float, float]])
         assert_type(cns.palettes("parula"), Colormap)
         assert_type(cns.boxplot(data, x="group", y="value"), Axes)

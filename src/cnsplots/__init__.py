@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from ._methods import LogisticModel as LogisticModel
     from ._methods import prerank as prerank
     from ._multipanels import multipanel as multipanel
+    from ._palettes import available_palettes as available_palettes
     from ._settings import settings as settings
     from ._setup import setup_ax as setup_ax
     from ._setup import setup_ggplot as setup_ggplot
@@ -32,7 +33,9 @@ if TYPE_CHECKING:
     from ._utils import apply_unicode_font as apply_unicode_font
     from ._utils import figure as figure
     from ._utils import get_hexcolors_from_apalette as get_hexcolors_from_apalette
+    from ._utils import get_palette_colors as get_palette_colors
     from ._utils import palettes as palettes
+    from ._utils import register_palette as register_palette
     from ._utils import savefig as savefig
     from ._utils import take_legend_out as take_legend_out
     from .plots import barplot as barplot
@@ -101,16 +104,19 @@ _LAZY_IMPORTS = {
     "setup_scanpy": ("cnsplots._setup", "setup_scanpy"),
     "add_panel_label": ("cnsplots._utils", "add_panel_label"),
     "apply_unicode_font": ("cnsplots._utils", "apply_unicode_font"),
+    "available_palettes": ("cnsplots._palettes", "available_palettes"),
     "figure": ("cnsplots._utils", "figure"),
     "multipanel": ("cnsplots._multipanels", "multipanel"),
     "save": ("cnsplots._utils", "savefig"),
     "savefig": ("cnsplots._utils", "savefig"),
     "palettes": ("cnsplots._utils", "palettes"),
+    "register_palette": ("cnsplots._utils", "register_palette"),
     "take_legend_out": ("cnsplots._utils", "take_legend_out"),
     "get_hexcolors_from_apalette": (
         "cnsplots._utils",
         "get_hexcolors_from_apalette",
     ),
+    "get_palette_colors": ("cnsplots._utils", "get_palette_colors"),
     "barplot": ("cnsplots.plots._categorical", "barplot"),
     "boxplot": ("cnsplots.plots._distribution", "boxplot"),
     "confusionplot": ("cnsplots.plots._heatmap", "confusionplot"),
