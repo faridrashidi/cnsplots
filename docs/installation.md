@@ -35,7 +35,65 @@ cnsplots skill install --agent claude --scope project
 ```
 
 Invoke the installed skill as `$cnsplots` in Codex or `/cnsplots` in Claude
-Code. After upgrading cnsplots, pass `--force` to update an existing skill.
+Code. The `install`, `status`, and `uninstall` commands all accept
+`--agent all|codex|claude` (default: `all`) and `--scope user|project`
+(default: `user`). Project scope uses `.agents/skills/cnsplots` and
+`.claude/skills/cnsplots` beneath the current directory.
+
+Inspect installed skills without changing any files:
+
+```bash
+cnsplots skill status
+cnsplots skill status --agent codex --scope project
+```
+
+Status reports each resolved destination, installed cnsplots version (or
+`unknown`), and whether its content `matches` or `differs` from the bundled
+skill (`unavailable` when it cannot be compared). The installation state is
+`missing`, `current`, `modified`, `outdated`, or `unmanaged`. Installations
+without an ownership manifest are unmanaged. Changed or missing managed files
+are reported as modified; otherwise, a different version or packaged content
+is reported as outdated.
+
+After upgrading cnsplots, update an existing skill with:
+
+```bash
+cnsplots skill install --force
+```
+
+Each installation records its version and managed file hashes in
+`.cnsplots-manifest.json`. A forced update overwrites current packaged files,
+including local edits to those files. It removes obsolete managed files only
+when their content is unchanged, and preserves modified obsolete files and
+unrelated files. If a newly introduced packaged file conflicts with a different
+unrelated file in a managed installation, the update fails instead of overwriting
+that file.
+
+For legacy installations without a manifest, `install --force` overwrites the
+current package's file paths and starts ownership tracking. It preserves other
+existing files, including obsolete files that have no recorded ownership.
+
+Remove an installed skill with:
+
+```bash
+cnsplots skill uninstall
+cnsplots skill uninstall --agent claude --scope project
+```
+
+Uninstall removes unchanged managed files and the ownership manifest. Modified
+and unrelated files remain in place and become unmanaged. An already missing
+installation succeeds without changes. An existing installation without a
+manifest cannot be uninstalled automatically; use `install --force` first only
+if overwriting the current package's file paths is acceptable. Uninstall has no
+`--force` option.
+
+Commands refuse symlinked destinations, destination path components, or managed
+paths. Unrelated symlinks are preserved.
+
+Use `cnsplots skill --help` or `cnsplots skill <command> --help` for command
+options. Successful commands return exit code `0`; status also returns `0` for
+missing or differing installations. Operational errors return `1`, and invalid
+command usage returns `2`.
 
 ## Verify Installation
 
