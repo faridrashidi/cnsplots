@@ -10,7 +10,7 @@ import types
 from collections.abc import Mapping, Sequence
 from importlib.metadata import version
 from pathlib import Path
-from typing import Any, cast, get_type_hints
+from typing import Any, cast, get_type_hints, is_typeddict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,6 +29,7 @@ _PUBLIC_PLOT_NAMES = frozenset(
     {
         "barplot",
         "boxplot",
+        "calibrationplot",
         "confusionplot",
         "cumulativeincidenceplot",
         "distplot",
@@ -45,6 +46,7 @@ _PUBLIC_PLOT_NAMES = frozenset(
         "phyloplot",
         "pieplot",
         "placeholderplot",
+        "precisionrecallplot",
         "qqplot",
         "regplot",
         "ridgeplot",
@@ -215,7 +217,7 @@ assert not {
     src_path = Path(__file__).parents[1] / "src"
     no_site_script = (
         f"import sys; sys.path.insert(0, {str(src_path)!r}); "
-        "import cnsplots; assert len(cnsplots.__all__) == 69"
+        "import cnsplots; assert len(cnsplots.__all__) == 77"
     )
     subprocess.run([sys.executable, "-S", "-c", no_site_script], check=True)
 
@@ -276,6 +278,9 @@ def test_public_callable_annotations_resolve() -> None:
 
     for name in cns.__all__:
         value = getattr(cns, name)
+        if is_typeddict(value):
+            assert set(get_type_hints(value).values()) == {pd.DataFrame}
+            continue
         if not (inspect.isfunction(value) or inspect.isclass(value)):
             continue
 

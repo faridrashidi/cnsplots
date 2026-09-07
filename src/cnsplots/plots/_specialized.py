@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import combinations
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 
 import matplotlib.pyplot as plt
 import num2tex
@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from anndata import AnnData
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -37,6 +38,44 @@ _FOREST_GROUP = "_forest_group"
 _FOREST_HUE = "_forest_hue"
 _FOREST_ALL = "__forest_all__"
 _P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
+_ROC_COLUMNS = {
+    "curves": ["model", "fpr", "tpr", "threshold"],
+    "metrics": ["model", "auc", "method", "pos_label", "n", "n_positive", "n_negative"],
+    "bands": ["model", "fpr", "lower", "upper", "ci_level", "method"],
+    "comparisons": [
+        "model1",
+        "model2",
+        "auc1",
+        "auc2",
+        "pvalue_raw",
+        "pvalue_adjusted",
+        "method",
+        "p_adjust",
+        "family_size",
+        "pos_label",
+        "n",
+        "n_positive",
+        "n_negative",
+    ],
+}
+
+
+class ROCResults(TypedDict):
+    """Detached ROC tables returned by :func:`get_roc_results`."""
+
+    curves: pd.DataFrame
+    metrics: pd.DataFrame
+    bands: pd.DataFrame
+    comparisons: pd.DataFrame
+
+
+def _empty_roc_results() -> ROCResults:
+    return {
+        "curves": pd.DataFrame(columns=pd.Index(_ROC_COLUMNS["curves"])),
+        "metrics": pd.DataFrame(columns=pd.Index(_ROC_COLUMNS["metrics"])),
+        "bands": pd.DataFrame(columns=pd.Index(_ROC_COLUMNS["bands"])),
+        "comparisons": pd.DataFrame(columns=pd.Index(_ROC_COLUMNS["comparisons"])),
+    }
 
 
 def placeholderplot(description: str, *, ax: Axes | None = None) -> Axes:
@@ -891,6 +930,73 @@ def _validate_roc_scores(data: pd.DataFrame, columns: list[str]) -> None:
             )
 
 
+def get_roc_results(ax: Axes | None = None) -> ROCResults:
+    """Return the exact numerical outputs of the latest rocplot call.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        Axes returned by rocplot. Defaults to the current axes.
+
+    Returns
+    -------
+    ROCResults
+        A mapping of four detached pandas DataFrames, in plotted model and
+        requested comparison order:
+
+        * ``curves``: ``model``, ``fpr``, ``tpr``, ``threshold``. Coordinates and
+          thresholds come directly from sklearn's ``roc_curve`` with its default
+          intermediate-point dropping. The first threshold is positive infinity.
+        * ``metrics``: ``model``, ``auc``, ``method``, ``pos_label``, ``n``,
+          ``n_positive``, ``n_negative``. ``auc`` is the unrounded value used in
+          the legend; ``method='trapezoidal'`` integrates TPR over FPR.
+        * ``bands``: ``model``, ``fpr``, ``lower``, ``upper``, ``ci_level``,
+          ``method``. Only populated when ``ci_show=True``. These pointwise 95%
+          intervals use 1,000 stratified bootstrap samples, seed 42, and a grid
+          of 101 equally spaced FPR values; ``method='stratified_bootstrap'``.
+          They are intervals for the curve, not for AUC.
+        * ``comparisons``: ``model1``, ``model2``, ``auc1``, ``auc2``,
+          ``pvalue_raw``, ``pvalue_adjusted``, ``method``, ``p_adjust``,
+          ``family_size``, ``pos_label``, ``n``, ``n_positive``, ``n_negative``.
+          Only requested paired, two-sided tests appear (``method='delong'``).
+          Raw and adjusted p-values agree when ``p_adjust`` is None;
+          ``family_size`` counts all requested pairs. The adjusted value is the
+          unrounded value used in each annotation.
+
+        Models are identified by prediction column names. Positive labels are
+        always 1 and negative labels 0. Counts include every input row, with the
+        same paired observations used for all models. Unrequested analyses and
+        axes without valid stored results return empty tables with these columns.
+
+    Notes
+    -----
+    No statistics are recomputed. Each call returns independent copies, and each
+    rocplot call replaces the stored results for its axes. Clearing the axes or
+    removing a stored ROC curve, band, or comparison annotation invalidates the
+    snapshot. Editing labels or moving the legend does not affect the tables.
+
+    Examples
+    --------
+    >>> ax = cns.rocplot(df, "truth", ["model_a", "model_b"], pairs="all")
+    >>> results = cns.get_roc_results(ax)
+    >>> results["metrics"].to_csv("roc_metrics.csv", index=False)
+    """
+    if ax is None:
+        ax = plt.gca()
+    stored = getattr(ax, "_cnsplots_roc_results", None)
+    if stored is None:
+        return _empty_roc_results()
+    results, artists = stored
+    if any(artist not in ax.get_children() for artist in artists):
+        return _empty_roc_results()
+    return {
+        "curves": results["curves"].copy(deep=True),
+        "metrics": results["metrics"].copy(deep=True),
+        "bands": results["bands"].copy(deep=True),
+        "comparisons": results["comparisons"].copy(deep=True),
+    }
+
+
 def rocplot(
     data: pd.DataFrame,
     true_label_col: str,
@@ -925,12 +1031,15 @@ def rocplot(
     Returns
     -------
     matplotlib.axes.Axes
-        The matplotlib Axes object containing the plot.
+        The matplotlib Axes object containing the plot. Use
+        ``get_roc_results(ax)`` to retrieve its coordinates, AUCs, confidence
+        bands, and comparison results without recomputing them.
 
     See Also
     --------
     confusionplot : Create a confusion matrix heatmap.
     forestplot : Create a forest plot from a logistic model.
+    get_roc_results : Retrieve the exact values computed for the plot.
 
     Examples
     --------
@@ -979,21 +1088,60 @@ def rocplot(
 
     if ax is None:
         ax = plt.gca()
+    results = _empty_roc_results()
+    result_artists: list[Artist] = []
+    curve_tables = []
+    metric_rows = []
+    band_tables = []
+    auc_by_model = {}
+    sample_metadata = {
+        "pos_label": 1,
+        "n": len(data),
+        "n_positive": int((data[true_label_col] == 1).sum()),
+        "n_negative": int((data[true_label_col] == 0).sum()),
+    }
     for col in pred_prob_cols:
-        fpr, tpr, _ = roc_curve(data[true_label_col], data[col])
+        fpr, tpr, thresholds = roc_curve(data[true_label_col], data[col])
         roc_auc = auc(fpr, tpr)
+        auc_by_model[col] = roc_auc
+        curve_tables.append(
+            pd.DataFrame(
+                {"model": col, "fpr": fpr, "tpr": tpr, "threshold": thresholds}
+            )
+        )
+        metric_rows.append(
+            {
+                "model": col,
+                "auc": roc_auc,
+                "method": "trapezoidal",
+                **sample_metadata,
+            }
+        )
         (curve,) = ax.plot(
             fpr,
             tpr,
             label=f"{col} (AUC={roc_auc:.2f})",
             linewidth=1,
         )
+        result_artists.append(curve)
         if ci_show:
             ci_fpr, ci_lower, ci_upper = helper_roc._bootstrap_roc_confidence_band(
                 data[true_label_col].to_numpy(),
                 data[col].to_numpy(),
             )
-            ax.fill_between(
+            band_tables.append(
+                pd.DataFrame(
+                    {
+                        "model": col,
+                        "fpr": ci_fpr,
+                        "lower": ci_lower,
+                        "upper": ci_upper,
+                        "ci_level": 0.95,
+                        "method": "stratified_bootstrap",
+                    }
+                )
+            )
+            band = ax.fill_between(
                 ci_fpr,
                 ci_lower,
                 ci_upper,
@@ -1002,6 +1150,7 @@ def rocplot(
                 linewidth=0,
                 zorder=curve.get_zorder() - 1,
             )
+            result_artists.append(band)
 
     ax.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=0.8, dashes=(8, 5))
     ax.set_xlim((-0.02, 1.02))
@@ -1033,6 +1182,26 @@ def rocplot(
         if p_adjust is not None:
             displayed_pvalues = multipletests(raw_pvalues, method=p_adjust)[1].tolist()
             annotation_header += f" ({p_adjust}-adjusted)"
+        results["comparisons"] = pd.DataFrame(
+            [
+                {
+                    "model1": first,
+                    "model2": second,
+                    "auc1": auc_by_model[first],
+                    "auc2": auc_by_model[second],
+                    "pvalue_raw": raw,
+                    "pvalue_adjusted": adjusted,
+                    "method": "delong",
+                    "p_adjust": p_adjust,
+                    "family_size": len(resolved_pairs),
+                    **sample_metadata,
+                }
+                for (first, second), raw, adjusted in zip(
+                    resolved_pairs, raw_pvalues, displayed_pvalues, strict=True
+                )
+            ],
+            columns=pd.Index(_ROC_COLUMNS["comparisons"]),
+        )
         annotation_lines = [annotation_header]
         annotation_lines.extend(
             f"{first} vs {second}: P = "
@@ -1041,7 +1210,7 @@ def rocplot(
                 resolved_pairs, displayed_pvalues, strict=True
             )
         )
-        ax.text(
+        annotation = ax.text(
             0.02,
             0.02,
             "\n".join(annotation_lines),
@@ -1051,5 +1220,15 @@ def rocplot(
             fontsize=_legend_fontsize(),
             linespacing=1.25,
         )
+        result_artists.append(annotation)
+
+    if curve_tables:
+        results["curves"] = pd.concat(curve_tables, ignore_index=True)
+    results["metrics"] = pd.DataFrame(
+        metric_rows, columns=pd.Index(_ROC_COLUMNS["metrics"])
+    )
+    if band_tables:
+        results["bands"] = pd.concat(band_tables, ignore_index=True)
+    setattr(ax, "_cnsplots_roc_results", (results, result_artists))
 
     return ax
