@@ -531,7 +531,7 @@ enrichment toward the top of the ranking and negative NES toward the bottom.
 GSEApy computes nominal p-values and FDR q-values across its tested gene sets;
 cnsplots returns only terms with FDR<0.25 and absolute NES>1.5. No additional
 `p_adjust` is exposed. See [GSEApy prerank](https://gseapy.readthedocs.io/en/latest/run.html#gseapy.prerank)
-and the [GSEA method](https://doi.org/10.1073/pnas.0506580102).
+and the [GSEA method](https://pmc.ncbi.nlm.nih.gov/articles/PMC1239896/).
 
 `gseaplot` draws supplied results and filters `significance_column` (default
 `"FDR q-val"`) at `cutoff=0.05`; its color encoding is independent of that
