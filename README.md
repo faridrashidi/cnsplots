@@ -130,7 +130,21 @@ cnsplots skill install --agent claude --scope project
 ```
 
 Use `$cnsplots` in Codex or `/cnsplots` in Claude Code to invoke it explicitly.
-Pass `--force` to update an existing installation after upgrading cnsplots.
+Inspect, update, or remove an installation with the same agent and scope options:
+
+```bash
+cnsplots skill status
+cnsplots skill install --force
+cnsplots skill uninstall --agent claude --scope project
+cnsplots skill --help
+```
+
+Status reports the destination, installed version, and whether the content
+matches the bundled skill. Updates overwrite current packaged files and remove
+unchanged obsolete files, while preserving unrelated files and modified obsolete
+files. Uninstall removes only unchanged managed files and preserves local edits.
+See the [installation guide](docs/installation.md#install-the-agent-skill) for
+ownership tracking, legacy installations, and exit codes.
 
 ### For Development
 
