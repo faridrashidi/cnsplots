@@ -4,6 +4,7 @@ from importlib import import_module
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from ._calibration import calibrationplot as calibrationplot
     from ._categorical import barplot as barplot
     from ._categorical import donutplot as donutplot
     from ._categorical import dumbbellplot as dumbbellplot
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from ._heatmap import confusionplot as confusionplot
     from ._heatmap import dotplot as dotplot
     from ._heatmap import heatmapplot as heatmapplot
+    from ._precision_recall import precisionrecallplot as precisionrecallplot
     from ._regression import lineplot as lineplot
     from ._regression import regplot as regplot
     from ._regression import scatterplot as scatterplot
@@ -40,6 +42,7 @@ if TYPE_CHECKING:
 _LAZY_IMPORTS = {
     "barplot": ("cnsplots.plots._categorical", "barplot"),
     "boxplot": ("cnsplots.plots._distribution", "boxplot"),
+    "calibrationplot": ("cnsplots.plots._calibration", "calibrationplot"),
     "confusionplot": ("cnsplots.plots._heatmap", "confusionplot"),
     "cumulativeincidenceplot": (
         "cnsplots.plots._survival",
@@ -59,6 +62,7 @@ _LAZY_IMPORTS = {
     "phyloplot": ("cnsplots.plots._specialized", "phyloplot"),
     "placeholderplot": ("cnsplots.plots._specialized", "placeholderplot"),
     "pieplot": ("cnsplots.plots._categorical", "pieplot"),
+    "precisionrecallplot": ("cnsplots.plots._precision_recall", "precisionrecallplot"),
     "qqplot": ("cnsplots.plots._distribution", "qqplot"),
     "regplot": ("cnsplots.plots._regression", "regplot"),
     "ridgeplot": ("cnsplots.plots._distribution", "ridgeplot"),

@@ -63,7 +63,14 @@ before plotting.
 - `volcanoplot`: effect size versus transformed adjusted significance.
 - `gseaplot`: gene-set enrichment results.
 - `rocplot`: receiver operating characteristic curves with optional pointwise
-  bootstrap confidence bands and paired DeLong AUC comparisons.
+  bootstrap confidence bands and paired DeLong AUC comparisons. Retrieve exact
+  coordinates, AUCs, bands, and tests with `get_roc_results(ax)`.
+- `precisionrecallplot`: precision versus recall with average precision (AP)
+  labels and a prevalence reference. `get_precision_recall_results(ax)` returns
+  coordinates and metrics; no confidence bands or comparison tests are run.
+- `calibrationplot`: reliability curves from held-out probabilities, uniform or
+  quantile bins, and optional Brier labels. `get_calibration_results(ax)` exposes
+  bin counts and metrics. Brier measures overall probabilistic prediction quality.
 - `phyloplot`: phylogenetic visualization from `AnnData`.
 - `prerank`: preranked enrichment analysis.
 

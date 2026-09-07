@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from ._utils import take_legend_out as take_legend_out
     from .plots import barplot as barplot
     from .plots import boxplot as boxplot
+    from .plots import calibrationplot as calibrationplot
     from .plots import confusionplot as confusionplot
     from .plots import cumulativeincidenceplot as cumulativeincidenceplot
     from .plots import distplot as distplot
@@ -57,6 +58,7 @@ if TYPE_CHECKING:
     from .plots import phyloplot as phyloplot
     from .plots import pieplot as pieplot
     from .plots import placeholderplot as placeholderplot
+    from .plots import precisionrecallplot as precisionrecallplot
     from .plots import qqplot as qqplot
     from .plots import regplot as regplot
     from .plots import ridgeplot as ridgeplot
@@ -71,6 +73,16 @@ if TYPE_CHECKING:
     from .plots import vennplot as vennplot
     from .plots import violinplot as violinplot
     from .plots import volcanoplot as volcanoplot
+    from .plots._calibration import CalibrationResults as CalibrationResults
+    from .plots._calibration import get_calibration_results as get_calibration_results
+    from .plots._precision_recall import (
+        PrecisionRecallResults as PrecisionRecallResults,
+    )
+    from .plots._precision_recall import (
+        get_precision_recall_results as get_precision_recall_results,
+    )
+    from .plots._specialized import ROCResults as ROCResults
+    from .plots._specialized import get_roc_results as get_roc_results
     from .plots._survival import get_survival_results as get_survival_results
 
     methods = _methods
@@ -109,6 +121,21 @@ _LAZY_IMPORTS = {
     "available_palettes": ("cnsplots._palettes", "available_palettes"),
     "figure": ("cnsplots._utils", "figure"),
     "get_comparison_results": ("cnsplots._utils", "get_comparison_results"),
+    "get_calibration_results": (
+        "cnsplots.plots._calibration",
+        "get_calibration_results",
+    ),
+    "get_precision_recall_results": (
+        "cnsplots.plots._precision_recall",
+        "get_precision_recall_results",
+    ),
+    "get_roc_results": ("cnsplots.plots._specialized", "get_roc_results"),
+    "CalibrationResults": ("cnsplots.plots._calibration", "CalibrationResults"),
+    "PrecisionRecallResults": (
+        "cnsplots.plots._precision_recall",
+        "PrecisionRecallResults",
+    ),
+    "ROCResults": ("cnsplots.plots._specialized", "ROCResults"),
     "get_survival_results": ("cnsplots.plots._survival", "get_survival_results"),
     "multipanel": ("cnsplots._multipanels", "multipanel"),
     "save": ("cnsplots._utils", "savefig"),
@@ -123,6 +150,7 @@ _LAZY_IMPORTS = {
     "get_palette_colors": ("cnsplots._utils", "get_palette_colors"),
     "barplot": ("cnsplots.plots._categorical", "barplot"),
     "boxplot": ("cnsplots.plots._distribution", "boxplot"),
+    "calibrationplot": ("cnsplots.plots._calibration", "calibrationplot"),
     "confusionplot": ("cnsplots.plots._heatmap", "confusionplot"),
     "cumulativeincidenceplot": (
         "cnsplots.plots._survival",
@@ -142,6 +170,7 @@ _LAZY_IMPORTS = {
     "phyloplot": ("cnsplots.plots._specialized", "phyloplot"),
     "placeholderplot": ("cnsplots.plots._specialized", "placeholderplot"),
     "pieplot": ("cnsplots.plots._categorical", "pieplot"),
+    "precisionrecallplot": ("cnsplots.plots._precision_recall", "precisionrecallplot"),
     "qqplot": ("cnsplots.plots._distribution", "qqplot"),
     "regplot": ("cnsplots.plots._regression", "regplot"),
     "ridgeplot": ("cnsplots.plots._distribution", "ridgeplot"),

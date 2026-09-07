@@ -119,6 +119,30 @@ if TYPE_CHECKING:
         )
         assert_type(cns.get_survival_results(ax), pd.DataFrame)
         assert_type(cns.get_survival_results(), pd.DataFrame)
+        assert_type(cns.rocplot(data, "truth", ["model_a", "model_b"], ax=ax), Axes)
+        assert_type(cns.get_roc_results(ax), cns.ROCResults)
+        assert_type(cns.get_roc_results()["comparisons"], pd.DataFrame)
+        assert_type(
+            cns.precisionrecallplot(data, "truth", "score", pos_label="yes", ax=ax),
+            Axes,
+        )
+        assert_type(cns.get_precision_recall_results(ax), cns.PrecisionRecallResults)
+        assert_type(cns.get_precision_recall_results()["metrics"], pd.DataFrame)
+        assert_type(
+            cns.calibrationplot(
+                data,
+                "truth",
+                "probability",
+                n_bins=10,
+                strategy="quantile",
+                brier_show=False,
+                pos_label="yes",
+                ax=ax,
+            ),
+            Axes,
+        )
+        assert_type(cns.get_calibration_results(ax), cns.CalibrationResults)
+        assert_type(cns.get_calibration_results()["bins"], pd.DataFrame)
         assert_type(cns.histplot(data, x="x", ax=ax), Axes)
         assert_type(cns.lineplot(data, x="x", y="y", ax=ax), Axes)
         assert_type(cns.regplot(data, x="x", y="y", color=(0.1, 0.2, 0.3)), Axes)

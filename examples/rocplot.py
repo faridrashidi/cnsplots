@@ -7,6 +7,9 @@ Create ROC (Receiver Operating Characteristic) curves for classifier evaluation.
 ROC plots visualize the trade-off between true positive rate and false
 positive rate at various classification thresholds. cnsplots automatically
 calculates AUC values and displays them in the legend.
+The result accessor also exposes the exact coordinates, AUCs, confidence bands,
+and comparison p-values as tables. This example uses bundled and synthetic data
+and can run offline.
 """
 
 # %%
@@ -72,6 +75,29 @@ ax = cns.rocplot(
 )
 ax.set_title("Top 2 Models with Uncertainty")
 cns.take_legend_out()
+
+
+# %%
+# Retrieve the exact plotted results
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The accessor reuses the values computed by rocplot. It returns detached tables,
+# so filtering or exporting them does not change the plot or stored results.
+roc_results = cns.get_roc_results(ax)
+roc_results["metrics"]
+
+# %%
+# The paired DeLong comparison includes raw and adjusted p-values. They agree
+# here because no multiple-testing correction was requested. Use p_adjust="holm"
+# in rocplot to correct the requested family of comparisons.
+roc_results["comparisons"]
+
+# %%
+# Coordinates retain sklearn's thresholds, including the infinite first
+# threshold. Bands contain the exact pointwise 95% bootstrap intervals drawn.
+roc_results["curves"].head()
+roc_results["bands"].head()
+# To export, for example:
+# roc_results["metrics"].to_csv("roc_metrics.csv", index=False)
 
 
 # %%
