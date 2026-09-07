@@ -24,6 +24,10 @@ cns.savefig("my_figure.svg", fig=fig)
 In these examples, `data` is a pandas DataFrame, and `x`, `y`, and `hue`
 refer to column names in that DataFrame.
 
+Before adding statistical annotations, read {doc}`statistical_methods` for
+test selection, paired observations, missing-data handling, multiple-comparison
+correction, and the meaning of confidence intervals.
+
 ## Understanding Figure Dimensions
 
 cnsplots uses **points** for figure dimensions by default. One point is

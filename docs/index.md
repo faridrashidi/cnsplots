@@ -84,6 +84,7 @@ Published release history and changelog highlights.
 
 getting_started
 installation
+statistical_methods
 api
 release_notes
 examples/index
