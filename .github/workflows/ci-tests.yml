@@ -23,7 +23,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --locked --extra lint
 
       - name: Run lint
         run: make lint
@@ -48,7 +48,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --locked --extra test
 
       - name: Install mutool
         run: |
@@ -120,12 +120,12 @@ jobs:
           python-version: "3.12"
 
       - name: Sync dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --locked --extra test
 
       - name: Run platform smoke tests
         id: smoke_tests
         run: >-
-          uv run pytest --no-cov -ra
+          uv run --locked --extra test pytest --no-cov -ra
           --basetemp=mpl-results/platform-smoke
           tests/test_platform_smoke.py
           tests/test_font_cache.py
@@ -159,7 +159,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --locked --extra docs
 
       - name: Build docs
         run: make doc

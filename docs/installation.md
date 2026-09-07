@@ -125,9 +125,19 @@ cd cnsplots
 make install
 ```
 
-This uses `uv sync --extra dev` to install the package in editable mode with
-the project's development and documentation extras, and sets up pre-commit
-hooks.
+This uses `uv sync --locked --extra dev` to install the package in editable mode
+with all development tools, and sets up pre-commit hooks. The `dev` extra combines
+the `test`, `docs`, `lint`, `notebook`, and `release` extras.
+
+For a focused environment, use `uv sync --locked --extra test` for tests or
+`uv sync --locked --extra docs` for documentation. Repeat `--extra` to combine
+extras, or run `make install` to restore the full development setup. Make targets
+select their required extra automatically and use the committed `uv.lock`.
+
+`make doc` builds the documentation and exits with the build status. Use
+`make doc-serve` to build and start the preview at `http://localhost:8080`;
+press Ctrl+C to stop it. Documentation builds preserve unrelated test and build
+artifacts.
 
 ## Dependencies
 

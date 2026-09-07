@@ -8,8 +8,9 @@ help:
 	@echo " - test         : run all unit tests"
 	@echo " - test-visual  : run visual regression tests"
 	@echo " - doc          : build the documentation"
+	@echo " - doc-serve    : build and serve documentation on port 8080"
 	@echo " - doc-linkcheck: check documentation links"
-	@echo " - install      : install the package"
+	@echo " - install      : install the full development environment and hooks"
 	@echo " - release      : bump version with [patch|minor|major]"
 
 clean:
@@ -33,33 +34,36 @@ clean:
 	rm -rf tests/__pycache__
 
 lint:
-	uv run pre-commit run --all-files
+	uv run --locked --extra lint pre-commit run --all-files
 
 test:
-	uv run pytest ./tests
+	uv run --locked --extra test pytest ./tests
 
 test-visual:
-	uv run pytest tests/test_visual_regressions.py --mpl --no-cov
+	uv run --locked --extra test pytest tests/test_visual_regressions.py --mpl --no-cov
 
-doc: clean
+.PHONY: doc doc-serve doc-linkcheck
+
+doc:
+	$(MAKE) -C docs clean
 	cd docs && $(MAKE) html
-ifneq ($(CI),true)
-	cd docs/build/html && python -m http.server 8080
-endif
+
+doc-serve: doc
+	uv run --locked --extra docs python -m http.server 8080 --directory docs/build/html
 
 doc-linkcheck:
 	cd docs && $(MAKE) linkcheck
 
 install:
-	uv sync --extra dev
-	uv run pre-commit install
+	uv sync --locked --extra dev
+	uv run --locked --extra lint pre-commit install
 
 release:
 	@if [ "$(words $(RELEASE_ARGS))" -ne 1 ] || [ -n "$(filter-out $(VALID_RELEASE_PARTS),$(RELEASE_ARGS))" ]; then \
 		echo "usage: make release [patch|minor|major]"; \
 		exit 1; \
 	fi
-	uv run bump-my-version bump $(RELEASE_ARGS)
+	uv run --locked --extra release bump-my-version bump $(RELEASE_ARGS)
 
 patch minor major:
 	@:

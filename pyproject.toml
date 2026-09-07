@@ -55,15 +55,20 @@ Repository = "https://github.com/faridrashidi/cnsplots"
 cnsplots = "cnsplots._cli:main"
 
 [project.optional-dependencies]
-dev = [
-  "bump-my-version",
+dev = ["cnsplots[test,docs,lint,notebook,release]"]
+test = [
   "fastcluster",
-  "glasbey",
-  "ipykernel",
-  "pre-commit",
   "pytest",
   "pytest-cov",
   "pytest-mpl>=0.19,<0.20",
+  # The documentation extension tests import Sphinx-Gallery and docutils.
+  "sphinx<9; python_version < '3.11'",
+  "sphinx>=9,<9.1; python_version >= '3.11'",
+  "sphinx-gallery",
+]
+docs = [
+  "fastcluster",
+  "glasbey",
   "furo",
   "myst-parser",
   "sphinx<9; python_version < '3.11'",
@@ -75,6 +80,9 @@ dev = [
   "sphinx-multiversion",
   "sphinx-sitemap",
 ]
+lint = ["cnsplots[test]", "pre-commit", "ty"]
+notebook = ["ipykernel"]
+release = ["bump-my-version"]
 
 [build-system]
 requires = ["setuptools>=77.0.3"]

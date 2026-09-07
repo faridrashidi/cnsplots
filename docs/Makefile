@@ -4,9 +4,9 @@
 # You can set these variables from the command line, and also
 # from the environment for the first two.
 SPHINXOPTS    ?=
-# Run Sphinx through uv so `make html` uses the project's development extra.
-SPHINXBUILD   ?= uv run --extra dev sphinx-build
-STAGEDBUILD   ?= uv run --extra dev python _scripts/build_versioned_docs.py
+# Run Sphinx through uv so `make html` uses the project's documentation extra.
+SPHINXBUILD   ?= uv run --locked --extra docs sphinx-build
+STAGEDBUILD   ?= uv run --locked --extra docs python _scripts/build_versioned_docs.py
 SOURCEDIR     = .
 BUILDDIR      = build
 

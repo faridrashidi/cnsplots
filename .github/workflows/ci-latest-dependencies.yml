@@ -30,7 +30,7 @@ jobs:
 
       - name: Sync latest dependencies
         # Avoid pairing prerelease Numba with an unsupported NumPy release.
-        run: uv sync --upgrade --extra dev --prerelease-package numba=disallow
+        run: uv sync --upgrade --extra test --prerelease-package numba=disallow
 
       - name: Install mutool
         run: |
@@ -38,4 +38,7 @@ jobs:
           sudo apt-get install -y mupdf-tools
 
       - name: Run tests
+        # Test the upgraded environment without re-resolving with default options.
+        env:
+          UV_NO_SYNC: "1"
         run: make test

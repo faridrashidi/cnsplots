@@ -237,11 +237,12 @@ def test_builtin_palette_results_are_independent(name: str) -> None:
 def test_builtin_colormap_results_are_independent(name: str) -> None:
     palette = cns.palettes(name)
     assert isinstance(palette, Colormap)
-    palette.set_bad("red")
+    palette.name = "Modified palette"
 
     fresh = cns.palettes(name)
     assert isinstance(fresh, Colormap)
     assert fresh is not palette
+    assert fresh.name == name
     assert fresh(np.nan) == (0.0, 0.0, 0.0, 0.0)
 
 

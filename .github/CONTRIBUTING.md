@@ -109,7 +109,19 @@ cd cnsplots
 make install
 ```
 
-This uses `uv sync --extra dev` to install the package in editable mode with all dependencies, and sets up pre-commit hooks.
+This uses `uv sync --locked --extra dev` to install the package in editable mode with all development tools, and sets up pre-commit hooks. The `dev` extra combines the focused extras below and remains available to pip users as `pip install -e '.[dev]'`.
+
+For a smaller environment, select the extra needed for your task:
+
+| Extra | Install command | Tools |
+| --- | --- | --- |
+| `test` | `uv sync --locked --extra test` | pytest, coverage, visual regression tools, and Sphinx-Gallery for documentation extension tests |
+| `docs` | `uv sync --locked --extra docs` | Sphinx, themes, extensions, and gallery example dependencies |
+| `lint` | `uv sync --locked --extra lint` | pre-commit, ty, and test dependencies required for type checking |
+| `notebook` | `uv sync --locked --extra notebook` | IPython kernel |
+| `release` | `uv sync --locked --extra release` | bump-my-version |
+
+All extras include the package's runtime dependencies. `uv sync` selects an exact environment; repeat `--extra` to combine extras or run `make install` to restore the full setup. Make targets select their required extra automatically and use the committed lockfile. After changing dependencies, run `uv lock` and include the updated `uv.lock` in your PR.
 
 ### Development Commands
 
@@ -120,9 +132,13 @@ After installation, you can use the following commands:
 | `make help`                          | Show available commands                |
 | `make lint`                          | Run linting and formatting             |
 | `make test`                          | Run all unit tests                     |
-| `make doc`                           | Build and serve documentation          |
+| `make doc`                           | Build documentation and exit           |
+| `make doc-serve`                     | Build and preview documentation on port 8080 |
+| `make doc-linkcheck`                 | Check documentation links              |
 | `make release [patch\|minor\|major]` | Bump the package version for a release |
 | `make clean`                         | Clean build artifacts                  |
+
+`make doc` now exits with the build status locally and in CI; `CI=true make doc` remains valid. To use the previous build-and-preview workflow, run `make doc-serve`, open `http://localhost:8080`, and press Ctrl+C to stop the server. Documentation builds clean only `docs/build`, stage generated sources there, and preserve unrelated coverage, test, and package-build artifacts. To remove generated documentation output explicitly, use `make -C docs clean`.
 
 ### 3. Verify Installation
 
@@ -199,7 +215,7 @@ Missing and failed SVG conversion paths are also tested, including when `mutool`
 is absent but Chrome is available.
 
 ```bash
-uv run pytest tests/test_export_pipeline.py tests/test_svg_font_weights.py --no-cov
+uv run --locked --extra test pytest tests/test_export_pipeline.py tests/test_svg_font_weights.py --no-cov
 ```
 
 The suite checks bounds, clipped geometry, alpha, rasterized layers, multipanel
