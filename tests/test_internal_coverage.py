@@ -459,11 +459,13 @@ def test_utils_internal_coverage(
     class DummyAnnotator:
         def __init__(self, ax: object, pairs: object, **plotting: object) -> None:
             self._pvalue_format: Any = None
+            self.comparisons_correction = None
+            self.annotations: list[Any] = []
 
         def configure(self, **kwargs: object) -> None:
             return None
 
-        def apply_and_annotate(self) -> None:
+        def apply_test(self) -> None:
             return None
 
         def set_pvalues(self, pvalues: list[float]) -> None:

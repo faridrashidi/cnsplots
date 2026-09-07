@@ -1259,6 +1259,8 @@ def test_utils_helpers_and_showcase_data(
             self.pairs = list(pairs)
             self.plotting = plotting
             self._pvalue_format: Any = None
+            self.comparisons_correction = None
+            self.annotations: list[Any] = []
             self.configured: dict[str, object] = {}
             self.pvalues = None
             DummyAnnotator.last = self
@@ -1266,7 +1268,7 @@ def test_utils_helpers_and_showcase_data(
         def configure(self, **kwargs: object) -> None:
             self.configured = kwargs
 
-        def apply_and_annotate(self) -> None:
+        def apply_test(self) -> None:
             return None
 
         def set_pvalues(self, pvalues: list[float]) -> None:

@@ -28,9 +28,10 @@ from matplotlib.typing import ColorType
 from seaborn._base import categorical_order, infer_orient
 from statannotations.Annotator import Annotator
 from statannotations.PValueFormat import PValueFormat
-from statannotations.utils import DEFAULT
+from statsmodels.stats.multitest import multipletests
 
 import cnsplots._palettes as _palettes
+from cnsplots._comparison_types import HueComparisons
 from cnsplots._settings import settings
 from cnsplots._setup import setup_matplotlib
 from cnsplots._sizing import _SizeUnit, _dimension_to_points
@@ -77,6 +78,21 @@ _ContinuousPaletteName = Literal[
 ]
 _RGBColor = tuple[float, float, float]
 _P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
+_COMPARISON_COLUMNS = [
+    "group1",
+    "group2",
+    "test",
+    "alternative",
+    "paired",
+    "n1",
+    "n2",
+    "pvalue_raw",
+    "pvalue_adjusted",
+    "p_adjust",
+    "pvalue_annotation",
+    "significant",
+    "annotation",
+]
 
 RED = "#D6372E"
 BLUE = "#5189BB"
@@ -974,12 +990,156 @@ def _prepare_categorical_plot_data(plotting):
     return cleaned
 
 
+class _PValueFormatter(PValueFormat):
+    """Format p-value annotations with explicit, per-instance configuration."""
+
+    def __init__(self, resolved_format: str, fontsize: str | int | float) -> None:
+        super().__init__()
+        self._resolved_format = resolved_format
+        self.fontsize = fontsize
+        self.p_capitalized = True
+
+    def format_data(self, result):
+        if self._resolved_format == "full":
+            text = f"{result.test_short_name} " if self.show_test_name else ""
+            return r"${}P = {}{}$".format("{}", self.pvalue_format_string, "{}").format(
+                text, num2tex.num2tex(result.pvalue), result.significance_suffix
+            )
+
+        if self._resolved_format == "threshold":
+            pvalue_threshold_labels = (
+                (1e-4, "P < 0.0001"),
+                (1e-3, "P < 0.001"),
+                (1e-2, "P < 0.01"),
+                (0.05, "P < 0.05"),
+            )
+            for threshold, label in pvalue_threshold_labels:
+                if result.pvalue <= threshold:
+                    adjust = getattr(result, "adjust", None)
+                    return adjust(label) if callable(adjust) else label
+            adjust = getattr(result, "adjust", None)
+            return adjust("P > 0.05") if callable(adjust) else "P > 0.05"
+
+        return super().format_data(result)
+
+
+def get_comparison_results(ax: Axes | None = None) -> pd.DataFrame:
+    """Return the results used by the latest categorical annotations on an axes.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        Axes returned by boxplot, violinplot, barplot, lollipopplot, or stackplot.
+        Defaults to the current axes. The plot must have been called with pairs.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A detached table with one row per comparison, in annotation drawing
+        order (shorter brackets first). ``group1`` and ``group2`` follow the
+        categorical axis order, not necessarily the supplied pair order. They
+        are category labels, or ``(category, hue)`` tuples for hue comparisons.
+        ``test``, ``alternative``, and ``paired`` identify the test; all currently
+        supported tests use independent observations (``paired=False``).
+        ``alternative`` is ``'two-sided'`` for continuous tests and 2-by-2 Fisher
+        tests, and None for chi-squared and larger Fisher independence tests.
+        ``n1`` and ``n2`` count contributing observations. ``pvalue_raw`` and
+        ``pvalue_adjusted`` contain raw and corrected p-values; without correction
+        they are equal and ``p_adjust`` is None. ``pvalue_annotation``,
+        ``significant``, and ``annotation`` describe the exact rendered result.
+        No effect size is estimated. Returns an empty table with these columns
+        if there are no stored comparisons or their annotations were removed.
+
+    Notes
+    -----
+    Results come from the same computation used for rendering; this accessor
+    does not rerun tests. Each call returns a copy. On reused axes only the latest
+    comparison call is returned; a plot without pairs does not replace it.
+    Clearing the axes also clears the available results.
+
+    Continuous plots exclude rows missing x, y, or hue and levels excluded by
+    order/hue_order, just as rendering does. Stackplot tests use original counts
+    of complete category/stack rows, before normalization or n_factor scaling;
+    these can differ from its raw category tick counts when stack values are
+    missing. Correction covers all resolved pairs in one plot call, including
+    all categories for pairs='hue', and does not extend across plot calls.
+
+    Existing statannotations display semantics are preserved: Bonferroni uses
+    adjusted p-values in labels; Holm and FDR methods display raw p-values with
+    a nonsignificance suffix when correction removes significance. Use
+    pvalue_adjusted for the numerical corrected values for every method.
+
+    Examples
+    --------
+    >>> ax = cns.boxplot(df, x="group", y="value", pairs="all", p_adjust="holm")
+    >>> comparisons = cns.get_comparison_results(ax)
+    >>> comparisons.to_csv("comparisons.csv", index=False)
+    """
+    if ax is None:
+        ax = plt.gca()
+    stored = getattr(ax, "_cnsplots_comparison_results", None)
+    if stored is None:
+        return pd.DataFrame(columns=pd.Index(_COMPARISON_COLUMNS))
+    results, artists = stored
+    if not artists or any(artist not in ax.texts for artist in artists):
+        return pd.DataFrame(columns=pd.Index(_COMPARISON_COLUMNS))
+    return results.copy(deep=True)
+
+
+def _collect_comparison_results(annotator, test, correction, p_adjust, contingency):
+    """Correct the computed results in place and snapshot them before rendering."""
+    annotations = annotator.annotations
+    results = [annotation.data for annotation in annotations]
+    raw = np.asarray([result.pvalue for result in results])
+    adjusted = raw.copy()
+    if correction is not None:
+        adjusted = multipletests(raw, method=p_adjust)[1]
+        if correction.type == 0:
+            for result, pvalue in zip(results, correction(raw)):
+                result.pvalue = pvalue
+        correction.apply(results)
+
+    rows = []
+    for annotation, pvalue_raw, pvalue_adjusted in zip(annotations, raw, adjusted):
+        first, second = annotation.structs
+        group1, group2 = first["group"], second["group"]
+        if contingency is None:
+            n1, n2 = len(first["group_data"]), len(second["group_data"])
+        else:
+            n1 = int(contingency.loc[group1[0]].sum())
+            n2 = int(contingency.loc[group2[0]].sum())
+        alternative = (
+            None
+            if test == "chi-squared"
+            or (contingency is not None and contingency.shape[1] != 2)
+            else "two-sided"
+        )
+        rows.append(
+            {
+                "group1": group1[0] if len(group1) == 1 else group1,
+                "group2": group2[0] if len(group2) == 1 else group2,
+                "test": test,
+                "alternative": alternative,
+                "paired": False,
+                "n1": n1,
+                "n2": n2,
+                "pvalue_raw": pvalue_raw,
+                "pvalue_adjusted": pvalue_adjusted,
+                "p_adjust": p_adjust,
+                "pvalue_annotation": annotation.data.pvalue,
+                "significant": annotation.data.is_significant,
+                "annotation": annotation.text,
+            }
+        )
+    return pd.DataFrame(rows, columns=pd.Index(_COMPARISON_COLUMNS))
+
+
 def _p_value_helper(
     test,
     data,
     ax,
     plotting,
-    pairs,
+    pairs: HueComparisons,
     contingency=None,
     format=None,
     label_clearance=None,
@@ -990,44 +1150,6 @@ def _p_value_helper(
         raise ValueError("format must be one of: 'star', 'threshold', 'full'")
 
     pvalue_fontsize = settings.pvalue_fontsize
-
-    class PValueFormatNew(PValueFormat):
-        def __init__(self):
-            super(PValueFormat, self).__init__()
-            self._pvalue_format_string = "{:.3e}"
-            self._simple_format_string = "{:.2f}"
-            self._text_format = "star"
-            self.fontsize = pvalue_fontsize
-            self._default_pvalue_thresholds = True
-            self._pvalue_thresholds = self._get_pvalue_thresholds(DEFAULT)
-            self._correction_format = "{star} ({suffix})"
-            self.show_test_name = True
-            self.p_capitalized = True
-
-        def format_data(self, result):
-            if resolved_format == "full":
-                text = f"{result.test_short_name} " if self.show_test_name else ""
-                return r"${}P = {}{}$".format(
-                    "{}", self.pvalue_format_string, "{}"
-                ).format(
-                    text, num2tex.num2tex(result.pvalue), result.significance_suffix
-                )
-
-            if resolved_format == "threshold":
-                pvalue_threshold_labels = (
-                    (1e-4, "P < 0.0001"),
-                    (1e-3, "P < 0.001"),
-                    (1e-2, "P < 0.01"),
-                    (0.05, "P < 0.05"),
-                )
-                for threshold, label in pvalue_threshold_labels:
-                    if result.pvalue <= threshold:
-                        adjust = getattr(result, "adjust", None)
-                        return adjust(label) if callable(adjust) else label
-                adjust = getattr(result, "adjust", None)
-                return adjust("P > 0.05") if callable(adjust) else "P > 0.05"
-
-            return super().format_data(result)
 
     plotting["orient"] = _resolve_categorical_orientation(
         data, plotting["x"], plotting["y"], plotting.get("orient")
@@ -1106,7 +1228,7 @@ def _p_value_helper(
             contingency_tables.append(table)
 
     annotator = Annotator(ax, pairs, **plotting)
-    annotator._pvalue_format = PValueFormatNew()
+    annotator._pvalue_format = _PValueFormatter(resolved_format, pvalue_fontsize)
     annotator.configure(
         test=test if contingency is None else None,
         comparisons_correction=p_adjust,
@@ -1133,18 +1255,25 @@ def _p_value_helper(
         for table in contingency_tables:
             pvalues.append(stats.chi2_contingency(table)[1])
 
-    if contingency is not None:
-        annotator.set_pvalues(pvalues=pvalues)
-
-    if line_offset_to_group is None:
-        if contingency is None:
-            annotator.apply_and_annotate()
-        else:
-            annotator.annotate()
+    # Preserve raw values before statannotations' type-0 corrections overwrite
+    # them. Apply the same correction to these results once, then render them.
+    correction = annotator.comparisons_correction
+    annotator.comparisons_correction = None
+    if contingency is None:
+        annotator.apply_test()
     else:
-        if contingency is None:
-            annotator.apply_test()
+        annotator.set_pvalues(pvalues=pvalues)
+    results = _collect_comparison_results(
+        annotator, test, correction, p_adjust, contingency
+    )
+    annotator.comparisons_correction = correction
+
+    text_start = len(ax.texts)
+    if line_offset_to_group is None:
+        annotator.annotate()
+    else:
         annotator.annotate(line_offset_to_group=line_offset_to_group)
+    ax._cnsplots_comparison_results = (results, tuple(ax.texts)[text_start:])
 
     if test == "Mann-Whitney":
         logger.info("P-values were determined by two-sided Mann-Whitney U test.")

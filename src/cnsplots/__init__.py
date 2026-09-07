@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from ._utils import add_panel_label as add_panel_label
     from ._utils import apply_unicode_font as apply_unicode_font
     from ._utils import figure as figure
+    from ._utils import get_comparison_results as get_comparison_results
     from ._utils import get_hexcolors_from_apalette as get_hexcolors_from_apalette
     from ._utils import get_palette_colors as get_palette_colors
     from ._utils import palettes as palettes
@@ -106,6 +107,7 @@ _LAZY_IMPORTS = {
     "apply_unicode_font": ("cnsplots._utils", "apply_unicode_font"),
     "available_palettes": ("cnsplots._palettes", "available_palettes"),
     "figure": ("cnsplots._utils", "figure"),
+    "get_comparison_results": ("cnsplots._utils", "get_comparison_results"),
     "multipanel": ("cnsplots._multipanels", "multipanel"),
     "save": ("cnsplots._utils", "savefig"),
     "savefig": ("cnsplots._utils", "savefig"),

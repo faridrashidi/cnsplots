@@ -186,12 +186,14 @@ def test_p_value_helper_corrects_all_resolved_pairs(
             self.configured: dict[str, object] = {}
             self.pvalues: list[float] | None = None
             self._pvalue_format: object = None
+            self.comparisons_correction = None
+            self.annotations: list[Any] = []
             self.instances.append(self)
 
         def configure(self, **kwargs: object) -> None:
             self.configured = kwargs
 
-        def apply_and_annotate(self) -> None:
+        def apply_test(self) -> None:
             return None
 
         def set_pvalues(self, pvalues: list[float]) -> None:

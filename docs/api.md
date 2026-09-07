@@ -111,6 +111,73 @@ diagram object, respectively.
    placeholderplot
 ```
 
+## Statistical Comparison Results
+
+After calling `boxplot`, `violinplot`, `barplot`, `lollipopplot`, or `stackplot`
+with `pairs`, use `get_comparison_results(ax)` to retrieve the statistics used
+for its annotations. The plot still returns its Matplotlib axes; the accessor
+returns a separate DataFrame without rerunning any tests.
+
+This example uses the bundled tips dataset:
+
+```python
+import cnsplots as cns
+
+tips = cns.datasets.load_dataset("tips")
+cns.figure(width=180, height=140)
+with cns.settings.context(pvalue_format="threshold"):
+    ax = cns.boxplot(
+        tips,
+        x="day",
+        y="total_bill",
+        pairs="all",
+        p_adjust="holm",
+    )
+comparisons = cns.get_comparison_results(ax)
+print(comparisons.to_string(index=False))
+```
+
+Each row identifies `group1`, `group2`, the test, its alternative, whether
+observations are paired, and the contributing counts `n1` and `n2`. Hue groups
+use `(category, hue)` tuples. Rows follow annotation drawing order, with shorter
+brackets first; group order follows the categorical axis rather than the order
+of each supplied pair. The p-value columns distinguish computation from display:
+
+| Column | Meaning |
+| --- | --- |
+| `pvalue_raw` | Uncorrected test p-value. |
+| `pvalue_adjusted` | Numerical p-value after the requested correction. |
+| `pvalue_annotation` | P-value used to format the rendered label. |
+| `p_adjust` | Correction method, or `None` when no correction was requested. |
+| `significant` | Significance decision after correction. |
+| `annotation` | Exact rendered label, including any correction suffix. |
+
+Without correction, all three p-value columns agree. Bonferroni labels use
+adjusted p-values. Holm and FDR labels preserve the raw p-values and add a
+nonsignificance suffix when correction removes significance; read
+`pvalue_adjusted` for their numerical corrected values. Correction covers all
+resolved pairs in one plot call, including every category with `pairs="hue"`.
+It does not combine comparisons from separate calls.
+
+Continuous comparisons count complete rows after category and hue filters.
+Stackplot comparisons use original complete category/stack counts before
+normalization or `n_factor` scaling. Missing stack values can therefore make
+these counts differ from the raw category counts on its ticks.
+
+Each accessor call returns a copy. On reused axes it returns the latest call
+that added comparisons; drawing another plot without `pairs` leaves those
+results available. Clearing the axes or removing their annotations makes the
+result empty. Axes without stored comparisons return an empty table with the
+same columns. Omitting `ax` selects the current axes.
+
+```{eval-rst}
+.. apirootsummary::
+   :toctree: api
+   :nosignatures:
+
+   get_comparison_results
+```
+
 ## Statistical Models
 
 ```{eval-rst}

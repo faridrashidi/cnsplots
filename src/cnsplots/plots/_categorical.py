@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal, Union, cast
+from typing import Any, Literal, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,6 +13,7 @@ from matplotlib.textpath import TextPath
 from scipy import stats
 
 import cnsplots._utils as utils
+from cnsplots._comparison_types import CategoryComparisons, HueComparisons
 from cnsplots._utils import _legend_fontsize, _resize_legend_markers
 from cnsplots._validation import (
     validate_column_exists,
@@ -23,7 +24,6 @@ from cnsplots._validation import (
     validate_no_nulls,
 )
 
-LollipopPair = Union[tuple[str, str], tuple[tuple[str, str], tuple[str, str]]]
 LollipopError = float | tuple[float, float]
 
 _LOLLIPOP_BOOTSTRAP_SAMPLES = 1000
@@ -235,7 +235,7 @@ def barplot(
     data: pd.DataFrame,
     x: str,
     y: str,
-    pairs: list[tuple[str, str]] | None = None,
+    pairs: HueComparisons | None = None,
     add_tip: bool = False,
     *,
     hue: str | None = None,
@@ -261,9 +261,13 @@ def barplot(
         Column name for the categorical variable on the x-axis.
     y : str
         Column name for the continuous variable whose means are plotted on the y-axis.
-    pairs : list of tuple of str, optional
-        List of pairs of category names from x for pairwise statistical comparisons
-        using Welch's t-test.
+    pairs : sequence of pairs or {'all', 'hue'}, optional
+        Category pairs for statistical comparisons, using string or numeric labels.
+        Without ``hue``, use pairs such as ``[("A", "B")]`` or ``"all"`` to
+        compare all displayed categories. With ``hue``, use nested pairs such as
+        ``[(("A", "control"), ("A", "treated"))]`` or ``"hue"`` to compare
+        hue levels within each displayed category. The categorical axis follows
+        the plot orientation. ``None`` disables comparisons.
     add_tip : bool, default: False
         Whether to add text labels showing the mean value above each bar.
     hue : str, optional
@@ -291,6 +295,12 @@ def barplot(
     boxplot : Create a box plot showing full distribution.
     violinplot : Create a violin plot with distribution shape.
     stackplot : Create a stacked bar plot for categorical data.
+    get_comparison_results : Retrieve the statistics and rendered comparison labels.
+
+    Notes
+    -----
+    When ``pairs`` is provided, ``get_comparison_results(ax)`` returns the
+    comparison table without rerunning the statistical tests.
 
     Examples
     --------
@@ -422,7 +432,7 @@ def lollipopplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
-    pairs: list[LollipopPair] | None = None,
+    pairs: HueComparisons | None = None,
     add_tip: bool = False,
     estimator: str = "mean",
     errorbar: str | None = None,
@@ -459,9 +469,13 @@ def lollipopplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
-    pairs : list of tuple of str, optional
-        List of pairs of category names for pairwise statistical comparisons
-        using Welch's t-test.
+    pairs : sequence of pairs or {'all', 'hue'}, optional
+        Category pairs for statistical comparisons, using string or numeric labels.
+        Without ``hue``, use pairs such as ``[("A", "B")]`` or ``"all"`` to
+        compare all displayed categories. With ``hue``, use nested pairs such as
+        ``[(("A", "control"), ("A", "treated"))]`` or ``"hue"`` to compare
+        hue levels within each displayed category. The categorical axis follows
+        the plot orientation. ``None`` disables comparisons.
     add_tip : bool, default: False
         Whether to add text labels showing the aggregated value at each dot.
     estimator : {'mean', 'median'}, default: 'mean'
@@ -504,6 +518,12 @@ def lollipopplot(
     barplot : Create a bar plot showing mean values.
     stripplot : Create a strip plot showing individual data points.
     boxplot : Create a box plot showing full distribution.
+    get_comparison_results : Retrieve the statistics and rendered comparison labels.
+
+    Notes
+    -----
+    When ``pairs`` is provided, ``get_comparison_results(ax)`` returns the
+    comparison table without rerunning the statistical tests.
 
     Examples
     --------
@@ -904,7 +924,7 @@ def stackplot(
     stack_order: list[str] | None = None,
     width: float = 0.5,
     normalize: bool = True,
-    pairs: list[tuple[str, str]] | None = None,
+    pairs: CategoryComparisons | None = None,
     test: Literal["auto", "fisher-exact", "chi-squared"] = "auto",
     p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     add_count: bool = False,
@@ -941,9 +961,10 @@ def stackplot(
         Width of the bars.
     normalize : bool, default: True
         Whether to normalize counts to frequencies (proportions summing to 1).
-    pairs : list of tuple of str, optional
-        List of pairs of bar-category names for pairwise statistical comparisons
-        from the selected bar variable.
+    pairs : sequence of pairs or {'all'}, optional
+        Pairs of string or numeric labels from the selected bar variable, such as
+        ``[("A", "B")]`` or ``[(0, 1)]``. Use ``"all"`` to compare all displayed
+        bar categories. ``None`` disables comparisons.
     test : {'auto', 'fisher-exact', 'chi-squared'}, default: 'auto'
         Statistical test used for pairwise comparisons. Automatic selection uses
         Fisher's exact test for two stack levels and chi-squared otherwise.
@@ -967,6 +988,12 @@ def stackplot(
     barplot : Create a bar plot of means.
     pieplot : Create a pie chart for categorical proportions.
     donutplot : Create a donut chart for categorical proportions.
+    get_comparison_results : Retrieve the statistics and rendered comparison labels.
+
+    Notes
+    -----
+    When ``pairs`` is provided, ``get_comparison_results(ax)`` returns the
+    comparison table without rerunning the statistical tests.
 
     Examples
     --------
