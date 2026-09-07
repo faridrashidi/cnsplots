@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 if TYPE_CHECKING:
     import numpy as np
@@ -19,8 +20,8 @@ from patsy.eval import EvalEnvironment
 from patsy.highlevel import dmatrix
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV, cross_val_predict
-from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, check_cv
+from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from cnsplots._validation import (
@@ -57,6 +58,9 @@ class CoxModel:
     hue : str, optional
         Column name for grouping variable. If provided, fits separate models
         for each group. Default is None (single model for all data).
+    retain_estimators : bool, optional
+        Retain successful fitted lifelines estimators in ``estimators``.
+        Default is False because these objects contain training data.
 
     Attributes
     ----------
@@ -64,6 +68,17 @@ class CoxModel:
         Results DataFrame containing hazard ratios, confidence intervals,
         p-values, and -log10(p-values) for all fitted models. Available after
         calling fit().
+    diagnostics : pd.DataFrame
+        One row per requested formula and hue group, including failed fits.
+        Columns are ``analysis_id``, ``analysis``, ``hue_group``, ``status``,
+        ``n_input``, ``n_analyzed``, ``n_dropped``, ``event_count``, and
+        ``failure_reason``. Counts describe rows with complete formula
+        predictors, even when fitting fails; unknown counts are null.
+    estimators : dict of int to lifelines.CoxPHFitter
+        Successful fitted estimators keyed by diagnostic ``analysis_id``,
+        populated only when ``retain_estimators=True``. IDs follow requested
+        group/formula order, starting at zero. These are the estimators used
+        for the reported hazard ratios; no additional refit is performed.
     name : str
         Model type identifier, always 'cox'.
 
@@ -121,13 +136,18 @@ class CoxModel:
         event: str,
         variates: list[str],
         hue: str | None = None,
+        *,
+        retain_estimators: bool = False,
     ) -> None:
         self.data = data
         self.duration = duration
         self.event = event
         self.variates = variates
         self.hue = hue
+        self.retain_estimators = retain_estimators
         self.results = None
+        self.diagnostics = pd.DataFrame()
+        self.estimators: dict[int, Any] = {}
         self.name = "cox"
 
     def fit(self) -> None:
@@ -136,6 +156,8 @@ class CoxModel:
 
         This method fits a separate Cox model for each variate, optionally
         stratified by hue groups. Results are stored in the results attribute.
+        Each call first clears results, diagnostics, and retained estimators,
+        including calls that fail input validation.
 
         Returns
         -------
@@ -167,15 +189,29 @@ class CoxModel:
         coefficients, it combines the formula and coefficient names so every
         estimate remains distinct in visualizations.
 
+        Diagnostics use ``status='success'`` or ``status='failed'``. For a
+        failed fit, ``failure_reason`` contains the exception message.
+        ``n_input`` is the group size; ``n_analyzed`` counts rows retained by
+        the formula's missing-value handling, ``n_dropped`` is the difference,
+        and ``event_count`` counts observed events in those retained rows.
+        These counts describe eligible rows, not a successful fit. As in
+        lifelines, missing formula predictors can cause a fit failure; this
+        method does not automatically drop rows before fitting. If the
+        formula cannot be evaluated, the eligible-row counts are null.
+
         Examples
         --------
         >>> model = cns.CoxModel(df, "time", "event", ["age", "treatment"])
         >>> model.fit()
         >>> print(model.results[["display_label", "exp(coef)", "p"]])
         """
-        import lifelines as ll
-
         self.results = None
+        self.diagnostics = pd.DataFrame()
+        self.estimators = {}
+
+        import lifelines as ll
+        from lifelines.utils import CovariateParameterMappings
+
         validate_dataframe(self.data, "data", "CoxModel.fit")
         validate_dataframe_not_empty(self.data, "CoxModel.fit")
         required_columns = [self.duration, self.event]
@@ -213,6 +249,7 @@ class CoxModel:
 
         df = self.data.copy()
         all_results = []
+        diagnostics = []
 
         if self.hue is None:
             hue_groups = [("All", df)]
@@ -224,6 +261,18 @@ class CoxModel:
 
         for hue_group, hue_data in hue_groups:
             for var in self.variates:
+                analysis_id = len(diagnostics)
+                diagnostic: dict[str, Any] = {
+                    "analysis_id": analysis_id,
+                    "analysis": var,
+                    "hue_group": hue_group,
+                    "status": "failed",
+                    "n_input": len(hue_data),
+                    "n_analyzed": None,
+                    "n_dropped": None,
+                    "event_count": None,
+                    "failure_reason": None,
+                }
                 try:
                     cph = ll.CoxPHFitter()
                     cph.fit(
@@ -240,12 +289,50 @@ class CoxModel:
                     summary["analysis"] = var
                     summary["hue_group"] = hue_group
                     all_results.append(summary)
+                    diagnostic.update(
+                        status="success",
+                        n_analyzed=len(hue_data),
+                        n_dropped=0,
+                        event_count=int(hue_data[self.event].sum()),
+                    )
+                    if self.retain_estimators:
+                        self.estimators[analysis_id] = cph
                 except Exception as exc:
+                    diagnostic["failure_reason"] = str(exc)
+                    # Recover eligibility using lifelines' formula engine without
+                    # changing its fit behavior or emitting duplicate warnings.
+                    try:
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            indexed_data = hue_data.reset_index(drop=True).sort_values(
+                                [self.duration, self.event]
+                            )
+                            predictors = indexed_data.drop(
+                                columns=[self.duration, self.event]
+                            )
+                            mapping = CovariateParameterMappings(
+                                {"beta_": var}, predictors, force_no_intercept=True
+                            )
+                            design = mapping.mappings["beta_"].get_model_matrix(
+                                predictors
+                            )
+                        diagnostic.update(
+                            n_analyzed=len(design),
+                            n_dropped=len(hue_data) - len(design),
+                            event_count=int(
+                                indexed_data.loc[design.index, self.event].sum()
+                            ),
+                        )
+                    except Exception:
+                        pass
                     warnings.warn(
                         f"Error fitting {var} for hue group {hue_group}: {exc}",
                         RuntimeWarning,
                         stacklevel=2,
                     )
+                diagnostics.append(diagnostic)
+
+        self.diagnostics = pd.DataFrame(diagnostics)
 
         if not all_results:
             warnings.warn("No successful model fits", RuntimeWarning, stacklevel=2)
@@ -324,12 +411,67 @@ class _LogisticDesign(TransformerMixin, BaseEstimator):
         return design.drop("Intercept", axis=1)
 
 
+class _CVSplitter(Protocol):
+    def split(
+        self, X: Any, y: Any, groups: Any = None
+    ) -> Iterable[tuple[np.ndarray, np.ndarray]]: ...
+
+
+def _logistic_splits(
+    cv: int | _CVSplitter,
+    X: pd.DataFrame,
+    y: np.ndarray,
+    groups: np.ndarray | None,
+    level: str,
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Validate the actual partitions before learning any preprocessing state."""
+    splitter = check_cv(cv, y=y, classifier=True)
+    if isinstance(splitter, StratifiedKFold):
+        if pd.Series(y).value_counts().min() < splitter.n_splits:
+            raise ValueError(
+                f"{level} {splitter.n_splits}-fold cross-validation requires at least "
+                f"{splitter.n_splits} observations in each outcome class"
+            )
+        splits = list(splitter.split(X, y))
+    else:
+        splits = list(splitter.split(X, y, groups))
+    if not splits:
+        raise ValueError(f"{level} cross-validation yielded no splits")
+    validated = []
+    for train, test in splits:
+        train, test = np.asarray(train), np.asarray(test)
+        for indices in (train, test):
+            if (
+                indices.ndim != 1
+                or not np.issubdtype(indices.dtype, np.integer)
+                or len(indices) == 0
+                or (indices < 0).any()
+                or (indices >= len(y)).any()
+                or len(np.unique(indices)) != len(indices)
+            ):
+                raise ValueError(f"{level} cross-validation has invalid row indices")
+        if np.intersect1d(train, test).size:
+            raise ValueError(f"{level} cross-validation train/validation rows overlap")
+        if any(len(np.unique(y[indices])) != 2 for indices in (train, test)):
+            raise ValueError(
+                f"{level} cross-validation requires both outcome classes in every "
+                "training and validation partition for ROC-AUC"
+            )
+        if groups is not None and pd.Index(groups[train]).isin(groups[test]).any():
+            raise ValueError(
+                f"{level} cross-validation splits a group between training and "
+                "validation; use group-aware splitters at both levels"
+            )
+        validated.append((train, test))
+    return validated
+
+
 class LogisticModel:
     """
     Logistic regression model with cross-validation for binary classification.
 
     This class fits L1-regularized logistic regression models with nested
-    5-fold cross-validation to predict binary outcomes and assess predictor
+    cross-validation to predict binary outcomes and assess predictor
     performance using ROC-AUC with bootstrap confidence intervals.
 
     Parameters
@@ -346,12 +488,48 @@ class LogisticModel:
     hue : str, optional
         Column name for grouping variable. If provided, fits separate models
         for each group. Default is None (single model for all data).
+    inner_cv, outer_cv : int or cross-validation splitter, default: 5
+        Splitters for tuning and out-of-fold evaluation, respectively. Integers
+        select unshuffled stratified folds. Splitters receive the complete
+        predictor rows for each analysis; inner splitters receive only the
+        current outer training subset. Every training and validation partition
+        must contain both outcome classes. Outer validation partitions must
+        cover every analyzed row exactly once (repeated CV and partial-coverage
+        splitters such as TimeSeriesSplit are therefore unsupported).
+    groups : str or one-dimensional array-like, optional
+        Column containing subject/group identifiers, or one identifier per input
+        row, aligned by position even for a Series. Identifiers are subset with
+        hue groups and predictor exclusions. Missing identifiers are rejected.
+        Use group-aware splitters at both levels; any train/validation group
+        overlap is rejected. This is separate from ``hue``, which fits separate
+        analyses.
+    random_state : int or None, default: 42
+        Seed for the logistic solver and AUC bootstrap. Configure shuffling and
+        its seed on supplied splitters themselves. None permits nondeterminism.
+    retain_estimators : bool, default: False
+        Retain the selected pipeline from each outer fold for successful
+        analyses. No additional model is fitted on the full dataset.
 
     Attributes
     ----------
     results : pd.DataFrame
         Results DataFrame containing AUC values and confidence intervals for
         all fitted models. Available after calling fit().
+    diagnostics : pd.DataFrame
+        One row per requested formula/hue pair, in request order, with
+        ``analysis_id``, ``analysis``, ``hue_group``, ``status`` (success/failed),
+        ``n_input``, ``n_analyzed``, ``n_dropped``, ``class_counts``, and
+        ``failure_reason``. Analyzed counts describe complete predictor rows,
+        including when fitting fails. Counts are missing if formula evaluation
+        fails. Counts are aggregate; diagnostics do not store input row copies.
+    estimators : dict of int to list of sklearn.pipeline.Pipeline
+        When retention is enabled, maps diagnostics ``analysis_id`` to fitted
+        outer-fold pipelines in splitter order. These are evaluation models
+        refitted on each outer training subset after inner tuning, not a final
+        full-data refit. Pipelines include learned Patsy encoding, scaling, and
+        classifier state, without storing training rows or outcomes. Empty
+        otherwise. All fit state is cleared at the start of every fit, including
+        when input validation fails.
     name : str
         Model type identifier, always 'logistic'.
 
@@ -364,8 +542,8 @@ class LogisticModel:
     Notes
     -----
     The fit() method performs:
-    - Outer 5-fold cross-validation for out-of-fold predictions
-    - Inner 5-fold ROC-AUC tuning of the complete preprocessing/model pipeline
+    - Outer cross-validation for out-of-fold predictions (5 folds by default)
+    - Inner ROC-AUC tuning of the complete pipeline (5 folds by default)
     - Bootstrap confidence intervals for AUC (1000 iterations, alpha=0.05)
 
     Models use the liblinear solver optimized for L1 regularization and are
@@ -394,6 +572,21 @@ class LogisticModel:
     ... )
     >>> model.fit()
     >>> print(model.results)
+    >>> print(model.diagnostics)
+
+    >>> # Keep repeated subjects together at both validation levels
+    >>> from sklearn.model_selection import GroupKFold
+    >>> model = cns.LogisticModel(
+    ...     df,
+    ...     event="response",
+    ...     variates=["age"],
+    ...     groups="subject_id",
+    ...     outer_cv=GroupKFold(3),
+    ...     inner_cv=GroupKFold(2),
+    ...     retain_estimators=True,
+    ... )
+    >>> model.fit()
+    >>> outer_pipelines = model.estimators[0]
     """
 
     def __init__(
@@ -402,12 +595,25 @@ class LogisticModel:
         event: str,
         variates: list[str],
         hue: str | None = None,
+        *,
+        inner_cv: int | _CVSplitter = 5,
+        outer_cv: int | _CVSplitter = 5,
+        groups: str | Sequence[Any] | np.ndarray | pd.Series | None = None,
+        random_state: int | None = 42,
+        retain_estimators: bool = False,
     ) -> None:
         self.data = data
         self.event = event
         self.variates = variates
         self.hue = hue
+        self.inner_cv = inner_cv
+        self.outer_cv = outer_cv
+        self.groups = groups
+        self.random_state = random_state
+        self.retain_estimators = retain_estimators
         self.results = None
+        self.diagnostics = pd.DataFrame()
+        self.estimators: dict[int, list[Pipeline]] = {}
         self.name = "logistic"
 
     def _compute_auc_ci(
@@ -441,7 +647,7 @@ class LogisticModel:
         y_pred_proba = np.asarray(y_pred_proba)
         auc = skl.metrics.roc_auc_score(y_true, y_pred_proba)
         aucs = []
-        rng = np.random.default_rng(42)
+        rng = np.random.default_rng(self.random_state)
         n = len(y_true)
         for _ in range(n_bootstrap):
             indices = rng.choice(n, n, replace=True)
@@ -461,7 +667,7 @@ class LogisticModel:
         Fit logistic regression models for all specified variates.
 
         This method fits a separate L1-regularized logistic regression model
-        with nested 5-fold cross-validation for each variate, optionally stratified
+        with nested cross-validation for each variate, optionally stratified
         by hue groups. Results are stored in the results attribute.
 
         Returns
@@ -483,15 +689,19 @@ class LogisticModel:
         1. Stateful Patsy transforms are rejected before learning any design state.
            A stateless formula evaluation identifies complete predictor rows and
            aligns their outcomes; its design information is discarded.
-        2. Outer 5-fold stratified CV holds out each row once. Within each outer
-           training fold, inner 5-fold stratified CV tunes 10 values of C,
+        2. Outer CV holds out each row once. Within each outer
+           training fold, inner CV tunes 10 values of C,
            logarithmically spaced from 1e-4 to 1e4, using ROC-AUC.
         3. Each inner fit learns Patsy encoding and standardization on its training
            rows only, followed by L1 logistic regression. The selected pipeline
            is refitted on the outer training rows to predict the outer held-out
-           rows. Both CV levels use unshuffled folds; the solver seed is 42.
+           rows. Defaults use unshuffled stratified 5-fold CV at both levels
+           and a solver seed of 42. Feasibility is checked against the actual
+           partitions after predictor exclusions.
         4. AUC is computed from all out-of-fold predictions. The existing 1000
            bootstrap resamples of these predictions provide the 95% CI.
+           Bootstrap resamples individual observations; groups control CV
+           splitting only, not the confidence-interval method.
 
         Formulas must use row-wise expressions. Stateful Patsy transforms
         (including splines, centering, and standardization) are unsupported until
@@ -502,7 +712,10 @@ class LogisticModel:
         pandas categorical dtype.
 
         Runtime warnings are emitted for hue groups with no outcome variance.
-        Errors during fitting are caught and surfaced as warnings.
+        Errors during fitting are caught and surfaced as warnings, with one
+        diagnostics entry for every requested analysis. Invalid required input
+        columns or group arrays raise ValueError before any analysis. Results,
+        diagnostics, and retained estimators are reset before validation.
 
         Examples
         --------
@@ -511,6 +724,8 @@ class LogisticModel:
         >>> print(model.results[["predictor", "auc", "hue_group"]])
         """
         self.results = None
+        self.diagnostics = pd.DataFrame()
+        self.estimators = {}
         validate_dataframe(self.data, "data", "LogisticModel.fit")
         validate_dataframe_not_empty(self.data, "LogisticModel.fit")
         required_columns = [self.event]
@@ -519,8 +734,26 @@ class LogisticModel:
         validate_columns_exist(self.data, required_columns, "LogisticModel.fit")
         validate_no_nulls(self.data, required_columns, "LogisticModel.fit")
 
-        df = self.data.copy()
+        groups = None
+        if self.groups is not None:
+            if isinstance(self.groups, str):
+                validate_columns_exist(self.data, [self.groups], "LogisticModel.fit")
+                groups = self.data[self.groups].to_numpy()
+            else:
+                groups = np.asarray(self.groups)
+            if groups.ndim != 1 or len(groups) != len(self.data):
+                raise ValueError(
+                    "[LogisticModel.fit] groups must be one-dimensional with one "
+                    "identifier per input row"
+                )
+            if pd.isna(groups).any():
+                raise ValueError(
+                    "[LogisticModel.fit] groups must not contain missing values"
+                )
+
+        df = self.data.reset_index(drop=True)
         all_results = []
+        diagnostics: list[dict[str, Any]] = []
         regularization_options: dict[str, Any] = (
             {"l1_ratio": 1}
             if inspect.signature(LogisticRegression).parameters["l1_ratio"].default == 0
@@ -536,8 +769,19 @@ class LogisticModel:
             ]
 
         for hue_group, hue_data in hue_groups:
-            hue_data = hue_data.reset_index(drop=True)
             for var in self.variates:
+                diagnostic: dict[str, Any] = {
+                    "analysis_id": len(diagnostics),
+                    "analysis": var,
+                    "hue_group": hue_group,
+                    "status": "failed",
+                    "n_input": len(hue_data),
+                    "n_analyzed": None,
+                    "n_dropped": None,
+                    "class_counts": None,
+                    "failure_reason": None,
+                }
+                diagnostics.append(diagnostic)
                 try:
                     formula = ModelDesc.from_formula(var)
                     eval_env = EvalEnvironment.capture(0)
@@ -558,7 +802,13 @@ class LogisticModel:
                     X = hue_data.loc[complete_rows]
                     y = X[self.event].to_numpy()
                     class_counts = pd.Series(y).value_counts()
+                    diagnostic.update(
+                        n_analyzed=len(y),
+                        n_dropped=len(hue_data) - len(y),
+                        class_counts=class_counts.to_dict(),
+                    )
                     if len(class_counts) < 2:
+                        diagnostic["failure_reason"] = "No variance in outcome"
                         warnings.warn(
                             f"No variance in outcome for {var} in hue group {hue_group}",
                             RuntimeWarning,
@@ -570,40 +820,48 @@ class LogisticModel:
                             "Logistic regression requires exactly two outcome classes"
                         )
 
-                    n_splits = 5
-                    if (class_counts < n_splits).any():
-                        raise ValueError(
-                            "Outer 5-fold cross-validation requires at least 5 "
-                            "observations in each outcome class after removing rows "
-                            f"with missing predictor values; got {class_counts.to_dict()}"
-                        )
-                    outer_training_counts = class_counts - np.ceil(
-                        class_counts / n_splits
-                    ).astype(int)
-                    if (outer_training_counts < n_splits).any():
-                        raise ValueError(
-                            "Inner 5-fold cross-validation requires at least 5 "
-                            "observations in each outcome class in every outer training "
-                            "fold; at least 7 observations per class are required"
-                        )
-                    model = GridSearchCV(
-                        make_pipeline(
-                            _LogisticDesign(var),
-                            StandardScaler(),
-                            LogisticRegression(
-                                solver="liblinear",
-                                random_state=42,
-                                **regularization_options,
-                            ),
-                        ),
-                        {"logisticregression__C": np.logspace(-4, 4, 10)},
-                        cv=n_splits,
-                        scoring="roc_auc",
-                        error_score="raise",
+                    analysis_groups = None if groups is None else groups[X.index]
+                    outer_splits = _logistic_splits(
+                        self.outer_cv, X, y, analysis_groups, "Outer"
                     )
-                    y_pred_proba = cross_val_predict(
-                        model, X, y, cv=n_splits, method="predict_proba"
-                    )[:, 1]
+                    held_out = np.concatenate([test for _, test in outer_splits])
+                    if not np.array_equal(np.sort(held_out), np.arange(len(y))):
+                        raise ValueError(
+                            "Outer cross-validation must hold out each analyzed row "
+                            "exactly once"
+                        )
+                    inner_splits = [
+                        _logistic_splits(
+                            self.inner_cv,
+                            X.iloc[train],
+                            y[train],
+                            None if analysis_groups is None else analysis_groups[train],
+                            "Inner",
+                        )
+                        for train, _ in outer_splits
+                    ]
+                    y_pred_proba = np.empty(len(y), dtype=float)
+                    fitted_estimators = []
+                    for (train, test), inner in zip(outer_splits, inner_splits):
+                        model = GridSearchCV(
+                            make_pipeline(
+                                _LogisticDesign(var),
+                                StandardScaler(),
+                                LogisticRegression(
+                                    solver="liblinear",
+                                    random_state=self.random_state,
+                                    **regularization_options,
+                                ),
+                            ),
+                            {"logisticregression__C": np.logspace(-4, 4, 10)},
+                            cv=inner,
+                            scoring="roc_auc",
+                            error_score="raise",
+                        )
+                        model.fit(X.iloc[train], y[train])
+                        y_pred_proba[test] = model.predict_proba(X.iloc[test])[:, 1]
+                        if self.retain_estimators:
+                            fitted_estimators.append(model.best_estimator_)
                     auc, auc_lower, auc_upper = self._compute_auc_ci(y, y_pred_proba)
                     model_result = {
                         "predictor": var,
@@ -613,13 +871,18 @@ class LogisticModel:
                         "hue_group": hue_group,
                     }
                     all_results.append(model_result)
+                    diagnostic["status"] = "success"
+                    if self.retain_estimators:
+                        self.estimators[diagnostic["analysis_id"]] = fitted_estimators
                 except Exception as exc:
+                    diagnostic["failure_reason"] = str(exc)
                     warnings.warn(
                         f"Error fitting {var} for hue group {hue_group}: {exc}",
                         RuntimeWarning,
                         stacklevel=2,
                     )
 
+        self.diagnostics = pd.DataFrame(diagnostics)
         results_df = pd.DataFrame(all_results)
         if len(results_df) == 0:
             warnings.warn(
