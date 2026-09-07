@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 # Load example data
 df = cns.datasets.load_dataset("tips")
 
-# Create a figure with specific dimensions (width x height in pixels)
+# Create a figure with specific dimensions (width x height in points)
 fig = cns.figure(100, 150)
 
 # Create a boxplot
@@ -26,18 +26,48 @@ refer to column names in that DataFrame.
 
 ## Understanding Figure Dimensions
 
-cnsplots uses **pixels** for figure dimensions:
+cnsplots uses **points** for figure dimensions by default. One point is
+1/72 inch, equivalent to the logical 72-DPI units used by existing calls:
 
 ```python
-# Small figure: 80 px wide and 100 px tall
+# Small figure: 80 pt wide and 100 pt tall
 cns.figure(80, 100)
 
-# Larger figure: 150 px wide and 200 px tall
+# Larger figure: 150 pt wide and 200 pt tall
 cns.figure(150, 200)
 ```
 
-`cns.figure(width, height)` uses the conventional width-first order, and those
-values are the final canvas size in pixels.
+`cns.figure(width, height)` uses the conventional width-first order and sizes
+the whole figure canvas, including the space available for axes decorations.
+Use the keyword-only `unit` option for points (`"pt"`), inches (`"in"`), or
+millimeters (`"mm"`). These calls create equal physical sizes:
+
+```python
+cns.figure(144, 72, unit="pt")
+cns.figure(2, 1, unit="in")
+cns.figure(50.8, 25.4, unit="mm")
+```
+
+Explicit dimensions must be finite and positive, and other units are rejected.
+Omitted dimensions still use `cns.settings.figure_width` and `figure_height`
+in points, even when `unit` is set. For example, `cns.figure(width=2, unit="in")`
+is two inches wide with the default height in points.
+
+Physical size and raster pixels are different quantities. Display DPI controls
+the number of pixels per inch without changing the physical canvas size:
+
+```python
+fig = cns.figure(100, 150)
+print(fig.get_size_inches())  # [1.38888889 2.08333333] = [100 / 72, 150 / 72]
+print(fig.canvas.get_width_height())  # (200, 300) at the default display DPI of 144
+
+# 400 × 600 pixels at the default export DPI of 288, preserving the full canvas
+cns.savefig("full-canvas.png", fig=fig, bbox_inches=None)
+```
+
+The default export uses `bbox_inches="tight"`, which crops to the artists and
+adds padding in inches. Its final dimensions can therefore differ from the
+full canvas. See [Saving Figures](#saving-figures) for crop and DPI overrides.
 
 `cns.figure(...)` returns the created `matplotlib.figure.Figure` and makes it
 the current figure, so subsequent cnsplots calls still draw on it. Keep this
@@ -116,6 +146,29 @@ composed into an existing Matplotlib layout. Most return the target
 retain their backend-native return objects so callers can access their
 multi-panel layout or diagram elements.
 
+### Sizing Multipanel Figures
+
+`cns.multipanel` accepts the same units. Its `max_width` fixes the full figure
+width and controls row wrapping. Explicit panel widths and heights inherit
+the constructor's unit, or use the panel's own `unit` override:
+
+```python
+mp = cns.multipanel(max_width=180, unit="mm")
+ax_a = mp.panel("A", width=50.8, height=25.4)  # Axes area: 2 × 1 inches
+cns.boxplot(data=df, x="day", y="total_bill", ax=ax_a)
+ax_b = mp.panel("B", width=2, height=1, unit="in")  # Same axes area
+cns.barplot(data=df, x="day", y="tip", ax=ax_b)
+```
+
+Panel dimensions describe the **axes area**, not each panel's outer bounds.
+Titles, tick labels, axis labels, and margins also occupy space in the layout;
+the figure height grows with the rows and their decorations. Margins stay in
+points, while label `pad_left` and `pad_top` stay in rendered display pixels,
+independent of `unit`. Omitted `max_width`, panel width, or panel height always
+use their settings values in points. Changing units alone does not reinterpret
+these defaults.
+
+(saving-figures)=
 ## Saving Figures
 
 For publication, save figures in vector formats:
