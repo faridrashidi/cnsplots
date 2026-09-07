@@ -6,6 +6,9 @@ Import cnsplots as:
 import cnsplots as cns
 ```
 
+See {doc}`statistical_methods` for the assumptions, contributing observations,
+correction scope, and interval meanings behind these functions.
+
 ## Plotting Functions
 
 Every plotting function accepts a keyword-only `ax` argument for composition

@@ -472,7 +472,8 @@ class LogisticModel:
 
     This class fits L1-regularized logistic regression models with nested
     cross-validation to predict binary outcomes and assess predictor
-    performance using ROC-AUC with bootstrap confidence intervals.
+    performance using ROC-AUC with percentile bootstrap intervals conditional
+    on the fixed out-of-fold predictions.
 
     Parameters
     ----------
@@ -513,8 +514,10 @@ class LogisticModel:
     Attributes
     ----------
     results : pd.DataFrame
-        Results DataFrame containing AUC values and confidence intervals for
-        all fitted models. Available after calling fit().
+        Results for successful analyses. ``auc`` is the AUC of all out-of-fold
+        predictions, not a mean of fold or bootstrap AUCs. ``lower_ci`` and
+        ``upper_ci`` are distances from this point estimate to the percentile
+        interval limits. Available after calling fit().
     diagnostics : pd.DataFrame
         One row per requested formula/hue pair, in request order, with
         ``analysis_id``, ``analysis``, ``hue_group``, ``status`` (success/failed),
@@ -542,9 +545,19 @@ class LogisticModel:
     Notes
     -----
     The fit() method performs:
+
     - Outer cross-validation for out-of-fold predictions (5 folds by default)
     - Inner ROC-AUC tuning of the complete pipeline (5 folds by default)
-    - Bootstrap confidence intervals for AUC (1000 iterations, alpha=0.05)
+    - Fixed-prediction percentile intervals for AUC (1000 bootstrap attempts,
+      alpha=0.05, using ``random_state``)
+
+    The bootstrap resamples individual analyzed rows, keeping each label and
+    its out-of-fold probability together. It does not refit preprocessing,
+    models, or hyperparameter selection. ``groups`` controls CV splitting only;
+    the interval does not account for dependence between repeated observations.
+    The nominal 95% interval has no universal coverage guarantee. Inference for
+    dependent observations or uncertainty in the entire retraining and model
+    selection procedure requires a study-specific resampling design.
 
     Models use the liblinear solver optimized for L1 regularization and are
     scored using ROC-AUC during cross-validation. See :meth:`fit` for the
@@ -624,16 +637,17 @@ class LogisticModel:
         alpha: float = 0.05,
     ) -> tuple[float, float, float]:
         """
-        Compute bootstrap confidence interval for ROC-AUC.
+        Compute a percentile interval from fixed label/probability pairs.
 
         Parameters
         ----------
         y_true : array-like
             True binary labels.
         y_pred_proba : array-like
-            Predicted probabilities.
+            Fixed predicted probabilities, out-of-fold when called by ``fit``.
         n_bootstrap : int, default: 1000
-            Number of bootstrap iterations.
+            Number of bootstrap attempts. Single-class samples are skipped
+            without drawing replacements, so fewer replicates may be retained.
         alpha : float, default: 0.05
             Significance level for confidence interval (0.05 = 95% CI).
 
@@ -642,6 +656,15 @@ class LogisticModel:
         tuple of float
             (auc, lower_bound, upper_bound), where ``auc`` is computed from all
             predictions and bootstrap samples are used only for the bounds.
+
+        Notes
+        -----
+        Each attempt samples ``len(y_true)`` row indices uniformly with
+        replacement, applying the same indices to labels and probabilities.
+        A new ``numpy.random.default_rng(self.random_state)`` is used on each
+        call. Bounds are the ``alpha / 2`` and ``1 - alpha / 2`` quantiles of
+        retained AUCs, using NumPy's default linear percentile interpolation.
+        No model fitting or group resampling is performed.
         """
         y_true = np.asarray(y_true)
         y_pred_proba = np.asarray(y_pred_proba)
@@ -679,7 +702,7 @@ class LogisticModel:
         -----
         The results DataFrame contains:
         - predictor: Formula string for the predictor(s)
-        - auc: Area under ROC curve
+        - auc: AUC of all pooled out-of-fold predictions
         - lower_ci: Lower error bound (auc - lower confidence limit)
         - upper_ci: Upper error bound (upper confidence limit - auc)
         - hue_group: Group name (or 'All' if no grouping)
@@ -698,10 +721,22 @@ class LogisticModel:
            rows. Defaults use unshuffled stratified 5-fold CV at both levels
            and a solver seed of 42. Feasibility is checked against the actual
            partitions after predictor exclusions.
-        4. AUC is computed from all out-of-fold predictions. The existing 1000
-           bootstrap resamples of these predictions provide the 95% CI.
-           Bootstrap resamples individual observations; groups control CV
-           splitting only, not the confidence-interval method.
+        4. AUC is computed from all out-of-fold predictions, not averaged over
+           folds or bootstrap replicates. For the nominal 95% interval, 1000
+           bootstrap attempts each sample as many individual rows as analyzed,
+           uniformly with replacement. Each sampled label stays paired with its
+           fixed out-of-fold probability. Single-class samples are skipped
+           without replacement attempts. The limits are the 2.5th and 97.5th
+           percentiles of retained AUCs, using NumPy's default linear
+           interpolation. A fresh ``numpy.random.default_rng(random_state)``
+           supplies the draws for each analysis (default seed 42).
+
+        The interval conditions on the existing out-of-fold predictions: no
+        preprocessing, model fitting, or hyperparameter selection is repeated
+        in the bootstrap. Groups control CV splitting only, not resampling.
+        Repeated or dependent observations and uncertainty from the full
+        retraining/model-selection procedure require a study-specific approach;
+        nominal 95% coverage is not guaranteed for every study design.
 
         Formulas must use row-wise expressions. Stateful Patsy transforms
         (including splines, centering, and standardization) are unsupported until
