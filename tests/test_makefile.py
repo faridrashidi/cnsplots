@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -131,3 +132,67 @@ def test_doc_serve_starts_preview_after_build(docs_repo: Path) -> None:
         "--directory",
         "docs/build/html",
     ]
+
+
+def test_branch_audit_preserves_statement_gate_and_propagates_failures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in tuple(os.environ):
+        if name in {"COVERAGE_FILE", "COVERAGE_PROCESS_START"} or name.startswith(
+            "COV_CORE_"
+        ):
+            monkeypatch.delenv(name)
+    repo = Path(__file__).resolve().parents[1]
+    for name in ("Makefile", "pyproject.toml", "tools/report_coverage.py"):
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(repo / name, target)
+    package = tmp_path / "src/cnsplots/__init__.py"
+    package.parent.mkdir(parents=True)
+    package.write_text(
+        'def select(flag):\n    if flag:\n        return "enabled"\n',
+        encoding="utf-8",
+    )
+    test_file = tmp_path / "tests/test_sample.py"
+    test_file.parent.mkdir()
+    test_file.write_text(
+        "from cnsplots import select\n"
+        'def test_select():\n    assert select(True) == "enabled"\n',
+        encoding="utf-8",
+    )
+    # Use the current test environment without syncing a second project.
+    uv = tmp_path / "bin/uv"
+    uv.parent.mkdir()
+    uv.write_text(
+        f"#!{sys.executable}\n"
+        "import os, sys\n"
+        "args = sys.argv[5:]\n"
+        "args = args[1:] if args[0] == 'python' else ['-m', *args]\n"
+        "os.execv(sys.executable, [sys.executable, *args])\n",
+        encoding="utf-8",
+    )
+    uv.chmod(0o755)
+
+    result = _run_make(tmp_path, "test")
+    assert result.returncode == 0, result.stdout + result.stderr
+    statement_data = (tmp_path / ".coverage").read_bytes()
+    result = _run_make(tmp_path, "test-branches")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "| Statements | 3 | 3 | 100.00% |" in result.stdout
+    assert "| Branches | 1 | 2 | 50.00% | Reporting only |" in result.stdout
+    assert (tmp_path / ".coverage").read_bytes() == statement_data
+
+    package.write_text(
+        package.read_text() + '\ndef unused():\n    return "missing"\n',
+        encoding="utf-8",
+    )
+    result = _run_make(tmp_path, "test")
+    assert result.returncode != 0
+    assert "Required test coverage of 100% not reached" in result.stdout
+
+    test_file.write_text("def test_failure():\n    assert False\n", encoding="utf-8")
+    result = _run_make(tmp_path, "test-branches")
+    assert result.returncode != 0
+    assert "1 failed" in result.stdout
+    assert "| Coverage |" not in result.stdout

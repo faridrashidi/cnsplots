@@ -132,6 +132,7 @@ After installation, you can use the following commands:
 | `make help`                          | Show available commands                |
 | `make lint`                          | Run linting and formatting             |
 | `make test`                          | Run all unit tests                     |
+| `make test-branches`                 | Report statement and branch coverage separately |
 | `make doc`                           | Build documentation and exit           |
 | `make doc-serve`                     | Build and preview documentation on port 8080 |
 | `make doc-linkcheck`                 | Check documentation links              |
@@ -220,6 +221,43 @@ def example_function(param1, param2):
 ```bash
 make test
 ```
+
+### Statement and branch coverage
+
+`make test` enforces **100% statement coverage** on every supported Python version
+in CI. It does not measure branches. The existing `--cov-fail-under=100` and
+`[tool.coverage.report] fail_under = 100` settings remain statement-only gates.
+
+Run the separate branch audit locally with the locked test environment:
+
+```bash
+make test-branches
+```
+
+This reruns the tests with branch measurement and prints a table separating
+statement coverage from branch coverage. It writes `.coverage.branches` and
+`.coverage.branches.json`, preserving the standard `.coverage` data. The JSON
+includes per-file missing branches for investigation. In coverage.py's detailed
+terminal report, the `Cover` column combines statements and branches; it is
+neither the statement percentage nor the branch percentage in the summary table.
+See [coverage.py's branch measurement documentation](https://coverage.readthedocs.io/en/7.13.4/branch.html).
+
+The branch audit is **reporting only**, with no numeric branch or combined
+coverage threshold. Its explicit `--cov-fail-under=0` disables the combined gate
+for that invocation only; test failures still fail the command. It supplements
+`make test` and does not replace its required statement gate. CI runs both on
+Python 3.12, publishes the separate percentages in the job summary, and uploads
+the branch JSON as an artifact.
+
+The adoption baseline on Python 3.12.12/macOS with coverage.py 7.13.4 and the
+locked dependencies is **5,390/5,390 statements (100%)** and **2,070/2,112 branches
+(98.01%)**, with 42 missing branches. Platform and Python-version differences
+may change branch counts; the CI artifact records the Linux baseline per run.
+
+Review changes in missing branches against this baseline, prioritizing tests of
+observable behavior. A future branch threshold requires an explicit policy
+change after evaluating results across supported Python versions; do not add
+tests merely to force 100% branch coverage.
 
 ### Final PDF and SVG exports
 

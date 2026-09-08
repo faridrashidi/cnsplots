@@ -6,6 +6,7 @@ help:
 	@echo " - clean        : clean the repo"
 	@echo " - lint         : run linting and flaking"
 	@echo " - test         : run all unit tests"
+	@echo " - test-branches: report statement and branch coverage separately"
 	@echo " - test-visual  : run visual regression tests"
 	@echo " - doc          : build the documentation"
 	@echo " - doc-serve    : build and serve documentation on port 8080"
@@ -38,6 +39,12 @@ lint:
 
 test:
 	uv run --locked --extra test pytest ./tests
+
+.PHONY: test-branches
+
+test-branches:
+	COVERAGE_FILE=.coverage.branches uv run --locked --extra test pytest ./tests --cov-branch --cov-fail-under=0 --cov-report=json:.coverage.branches.json
+	uv run --locked --extra test python tools/report_coverage.py .coverage.branches.json
 
 test-visual:
 	uv run --locked --extra test pytest tests/test_visual_regressions.py --mpl --no-cov

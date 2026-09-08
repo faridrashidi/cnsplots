@@ -64,8 +64,24 @@ jobs:
         id: tests
         run: make test
 
+      - name: Report branch coverage
+        if: ${{ matrix.python-version == '3.12' }}
+        id: branch_coverage
+        run: |
+          make test-branches
+          uv run --locked --extra test python tools/report_coverage.py .coverage.branches.json >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload branch coverage report
+        if: ${{ always() && steps.branch_coverage.outcome != 'skipped' && matrix.python-version == '3.12' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: branch-coverage-python-3.12
+          path: .coverage.branches.json
+          include-hidden-files: true
+          if-no-files-found: warn
+
       - name: Upload export regression results
-        if: ${{ always() && steps.tests.outcome == 'failure' }}
+        if: ${{ always() && (steps.tests.outcome == 'failure' || steps.branch_coverage.outcome == 'failure') }}
         uses: actions/upload-artifact@v4
         with:
           name: export-results-linux-python-${{ matrix.python-version }}
