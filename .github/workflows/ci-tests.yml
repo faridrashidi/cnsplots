@@ -28,6 +28,9 @@ jobs:
       - name: Run lint
         run: make lint
 
+      - name: Validate workflow contracts
+        run: uv run --locked --extra lint pytest tests/test_release_workflow.py --no-cov
+
   validation:
     uses: ./.github/workflows/validate-package.yml
 

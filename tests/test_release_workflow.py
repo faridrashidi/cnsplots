@@ -3,7 +3,11 @@
 from pathlib import Path
 import shlex
 
-import yaml
+import pytest
+
+yaml = pytest.importorskip(
+    "yaml", reason="Workflow checks require PyYAML from the lint extra"
+)
 
 
 WORKFLOWS = Path(__file__).resolve().parents[1] / ".github" / "workflows"
