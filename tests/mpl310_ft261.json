@@ -28,7 +28,7 @@
   "test_visual_regressions.test_visual_lineplot": "28849942761eb084c260c3c8e11eff1d40d5f8c761c80cb889578cd60e3ff80c",
   "test_visual_regressions.test_visual_scatterplot": "52332223a8cf868a235feeb3b762fa61a67f6b80a7f543d1126322fcf7d921fc",
   "test_visual_regressions.test_visual_placeholderplot": "a1197de856707ce31abffa1a1ef5f5421b8349b3ad81d9beb2f77d2fd4ac8ca2",
-  "test_visual_regressions.test_visual_phyloplot": "6d39c8b39131a404409f5be80578f84d42a80e0bf1dc678ad21ca0af2a3e39e0",
+  "test_visual_regressions.test_visual_phyloplot": "039f95514596eaeb5c47e3ae74e87e2d9ffc21790125bff2ff7374f3738672ca",
   "test_visual_regressions.test_visual_qqplot": "495db1d59f18d3c10bb0d6c5dc4d6292280a783a123160cde5de8b1d62ee53c6",
   "test_visual_regressions.test_visual_vennplot": "93682864796888f7bbc16bc33bed2f4a28a62da703f8a205e6b4309f3688a15e"
 }
