@@ -60,7 +60,8 @@ rather than being averaged. Both paired tests require at least two matched
 subjects. Nonfinite matched response values and comparisons in which every
 within-subject difference is zero are rejected. Ties and mixtures of zero and
 nonzero differences otherwise follow SciPy's defaults.
-Nonfinite p-values returned by SciPy are rejected before correction or annotation.
+Nonfinite p-values returned by SciPy raise `ValueError` before correction or
+annotation.
 Matching is performed separately for every contrast, so different comparisons
 can use different subjects. Plot summaries and tick-label counts still use all
 displayed observations and can exceed the matched test counts. Selecting a paired
@@ -164,12 +165,21 @@ use [statsmodels `multipletests`](https://www.statsmodels.org/stable/generated/s
 
 Correction never extends automatically across panels, separate calls, model
 formulas, or an entire study. It does not adjust confidence intervals.
-Categorical annotation behavior comes from statannotations: Bonferroni labels
-show adjusted numerical p-values, while Holm/FDR labels retain raw p-values
-and can add a nonsignificance suffix when correction changes significance.
+For finite categorical comparisons, Bonferroni labels show adjusted numerical
+p-values, while Holm/FDR labels retain raw p-values and can add an `ns` suffix
+when correction changes significance.
 Use `get_comparison_results(ax)["pvalue_adjusted"]` for numerical adjusted
 values for every method. ROC annotations display adjusted values; survival
 annotations show both raw and adjusted pairwise values.
+
+An independent categorical test that returns a nonfinite p-value warns with
+the test and compared groups, suggesting a check of sample sizes and variation.
+Its annotation reads `P unavailable` in every text format.
+`get_comparison_results(ax)` reports `NaN` for `pvalue_raw`, `pvalue_adjusted`,
+and `pvalue_annotation`, and `None` for `significant`. When correction is
+enabled, all resolved comparisons remain in the family: unavailable tests use
+p=1 only during correction. This placeholder is never reported as their
+p-value, and finite comparisons are corrected using the full family size.
 
 ## Summaries, error bars, and regression
 
