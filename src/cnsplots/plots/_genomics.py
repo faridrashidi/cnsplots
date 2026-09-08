@@ -147,7 +147,8 @@ def volcanoplot(
     import adjustText as at
 
     hue = "DEG"
-    de = data.copy()
+    # Keep hit selection independent of duplicate labels in the caller's index.
+    de = data.reset_index(drop=True)
     if transform_y:
         if not pd.api.types.is_numeric_dtype(de[y]):
             raise ValueError(f"[volcanoplot] Column '{y}' must be numeric")

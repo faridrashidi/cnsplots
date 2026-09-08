@@ -1075,6 +1075,78 @@ def test_genomics_plots(
     )
 
 
+@pytest.mark.parametrize(
+    "index",
+    [
+        pd.Index([0] * 7, name="symbol"),
+        pd.Index(["a", "b", "a", "b", "a", "b", "a"], name="sample"),
+        pd.MultiIndex.from_tuples([("a", 0)] * 7, names=["sample", "replicate"]),
+    ],
+    ids=["duplicate-integers", "duplicate-strings", "duplicate-multiindex"],
+)
+@pytest.mark.parametrize(
+    ("n_show", "show_list", "selected"),
+    [
+        (1, None, ["UP", "DOWN"]),
+        (0, None, []),
+        (0, ["UP_LOWER", "DOWN_LOWER", "NS"], ["UP_LOWER", "DOWN_LOWER"]),
+        (1, [], []),
+    ],
+    ids=["top-hits", "no-hits", "explicit-hits", "empty-show-list"],
+)
+def test_volcanoplot_selection_ignores_dataframe_index(
+    index: pd.Index,
+    n_show: int,
+    show_list: list[str] | None,
+    selected: list[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_adjust = types.SimpleNamespace(adjust_text=lambda *args, **kwargs: None)
+    monkeypatch.setitem(sys.modules, "adjustText", fake_adjust)
+    data = pd.DataFrame(
+        {
+            "log2FoldChange": [2.0, 0.0, -2.0, 1.0, -1.0, 1.0, -1.0],
+            "-log10(adjp)": [5.0, 0.1, 4.0, 3.0, 2.0, 10.0, 8.0],
+            "symbol": [
+                "UP",
+                "NS",
+                "DOWN",
+                "UP_LOWER",
+                "DOWN_LOWER",
+                "UP_TIE",
+                "DOWN_TIE",
+            ],
+        },
+        index=index,
+    )
+    original_show_list = None if show_list is None else show_list.copy()
+
+    for frame in (data.reset_index(drop=True), data):
+        original_data = frame.copy(deep=True)
+        cns.figure(120, 120)
+        ax = cns.volcanoplot(frame, n_show=n_show, show_list=show_list)
+
+        assert [text.get_text() for text in ax.texts] == selected
+        points = ax.collections[0]
+        colors_by_position = {
+            tuple(position): tuple(color)
+            for position, color in zip(
+                np.asarray(points.get_offsets()), np.asarray(points.get_facecolor())
+            )
+        }
+        assert len(colors_by_position) == len(data)
+        for x, y, gene in data.itertuples(index=False, name=None):
+            if gene in selected:
+                expected_color = cns.get_hexcolors_from_apalette(
+                    [1 if x > 0 else 0], "BlueRed"
+                )[0]
+            else:
+                expected_color = "grey" if gene == "NS" else "black"
+            assert colors_by_position[(x, y)] == to_rgba(expected_color)
+        pd.testing.assert_frame_equal(frame, original_data)
+        assert show_list == original_show_list
+
+
 def test_volcanoplot_supports_raw_pvalues_and_custom_thresholds(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
