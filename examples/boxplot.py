@@ -13,6 +13,7 @@ including statistical testing, outlier display, grouping, and styling.
 # ~~~~~~~~~
 # We'll use classic datasets for demonstration.
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
 import cnsplots as cns
@@ -122,6 +123,43 @@ with cns.settings.context(pvalue_format="full", pvalue_fontsize=8):
         p_adjust="fdr_bh",
     )
 ax.set_title("Welch Tests with FDR Correction")
+
+
+# %%
+# Boxplot with paired subject comparisons
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ``pairs`` chooses conditions; ``subject`` identifies matched observations.
+# The paired t-test aligns subjects even when the rows are shuffled.
+# Use ``test="Wilcoxon"`` for a two-sided Wilcoxon signed-rank test instead.
+paired = (
+    pd.DataFrame(
+        {
+            "subject": ["s1", "s2", "s3", "s4", "s5"],
+            "before": [8.0, 7.0, 9.0, 6.0, 8.5],
+            "after": [6.5, 6.8, 7.0, 5.0, 7.5],
+        }
+    )
+    .melt(id_vars="subject", var_name="condition", value_name="response")
+    .sample(frac=1, random_state=42)
+)
+with cns.settings.context(pvalue_format="full", pvalue_fontsize=8):
+    cns.figure(100, 150)
+    ax = cns.boxplot(
+        data=paired,
+        x="condition",
+        y="response",
+        order=["before", "after"],
+        pairs=[("before", "after")],
+        test="t-test_paired",
+        subject="subject",
+        p_adjust=None,  # one prespecified comparison
+        add_count=True,
+    )
+ax.set_title("Subject-Matched Paired t-Test")
+comparisons = cns.get_comparison_results(ax)
+print(comparisons[["n1", "n2", "paired", "pvalue_raw", "pvalue_adjusted"]])
+# Test counts are matched subjects. Tick counts include all displayed rows,
+# which can be larger when some subjects lack one of the compared measurements.
 
 
 # %%

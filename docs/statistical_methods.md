@@ -17,29 +17,60 @@ package-wide imputation or complete-case policy.
 `pairs` is supplied. `pairs="all"` compares displayed category pairs;
 `pairs="hue"` compares hue levels within every displayed category. Explicit
 hue comparisons use tuples such as `[(("A", "control"), ("A", "treated"))]`.
+Here, `pairs` selects group contrasts; it does not identify matched subjects.
 
-| Functions | Default test when comparisons are requested | Other supported test |
+| Functions | Default test when comparisons are requested | Other supported tests |
 | --- | --- | --- |
-| `boxplot`, `violinplot` | `"Mann-Whitney"` | `"t-test_welch"` |
-| `barplot`, `lollipopplot` | `"t-test_welch"` | `"Mann-Whitney"` |
+| `boxplot`, `violinplot` | `"Mann-Whitney"` | `"t-test_welch"`, `"t-test_paired"`, `"Wilcoxon"` |
+| `barplot`, `lollipopplot` | `"t-test_welch"` | `"Mann-Whitney"`, `"t-test_paired"`, `"Wilcoxon"` |
 
-Both tests are two-sided and use **independent** samples. Mann–Whitney tests
-equality of the underlying distributions; interpreting it only as a median
-difference requires additional distributional assumptions. It delegates to
+Mann–Whitney and Welch's t-test are two-sided tests of **independent** samples.
+Mann–Whitney tests equality of the underlying distributions; interpreting it only
+as a median difference requires additional distributional assumptions. It delegates to
 SciPy through statannotations, including automatic exact/asymptotic selection
 and tie handling. Welch's t-test compares means without assuming equal
-variances; its small-sample justification assumes normal populations. Neither
-option is a paired test. See [SciPy Mann–Whitney](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mannwhitneyu.html)
+variances; its small-sample justification assumes normal populations.
+See [SciPy Mann–Whitney](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mannwhitneyu.html)
 and [Welch's t-test](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html).
+
+For matched or repeated measurements, select `test="t-test_paired"` or
+`test="Wilcoxon"` and supply the subject identifier column with
+`subject="subject_id"`. Both are two-sided tests and assume independent
+subjects. The paired t-test compares the mean within-subject difference with
+zero; its small-sample normality assumption concerns those differences.
+Wilcoxon tests whether their distribution is symmetric about zero. It uses
+SciPy's `zero_method="wilcox"` (discard zero differences from the ranks),
+`correction=False`, and `method="auto"`; SciPy determines the p-value method
+and tie handling. See [SciPy's paired t-test](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html)
+and [Wilcoxon signed-rank test](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html).
+`subject` is required for paired tests and is rejected with independent tests.
 
 These four plots exclude rows missing `x`, `y`, or the selected `hue`, and
 exclude levels omitted from `order` or `hue_order`. The resulting rows feed
-drawing, summaries, counts, and tests. This cleaning does not remove infinity.
+drawing, summaries, counts, and independent tests. This cleaning does not remove
+infinity.
 Hiding boxplot outliers does not remove those observations from tests or counts.
 Category counts pool the displayed hue levels.
 
+Paired tests additionally align each requested contrast by subject identifier,
+regardless of row order. Rows with missing identifiers and subjects absent from
+either group are excluded from that test. Each compared group must have at most
+one complete displayed observation per subject; duplicates raise an error,
+rather than being averaged. Both paired tests require at least two matched
+subjects. Nonfinite matched response values and comparisons in which every
+within-subject difference is zero are rejected. Ties and mixtures of zero and
+nonzero differences otherwise follow SciPy's defaults.
+Nonfinite p-values returned by SciPy are rejected before correction or annotation.
+Matching is performed separately for every contrast, so different comparisons
+can use different subjects. Plot summaries and tick-label counts still use all
+displayed observations and can exceed the matched test counts. Selecting a paired
+test does not change the plotted summaries, error bars, or bootstrap resampling
+unit into a paired analysis.
+
 `get_comparison_results(ax)` returns the tested sample sizes and raw and
 adjusted p-values without rerunning tests. It estimates no effect size.
+For paired tests, `paired` is `True` and `n1 == n2` is the number of matched
+subjects before Wilcoxon discards zero differences from the ranks.
 `group1` and `group2` follow categorical axis order, which can differ from the
 supplied pair order; the two-sided p-value does not establish a direction of
 effect. The accessor reports the latest stored comparisons on the axes, so use
@@ -73,22 +104,15 @@ comparisons = cns.get_comparison_results(ax)
 print(comparisons[["n1", "n2", "paired", "pvalue_raw", "pvalue_adjusted"]])
 ```
 
-For repeated measurements, `slopeplot` draws paired observations using the
-`pair` identifier. It requires one value per condition per subject, exactly two
-conditions, and one `x` group per subject; missing values and incomplete or
-duplicate pairs are rejected. It performs **no hypothesis test**. This example
-aligns complete subjects explicitly and computes a separate, unadjusted,
-prespecified paired t-test of after-minus-before differences. Its normality
-assumption concerns the within-subject differences, with independent subjects.
-See [SciPy's paired t-test](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html).
+For repeated measurements, select the subject column explicitly. Shuffling
+these rows does not change which observations are paired:
 
 ```python
 import cnsplots as cns
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.stats import ttest_rel
 
-wide = (
+paired = (
     pd.DataFrame(
         {
             "subject": ["s1", "s2", "s3", "s4", "s5"],
@@ -96,27 +120,29 @@ wide = (
             "after": [6.5, 6.8, 7.0, 5.0, 7.5],
         }
     )
-    .set_index("subject")
-    .dropna(subset=["before", "after"])
+    .melt(id_vars="subject", var_name="condition", value_name="response")
+    .sample(frac=1, random_state=42)
 )
-paired = wide.reset_index().melt(
-    id_vars="subject", var_name="condition", value_name="response"
-)
-paired["cohort"] = "Study"
 fig, ax = plt.subplots()
-cns.slopeplot(
+cns.boxplot(
     paired,
-    "cohort",
+    "condition",
     "response",
-    hue="condition",
-    pair="subject",
-    hue_order=["before", "after"],
+    order=["before", "after"],
+    pairs=[("before", "after")],
+    test="t-test_paired",
+    subject="subject",
+    p_adjust=None,  # one prespecified comparison
     ax=ax,
 )
-paired_result = ttest_rel(wide["after"], wide["before"], alternative="two-sided")
-print("Mean after - before:", (wide["after"] - wide["before"]).mean())
-print("Paired t-test, one prespecified test, no correction:", paired_result.pvalue)
+comparisons = cns.get_comparison_results(ax)
+print(comparisons[["n1", "n2", "paired", "pvalue_raw", "pvalue_adjusted"]])
 ```
+
+`slopeplot` draws paired observations using its `pair` identifier. It requires
+one value per condition per subject, exactly two conditions, and one `x` group
+per subject; missing values and incomplete or duplicate pairs are rejected.
+It performs **no hypothesis test**.
 
 Implementation: [categorical comparisons and results](https://github.com/faridrashidi/cnsplots/blob/main/src/cnsplots/_utils.py),
 [distribution plots](https://github.com/faridrashidi/cnsplots/blob/main/src/cnsplots/plots/_distribution.py),
