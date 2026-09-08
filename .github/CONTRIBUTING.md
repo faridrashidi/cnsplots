@@ -135,7 +135,7 @@ After installation, you can use the following commands:
 | `make doc`                           | Build documentation and exit           |
 | `make doc-serve`                     | Build and preview documentation on port 8080 |
 | `make doc-linkcheck`                 | Check documentation links              |
-| `make release [patch\|minor\|major]` | Bump the package version for a release |
+| `make release [patch\|minor\|major]` | Bump, commit, and tag a version; see [Release Process](#release-process) to defer tagging until after merge |
 | `make clean`                         | Clean build artifacts                  |
 
 `make doc` now exits with the build status locally and in CI; `CI=true make doc` remains valid. To use the previous build-and-preview workflow, run `make doc-serve`, open `http://localhost:8080`, and press Ctrl+C to stop the server. Documentation builds clean only `docs/build`, stage generated sources there, and preserve unrelated coverage, test, and package-build artifacts. To remove generated documentation output explicitly, use `make -C docs clean`.
@@ -335,23 +335,102 @@ Maintainers: apply exactly one release label before merge:
 
 ### Release Process
 
-Maintainers can create a release on the main branch (no PR needed) with:
+Follow [AGENTS.md](../AGENTS.md): prepare release changes on a branch and merge
+them through a PR targeting `main`. Do not make release commits directly on
+`main`. In the commands below, replace `X.Y.Z` with the intended version.
 
-```bash
-make release patch
-```
+1. Start from a clean working tree and an up-to-date `main`, then create the
+   release branch:
 
-You can replace `patch` with `minor` or `major` as needed. This bumps the
-package version, creates the release tag, and prepares the release commit.
-After pushing the commit and tag, GitHub Actions will:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git switch -c chore/release-X.Y.Z
+   BUMPVERSION_TAG=false make release patch
+   ```
 
-- publish the package to PyPI
-- create a draft GitHub release for the new tag
-- generate release notes from merged PRs since the previous tag
+   Replace `patch` with `minor` or `major` as needed. The release target updates
+   `pyproject.toml`, `src/cnsplots/__init__.py`, and `uv.lock`, and creates the
+   release commit. By default it also creates a local `vX.Y.Z` tag. The
+   `BUMPVERSION_TAG=false` override defers tagging until after merge so the tag
+   can point to the merged commit, including when the PR is squash-merged.
 
-Before publishing the draft release, add a short human-written summary under
-the `Added`, `Changed`, and `Fixed` headings, then verify the generated PR list
-and changelog link.
+2. Review the version changes and run both required checks after the final
+   changes are in place:
+
+   ```bash
+   make test
+   make lint
+   ```
+
+   Fix failures that are in scope; otherwise stop and report them. If validation
+   changes files, review and commit those changes and rerun the checks. Push only
+   the branch:
+
+   ```bash
+   git push --no-follow-tags -u origin chore/release-X.Y.Z
+   ```
+
+   Open a draft PR against `main` following the [PR process](#pull-request-process)
+   and `AGENTS.md`, including exactly one release label (`maintenance` for a
+   version-only bump). Have the PR reviewed and merged before creating the tag.
+
+3. Fetch the merged result and check out the exact commit to release, replacing
+   `MERGED_RELEASE_COMMIT` with the merged PR's commit SHA. Use a detached
+   checkout to validate it without making changes on `main`:
+
+   ```bash
+   git fetch origin
+   git switch --detach MERGED_RELEASE_COMMIT
+   git merge-base --is-ancestor HEAD origin/main
+   make test
+   make lint
+   git status --short
+   ```
+
+   Proceed only if the commit is on `origin/main`, both checks pass, the working
+   tree is clean, and the version matches `X.Y.Z`. Any fixes must go through
+   another branch and PR; then validate the resulting merged commit again.
+
+4. Create the tag on that validated commit and push only that tag:
+
+   ```bash
+   git tag -a vX.Y.Z -m "Release X.Y.Z" HEAD
+   git push --no-follow-tags origin refs/tags/vX.Y.Z
+   ```
+
+   Pushing a `v*` tag starts the [release workflow](workflows/release-publish.yml).
+   It runs the same [test and package validation](workflows/validate-package.yml)
+   used by PR/main CI against the exact tagged commit: the Python test matrix,
+   visual regression checks, distribution build, Twine metadata checks, and a
+   clean installation of the built wheel with import, packaged-data, and
+   dependency checks. A failed test or wheel check blocks publishing. The
+   validated distributions are uploaded once and passed to the publish jobs
+   without rebuilding.
+
+   After validation succeeds, the workflow publishes to PyPI and then creates a
+   **published GitHub release** with those distribution assets and generated
+   release notes. The workflow does not set `draft: true`; there is no manual
+   draft-publication step.
+
+These automated checks run for every `v*` tag push, including tags created and
+pushed manually; they do not depend on an earlier PR or branch CI result.
+Maintainers must still follow the branch, review, and local validation steps above.
+The release commit must contain these workflows; older commits retain their
+historical release process.
+
+#### Release Checklist
+
+- [ ] Release changes were reviewed and merged into `main` through a PR.
+- [ ] The exact merged commit passed `make test` and `make lint`, has a clean
+      working tree, and contains the intended version in all three version files.
+- [ ] The `vX.Y.Z` tag points to that commit and only that tag was pushed.
+- [ ] The tag workflow's test matrix and clean wheel checks passed before
+      publication, the version is available on PyPI, and the published GitHub
+      release includes the validated distribution assets.
+- [ ] Review the published release's generated PR list and changelog link. Edit
+      its notes to add a short human-written summary under `Added`, `Changed`,
+      and `Fixed` as appropriate; this edits an already published release.
 
 ## Community
 
