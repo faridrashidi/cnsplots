@@ -78,6 +78,7 @@ _ContinuousPaletteName = Literal[
 ]
 _RGBColor = tuple[float, float, float]
 _P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
+_PAIRED_TESTS = ("t-test_paired", "Wilcoxon")
 _COMPARISON_COLUMNS = [
     "group1",
     "group2",
@@ -966,6 +967,56 @@ def _resolve_categorical_orientation(data, x, y, orient=None):
     return "h" if infer_orient(data[x], data[y], orient) == "y" else "v"
 
 
+def _validate_paired_subject(data, test, subject):
+    if test in _PAIRED_TESTS:
+        if not isinstance(subject, str) or subject not in data.columns:
+            raise ValueError(
+                "Paired tests require subject to name a column in data; "
+                f"got {subject!r}."
+            )
+    elif subject is not None:
+        raise ValueError("subject is only supported with paired tests.")
+
+
+def _align_paired_comparisons(annotator, data, plotting, subject):
+    """Replace each contrast's test samples without changing its plot geometry."""
+    category, value = (
+        (plotting["y"], plotting["x"])
+        if plotting["orient"] == "h"
+        else (plotting["x"], plotting["y"])
+    )
+    hue = plotting.get("hue")
+    columns = [category, value, subject] + ([] if hue is None else [hue])
+    complete = data.dropna(subset=columns)
+    categories = complete[category].map(annotator._plotter.plotter.formatter)
+    for first, second in annotator._struct_pairs:
+        samples = []
+        for struct in (first, second):
+            group = struct["group"]
+            selected = categories == group[0]
+            if len(group) > 1:
+                selected &= complete[hue] == group[1]
+            sample = complete.loc[selected].set_index(subject, drop=False)[value]
+            if sample.index.has_duplicates:
+                raise ValueError(
+                    f"Duplicate subject observations in compared group {group!r}."
+                )
+            samples.append(sample)
+        aligned = pd.concat(samples, axis=1, join="inner")
+        if len(aligned) < 2:
+            raise ValueError(
+                "Paired tests require at least two complete subject pairs."
+            )
+        values = aligned.to_numpy(dtype=float)
+        if not np.isfinite(values).all():
+            raise ValueError("Paired tests require finite values in matched pairs.")
+        if (values[:, 0] == values[:, 1]).all():
+            raise ValueError("Paired tests require at least one nonzero difference.")
+        # Sort by values for reproducible reductions regardless of row/ID order.
+        values = values[np.lexsort((values[:, 1], values[:, 0]))]
+        first["group_data"], second["group_data"] = values.T
+
+
 def _prepare_categorical_plot_data(plotting):
     """Share complete displayed rows across rendering, summaries, and counts."""
     data = plotting["data"]
@@ -1039,11 +1090,14 @@ def get_comparison_results(ax: Axes | None = None) -> pd.DataFrame:
         order (shorter brackets first). ``group1`` and ``group2`` follow the
         categorical axis order, not necessarily the supplied pair order. They
         are category labels, or ``(category, hue)`` tuples for hue comparisons.
-        ``test``, ``alternative``, and ``paired`` identify the test; all currently
-        supported tests use independent observations (``paired=False``).
+        ``test``, ``alternative``, and ``paired`` identify the test;
+        ``t-test_paired`` and ``Wilcoxon`` use subject-aligned observations
+        (``paired=True``). Other tests use independent observations.
         ``alternative`` is ``'two-sided'`` for continuous tests and 2-by-2 Fisher
         tests, and None for chi-squared and larger Fisher independence tests.
-        ``n1`` and ``n2`` count contributing observations. ``pvalue_raw`` and
+        ``n1`` and ``n2`` count contributing observations; for paired tests both
+        equal the number of complete matched pairs, including zero differences
+        discarded from Wilcoxon ranks. ``pvalue_raw`` and
         ``pvalue_adjusted`` contain raw and corrected p-values; without correction
         they are equal and ``p_adjust`` is None. ``pvalue_annotation``,
         ``significant``, and ``annotation`` describe the exact rendered result.
@@ -1063,6 +1117,12 @@ def get_comparison_results(ax: Axes | None = None) -> pd.DataFrame:
     these can differ from its raw category tick counts when stack values are
     missing. Correction covers all resolved pairs in one plot call, including
     all categories for pairs='hue', and does not extend across plot calls.
+
+    Paired tests additionally exclude missing subject identifiers and incomplete
+    pairs separately for each contrast. Duplicate subjects within either compared
+    group among complete displayed rows raise ValueError. At least two matched
+    pairs with finite values and at least one nonzero difference are required.
+    Plot summaries and tick counts can include observations excluded by pairing.
 
     Existing statannotations display semantics are preserved: Bonferroni uses
     adjusted p-values in labels; Holm and FDR methods display raw p-values with
@@ -1091,6 +1151,8 @@ def _collect_comparison_results(annotator, test, correction, p_adjust, contingen
     annotations = annotator.annotations
     results = [annotation.data for annotation in annotations]
     raw = np.asarray([result.pvalue for result in results])
+    if test in _PAIRED_TESTS and not np.isfinite(raw).all():
+        raise ValueError("Paired test returned a nonfinite p-value.")
     adjusted = raw.copy()
     if correction is not None:
         adjusted = multipletests(raw, method=p_adjust)[1]
@@ -1120,7 +1182,7 @@ def _collect_comparison_results(annotator, test, correction, p_adjust, contingen
                 "group2": group2[0] if len(group2) == 1 else group2,
                 "test": test,
                 "alternative": alternative,
-                "paired": False,
+                "paired": test in _PAIRED_TESTS,
                 "n1": n1,
                 "n2": n2,
                 "pvalue_raw": pvalue_raw,
@@ -1144,6 +1206,7 @@ def _p_value_helper(
     format=None,
     label_clearance=None,
     p_adjust=None,
+    subject=None,
 ):
     resolved_format = settings.pvalue_format if format is None else format
     if resolved_format not in {"star", "threshold", "full"}:
@@ -1260,6 +1323,8 @@ def _p_value_helper(
     correction = annotator.comparisons_correction
     annotator.comparisons_correction = None
     if contingency is None:
+        if test in _PAIRED_TESTS:
+            _align_paired_comparisons(annotator, data, plotting, subject)
         annotator.apply_test()
     else:
         annotator.set_pvalues(pvalues=pvalues)
@@ -1279,6 +1344,15 @@ def _p_value_helper(
         logger.info("P-values were determined by two-sided Mann-Whitney U test.")
     if test == "t-test_welch":
         logger.info("P-values were determined by two-sided Welch's t-test.")
+    if test == "t-test_paired":
+        logger.info(
+            "P-values were determined by a two-sided subject-aligned paired t-test."
+        )
+    if test == "Wilcoxon":
+        logger.info(
+            "P-values were determined by a two-sided subject-aligned Wilcoxon "
+            "signed-rank test."
+        )
     if test == "fisher-exact":
         logger.info("P-values were determined by two-sided Fisher's exact test.")
     if test == "chi-squared":

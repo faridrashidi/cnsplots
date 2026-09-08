@@ -245,7 +245,10 @@ def barplot(
     hue: str | None = None,
     order: list[str] | None = None,
     hue_order: list[str] | None = None,
-    test: Literal["Mann-Whitney", "t-test_welch"] = "t-test_welch",
+    test: Literal[
+        "Mann-Whitney", "t-test_welch", "t-test_paired", "Wilcoxon"
+    ] = "t-test_welch",
+    subject: str | None = None,
     p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
     **kwargs: Any,
@@ -280,8 +283,19 @@ def barplot(
         Order of categories along the categorical axis.
     hue_order : list of str, optional
         Order of hue levels.
-    test : {'Mann-Whitney', 't-test_welch'}, default: 't-test_welch'
-        Statistical test used for pairwise comparisons.
+    test : {'Mann-Whitney', 't-test_welch', 't-test_paired', 'Wilcoxon'}, default: 't-test_welch'
+        Two-sided statistical test used for group comparisons. Paired tests
+        require ``subject``; ``pairs`` still selects the groups to compare.
+    subject : str, optional
+        Subject identifier column, required only for paired tests. Within each
+        contrast, align complete displayed observations by subject, excluding
+        missing identifiers and incomplete pairs. Duplicate subjects within a
+        compared group raise ValueError, even if unmatched in the other group.
+        At least two matched pairs with finite values and at least one nonzero
+        difference are required. Wilcoxon uses SciPy's ``zero_method='wilcox'``,
+        ``correction=False``, and ``method='auto'`` defaults. Plot summaries and
+        tick counts still use all displayed observations; result-table counts
+        report matched pairs. Invalid subjects or paired samples raise ValueError.
     p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
         Multiple-comparison correction applied across the resolved pairs.
     ax : matplotlib.axes.Axes, optional
@@ -332,8 +346,9 @@ def barplot(
     utils._validate_statistical_options(
         test,
         p_adjust,
-        valid_tests=("Mann-Whitney", "t-test_welch"),
+        valid_tests=("Mann-Whitney", "t-test_welch", "t-test_paired", "Wilcoxon"),
     )
+    utils._validate_paired_subject(data, test, subject)
 
     if "addtip" in kwargs:
         raise TypeError(
@@ -416,6 +431,7 @@ def barplot(
             plotting,
             pairs,
             p_adjust=p_adjust,
+            subject=subject,
             **pvalue_kwargs,
         )
     if show_legend:
@@ -448,7 +464,10 @@ def lollipopplot(
     palette: Any = None,
     baseline: float = 0,
     *,
-    test: Literal["Mann-Whitney", "t-test_welch"] = "t-test_welch",
+    test: Literal[
+        "Mann-Whitney", "t-test_welch", "t-test_paired", "Wilcoxon"
+    ] = "t-test_welch",
+    subject: str | None = None,
     p_adjust: Literal["bonferroni", "holm", "fdr_bh", "fdr_by"] | None = None,
     ax: Axes | None = None,
 ) -> Axes:
@@ -505,8 +524,19 @@ def lollipopplot(
         or a column name in data for palette-as-column mapping.
     baseline : float, default: 0
         Value at which the stems originate.
-    test : {'Mann-Whitney', 't-test_welch'}, default: 't-test_welch'
-        Statistical test used for pairwise comparisons.
+    test : {'Mann-Whitney', 't-test_welch', 't-test_paired', 'Wilcoxon'}, default: 't-test_welch'
+        Two-sided statistical test used for group comparisons. Paired tests
+        require ``subject``; ``pairs`` still selects the groups to compare.
+    subject : str, optional
+        Subject identifier column, required only for paired tests. Within each
+        contrast, align complete displayed observations by subject, excluding
+        missing identifiers and incomplete pairs. Duplicate subjects within a
+        compared group raise ValueError, even if unmatched in the other group.
+        At least two matched pairs with finite values and at least one nonzero
+        difference are required. Wilcoxon uses SciPy's ``zero_method='wilcox'``,
+        ``correction=False``, and ``method='auto'`` defaults. Plot summaries and
+        tick counts still use all displayed observations; result-table counts
+        report matched pairs. Invalid subjects or paired samples raise ValueError.
     p_adjust : {'bonferroni', 'holm', 'fdr_bh', 'fdr_by'}, optional
         Multiple-comparison correction applied across the resolved pairs.
     ax : matplotlib.axes.Axes, optional
@@ -565,8 +595,9 @@ def lollipopplot(
     utils._validate_statistical_options(
         test,
         p_adjust,
-        valid_tests=("Mann-Whitney", "t-test_welch"),
+        valid_tests=("Mann-Whitney", "t-test_welch", "t-test_paired", "Wilcoxon"),
     )
+    utils._validate_paired_subject(data, test, subject)
 
     palette_is_column = isinstance(palette, str) and palette in data.columns
     if hue is not None and palette_is_column and palette != hue:
@@ -719,6 +750,7 @@ def lollipopplot(
             plotting,
             pairs,
             p_adjust=p_adjust,
+            subject=subject,
         )
 
     # Legend
