@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.upsetplot
+
+cnsplots.upsetplot
+==================
+
+.. autofunction:: cnsplots.upsetplot
+
+.. _sphx_glr_backref_cnsplots.upsetplot:
+
+.. minigallery:: cnsplots.upsetplot
+   :add-heading: Examples
+   :heading-level: -

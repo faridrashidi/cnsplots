@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.distplot
+
+cnsplots.distplot
+=================
+
+.. autofunction:: cnsplots.distplot
+
+.. _sphx_glr_backref_cnsplots.distplot:
+
+.. minigallery:: cnsplots.distplot
+   :add-heading: Examples
+   :heading-level: -

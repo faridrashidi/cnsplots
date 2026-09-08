@@ -1,0 +1,8 @@
+:github_url: cnsplots.multipanel.newline
+
+cnsplots.multipanel.newline
+===========================
+
+.. currentmodule:: cnsplots
+
+.. automethod:: multipanel.newline

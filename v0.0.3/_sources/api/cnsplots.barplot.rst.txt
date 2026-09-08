@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.barplot
+
+cnsplots.barplot
+================
+
+.. autofunction:: cnsplots.barplot
+
+.. _sphx_glr_backref_cnsplots.barplot:
+
+.. minigallery:: cnsplots.barplot
+   :add-heading: Examples
+   :heading-level: -

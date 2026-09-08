@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.stripplot
+
+cnsplots.stripplot
+==================
+
+.. autofunction:: cnsplots.stripplot
+
+.. _sphx_glr_backref_cnsplots.stripplot:
+
+.. minigallery:: cnsplots.stripplot
+   :add-heading: Examples
+   :heading-level: -

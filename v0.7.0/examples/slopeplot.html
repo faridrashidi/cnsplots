@@ -1,0 +1,1116 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Heatmap" href="heatmapplot.html"><link rel="prev" title="Line Plot" href="lineplot.html">
+        <link rel="canonical" href="https://cnsplots.farid.one/v0.7.0/examples/slopeplot.html">
+        <link rel="prefetch" href="../_static/logo.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/favicon.ico"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>Slope Plot - cnsplots</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=16f3218d" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  --color-brand-primary: #003262;
+  --color-brand-content: #003262;
+  --admonition-font-size: var(--font-size-normal);
+  --admonition-title-font-size: var(--font-size-normal);
+  --code-font-size: var(--font-size--small);
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style> 
+<meta name="description" content="Slope Plot examples for cnsplots, a Python library for publication-ready scientific plotting." />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#003262" />
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="../_static/images/favicon.svg"
+/>
+<link
+  rel="icon"
+  type="image/png"
+  sizes="512x512"
+  href="../_static/images/favicon.png"
+/>
+<link
+  rel="apple-touch-icon"
+  sizes="180x180"
+  href="../_static/images/apple-touch-icon.png"
+/>
+<meta property="og:site_name" content="cnsplots" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Slope Plot - cnsplots" />
+<meta property="og:description" content="Slope Plot examples for cnsplots, a Python library for publication-ready scientific plotting." />
+<meta property="og:url" content="https://cnsplots.farid.one/v0.7.0/examples/slopeplot.html" />
+<meta property="og:image" content="https://cnsplots.farid.one/v0.7.0/_static/images/overview.png" />
+<meta property="og:image:alt" content="Overview of cnsplots visualizations" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Slope Plot - cnsplots" />
+<meta name="twitter:description" content="Slope Plot examples for cnsplots, a Python library for publication-ready scientific plotting." />
+<meta name="twitter:image" content="https://cnsplots.farid.one/v0.7.0/_static/images/overview.png" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap"
+/>
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-V1JSNH5QX4"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-V1JSNH5QX4");
+</script>
+</head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">cnsplots</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/logo.svg" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API</a><input aria-label="Toggle navigation of API" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.boxplot.html">cnsplots.boxplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.violinplot.html">cnsplots.violinplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.stripplot.html">cnsplots.stripplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.barplot.html">cnsplots.barplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.lollipopplot.html">cnsplots.lollipopplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.dumbbellplot.html">cnsplots.dumbbellplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.histplot.html">cnsplots.histplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.distplot.html">cnsplots.distplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.kdeplot.html">cnsplots.kdeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.ridgeplot.html">cnsplots.ridgeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.scatterplot.html">cnsplots.scatterplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.regplot.html">cnsplots.regplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.lineplot.html">cnsplots.lineplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.slopeplot.html">cnsplots.slopeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.heatmapplot.html">cnsplots.heatmapplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.dotplot.html">cnsplots.dotplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.confusionplot.html">cnsplots.confusionplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.stackplot.html">cnsplots.stackplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.pieplot.html">cnsplots.pieplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.donutplot.html">cnsplots.donutplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.vennplot.html">cnsplots.vennplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.upsetplot.html">cnsplots.upsetplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.sankeyplot.html">cnsplots.sankeyplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.survivalplot.html">cnsplots.survivalplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.cumulativeincidenceplot.html">cnsplots.cumulativeincidenceplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.volcanoplot.html">cnsplots.volcanoplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.gseaplot.html">cnsplots.gseaplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.rocplot.html">cnsplots.rocplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.qqplot.html">cnsplots.qqplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.forestplot.html">cnsplots.forestplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.phyloplot.html">cnsplots.phyloplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.placeholderplot.html">cnsplots.placeholderplot</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/cnsplots.CoxModel.html">cnsplots.CoxModel</a><input aria-label="Toggle navigation of cnsplots.CoxModel" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/cnsplots.CoxModel.fit.html">cnsplots.CoxModel.fit</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/cnsplots.LogisticModel.html">cnsplots.LogisticModel</a><input aria-label="Toggle navigation of cnsplots.LogisticModel" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/cnsplots.LogisticModel.fit.html">cnsplots.LogisticModel.fit</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.prerank.html">cnsplots.prerank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.figure.html">cnsplots.figure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.savefig.html">cnsplots.savefig</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/cnsplots.multipanel.html">cnsplots.multipanel</a><input aria-label="Toggle navigation of cnsplots.multipanel" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/cnsplots.multipanel.get_axes.html">cnsplots.multipanel.get_axes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/cnsplots.multipanel.newline.html">cnsplots.multipanel.newline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/cnsplots.multipanel.panel.html">cnsplots.multipanel.panel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.add_panel_label.html">cnsplots.add_panel_label</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.take_legend_out.html">cnsplots.take_legend_out</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.datasets.load_dataset.html">cnsplots.datasets.load_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.datasets.get_showcase_data.html">cnsplots.datasets.get_showcase_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.setup_matplotlib.html">cnsplots.setup_matplotlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.setup_scanpy.html">cnsplots.setup_scanpy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.setup_ax.html">cnsplots.setup_ax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.setup_ggplot.html">cnsplots.setup_ggplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../settings.html">Settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.palettes.html">cnsplots.palettes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cnsplots.get_hexcolors_from_apalette.html">cnsplots.get_hexcolors_from_apalette</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Examples Gallery</a><input aria-label="Toggle navigation of Examples Gallery" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="showcase.html">Showcase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html">Settings Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="figure_setup.html">Figure Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="palettes.html">Color Palettes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multipanel.html">Multipanel Layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="boxplot.html">Box Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stackplot.html">Stacked Bar Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="barplot.html">Bar Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lollipopplot.html">Lollipop Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dumbbellplot.html">Dumbbell Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stripplot.html">Strip Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="violinplot.html">Violin Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dotplot.html">Dot Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pieplot.html">Pie Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="donutplot.html">Donut Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sankeyplot.html">Sankey Diagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="histplot.html">Histogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kdeplot.html">KDE Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="distplot.html">Distribution Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ridgeplot.html">Ridge Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qqplot.html">Q-Q Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scatterplot.html">Scatter Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="regplot.html">Regression Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineplot.html">Line Plot</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Slope Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="heatmapplot.html">Heatmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="survivalplot.html">Survival Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forestplot.html">Forest Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gseaplot.html">GSEA Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="volcanoplot.html">Volcano Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="confusionplot.html">Confusion Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rocplot.html">ROC Curve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vennplot.html">Venn Diagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="upsetplot.html">UpSet Plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="matplotlib_integration.html">Matplotlib Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seaborn_integration.html">Seaborn Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scanpy_integration.html">Scanpy Integration</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/faridrashidi/cnsplots/blob/v0.7.0/examples/slopeplot.py?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/faridrashidi/cnsplots/edit/v0.7.0/examples/slopeplot.py" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+            <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-slopeplot-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="slope-plot">
+<span id="sphx-glr-examples-slopeplot-py"></span><h1>Slope Plot<a class="headerlink" href="#slope-plot" title="Link to this heading">¶</a></h1>
+<p>Create slope plots for visualizing changes between conditions.</p>
+<p>Slope plots (also called slopegraphs) show how values change between
+two conditions, making them ideal for paired data comparisons
+and before/after analyses.</p>
+<section id="load-packages">
+<h2>Load packages<a class="headerlink" href="#load-packages" title="Link to this heading">¶</a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cnsplots</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cns</span>
+
+<span class="n">tips</span> <span class="o">=</span> <a href="../api/cnsplots.datasets.load_dataset.html#cnsplots.datasets.load_dataset" title="cnsplots.datasets.load_dataset" class="sphx-glr-backref-module-cnsplots-datasets sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">load_dataset</span></a><span class="p">(</span><span class="s2">&quot;tips&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="generate-sample-data">
+<h2>Generate sample data<a class="headerlink" href="#generate-sample-data" title="Link to this heading">¶</a></h2>
+<p>Create paired measurements across conditions.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;site1&quot;</span><span class="p">],</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;healthy&quot;</span><span class="p">]],</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;site2&quot;</span><span class="p">],</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;healthy&quot;</span><span class="p">]],</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;site3&quot;</span><span class="p">],</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;healthy&quot;</span><span class="p">]],</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;site1&quot;</span><span class="p">],</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;disease&quot;</span><span class="p">]],</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;site2&quot;</span><span class="p">],</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;disease&quot;</span><span class="p">]],</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;site3&quot;</span><span class="p">],</span> <span class="mi">15</span> <span class="o">*</span> <span class="p">[</span><span class="s2">&quot;disease&quot;</span><span class="p">]],</span>
+    <span class="p">],</span>
+    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;subject&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">_condition</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span> <span class="s2">&quot;disease&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;site1&quot;</span><span class="p">,</span> <span class="s2">&quot;site2&quot;</span><span class="p">,</span> <span class="s2">&quot;site3&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="basic-slopeplot">
+<h2>Basic slopeplot<a class="headerlink" href="#basic-slopeplot" title="Link to this heading">¶</a></h2>
+<p>Visualize changes between healthy and disease states.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Basic Slope Plot&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_001.png" srcset="../_images/sphx_glr_slopeplot_001.png" alt="Basic Slope Plot" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_001_dark.png" srcset="../_images/sphx_glr_slopeplot_001_dark.png" alt="Basic Slope Plot" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Basic Slope Plot&#39;)
+</pre></div>
+</div>
+</section>
+<section id="slopeplot-with-custom-palette">
+<h2>Slopeplot with custom palette<a class="headerlink" href="#slopeplot-with-custom-palette" title="Link to this heading">¶</a></h2>
+<p>Apply different color schemes.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;Set1&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_002.png" srcset="../_images/sphx_glr_slopeplot_002.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_002_dark.png" srcset="../_images/sphx_glr_slopeplot_002_dark.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;value&#39;&gt;
+</pre></div>
+</div>
+</section>
+<section id="tableau-palette">
+<h2>Tableau palette<a class="headerlink" href="#tableau-palette" title="Link to this heading">¶</a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;Tableau&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_003.png" srcset="../_images/sphx_glr_slopeplot_003.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_003_dark.png" srcset="../_images/sphx_glr_slopeplot_003_dark.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;value&#39;&gt;
+</pre></div>
+</div>
+</section>
+<section id="bold-palette">
+<h2>Bold palette<a class="headerlink" href="#bold-palette" title="Link to this heading">¶</a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="s2">&quot;Bold&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_004.png" srcset="../_images/sphx_glr_slopeplot_004.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_004_dark.png" srcset="../_images/sphx_glr_slopeplot_004_dark.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;value&#39;&gt;
+</pre></div>
+</div>
+</section>
+<section id="two-site-comparison">
+<h2>Two-site comparison<a class="headerlink" href="#two-site-comparison" title="Link to this heading">¶</a></h2>
+<p>Compare only two sites for cleaner visualization.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">data_2sites</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;site&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;site1&quot;</span><span class="p">,</span> <span class="s2">&quot;site2&quot;</span><span class="p">])]</span>
+<a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data_2sites</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_005.png" srcset="../_images/sphx_glr_slopeplot_005.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_005_dark.png" srcset="../_images/sphx_glr_slopeplot_005_dark.png" alt="slopeplot" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;value&#39;&gt;
+</pre></div>
+</div>
+</section>
+<section id="treatment-response-data">
+<h2>Treatment response data<a class="headerlink" href="#treatment-response-data" title="Link to this heading">¶</a></h2>
+<p>Simulate before/after treatment measurements.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">n_patients</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">treatment_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;patient&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_patients</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;timepoint&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Before&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_patients</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;After&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_patients</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_patients</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">n_patients</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;responder&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;Yes&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;No&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">treatment_data</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;timepoint&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Treatment Response&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_006.png" srcset="../_images/sphx_glr_slopeplot_006.png" alt="Treatment Response" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_006_dark.png" srcset="../_images/sphx_glr_slopeplot_006_dark.png" alt="Treatment Response" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Treatment Response&#39;)
+</pre></div>
+</div>
+</section>
+<section id="gene-expression-changes">
+<h2>Gene expression changes<a class="headerlink" href="#gene-expression-changes" title="Link to this heading">¶</a></h2>
+<p>Show expression changes across conditions.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">genes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TP53&quot;</span><span class="p">,</span> <span class="s2">&quot;BRCA1&quot;</span><span class="p">,</span> <span class="s2">&quot;MYC&quot;</span><span class="p">,</span> <span class="s2">&quot;EGFR&quot;</span><span class="p">]</span>
+<span class="n">gene_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">:</span>
+    <span class="n">baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">treated</span> <span class="o">=</span> <span class="n">baseline</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">baseline</span><span class="p">,</span> <span class="n">treated</span><span class="p">)):</span>
+        <span class="n">gene_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
+                <span class="s2">&quot;pair&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gene</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;Control&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span>
+                <span class="s2">&quot;gene&quot;</span><span class="p">:</span> <span class="n">gene</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">gene_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
+                <span class="s2">&quot;pair&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gene</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span>
+                <span class="s2">&quot;gene&quot;</span><span class="p">:</span> <span class="n">gene</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+<span class="n">gene_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">gene_data</span><span class="p">)</span>
+<span class="n">gene_df_tp53</span> <span class="o">=</span> <span class="n">gene_df</span><span class="p">[</span><span class="n">gene_df</span><span class="p">[</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;TP53&quot;</span><span class="p">]</span>
+
+<a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">gene_df_tp53</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;expression&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;condition&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;pair&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;TP53 Expression&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_007.png" srcset="../_images/sphx_glr_slopeplot_007.png" alt="TP53 Expression" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_007_dark.png" srcset="../_images/sphx_glr_slopeplot_007_dark.png" alt="TP53 Expression" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;TP53 Expression&#39;)
+</pre></div>
+</div>
+</section>
+<section id="multiple-genes-comparison">
+<h2>Multiple genes comparison<a class="headerlink" href="#multiple-genes-comparison" title="Link to this heading">¶</a></h2>
+<p>Compare expression changes for multiple genes.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">gene_df</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;gene&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;expression&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;condition&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;pair&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Gene Expression Changes&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.take_legend_out.html#cnsplots.take_legend_out" title="cnsplots.take_legend_out" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">take_legend_out</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_008.png" srcset="../_images/sphx_glr_slopeplot_008.png" alt="Gene Expression Changes" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_008_dark.png" srcset="../_images/sphx_glr_slopeplot_008_dark.png" alt="Gene Expression Changes" class = "sphx-glr-single-img"/></div>
+</section>
+<section id="time-series-slopeplot">
+<h2>Time series slopeplot<a class="headerlink" href="#time-series-slopeplot" title="Link to this heading">¶</a></h2>
+<p>Track changes across multiple time points.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">time_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">timepoints</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Day 0&quot;</span><span class="p">,</span> <span class="s2">&quot;Day 7&quot;</span><span class="p">,</span> <span class="s2">&quot;Day 14&quot;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">subj</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">:</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="s2">&quot;Treatment&quot;</span> <span class="k">if</span> <span class="n">subj</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="k">else</span> <span class="s2">&quot;Control&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">timepoints</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">group</span> <span class="o">==</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">time_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="n">subj</span><span class="p">,</span> <span class="s2">&quot;timepoint&quot;</span><span class="p">:</span> <span class="n">tp</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">,</span> <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="n">group</span><span class="p">}</span>
+        <span class="p">)</span>
+
+<span class="n">time_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">time_data</span><span class="p">)</span>
+
+<a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">180</span><span class="p">)</span>
+<span class="n">two_timepoints</span> <span class="o">=</span> <span class="n">time_df</span><span class="p">[</span><span class="n">time_df</span><span class="p">[</span><span class="s2">&quot;timepoint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;Day 0&quot;</span><span class="p">,</span> <span class="s2">&quot;Day 14&quot;</span><span class="p">])]</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">two_timepoints</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;group&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;timepoint&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Time Course&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_009.png" srcset="../_images/sphx_glr_slopeplot_009.png" alt="Time Course" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_009_dark.png" srcset="../_images/sphx_glr_slopeplot_009_dark.png" alt="Time Course" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Time Course&#39;)
+</pre></div>
+</div>
+</section>
+<section id="wider-figure-for-grouped-comparisons">
+<h2>Wider figure for grouped comparisons<a class="headerlink" href="#wider-figure-for-grouped-comparisons" title="Link to this heading">¶</a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">220</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">two_timepoints</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;group&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;timepoint&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Time Course (Wide)&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_010.png" srcset="../_images/sphx_glr_slopeplot_010.png" alt="Time Course (Wide)" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_010_dark.png" srcset="../_images/sphx_glr_slopeplot_010_dark.png" alt="Time Course (Wide)" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Time Course (Wide)&#39;)
+</pre></div>
+</div>
+</section>
+<section id="paired-patient-data">
+<h2>Paired patient data<a class="headerlink" href="#paired-patient-data" title="Link to this heading">¶</a></h2>
+<p>Compare matched samples (e.g., tumor vs normal).</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">n_pairs</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">paired_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;patient&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_pairs</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;tissue&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Normal&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_pairs</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Tumor&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_pairs</span><span class="p">,</span>
+        <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">n_pairs</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="n">n_pairs</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;stage&quot;</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;Early&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;Late&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">paired_data</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;expression&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;tissue&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Tumor vs Normal&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_011.png" srcset="../_images/sphx_glr_slopeplot_011.png" alt="Tumor vs Normal" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_011_dark.png" srcset="../_images/sphx_glr_slopeplot_011_dark.png" alt="Tumor vs Normal" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Tumor vs Normal&#39;)
+</pre></div>
+</div>
+</section>
+<section id="comparing-conditions-with-multipanel">
+<h2>Comparing conditions with multipanel<a class="headerlink" href="#comparing-conditions-with-multipanel" title="Link to this heading">¶</a></h2>
+<p>Side-by-side slope plots for different analyses.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.multipanel.html#cnsplots.multipanel" title="cnsplots.multipanel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mp</span></a> <span class="o">=</span> <a href="../api/cnsplots.multipanel.html#cnsplots.multipanel" title="cnsplots.multipanel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-class"><span class="n">cns</span><span class="o">.</span><span class="n">multipanel</span></a><span class="p">(</span><span class="n">max_width</span><span class="o">=</span><span class="mi">260</span><span class="p">)</span>
+
+<span class="c1"># Early stage</span>
+<span class="n">early</span> <span class="o">=</span> <span class="n">paired_data</span><span class="p">[</span><span class="n">paired_data</span><span class="p">[</span><span class="s2">&quot;stage&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Early&quot;</span><span class="p">]</span>
+<a href="../api/cnsplots.multipanel.panel.html#cnsplots.multipanel.panel" title="cnsplots.multipanel.panel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">panel</span></a><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">early</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;expression&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;tissue&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Early Stage&quot;</span><span class="p">)</span>
+
+<span class="c1"># Late stage</span>
+<span class="n">late</span> <span class="o">=</span> <span class="n">paired_data</span><span class="p">[</span><span class="n">paired_data</span><span class="p">[</span><span class="s2">&quot;stage&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Late&quot;</span><span class="p">]</span>
+<a href="../api/cnsplots.multipanel.panel.html#cnsplots.multipanel.panel" title="cnsplots.multipanel.panel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">panel</span></a><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="n">margin_right</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">late</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;expression&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;tissue&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;patient&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Late Stage&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_012.png" srcset="../_images/sphx_glr_slopeplot_012.png" alt="Early Stage, Late Stage" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_012_dark.png" srcset="../_images/sphx_glr_slopeplot_012_dark.png" alt="Early Stage, Late Stage" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Late Stage&#39;)
+</pre></div>
+</div>
+</section>
+<section id="drug-response-across-sites">
+<h2>Drug response across sites<a class="headerlink" href="#drug-response-across-sites" title="Link to this heading">¶</a></h2>
+<p>Compare drug responses at different anatomical sites.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">sites</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Liver&quot;</span><span class="p">,</span> <span class="s2">&quot;Lung&quot;</span><span class="p">,</span> <span class="s2">&quot;Brain&quot;</span><span class="p">]</span>
+<span class="n">drug_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">baseline</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
+        <span class="n">drug_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;Baseline&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">baseline</span><span class="p">,</span>
+                <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="n">site</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">drug_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;condition&quot;</span><span class="p">:</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
+                <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="n">site</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+<span class="n">drug_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">drug_data</span><span class="p">)</span>
+
+<a href="../api/cnsplots.figure.html#cnsplots.figure" title="cnsplots.figure" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">drug_df</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
+    <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;condition&quot;</span><span class="p">,</span>
+    <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Drug Response by Site&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.take_legend_out.html#cnsplots.take_legend_out" title="cnsplots.take_legend_out" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">take_legend_out</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_013.png" srcset="../_images/sphx_glr_slopeplot_013.png" alt="Drug Response by Site" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_013_dark.png" srcset="../_images/sphx_glr_slopeplot_013_dark.png" alt="Drug Response by Site" class = "sphx-glr-single-img"/></div>
+</section>
+<section id="slopeplot-with-different-palettes-comparison">
+<h2>Slopeplot with different palettes comparison<a class="headerlink" href="#slopeplot-with-different-palettes-comparison" title="Link to this heading">¶</a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../api/cnsplots.multipanel.html#cnsplots.multipanel" title="cnsplots.multipanel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mp</span></a> <span class="o">=</span> <a href="../api/cnsplots.multipanel.html#cnsplots.multipanel" title="cnsplots.multipanel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-class"><span class="n">cns</span><span class="o">.</span><span class="n">multipanel</span></a><span class="p">(</span><span class="n">max_width</span><span class="o">=</span><span class="mi">410</span><span class="p">)</span>
+
+<a href="../api/cnsplots.multipanel.panel.html#cnsplots.multipanel.panel" title="cnsplots.multipanel.panel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">panel</span></a><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="n">color_cycle</span><span class="o">=</span><span class="s2">&quot;Set1&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data_2sites</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Set1&quot;</span><span class="p">)</span>
+
+<a href="../api/cnsplots.multipanel.panel.html#cnsplots.multipanel.panel" title="cnsplots.multipanel.panel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">panel</span></a><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="n">color_cycle</span><span class="o">=</span><span class="s2">&quot;Tableau&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data_2sites</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Tableau&quot;</span><span class="p">)</span>
+
+<a href="../api/cnsplots.multipanel.panel.html#cnsplots.multipanel.panel" title="cnsplots.multipanel.panel" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">panel</span></a><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="n">color_cycle</span><span class="o">=</span><span class="s2">&quot;Bold&quot;</span><span class="p">,</span> <span class="n">margin_right</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a href="../api/cnsplots.slopeplot.html#cnsplots.slopeplot" title="cnsplots.slopeplot" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-function"><span class="n">cns</span><span class="o">.</span><span class="n">slopeplot</span></a><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data_2sites</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">pair</span><span class="o">=</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<a href="../api/cnsplots.multipanel.get_axes.html#cnsplots.multipanel.get_axes" title="cnsplots.multipanel.get_axes" class="sphx-glr-backref-module-cnsplots sphx-glr-backref-type-py-method"><span class="n">mp</span><span class="o">.</span><span class="n">get_axes</span></a><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Bold&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="only-light docutils container">
+<img src="../_images/sphx_glr_slopeplot_014.png" srcset="../_images/sphx_glr_slopeplot_014.png" alt="Set1, Tableau, Bold" class = "sphx-glr-single-img"/></div>
+<div class="only-dark docutils container">
+<img src="../_images/sphx_glr_slopeplot_014_dark.png" srcset="../_images/sphx_glr_slopeplot_014_dark.png" alt="Set1, Tableau, Bold" class = "sphx-glr-single-img"/></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Bold&#39;)
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 2.038 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-slopeplot-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/90ba0e0fa2ab658b52028ed76b90432b/slopeplot.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">slopeplot.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/75d55f9e0e5f2497babf2d45097b7986/slopeplot.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">slopeplot.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/43ad2ab77b6ce9166d11f29f0a402ecb/slopeplot.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">slopeplot.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+ 
+        </article>
+      </div>
+      <footer>
+        
+<div class="related-pages">
+  <a class="next-page" href="heatmapplot.html">
+    <div class="page-info">
+      <div class="context">
+        <span>Next</span>
+      </div>
+      <div class="title">Heatmap</div>
+    </div>
+    <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+  </a> <a class="prev-page" href="lineplot.html">
+    <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+    <div class="page-info">
+      <div class="context">
+        <span>Previous</span>
+      </div>
+      
+      <div class="title">Line Plot</div>
+      
+    </div>
+  </a>
+</div>
+<div class="bottom-of-page">
+  <div class="left-details">
+    <div class="copyright"> Copyright &#169; 2023-2026, Farid Rashidi
+    </div>
+  </div>
+  <div class="right-details">
+    <div class="icons">
+      <a
+        class="muted-link "
+        href="https://github.com/faridrashidi/cnsplots"
+        aria-label="GitHub"
+      >
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+      
+    </div>
+  </div>
+</div>
+
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+       
+<div class="toc-sticky toc-scroll">
+  
+  <div class="toc-title-container">
+    <span class="toc-title"> On this page </span>
+  </div>
+  <div class="toc-tree-container">
+    <div class="toc-tree"><ul>
+<li><a class="reference internal" href="#">Slope Plot</a><ul>
+<li><a class="reference internal" href="#load-packages">Load packages</a></li>
+<li><a class="reference internal" href="#generate-sample-data">Generate sample data</a></li>
+<li><a class="reference internal" href="#basic-slopeplot">Basic slopeplot</a></li>
+<li><a class="reference internal" href="#slopeplot-with-custom-palette">Slopeplot with custom palette</a></li>
+<li><a class="reference internal" href="#tableau-palette">Tableau palette</a></li>
+<li><a class="reference internal" href="#bold-palette">Bold palette</a></li>
+<li><a class="reference internal" href="#two-site-comparison">Two-site comparison</a></li>
+<li><a class="reference internal" href="#treatment-response-data">Treatment response data</a></li>
+<li><a class="reference internal" href="#gene-expression-changes">Gene expression changes</a></li>
+<li><a class="reference internal" href="#multiple-genes-comparison">Multiple genes comparison</a></li>
+<li><a class="reference internal" href="#time-series-slopeplot">Time series slopeplot</a></li>
+<li><a class="reference internal" href="#wider-figure-for-grouped-comparisons">Wider figure for grouped comparisons</a></li>
+<li><a class="reference internal" href="#paired-patient-data">Paired patient data</a></li>
+<li><a class="reference internal" href="#comparing-conditions-with-multipanel">Comparing conditions with multipanel</a></li>
+<li><a class="reference internal" href="#drug-response-across-sites">Drug response across sites</a></li>
+<li><a class="reference internal" href="#slopeplot-with-different-palettes-comparison">Slopeplot with different palettes comparison</a></li>
+</ul>
+</li>
+</ul>
+</div>
+  </div>
+   
+<a
+  class="js-repo-stats repo-stats muted-link flex items-center"
+  href="https://github.com/faridrashidi/cnsplots"
+  data-type="github"
+  data-user="faridrashidi"
+  data-repo="cnsplots"
+  aria-label="cnsplots repository statistics"
+>
+  <span
+    class="repo-stats-icon w-8 flex items-center justify-around shrink-0 text-3xl"
+    aria-hidden="true"
+  >
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="repo-stats-body flex-grow px-2 break-all">
+    <span class="repo-stats-name">cnsplots</span>
+    <span class="repo-stats-count flex text-sm">
+      <span class="repo-stats-metric flex items-center pr-3" aria-label="Stars">
+        <iconify-icon icon="lucide:star" aria-hidden="true"></iconify-icon>
+        <strong class="repo-stats-value js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="repo-stats-metric flex items-center" aria-label="Forks">
+        <iconify-icon icon="lucide:git-fork" aria-hidden="true"></iconify-icon>
+        <strong class="repo-stats-value js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a>
+ 
+<details class="docs-version-switcher">
+  <summary class="docs-version-switcher-summary">
+    <span class="docs-version-switcher-title">Version</span>
+    <span class="docs-version-switcher-current"
+      >v0.7.0</span
+    >
+    <span class="docs-version-switcher-chevron" aria-hidden="true"></span>
+  </summary>
+
+  <div id="docs-version-switcher-list" class="docs-version-switcher-list">
+    
+    <div class="docs-version-switcher-group">
+      <span class="docs-version-switcher-group-title">Development</span>
+      <ul class="docs-version-switcher-options">
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../dev/index.html"
+            
+            >dev</a
+          >
+        </li>
+      </ul>
+    </div>
+     
+    <div class="docs-version-switcher-group">
+      <span class="docs-version-switcher-group-title">Releases</span>
+      <ul class="docs-version-switcher-options">
+        
+        <li>
+          <a
+            class="docs-version-switcher-link is-active"
+            href="slopeplot.html"
+            
+            aria-current="page"
+            
+            >v0.7.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.6.0/index.html"
+            
+            >v0.6.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.5.0/index.html"
+            
+            >v0.5.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.4.0/index.html"
+            
+            >v0.4.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.3.0/index.html"
+            
+            >v0.3.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.2.0/index.html"
+            
+            >v0.2.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.1.0/index.html"
+            
+            >v0.1.0</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.0.4/index.html"
+            
+            >v0.0.4</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.0.3/index.html"
+            
+            >v0.0.3</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.0.2/index.html"
+            
+            >v0.0.2</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="docs-version-switcher-link"
+            href="../../v0.0.1/index.html"
+            
+            >v0.0.1</a
+          >
+        </li>
+        
+      </ul>
+    </div>
+    
+  </div>
+</details>
+
+</div>
+ 
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=423e15eb"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+    <script src="../_static/js/third_party/snarkdown.umd.js?v=e9cda3ac"></script>
+    <script src="../_static/js/repo-stats.js?v=78f06512"></script>
+    <script src="../_static/js/release-notes.js?v=5647e514"></script>
+    </body>
+</html>

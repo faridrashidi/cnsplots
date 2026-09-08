@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://cnsplots.farid.one/latest/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/dev/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.7.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.6.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.5.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.4.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.3.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.2.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.1.0/sitemap.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://cnsplots.farid.one/v0.0.4/sitemap.xml</loc>
+  </sitemap>
+</sitemapindex>

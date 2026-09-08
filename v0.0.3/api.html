@@ -1,0 +1,708 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="cnsplots.boxplot" href="api/cnsplots.boxplot.html"><link rel="prev" title="Installation" href="installation.html">
+        <link rel="canonical" href="https://cnsplots.farid.one/v0.0.3/api.html">
+        <link rel="prefetch" href="_static/logo.svg" as="image">
+
+    <link rel="shortcut icon" href="_static/favicon.svg"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>API - cnsplots</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="_static/css/override.css?v=b2aa2bd6" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  --color-brand-primary: #003262;
+  --color-brand-content: #003262;
+  --admonition-font-size: var(--font-size-normal);
+  --admonition-title-font-size: var(--font-size-normal);
+  --code-font-size: var(--font-size--small);
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">cnsplots</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/logo.svg" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">API</a><input aria-label="Toggle navigation of API" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.boxplot.html">cnsplots.boxplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.violinplot.html">cnsplots.violinplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.stripplot.html">cnsplots.stripplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.barplot.html">cnsplots.barplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.lollipopplot.html">cnsplots.lollipopplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.histplot.html">cnsplots.histplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.distplot.html">cnsplots.distplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.kdeplot.html">cnsplots.kdeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.ridgeplot.html">cnsplots.ridgeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.scatterplot.html">cnsplots.scatterplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.regplot.html">cnsplots.regplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.lineplot.html">cnsplots.lineplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.slopeplot.html">cnsplots.slopeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.heatmapplot.html">cnsplots.heatmapplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.dotplot.html">cnsplots.dotplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.confusionplot.html">cnsplots.confusionplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.stackplot.html">cnsplots.stackplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.pieplot.html">cnsplots.pieplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.donutplot.html">cnsplots.donutplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.vennplot.html">cnsplots.vennplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.upsetplot.html">cnsplots.upsetplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.sankeyplot.html">cnsplots.sankeyplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.survivalplot.html">cnsplots.survivalplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.cumulativeincidenceplot.html">cnsplots.cumulativeincidenceplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.forestplot.html">cnsplots.forestplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.volcanoplot.html">cnsplots.volcanoplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.gseaplot.html">cnsplots.gseaplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.rocplot.html">cnsplots.rocplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.qqplot.html">cnsplots.qqplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.phyloplot.html">cnsplots.phyloplot</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/cnsplots.CoxModel.html">cnsplots.CoxModel</a><input aria-label="Toggle navigation of cnsplots.CoxModel" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/cnsplots.CoxModel.fit.html">cnsplots.CoxModel.fit</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/cnsplots.LogisticModel.html">cnsplots.LogisticModel</a><input aria-label="Toggle navigation of cnsplots.LogisticModel" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/cnsplots.LogisticModel.fit.html">cnsplots.LogisticModel.fit</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.prerank.html">cnsplots.prerank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.figure.html">cnsplots.figure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.savefig.html">cnsplots.savefig</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api/cnsplots.multipanel.html">cnsplots.multipanel</a><input aria-label="Toggle navigation of cnsplots.multipanel" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/cnsplots.multipanel.get_axes.html">cnsplots.multipanel.get_axes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cnsplots.multipanel.newline.html">cnsplots.multipanel.newline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/cnsplots.multipanel.panel.html">cnsplots.multipanel.panel</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.add_panel_label.html">cnsplots.add_panel_label</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.take_legend_out.html">cnsplots.take_legend_out</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.setup_matplotlib.html">cnsplots.setup_matplotlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.setup_scanpy.html">cnsplots.setup_scanpy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.setup_ax.html">cnsplots.setup_ax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.setup_ggplot.html">cnsplots.setup_ggplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.palettes.html">cnsplots.palettes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cnsplots.get_hexcolors_from_apalette.html">cnsplots.get_hexcolors_from_apalette</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Examples Gallery</a><input aria-label="Toggle navigation of Examples Gallery" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_010_settings.html">settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_020_figure_setup.html">figure_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_030_palettes.html">palettes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_040_boxplot.html">boxplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_050_stackplot.html">stackplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_060_barplot.html">barplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_065_lollipopplot.html">lollipopplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_070_stripplot.html">stripplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_080_violinplot.html">violinplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_090_heatmapplot.html">heatmapplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_100_dotplot.html">dotplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_110_regplot.html">regplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_120_scatterplot.html">scatterplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_130_kdeplot.html">kdeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_140_distplot.html">distplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_150_ridgeplot.html">ridgeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_160_histplot.html">histplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_170_lineplot.html">lineplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_180_survivalplot.html">survivalplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_190_forestplot.html">forestplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_200_gseaplot.html">gseaplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_210_volcanoplot.html">volcanoplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_220_sankeyplot.html">sankeyplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_230_confusionplot.html">confusionplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_240_pieplot.html">pieplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_250_donutplot.html">donutplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_260_vennplot.html">vennplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_270_upsetplot.html">upsetplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_280_slopeplot.html">slopeplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_290_qqplot.html">qqplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_300_rocplot.html">rocplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_310_scanpy.html">scanpy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/plot_320_multipanel.html">multipanel</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/faridrashidi/cnsplots/blob/main/docs/api.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/faridrashidi/cnsplots/edit/main/docs/api.md" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h1>
+<p>Import cnsplots as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cnsplots</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cns</span>
+</pre></div>
+</div>
+<section id="plotting-functions">
+<h2>Plotting Functions<a class="headerlink" href="#plotting-functions" title="Link to this heading">¶</a></h2>
+<section id="distribution-comparison-plots">
+<h3>Distribution &amp; Comparison Plots<a class="headerlink" href="#distribution-comparison-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.boxplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">boxplot</span></code></a></p></td>
+<td><p>Create a box plot showing the distribution of a continuous variable across categories.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.violinplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">violinplot</span></code></a></p></td>
+<td><p>Create a violin plot showing the distribution of a continuous variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.stripplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stripplot</span></code></a></p></td>
+<td><p>Create a strip plot showing individual data points with optional summary statistics.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.barplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">barplot</span></code></a></p></td>
+<td><p>Create a bar plot showing mean values across categories with optional statistics.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.lollipopplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lollipopplot</span></code></a></p></td>
+<td><p>Create a lollipop plot showing values across categories.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.histplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">histplot</span></code></a></p></td>
+<td><p>Create a histogram plot (wrapper around seaborn.histplot).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.distplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distplot</span></code></a></p></td>
+<td><p>Create a distribution plot combining histogram and kernel density estimate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.kdeplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kdeplot</span></code></a></p></td>
+<td><p>Create a kernel density estimate plot with optional mode annotation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.ridgeplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ridgeplot</span></code></a></p></td>
+<td><p>Create a ridge plot (joyplot) showing distributions across categories.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="scatter-regression-plots">
+<h3>Scatter &amp; Regression Plots<a class="headerlink" href="#scatter-regression-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.scatterplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scatterplot</span></code></a></p></td>
+<td><p>Create a scatter plot with automatic legend size correction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.regplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regplot</span></code></a></p></td>
+<td><p>Create a regression plot with linear fit and correlation statistics.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.lineplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lineplot</span></code></a></p></td>
+<td><p>Create a line plot (wrapper around seaborn.lineplot).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.slopeplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slopeplot</span></code></a></p></td>
+<td><p>Create a slope plot showing paired changes between two conditions.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="heatmaps-matrix-plots">
+<h3>Heatmaps &amp; Matrix Plots<a class="headerlink" href="#heatmaps-matrix-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.heatmapplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">heatmapplot</span></code></a></p></td>
+<td><p>Create a clustered heatmap with optional annotations and dendrograms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.dotplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dotplot</span></code></a></p></td>
+<td><p>Create a dot plot matrix with color and size encodings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.confusionplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">confusionplot</span></code></a></p></td>
+<td><p>Create a confusion matrix heatmap with optional classification metrics.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="categorical-proportion-plots">
+<h3>Categorical &amp; Proportion Plots<a class="headerlink" href="#categorical-proportion-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.stackplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stackplot</span></code></a></p></td>
+<td><p>Create a stacked bar plot showing categorical distributions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.pieplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pieplot</span></code></a></p></td>
+<td><p>Create a pie chart showing categorical proportions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.donutplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">donutplot</span></code></a></p></td>
+<td><p>Create a donut chart showing categorical proportions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.vennplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vennplot</span></code></a></p></td>
+<td><p>Create a Venn diagram for 2 or 3 sets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.upsetplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upsetplot</span></code></a></p></td>
+<td><p>Create an UpSet plot for visualizing set intersections.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.sankeyplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sankeyplot</span></code></a></p></td>
+<td><p>Create a Sankey diagram showing flows between two categorical variables.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="survival-analysis-plots">
+<h3>Survival Analysis Plots<a class="headerlink" href="#survival-analysis-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.survivalplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">survivalplot</span></code></a></p></td>
+<td><p>Create a Kaplan-Meier survival plot with statistical comparisons.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.cumulativeincidenceplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cumulativeincidenceplot</span></code></a></p></td>
+<td><p>Create a cumulative incidence plot for competing risks analysis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.forestplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forestplot</span></code></a></p></td>
+<td><p>Create a forest plot displaying effect sizes from a regression model.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="genomics-statistical-plots">
+<h3>Genomics &amp; Statistical Plots<a class="headerlink" href="#genomics-statistical-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.volcanoplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">volcanoplot</span></code></a></p></td>
+<td><p>Create a volcano plot for differential expression analysis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.gseaplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gseaplot</span></code></a></p></td>
+<td><p>Create a Gene Set Enrichment Analysis (GSEA) dot plot.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.rocplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rocplot</span></code></a></p></td>
+<td><p>Create a receiver operating characteristic (ROC) curve plot.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.qqplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qqplot</span></code></a></p></td>
+<td><p>Create a quantile-quantile (Q-Q) plot to assess normality.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="specialized-plots">
+<h3>Specialized Plots<a class="headerlink" href="#specialized-plots" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.phyloplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phyloplot</span></code></a></p></td>
+<td><p>Create a phylogenetic tree plot with associated heatmaps.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="statistical-models">
+<h2>Statistical Models<a class="headerlink" href="#statistical-models" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.CoxModel.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CoxModel</span></code></a></p></td>
+<td><p>Cox proportional hazards regression model for survival analysis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.LogisticModel.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogisticModel</span></code></a></p></td>
+<td><p>Logistic regression model with cross-validation for binary classification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.prerank.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prerank</span></code></a></p></td>
+<td><p>Perform pre-ranked Gene Set Enrichment Analysis (GSEA).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="figure-layout-utilities">
+<h2>Figure &amp; Layout Utilities<a class="headerlink" href="#figure-layout-utilities" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.figure.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">figure</span></code></a></p></td>
+<td><p>Initialize a new figure with custom size and styling.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.savefig.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">savefig</span></code></a></p></td>
+<td><p>Save the current figure to a file, creating directories if needed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.multipanel.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multipanel</span></code></a></p></td>
+<td><p>Create multi-panel figures with flexible panel sizes and margins.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.add_panel_label.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_panel_label</span></code></a></p></td>
+<td><p>Add a panel label (e.g., 'A', 'B', 'C') to the current axes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.take_legend_out.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_legend_out</span></code></a></p></td>
+<td><p>Move the legend outside the plot area to the upper-left of the right margin.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="configuration-setup">
+<h2>Configuration &amp; Setup<a class="headerlink" href="#configuration-setup" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.setup_matplotlib.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_matplotlib</span></code></a></p></td>
+<td><p>Configure matplotlib with publication-quality default styling.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.setup_scanpy.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_scanpy</span></code></a></p></td>
+<td><p>Configure matplotlib and scanpy with consistent publication-quality styling.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.setup_ax.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ax</span></code></a></p></td>
+<td><p>Apply publication-quality styling to a specific matplotlib axes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.setup_ggplot.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ggplot</span></code></a></p></td>
+<td><p>Generate R ggplot2 theme code matching cnsplots styling.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="color-palettes">
+<h2>Color Palettes<a class="headerlink" href="#color-palettes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/cnsplots.palettes.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">palettes</span></code></a></p></td>
+<td><p>Get a color palette by name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/cnsplots.get_hexcolors_from_apalette.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hexcolors_from_apalette</span></code></a></p></td>
+<td><p>Extract specific colors from a palette by index.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="constants">
+<h2>Constants<a class="headerlink" href="#constants" title="Link to this heading">¶</a></h2>
+<p>The following color constants are available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RED</span></code> - #D6372E</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BLUE</span></code> - #5189BB</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GREEN</span></code> - #70B460</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PURPLE</span></code> - #985EA8</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ORANGE</span></code> - #F08F35</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">YELLOW</span></code> - #FADD4B</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BROWN</span></code> - #9C5732</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PINK</span></code> - #E787E5</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GRAY</span></code> - #A3A3A3</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">VIOLET</span></code> - #442288</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CHOCOLATE</span></code> - #662506</p></li>
+</ul>
+<p>Default settings:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PALETTE_QUAL</span></code> - Default qualitative palette (‘Ecotyper1’)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PALETTE_SEQ</span></code> - Default sequential colormap (‘gnuplot’)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FONTSIZE_TITLE</span></code> - Title font size (8)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FONTSIZE_LEGEND</span></code> - Legend font size (7)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LINEWIDTH_AXES</span></code> - Axes line width (0.5)</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+<div class="related-pages">
+  <a class="next-page" href="api/cnsplots.boxplot.html">
+      <div class="page-info">
+        <div class="context">
+          <span>Next</span>
+        </div>
+        <div class="title">cnsplots.boxplot</div>
+      </div>
+      <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+    </a>
+  <a class="prev-page" href="installation.html">
+      <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+      <div class="page-info">
+        <div class="context">
+          <span>Previous</span>
+        </div>
+        
+        <div class="title">Installation</div>
+        
+      </div>
+    </a>
+</div>
+<div class="bottom-of-page">
+  <div class="left-details">
+    <div class="copyright">
+        Copyright &#169; 2023-2026, Farid Rashidi
+    </div>
+  </div>
+  <div class="right-details">
+    <div class="icons">
+      <a class="muted-link " href="https://github.com/faridrashidi/cnsplots" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+      
+    </div>
+  </div>
+</div>
+
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">API</a><ul>
+<li><a class="reference internal" href="#plotting-functions">Plotting Functions</a><ul>
+<li><a class="reference internal" href="#distribution-comparison-plots">Distribution &amp; Comparison Plots</a></li>
+<li><a class="reference internal" href="#scatter-regression-plots">Scatter &amp; Regression Plots</a></li>
+<li><a class="reference internal" href="#heatmaps-matrix-plots">Heatmaps &amp; Matrix Plots</a></li>
+<li><a class="reference internal" href="#categorical-proportion-plots">Categorical &amp; Proportion Plots</a></li>
+<li><a class="reference internal" href="#survival-analysis-plots">Survival Analysis Plots</a></li>
+<li><a class="reference internal" href="#genomics-statistical-plots">Genomics &amp; Statistical Plots</a></li>
+<li><a class="reference internal" href="#specialized-plots">Specialized Plots</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#statistical-models">Statistical Models</a></li>
+<li><a class="reference internal" href="#figure-layout-utilities">Figure &amp; Layout Utilities</a></li>
+<li><a class="reference internal" href="#configuration-setup">Configuration &amp; Setup</a></li>
+<li><a class="reference internal" href="#color-palettes">Color Palettes</a></li>
+<li><a class="reference internal" href="#constants">Constants</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=47de8214"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>

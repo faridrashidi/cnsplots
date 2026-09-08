@@ -1,0 +1,29 @@
+﻿:github_url: cnsplots.LogisticModel
+
+cnsplots.LogisticModel
+======================
+
+.. currentmodule:: cnsplots
+
+.. autoclass:: LogisticModel
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree: .
+   
+      ~LogisticModel.fit
+   
+   
+
+   .. _sphx_glr_backref_cnsplots.LogisticModel:
+
+   .. minigallery:: cnsplots.LogisticModel
+       :add-heading: Examples
+       :heading-level: -
