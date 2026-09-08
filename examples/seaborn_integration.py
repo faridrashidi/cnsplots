@@ -19,7 +19,6 @@ import seaborn as sns
 
 import cnsplots as cns
 
-
 # %%
 # Load example datasets
 # ~~~~~~~~~~~~~~~~~~~~~

@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.axes import Axes
-from matplotlib.colorbar import Colorbar
 from matplotlib.collections import LineCollection
+from matplotlib.colorbar import Colorbar
 from matplotlib.colors import to_rgba
 from matplotlib.legend import Legend
 

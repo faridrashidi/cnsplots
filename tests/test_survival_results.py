@@ -16,7 +16,6 @@ from statsmodels.stats.multitest import multipletests
 
 import cnsplots as cns
 
-
 _COLUMNS = {
     "kind",
     "groups",

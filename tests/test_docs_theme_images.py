@@ -14,8 +14,8 @@ from theme_aware_matplotlib import (  # noqa: E402  # ty: ignore[unresolved-impo
     _mark_theme,
     _prepare_dark_gallery_thumbnails,
     fallback_linkcheck_showcase_images,
-    theme_gallery_thumbnail_nodes,
     theme_aware_matplotlib_scraper,
+    theme_gallery_thumbnail_nodes,
 )
 
 

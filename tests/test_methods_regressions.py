@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import warnings
 from collections import Counter
 from typing import Any
 from unittest.mock import Mock
-import warnings
 
 import lifelines as ll
 import numpy as np

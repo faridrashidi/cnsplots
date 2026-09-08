@@ -1,6 +1,6 @@
 """Validation utilities for cnsplots."""
 
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -110,7 +110,7 @@ def validate_column_exists(
 
 
 def validate_columns_exist(
-    data: pd.DataFrame, columns: List[str], function_name: str
+    data: pd.DataFrame, columns: list[str], function_name: str
 ) -> None:
     """
     Validate that multiple columns exist in a DataFrame.
@@ -119,7 +119,7 @@ def validate_columns_exist(
     ----------
     data : pd.DataFrame
         The DataFrame to check.
-    columns : List[str]
+    columns : list[str]
         The column names to validate.
     function_name : str
         The name of the calling function for error messages.
@@ -184,7 +184,7 @@ def validate_adata_layer(adata, layer: str, function_name: str) -> None:
 
 
 def validate_adata_obs_columns(
-    adata, columns: Union[str, List[str]], function_name: str
+    adata, columns: str | list[str], function_name: str
 ) -> None:
     """
     Validate that columns exist in adata.obs.
@@ -193,7 +193,7 @@ def validate_adata_obs_columns(
     ----------
     adata : AnnData
         The AnnData object to check.
-    columns : Union[str, List[str]]
+    columns : str | list[str]
         The column name(s) to validate.
     function_name : str
         The name of the calling function for error messages.
@@ -221,7 +221,7 @@ def validate_adata_obs_columns(
 
 
 def validate_adata_var_columns(
-    adata, columns: Union[str, List[str]], function_name: str
+    adata, columns: str | list[str], function_name: str
 ) -> None:
     """
     Validate that columns exist in adata.var.
@@ -230,7 +230,7 @@ def validate_adata_var_columns(
     ----------
     adata : AnnData
         The AnnData object to check.
-    columns : Union[str, List[str]]
+    columns : str | list[str]
         The column name(s) to validate.
     function_name : str
         The name of the calling function for error messages.
@@ -257,9 +257,7 @@ def validate_adata_var_columns(
         )
 
 
-def validate_adata_uns_keys(
-    adata, keys: Union[str, List[str]], function_name: str
-) -> None:
+def validate_adata_uns_keys(adata, keys: str | list[str], function_name: str) -> None:
     """Validate that keys exist in ``adata.uns``."""
     if isinstance(keys, str):
         keys = [keys]
@@ -301,7 +299,7 @@ def validate_dataframe_not_empty(data: pd.DataFrame, function_name: str) -> None
 
 def validate_no_nulls(
     data: pd.DataFrame,
-    columns: Union[str, List[str]],
+    columns: str | list[str],
     function_name: str,
     allow_partial: bool = False,
 ) -> None:
@@ -312,7 +310,7 @@ def validate_no_nulls(
     ----------
     data : pd.DataFrame
         The DataFrame to check.
-    columns : Union[str, List[str]]
+    columns : str | list[str]
         The column name(s) to validate.
     function_name : str
         The name of the calling function for error messages.
@@ -359,7 +357,7 @@ def validate_no_nulls(
 
 
 def validate_column_type(
-    data: pd.DataFrame, column: str, expected_types: List[str], function_name: str
+    data: pd.DataFrame, column: str, expected_types: list[str], function_name: str
 ) -> None:
     """
     Validate that a column has the expected data type.
@@ -370,7 +368,7 @@ def validate_column_type(
         The DataFrame to check.
     column : str
         The column name to validate.
-    expected_types : List[str]
+    expected_types : list[str]
         List of acceptable type names (e.g., ['int', 'float', 'numeric']).
     function_name : str
         The name of the calling function for error messages.
@@ -526,8 +524,8 @@ def validate_time_to_event_data(
 def validate_categorical_has_levels(
     data: pd.DataFrame,
     column: str,
-    min_levels: Optional[int] = None,
-    max_levels: Optional[int] = None,
+    min_levels: int | None = None,
+    max_levels: int | None = None,
     function_name: str = "",
 ) -> None:
     """
@@ -539,9 +537,9 @@ def validate_categorical_has_levels(
         The DataFrame to check.
     column : str
         The column name to validate.
-    min_levels : Optional[int]
+    min_levels : int | None
         Minimum number of unique values required.
-    max_levels : Optional[int]
+    max_levels : int | None
         Maximum number of unique values allowed.
     function_name : str
         The name of the calling function for error messages.
@@ -569,8 +567,8 @@ def validate_categorical_has_levels(
 def validate_numeric_range(
     data: pd.DataFrame,
     column: str,
-    min_val: Optional[float] = None,
-    max_val: Optional[float] = None,
+    min_val: float | None = None,
+    max_val: float | None = None,
     function_name: str = "",
 ) -> None:
     """
@@ -582,9 +580,9 @@ def validate_numeric_range(
         The DataFrame to check.
     column : str
         The column name to validate.
-    min_val : Optional[float]
+    min_val : float | None
         Minimum acceptable value.
-    max_val : Optional[float]
+    max_val : float | None
         Maximum acceptable value.
     function_name : str
         The name of the calling function for error messages.
@@ -741,7 +739,7 @@ def safe_column_access(
 
 def safe_numeric_conversion(
     value: Any, function_name: str, context: str = ""
-) -> Union[int, float]:
+) -> int | float:
     """
     Safely convert a value to numeric, with helpful error on failure.
 
@@ -756,7 +754,7 @@ def safe_numeric_conversion(
 
     Returns
     -------
-    Union[int, float]
+    int | float
         The converted numeric value.
 
     Raises

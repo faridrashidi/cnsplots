@@ -22,13 +22,14 @@ _execute_gallery = os.environ.get("CNSPLOTS_DOCS_EXECUTE_GALLERY", "1") == "1"
 sys.path.insert(0, str(_active_repo_root / "src"))
 sys.path.insert(0, str(_conf_dir / "_ext"))
 
-import cnsplots as cns  # noqa: E402
 from gallery_order import GALLERY_CATEGORIES  # noqa: E402
 from theme_aware_matplotlib import (  # noqa: E402
     fallback_linkcheck_showcase_images,
     prepare_dark_gallery_thumbnails,
     theme_gallery_thumbnail_nodes,
 )
+
+import cnsplots as cns  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 

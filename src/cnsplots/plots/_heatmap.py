@@ -19,10 +19,9 @@ from natsort import natsort_keygen
 from scipy import sparse
 from scipy.stats import fisher_exact
 
-from cnsplots._settings import settings
 import cnsplots._utils as utils
 import cnsplots.helpers._heatmap as helper_heatmap
-from cnsplots.helpers._heatmap import ClusterMapPlotterNew, DotClustermapPlotterNew
+from cnsplots._settings import settings
 from cnsplots._utils import _legend_fontsize
 from cnsplots._validation import (
     validate_adata_layer,
@@ -33,7 +32,7 @@ from cnsplots._validation import (
     validate_dataframe_not_empty,
     validate_no_nulls,
 )
-
+from cnsplots.helpers._heatmap import ClusterMapPlotterNew, DotClustermapPlotterNew
 
 _MAX_DENSE_HEATMAP_BYTES = 512 * 1024**2
 

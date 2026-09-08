@@ -16,7 +16,8 @@ from matplotlib.transforms import Bbox
 
 import cnsplots as cns
 from cnsplots import _utils
-from cnsplots.helpers import _cmprsk, _heatmap as helper_heatmap, _phylo, _sankey
+from cnsplots.helpers import _cmprsk, _phylo, _sankey
+from cnsplots.helpers import _heatmap as helper_heatmap
 
 
 @pytest.mark.parametrize(

@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import logging
-from collections.abc import Callable, Sequence
-from enum import Enum
-from typing import Any, Literal, cast, overload
-
 import itertools
+import logging
 import math
 import os
 import re
+from collections.abc import Callable, Sequence
+from enum import Enum
 from pathlib import Path
+from typing import Any, Literal, cast, overload
 
 import matplotlib as mpl
 import matplotlib.colors as mcolors
@@ -34,7 +33,7 @@ import cnsplots._palettes as _palettes
 from cnsplots._comparison_types import HueComparisons
 from cnsplots._settings import settings
 from cnsplots._setup import setup_matplotlib
-from cnsplots._sizing import _SizeUnit, _dimension_to_points
+from cnsplots._sizing import _dimension_to_points, _SizeUnit
 from cnsplots._svg import _save_svg
 
 logger = logging.getLogger(__name__)

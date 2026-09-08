@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import builtins
-from collections.abc import Mapping, Sequence
 import sys
 import types
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
 
@@ -20,7 +20,8 @@ from matplotlib.patches import PathPatch, Rectangle, Wedge
 
 import cnsplots as cns
 from cnsplots import _methods, _setup, _svg, _utils, _validation
-from cnsplots.helpers import _heatmap as helper_heatmap, _phylo, _sankey
+from cnsplots.helpers import _heatmap as helper_heatmap
+from cnsplots.helpers import _phylo, _sankey
 from cnsplots.plots import _distribution as dist_mod
 from cnsplots.plots import _genomics as genomics_mod
 from cnsplots.plots import _heatmap as heatmap_mod

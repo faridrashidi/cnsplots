@@ -24,7 +24,6 @@ from matplotlib.text import Text
 
 import cnsplots as cns
 
-
 _PUBLIC_PLOT_NAMES = frozenset(
     {
         "barplot",
@@ -306,12 +305,13 @@ def test_public_callable_annotations_resolve() -> None:
 
 
 def test_public_plot_axes_signature_and_return_contract() -> None:
+    from matplotlib_venn._common import VennDiagram
+
     import cnsplots.plots as plots
     from cnsplots.helpers._heatmap import (
         ClusterMapPlotterNew,
         DotClustermapPlotterNew,
     )
-    from matplotlib_venn._common import VennDiagram
 
     assert set(plots.__all__) == _PUBLIC_PLOT_NAMES
     assert all(getattr(plots, name) is getattr(cns, name) for name in plots.__all__)

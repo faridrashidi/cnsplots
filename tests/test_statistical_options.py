@@ -9,7 +9,6 @@ import pytest
 
 import cnsplots as cns
 
-
 _CONTINUOUS_PLOTS = ("boxplot", "violinplot", "barplot", "lollipopplot")
 _P_ADJUST_METHODS = ("bonferroni", "holm", "fdr_bh", "fdr_by")
 

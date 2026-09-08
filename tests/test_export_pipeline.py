@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from contextlib import contextmanager, suppress
 import math
 import os
-from pathlib import Path
 import shutil
 import signal
 import subprocess
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager, suppress
+from pathlib import Path
 from typing import Literal
 
 import matplotlib.pyplot as plt
@@ -310,7 +310,7 @@ def test_exported_bounds_clipping_transparency_and_raster_layers(
 
         for channel in (0, 2):
 
-            def colored(pixels: np.ndarray) -> np.ndarray:
+            def colored(pixels: np.ndarray, channel: int = channel) -> np.ndarray:
                 rgb = pixels[:, :, :3].astype(int)
                 others = np.delete(rgb, channel, axis=2).max(axis=2)
                 return (rgb[:, :, channel] - others > 80) & (pixels[:, :, 3] > 90)

@@ -16,7 +16,6 @@ from matplotlib.transforms import Bbox
 import cnsplots as cns
 import cnsplots._utils as plot_utils
 
-
 SPECIAL_PLOT_NAMES = [
     "placeholderplot",
     "sankeyplot",

@@ -152,6 +152,22 @@ The project is CI-tested on Python 3.10 through 3.14.
 
 We use [Ruff](https://github.com/astral-sh/ruff) for code formatting and linting.
 
+The selected checks keep the existing `E4`, `E7`, `E9`, and `F` rules and add:
+
+- `I`: consistent import ordering using the existing first-party package setting.
+- `UP006`, `UP007`, `UP035`, and `UP045`: built-in generic types, union/optional
+  annotations, and current import locations compatible with Python 3.10.
+- `B023`: detect deferred functions that accidentally capture changing loop
+  variables; bind the intended value explicitly.
+
+The Ruff target remains `py310`. Only reviewed, safe fixes are applied. Other
+rule families require a separate compatibility audit: `B905` is deferred because
+calls such as `zip(columns, columns[1:])` deliberately truncate; `B009`/`B010`
+would rewrite intentional dynamic attribute access used with Matplotlib.
+`RUF001`–`RUF003` remain unselected to preserve scientific Unicode in labels,
+docstrings, and comments. Broad `C4`, `SIM`, and remaining `UP`/`B` checks are not
+enabled wholesale.
+
 ### Running Linters
 
 ```bash

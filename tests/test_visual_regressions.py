@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
 import os
 import platform
 import sys
+from collections.abc import Iterator
 
 import anndata as ad
 import matplotlib as mpl

@@ -6,14 +6,14 @@ import json
 import os
 import re
 import shutil
-from string import Template
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Iterator
+from string import Template
 from urllib.parse import urlparse
 
 SITE_URL = "https://cnsplots.farid.one/"

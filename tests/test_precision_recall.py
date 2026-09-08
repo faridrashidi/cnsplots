@@ -14,7 +14,6 @@ from cnsplots.plots._precision_recall import (
     precisionrecallplot,
 )
 
-
 CURVE_COLUMNS = ["model", "recall", "precision", "threshold"]
 METRIC_COLUMNS = [
     "model",

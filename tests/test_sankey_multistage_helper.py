@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Any, cast
 
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.colors import to_rgba
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.axes import Axes
+from matplotlib.colors import to_rgba
 
 from cnsplots.helpers import _sankey
 

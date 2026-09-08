@@ -14,7 +14,6 @@ import cnsplots as cns
 from cnsplots.helpers import _roc
 from cnsplots.plots import _specialized
 
-
 _TABLES: tuple[Literal["curves", "metrics", "bands", "comparisons"], ...] = (
     "curves",
     "metrics",

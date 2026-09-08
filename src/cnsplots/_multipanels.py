@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal, Optional, cast
+from typing import Any, Literal, cast
 
-from matplotlib.backend_bases import DrawEvent, Event, RendererBase
 import matplotlib.pyplot as plt
 from matplotlib import transforms as mtransforms
 from matplotlib.axes import Axes
+from matplotlib.backend_bases import DrawEvent, Event, RendererBase
 from matplotlib.text import Text
 from matplotlib.transforms import Bbox
 
@@ -16,8 +16,8 @@ import cnsplots._utils as utils
 from cnsplots._settings import settings
 from cnsplots._setup import ColorCycle, setup_matplotlib
 from cnsplots._sizing import (
-    _SizeUnit,
     _dimension_to_points,
+    _SizeUnit,
     _validate_positive_finite_dimension,
 )
 
@@ -704,7 +704,7 @@ class multipanel:
         get_renderer = getattr(canvas, "get_renderer", None)
         if not callable(get_renderer):
             return None
-        return cast(Optional[RendererBase], get_renderer())
+        return cast(RendererBase | None, get_renderer())
 
     def _on_draw(self, event: Event) -> None:
         """Relayout once after draw when left-side axis decorations change width."""

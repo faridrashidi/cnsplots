@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 import hashlib
 import subprocess
 import sys
+from collections.abc import Sequence
 from typing import Any, cast, get_args
 
 import matplotlib as mpl
@@ -17,7 +17,6 @@ from matplotlib.typing import ColorType
 
 import cnsplots as cns
 from cnsplots import _palettes, _utils
-
 
 # Captured from main before replacing palette dispatch with the registry.
 _QUALITATIVE_COLORS = {

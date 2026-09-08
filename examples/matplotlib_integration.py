@@ -19,7 +19,6 @@ import numpy as np
 
 import cnsplots as cns
 
-
 # %%
 # Generate synthetic assay data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

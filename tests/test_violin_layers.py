@@ -5,12 +5,12 @@ from typing import Any
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
-from matplotlib.patches import PathPatch
 import numpy as np
 import pandas as pd
 import pytest
 import seaborn as sns
+from matplotlib.colors import to_rgba
+from matplotlib.patches import PathPatch
 
 import cnsplots as cns
 

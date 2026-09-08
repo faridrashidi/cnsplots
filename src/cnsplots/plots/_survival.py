@@ -1073,9 +1073,10 @@ def cumulativeincidenceplot(
             f"non-negative, got {censor_mark_length!r}"
         )
 
-    import cnsplots.helpers._cmprsk as helper_cmprsk
     import lifelines as ll
     from lifelines.plotting import add_at_risk_counts
+
+    import cnsplots.helpers._cmprsk as helper_cmprsk
 
     data = data.copy()
     if ax is None:

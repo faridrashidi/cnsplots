@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import copy
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from textwrap import indent
-from typing import Iterator
 
 import matplotlib as mpl
 import matplotlib.colors as mcolors

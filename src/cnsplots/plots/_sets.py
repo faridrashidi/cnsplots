@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Any
-
+import importlib
+import sys
 from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
-import importlib
 from pathlib import Path
-import sys
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np

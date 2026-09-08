@@ -160,7 +160,7 @@ line-length = 88
 src = ["src"]
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F"]
+select = ["E4", "E7", "E9", "F", "I", "UP006", "UP007", "UP035", "UP045", "B023"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["cnsplots"]

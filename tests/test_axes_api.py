@@ -12,7 +12,6 @@ from matplotlib.axes import Axes
 
 import cnsplots as cns
 
-
 PLOT_NAMES = [
     "barplot",
     "lollipopplot",

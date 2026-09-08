@@ -1,7 +1,7 @@
 """Regression tests for distribution plot validation."""
 
-from typing import Any
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import patch
 
 import matplotlib.pyplot as plt

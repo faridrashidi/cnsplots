@@ -28,7 +28,6 @@ from cnsplots._validation import (
     validate_no_nulls,
 )
 
-
 _FOREST_LABEL = "_forest_label"
 _FOREST_ESTIMATE = "_forest_estimate"
 _FOREST_LOWER = "_forest_lower"
