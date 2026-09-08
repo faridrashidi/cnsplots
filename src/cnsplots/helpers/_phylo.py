@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.transforms import Affine2D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from cnsplots._validation import (
@@ -54,6 +55,10 @@ def phyloplot(adata: AnnData, *, ax: Axes | None = None) -> Axes:
         ax.set_axis_off()
     with plt.rc_context({"lines.linewidth": 0.5}):
         Bio.Phylo.draw(tree, label_func=lambda _: "", axes=tree_ax, do_show=False)
+    # Bio.Phylo places leaves at 1, 2, ...; heatmap row centers are 0.5, 1.5, ...
+    tree_transform = Affine2D().translate(0, -0.5) + tree_ax.transData
+    for artist in [*tree_ax.collections, *tree_ax.texts]:
+        artist.set_transform(tree_transform)
     ax = sns.heatmap(
         adata.layers["trisicell_output"],
         ax=heatmap_ax,
