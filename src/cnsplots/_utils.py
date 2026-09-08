@@ -9,6 +9,7 @@ import itertools
 import math
 import os
 import re
+import warnings
 from pathlib import Path
 
 import matplotlib as mpl
@@ -1051,6 +1052,9 @@ class _PValueFormatter(PValueFormat):
         self.p_capitalized = True
 
     def format_data(self, result):
+        if not np.isfinite(result.pvalue):
+            return "P unavailable"
+
         if self._resolved_format == "full":
             text = f"{result.test_short_name} " if self.show_test_name else ""
             return r"${}P = {}{}$".format("{}", self.pvalue_format_string, "{}").format(
@@ -1101,6 +1105,8 @@ def get_comparison_results(ax: Axes | None = None) -> pd.DataFrame:
         ``pvalue_adjusted`` contain raw and corrected p-values; without correction
         they are equal and ``p_adjust`` is None. ``pvalue_annotation``,
         ``significant``, and ``annotation`` describe the exact rendered result.
+        Unavailable tests have NaN in all p-value columns, None in
+        ``significant``, and ``'P unavailable'`` in ``annotation``.
         No effect size is estimated. Returns an empty table with these columns
         if there are no stored comparisons or their annotations were removed.
 
@@ -1117,6 +1123,9 @@ def get_comparison_results(ax: Axes | None = None) -> pd.DataFrame:
     these can differ from its raw category tick counts when stack values are
     missing. Correction covers all resolved pairs in one plot call, including
     all categories for pairs='hue', and does not extend across plot calls.
+    Nonfinite unpaired test p-values emit a warning identifying the comparison.
+    Unavailable comparisons remain in the correction family with a correction-only
+    p-value of 1; this placeholder is never reported as a test result.
 
     Paired tests additionally exclude missing subject identifiers and incomplete
     pairs separately for each contrast. Duplicate subjects within either compared
@@ -1150,21 +1159,40 @@ def _collect_comparison_results(annotator, test, correction, p_adjust, contingen
     """Correct the computed results in place and snapshot them before rendering."""
     annotations = annotator.annotations
     results = [annotation.data for annotation in annotations]
-    raw = np.asarray([result.pvalue for result in results])
-    if test in _PAIRED_TESTS and not np.isfinite(raw).all():
+    raw = np.asarray([result.pvalue for result in results], dtype=float)
+    available = np.isfinite(raw)
+    if test in _PAIRED_TESTS and not available.all():
         raise ValueError("Paired test returned a nonfinite p-value.")
+    raw[~available] = np.nan
     adjusted = raw.copy()
     if correction is not None:
-        adjusted = multipletests(raw, method=p_adjust)[1]
-        if correction.type == 0:
-            for result, pvalue in zip(results, correction(raw)):
-                result.pvalue = pvalue
+        # Keep every requested hypothesis in the family without allowing
+        # unavailable p-values to contaminate estimable comparisons.
+        correction_pvalues = np.where(available, raw, 1.0)
+        adjusted = multipletests(correction_pvalues, method=p_adjust)[1]
+        adjusted[~available] = np.nan
+        display_pvalues = (
+            correction(correction_pvalues)
+            if correction.type == 0
+            else correction_pvalues
+        )
+        for result, pvalue in zip(results, display_pvalues):
+            result.pvalue = pvalue
         correction.apply(results)
 
     rows = []
     for annotation, pvalue_raw, pvalue_adjusted in zip(annotations, raw, adjusted):
         first, second = annotation.structs
         group1, group2 = first["group"], second["group"]
+        if not np.isfinite(pvalue_raw):
+            annotation.data.pvalue = np.nan
+            warnings.warn(
+                f"{test} comparison {group1!r} vs {group2!r} returned a "
+                "nonfinite p-value and is unavailable. Check the groups' "
+                "sample sizes and variation.",
+                UserWarning,
+                stacklevel=4,
+            )
         if contingency is None:
             n1, n2 = len(first["group_data"]), len(second["group_data"])
         else:
@@ -1189,7 +1217,9 @@ def _collect_comparison_results(annotator, test, correction, p_adjust, contingen
                 "pvalue_adjusted": pvalue_adjusted,
                 "p_adjust": p_adjust,
                 "pvalue_annotation": annotation.data.pvalue,
-                "significant": annotation.data.is_significant,
+                "significant": (
+                    annotation.data.is_significant if np.isfinite(pvalue_raw) else None
+                ),
                 "annotation": annotation.text,
             }
         )
