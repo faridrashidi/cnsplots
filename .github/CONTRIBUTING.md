@@ -400,14 +400,24 @@ them through a PR targeting `main`. Do not make release commits directly on
    ```
 
    Pushing a `v*` tag starts the [release workflow](workflows/release-publish.yml).
-   It builds the distributions, checks their metadata with Twine, publishes to
-   PyPI, and then creates a **published GitHub release** with distribution
-   assets and generated release notes. The workflow does not set `draft: true`;
-   there is no manual draft-publication step.
+   It runs the same [test and package validation](workflows/validate-package.yml)
+   used by PR/main CI against the exact tagged commit: the Python test matrix,
+   visual regression checks, distribution build, Twine metadata checks, and a
+   clean installation of the built wheel with import, packaged-data, and
+   dependency checks. A failed test or wheel check blocks publishing. The
+   validated distributions are uploaded once and passed to the publish jobs
+   without rebuilding.
 
-The tag workflow currently does not run tests or check a clean wheel installation;
-the validation above is a maintainer prerequisite. Automated validation gates
-are a separate proposal in [#175](https://github.com/faridrashidi/cnsplots/issues/175).
+   After validation succeeds, the workflow publishes to PyPI and then creates a
+   **published GitHub release** with those distribution assets and generated
+   release notes. The workflow does not set `draft: true`; there is no manual
+   draft-publication step.
+
+These automated checks run for every `v*` tag push, including tags created and
+pushed manually; they do not depend on an earlier PR or branch CI result.
+Maintainers must still follow the branch, review, and local validation steps above.
+The release commit must contain these workflows; older commits retain their
+historical release process.
 
 #### Release Checklist
 
@@ -415,8 +425,9 @@ are a separate proposal in [#175](https://github.com/faridrashidi/cnsplots/issue
 - [ ] The exact merged commit passed `make test` and `make lint`, has a clean
       working tree, and contains the intended version in all three version files.
 - [ ] The `vX.Y.Z` tag points to that commit and only that tag was pushed.
-- [ ] The release workflow succeeded, the version is available on PyPI, and the
-      published GitHub release includes the distribution assets.
+- [ ] The tag workflow's test matrix and clean wheel checks passed before
+      publication, the version is available on PyPI, and the published GitHub
+      release includes the validated distribution assets.
 - [ ] Review the published release's generated PR list and changelog link. Edit
       its notes to add a short human-written summary under `Added`, `Changed`,
       and `Fixed` as appropriate; this edits an already published release.
