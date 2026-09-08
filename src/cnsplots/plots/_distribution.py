@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from numbers import Real
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import matplotlib as mpl
 import matplotlib.patches  # noqa: F401  # ensure submodule is importable for isinstance checks
@@ -14,6 +14,7 @@ import scipy as sp
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.typing import ColorType
+from seaborn.categorical import BoxPlotContainer
 
 import cnsplots._utils as utils
 from cnsplots._comparison_types import HueComparisons
@@ -163,7 +164,7 @@ def boxplot(
         "showbox": True,
         "linewidth": 0.8,
         "whis": whis,
-        "boxprops": {"edgecolor": "none"},
+        "boxprops": {"edgecolor": "none"} if kwargs.get("fill", True) else {},
         "medianprops": {"color": "white"},
         "whiskerprops": {"color": "black"},
         "capprops": {"color": "none"},
@@ -189,32 +190,40 @@ def boxplot(
     data = utils._prepare_categorical_plot_data(plotting)
     if ax is None:
         ax = plt.gca()
+    existing_containers = len(ax.containers)
+    existing_patches = set(ax.patches)
     ax = sns.boxplot(ax=ax, **plotting)
 
-    box_patches = [
-        patch for patch in ax.patches if isinstance(patch, mpl.patches.PathPatch)
-    ]
-    if len(box_patches) == 0:
-        box_patches = ax.artists
-    num_patches = len(box_patches)
-    lines_per_boxplot = len(ax.lines) // num_patches
-    for i, patch in enumerate(box_patches):
-        col = patch.get_facecolor()
-        patch.set_edgecolor("None")
-        patch.set_facecolor(col)
-        for j, line in enumerate(
-            ax.lines[i * lines_per_boxplot : (i + 1) * lines_per_boxplot]
-        ):
-            if j != 2:
-                line.set_color(col)
-                line.set_mfc(col)
-                line.set_mec(col)
-            else:
-                line.set_color("white")
-                line.set_mfc("white")
-                line.set_mec("white")
+    # Seaborn groups each box with its own lines, including optional artists.
+    for container in ax.containers[existing_containers:]:
+        for artists in cast(BoxPlotContainer, container):
+            patch = artists.box
+            if not isinstance(patch, mpl.patches.PathPatch) or not patch.get_fill():
+                continue
+            col = patch.get_facecolor()
+            patch.set_edgecolor("none")
+            for line in [
+                *artists.whiskers,
+                *artists.caps,
+                artists.median,
+                *([artists.fliers] if artists.fliers else []),
+                *([artists.mean] if artists.mean else []),
+            ]:
+                color = "white" if line is artists.median else col
+                line.set_color(color)
+                line.set_mfc(color)
+                line.set_mec(color)
 
-    utils._remove_edge_from_legend_items(ax)
+    handles, labels = ax.get_legend_handles_labels()
+    for handle in handles:
+        if (
+            plotting.get("fill", True)
+            and isinstance(handle, mpl.patches.Patch)
+            and handle not in existing_patches
+            and handle.get_fill()
+        ):
+            handle.set_edgecolor("none")
+    ax.legend(handles, labels)
     whis_str = (
         "minimum and maximum values"
         if whis == (0, 100)

@@ -17,12 +17,11 @@ import pandas as pd
 import pytest
 from matplotlib.collections import PathCollection, QuadMesh
 from matplotlib.colors import ListedColormap
-from matplotlib.patches import PathPatch, Rectangle, Wedge
+from matplotlib.patches import Rectangle, Wedge
 
 import cnsplots as cns
 from cnsplots import _methods, _setup, _svg, _utils, _validation
 from cnsplots.helpers import _heatmap as helper_heatmap, _phylo, _sankey
-from cnsplots.plots import _distribution as dist_mod
 from cnsplots.plots import _genomics as genomics_mod
 from cnsplots.plots import _heatmap as heatmap_mod
 from cnsplots.plots import _sets as sets_mod
@@ -960,60 +959,6 @@ def test_plot_internal_coverage(
         [wedge.theta2 - wedge.theta1 for wedge in donut_wedges], [120] * 3
     )
     assert [wedge.width for wedge in donut_wedges] == pytest.approx([0.4] * 3)
-
-    class FakeArtist:
-        def __init__(self) -> None:
-            self.facecolor: object = (1, 0, 0, 1)
-            self.edgecolor: object = None
-
-        def get_facecolor(self) -> object:
-            return self.facecolor
-
-        def set_edgecolor(self, value: object) -> None:
-            self.edgecolor = value
-
-        def set_facecolor(self, value: object) -> None:
-            self.facecolor = value
-
-    class FakeLine:
-        def __init__(self) -> None:
-            self.color: object = None
-            self.marker_facecolor: object = None
-            self.marker_edgecolor: object = None
-
-        def set_color(self, value: object) -> None:
-            self.color = value
-
-        def set_mfc(self, value: object) -> None:
-            self.marker_facecolor = value
-
-        def set_mec(self, value: object) -> None:
-            self.marker_edgecolor = value
-
-    class FakeAxes:
-        def __init__(self) -> None:
-            self.patches: list[PathPatch] = []
-            self.artists = [FakeArtist()]
-            self.lines = [FakeLine() for _ in range(5)]
-
-        def get_legend_handles_labels(self) -> tuple[list[object], list[str]]:
-            return [], []
-
-        def legend(self, handles: list[object], labels: list[str]) -> None:
-            return None
-
-    monkeypatch.setattr(dist_mod.sns, "boxplot", lambda **kwargs: FakeAxes())
-    monkeypatch.setattr(cns.utils, "_remove_edge_from_legend_items", lambda ax: None)
-    box_ax = cast(Any, cns.boxplot(categorical_df, x="group", y="value"))
-    assert box_ax.artists[0].edgecolor == "None"
-    assert box_ax.artists[0].facecolor == (1, 0, 0, 1)
-    assert [line.color for line in box_ax.lines] == [
-        (1, 0, 0, 1),
-        (1, 0, 0, 1),
-        "white",
-        (1, 0, 0, 1),
-        (1, 0, 0, 1),
-    ]
 
     cns.figure(120, 120)
     hist_ax = cns.histplot(
