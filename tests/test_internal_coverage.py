@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from matplotlib.collections import PathCollection, QuadMesh
+from matplotlib.colors import ListedColormap
 from matplotlib.patches import PathPatch, Rectangle, Wedge
 
 import cnsplots as cns
@@ -625,6 +626,8 @@ def test_helper_heatmap_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> No
     plotter3.data = cast(Any, np.array([[0, 1], [1, 0]]))
     plotter3.ax = plt.gca()
     plotter3.yticklabels = []
+    plotter3.ax.pcolormesh(plotter3.data2d, cmap=ListedColormap(["red", "blue"]))
+    plotter3.heatmap_axes = np.array([[plotter3.ax]], dtype=object)
     plotter3.collect_legends()
     assert plotter3.legend_list
 
@@ -638,6 +641,8 @@ def test_helper_heatmap_internal_coverage(monkeypatch: pytest.MonkeyPatch) -> No
     plotter4.data = cast(Any, np.array([[0, 1], [1, 0]]))
     plotter4.ax = plt.gca()
     plotter4.yticklabels = []
+    plotter4.ax.pcolormesh(plotter4.data2d, cmap=ListedColormap(["red", "blue"]))
+    plotter4.heatmap_axes = np.array([[plotter4.ax]], dtype=object)
     plotter4.collect_legends()
     assert plotter4.legend_list
 

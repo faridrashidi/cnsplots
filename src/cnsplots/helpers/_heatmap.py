@@ -10,6 +10,7 @@ import matplotlib.legend as mlegend
 import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
+from matplotlib.transforms import nonsingular
 from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
 from PyComplexHeatmap.clustermap import mm2inch
 
@@ -546,6 +547,20 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
 
     def plot_legends(self, ax: Any = None) -> None:
         super().plot_legends(ax=ax)
+        mesh = self.heatmap_axes[0, 0].collections[0]
+        for cbar in getattr(self, "cbars", []):
+            if isinstance(cbar, mpl.colorbar.Colorbar) and cbar.cmap is getattr(
+                self, "_heatmap_legend_cmap", None
+            ):
+                # PyComplexHeatmap creates a linear mappable for every colorbar.
+                locator, formatter = cbar.locator, cbar.formatter
+                if mesh.norm.vmin == mesh.norm.vmax:
+                    # Colorbar expands constant limits; update every split together.
+                    for heatmap_ax in self.heatmap_axes.flat:
+                        heatmap_ax.collections[0].set_norm(mesh.norm)
+                cbar.update_normal(mesh)
+                cbar.locator, cbar.formatter = locator, formatter
+                cbar.update_ticks()
         self._legend_anchor_ax = self.ax if ax is None else ax
         _capture_detached_colorbar_layout(self)
         _sync_detached_legend_axes(self)
@@ -569,21 +584,10 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 if annotation.label_max_width > self.label_max_width:
                     self.label_max_width = annotation.label_max_width
         if self.legend:
+            mesh = self.heatmap_axes[0, 0].collections[0]
             if utils._is_qualitative_cmap(self.cmap):
-                if isinstance(self.data, pd.DataFrame):
-                    unique_values = sorted(np.unique(self.data.values.astype(str)))
-                else:
-                    unique_values = sorted(np.unique(self.data.astype(str)))
-                if isinstance(self.cmap, list):
-                    cmap = self.cmap
-                    cmap = {k: v for k, v in zip(unique_values, cmap)}
-                elif isinstance(self.cmap, dict):
-                    cmap = {k: v for k, v in self.cmap.items() if k in unique_values}
-                else:
-                    cmap = utils._get_hex_colors_from_colorbar(
-                        self.cmap, len(unique_values)
-                    )
-                    cmap = {k: v for k, v in zip(unique_values, cmap)}
+                unique_values = np.unique(self.data2d.values)
+                cmap = {str(value): mesh.to_rgba(value) for value in unique_values}
                 self.legend_kws.setdefault("frameon", False)
                 self.legend_kws.setdefault("labelspacing", 0.2)
                 self.legend_kws.setdefault("handletextpad", 0.4)
@@ -592,16 +596,17 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                     [cmap, self.label, self.legend_kws, 4, "color_dict"]
                 )
             else:
-                vmax = self.kwargs.get(
-                    "vmax", np.nanmax(self.data2d[self.data2d != np.inf])
-                )
-                vmin = self.kwargs.get(
-                    "vmin", np.nanmin(self.data2d[self.data2d != -np.inf])
-                )
-                self.legend_kws.setdefault("vmin", round(vmin, 2))
-                self.legend_kws.setdefault("vmax", round(vmax, 2))
+                legend_kws = self.legend_kws.copy()
+                vmin, vmax = mesh.norm.vmin, mesh.norm.vmax
+                if vmin == vmax:
+                    vmin, vmax = nonsingular(vmin, vmax, expander=0.1)
+                legend_kws.update(vmin=vmin, vmax=vmax)
+                # The mesh already includes centering and custom normalization.
+                legend_kws.pop("center", None)
+                legend_kws.pop("norm", None)
+                self._heatmap_legend_cmap = mesh.cmap.copy()
                 self.legend_list.append(
-                    [self.cmap, self.label, self.legend_kws, 4, "cmap"]
+                    [self._heatmap_legend_cmap, self.label, legend_kws, 4, "cmap"]
                 )
             heatmap_label_max_width = (
                 max(label.get_window_extent().width for label in self.yticklabels)
