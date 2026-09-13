@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 import importlib
+from collections.abc import Sequence
 from typing import Any
 
 import matplotlib as mpl
@@ -10,7 +10,6 @@ import matplotlib.legend as mlegend
 import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
-from matplotlib.transforms import nonsingular
 from PyComplexHeatmap import ClusterMapPlotter, DotClustermapPlotter
 from PyComplexHeatmap.clustermap import mm2inch
 
@@ -599,7 +598,8 @@ class ClusterMapPlotterNew(ClusterMapPlotter):
                 legend_kws = self.legend_kws.copy()
                 vmin, vmax = mesh.norm.vmin, mesh.norm.vmax
                 if vmin == vmax:
-                    vmin, vmax = nonsingular(vmin, vmax, expander=0.1)
+                    delta = 0.1 * abs(vmin) if vmin != 0 else 0.1
+                    vmin, vmax = vmin - delta, vmax + delta
                 legend_kws.update(vmin=vmin, vmax=vmax)
                 # The mesh already includes centering and custom normalization.
                 legend_kws.pop("center", None)
