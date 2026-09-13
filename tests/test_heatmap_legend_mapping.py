@@ -4,15 +4,15 @@ from typing import Any, cast
 
 import anndata as ad
 import matplotlib as mpl
+import numpy as np
+import pandas as pd
+import PyComplexHeatmap as pch
+import pytest
 from matplotlib.collections import QuadMesh
 from matplotlib.colorbar import Colorbar
 from matplotlib.colors import LogNorm
 from matplotlib.legend import Legend
 from matplotlib.patches import Patch
-import numpy as np
-import pandas as pd
-import PyComplexHeatmap as pch
-import pytest
 
 import cnsplots as cns
 from cnsplots.helpers._heatmap import ClusterMapPlotterNew
@@ -97,10 +97,11 @@ def test_heatmap_colorbar_matches_rendered_cells(
 
 
 @pytest.mark.parametrize("split", [False, True], ids=["unsplit", "split"])
-def test_heatmap_constant_cells_match_colorbar(split: bool) -> None:
-    plotter = _plot_heatmap(np.ones((2, 2)), split)
+@pytest.mark.parametrize("fill_value", [1.0, 0.0], ids=["nonzero", "zero"])
+def test_heatmap_constant_cells_match_colorbar(split: bool, fill_value: float) -> None:
+    plotter = _plot_heatmap(np.full((2, 2), fill_value), split)
     colorbar = next(item for item in plotter.cbars if isinstance(item, Colorbar))
-    assert colorbar.norm.vmin < 1 < colorbar.norm.vmax
+    assert colorbar.norm.vmin < fill_value < colorbar.norm.vmax
 
     for ax in plotter.heatmap_axes.flat:
         mesh = next(item for item in ax.collections if isinstance(item, QuadMesh))
