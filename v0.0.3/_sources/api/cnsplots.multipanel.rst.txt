@@ -1,0 +1,31 @@
+﻿:github_url: cnsplots.multipanel
+
+cnsplots.multipanel
+===================
+
+.. currentmodule:: cnsplots
+
+.. autoclass:: multipanel
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree: .
+   
+      ~multipanel.get_axes
+      ~multipanel.newline
+      ~multipanel.panel
+   
+   
+
+   .. _sphx_glr_backref_cnsplots.multipanel:
+
+   .. minigallery:: cnsplots.multipanel
+       :add-heading: Examples
+       :heading-level: -

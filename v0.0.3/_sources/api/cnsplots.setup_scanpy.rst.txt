@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.setup_scanpy
+
+cnsplots.setup\_scanpy
+======================
+
+.. autofunction:: cnsplots.setup_scanpy
+
+.. _sphx_glr_backref_cnsplots.setup_scanpy:
+
+.. minigallery:: cnsplots.setup_scanpy
+   :add-heading: Examples
+   :heading-level: -

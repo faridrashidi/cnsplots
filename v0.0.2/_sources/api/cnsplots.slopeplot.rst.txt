@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.slopeplot
+
+cnsplots.slopeplot
+==================
+
+.. autofunction:: cnsplots.slopeplot
+
+.. _sphx_glr_backref_cnsplots.slopeplot:
+
+.. minigallery:: cnsplots.slopeplot
+   :add-heading: Examples
+   :heading-level: -

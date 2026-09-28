@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.confusionplot
+
+cnsplots.confusionplot
+======================
+
+.. autofunction:: cnsplots.confusionplot
+
+.. _sphx_glr_backref_cnsplots.confusionplot:
+
+.. minigallery:: cnsplots.confusionplot
+   :add-heading: Examples
+   :heading-level: -

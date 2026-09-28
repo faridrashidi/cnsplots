@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.volcanoplot
+
+cnsplots.volcanoplot
+====================
+
+.. autofunction:: cnsplots.volcanoplot
+
+.. _sphx_glr_backref_cnsplots.volcanoplot:
+
+.. minigallery:: cnsplots.volcanoplot
+   :add-heading: Examples
+   :heading-level: -

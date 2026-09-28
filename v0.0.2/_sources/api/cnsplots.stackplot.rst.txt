@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.stackplot
+
+cnsplots.stackplot
+==================
+
+.. autofunction:: cnsplots.stackplot
+
+.. _sphx_glr_backref_cnsplots.stackplot:
+
+.. minigallery:: cnsplots.stackplot
+   :add-heading: Examples
+   :heading-level: -

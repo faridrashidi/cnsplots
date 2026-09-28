@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.kdeplot
+
+cnsplots.kdeplot
+================
+
+.. autofunction:: cnsplots.kdeplot
+
+.. _sphx_glr_backref_cnsplots.kdeplot:
+
+.. minigallery:: cnsplots.kdeplot
+   :add-heading: Examples
+   :heading-level: -

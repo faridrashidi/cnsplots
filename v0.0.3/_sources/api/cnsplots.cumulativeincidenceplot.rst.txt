@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.cumulativeincidenceplot
+
+cnsplots.cumulativeincidenceplot
+================================
+
+.. autofunction:: cnsplots.cumulativeincidenceplot
+
+.. _sphx_glr_backref_cnsplots.cumulativeincidenceplot:
+
+.. minigallery:: cnsplots.cumulativeincidenceplot
+   :add-heading: Examples
+   :heading-level: -

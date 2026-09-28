@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.regplot
+
+cnsplots.regplot
+================
+
+.. autofunction:: cnsplots.regplot
+
+.. _sphx_glr_backref_cnsplots.regplot:
+
+.. minigallery:: cnsplots.regplot
+   :add-heading: Examples
+   :heading-level: -

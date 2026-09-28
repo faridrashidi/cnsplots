@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.setup_ax
+
+cnsplots.setup\_ax
+==================
+
+.. autofunction:: cnsplots.setup_ax
+
+.. _sphx_glr_backref_cnsplots.setup_ax:
+
+.. minigallery:: cnsplots.setup_ax
+   :add-heading: Examples
+   :heading-level: -

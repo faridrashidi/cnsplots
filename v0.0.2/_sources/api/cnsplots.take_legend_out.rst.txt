@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.take_legend_out
+
+cnsplots.take\_legend\_out
+==========================
+
+.. autofunction:: cnsplots.take_legend_out
+
+.. _sphx_glr_backref_cnsplots.take_legend_out:
+
+.. minigallery:: cnsplots.take_legend_out
+   :add-heading: Examples
+   :heading-level: -

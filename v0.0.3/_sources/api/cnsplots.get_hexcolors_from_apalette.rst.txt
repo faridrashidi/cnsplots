@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.get_hexcolors_from_apalette
+
+cnsplots.get\_hexcolors\_from\_apalette
+=======================================
+
+.. autofunction:: cnsplots.get_hexcolors_from_apalette
+
+.. _sphx_glr_backref_cnsplots.get_hexcolors_from_apalette:
+
+.. minigallery:: cnsplots.get_hexcolors_from_apalette
+   :add-heading: Examples
+   :heading-level: -
