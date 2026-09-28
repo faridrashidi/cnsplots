@@ -1228,10 +1228,19 @@ def test_utils_helpers_and_showcase_data(
     fig3, ax3 = plt.subplots()
     ax3.set_title("β")
     ax3.set_xlabel("x")
+    ax3.set_ylabel("Δ × factor", fontfamily=["Cnsplots Test Font"])
     ax3.plot([0, 1], [0, 1], label="α")
     ax3.legend(title="μ")
+    title_family = list(ax3.title.get_fontfamily())
+    xlabel_family = list(ax3.xaxis.label.get_fontfamily())
     _utils.apply_unicode_font(ax3)
-    assert ax3.title.get_fontfamily()[0] == "DejaVu Sans"
+    # the configured font is kept first; the fallback is only appended
+    assert ax3.title.get_fontfamily() == [*title_family, "DejaVu Sans"]
+    assert ax3.yaxis.label.get_fontfamily() == ["Cnsplots Test Font", "DejaVu Sans"]
+    assert ax3.get_legend().get_title().get_fontfamily()[-1] == "DejaVu Sans"
+    assert ax3.xaxis.label.get_fontfamily() == xlabel_family
+    _utils.apply_unicode_font(ax3)
+    assert ax3.yaxis.label.get_fontfamily() == ["Cnsplots Test Font", "DejaVu Sans"]
 
     fig4, ax4 = plt.subplots()
     sns = pytest.importorskip("seaborn")

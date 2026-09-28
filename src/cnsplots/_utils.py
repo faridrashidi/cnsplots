@@ -898,18 +898,20 @@ def _has_non_ascii(text):
 
 def apply_unicode_font(ax: Axes | None = None, font: str = "DejaVu Sans") -> None:
     """
-    Set font to a Unicode-compatible font for text elements containing non-ASCII characters.
+    Add a Unicode-compatible fallback font to text elements containing non-ASCII characters.
 
     Scans all text elements (title, axis labels, tick labels, legend, and annotations)
-    on the given axes and switches their font to the specified fallback font if they
+    on the given axes and appends the fallback font to their font family if they
     contain non-ASCII characters (e.g., arrows like \u2192, Greek letters, etc.).
+    The configured font stays first, so matplotlib draws every glyph it has with
+    that font and uses the fallback font only for glyphs it lacks.
 
     Parameters
     ----------
     ax : matplotlib.axes.Axes, optional
         The axes to process. If None, uses the current axes.
     font : str, default: 'DejaVu Sans'
-        The fallback font to use for text containing non-ASCII characters.
+        The fallback font for glyphs missing from the configured font.
     """
     if ax is None:
         ax = plt.gca()
@@ -925,7 +927,9 @@ def apply_unicode_font(ax: Axes | None = None, font: str = "DejaVu Sans") -> Non
         text_objects.extend(legend.get_texts())
     for text_obj in text_objects:
         if _has_non_ascii(text_obj.get_text()):
-            text_obj.set_fontfamily(font)
+            family = list(text_obj.get_fontfamily())
+            if font not in family:
+                text_obj.set_fontfamily([*family, font])
 
 
 def _add_count_helper(data, attr, ax, axis="x"):
