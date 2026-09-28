@@ -1233,11 +1233,13 @@ def test_utils_helpers_and_showcase_data(
     ax3.legend(title="μ")
     title_family = list(ax3.title.get_fontfamily())
     xlabel_family = list(ax3.xaxis.label.get_fontfamily())
+    legend = ax3.get_legend()
+    assert legend is not None
     _utils.apply_unicode_font(ax3)
     # the configured font is kept first; the fallback is only appended
     assert ax3.title.get_fontfamily() == [*title_family, "DejaVu Sans"]
     assert ax3.yaxis.label.get_fontfamily() == ["Cnsplots Test Font", "DejaVu Sans"]
-    assert ax3.get_legend().get_title().get_fontfamily()[-1] == "DejaVu Sans"
+    assert legend.get_title().get_fontfamily()[-1] == "DejaVu Sans"
     assert ax3.xaxis.label.get_fontfamily() == xlabel_family
     _utils.apply_unicode_font(ax3)
     assert ax3.yaxis.label.get_fontfamily() == ["Cnsplots Test Font", "DejaVu Sans"]
