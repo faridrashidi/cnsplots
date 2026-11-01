@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.gseaplot
+
+cnsplots.gseaplot
+=================
+
+.. autofunction:: cnsplots.gseaplot
+
+.. _sphx_glr_backref_cnsplots.gseaplot:
+
+.. minigallery:: cnsplots.gseaplot
+   :add-heading: Examples
+   :heading-level: -

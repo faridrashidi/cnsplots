@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.dotplot
+
+cnsplots.dotplot
+================
+
+.. autofunction:: cnsplots.dotplot
+
+.. _sphx_glr_backref_cnsplots.dotplot:
+
+.. minigallery:: cnsplots.dotplot
+   :add-heading: Examples
+   :heading-level: -

@@ -1,0 +1,29 @@
+﻿:github_url: cnsplots.CoxModel
+
+cnsplots.CoxModel
+=================
+
+.. currentmodule:: cnsplots
+
+.. autoclass:: CoxModel
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree: .
+   
+      ~CoxModel.fit
+   
+   
+
+   .. _sphx_glr_backref_cnsplots.CoxModel:
+
+   .. minigallery:: cnsplots.CoxModel
+       :add-heading: Examples
+       :heading-level: -

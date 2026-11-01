@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /search.html
+Disallow: /genindex.html
+Disallow: /py-modindex.html
+Disallow: /_sources/
+
+Sitemap: https://cnsplots.farid.one/sitemap.xml

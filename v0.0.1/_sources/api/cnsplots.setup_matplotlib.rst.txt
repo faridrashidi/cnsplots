@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.setup_matplotlib
+
+cnsplots.setup\_matplotlib
+==========================
+
+.. autofunction:: cnsplots.setup_matplotlib
+
+.. _sphx_glr_backref_cnsplots.setup_matplotlib:
+
+.. minigallery:: cnsplots.setup_matplotlib
+   :add-heading: Examples
+   :heading-level: -

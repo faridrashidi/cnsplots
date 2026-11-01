@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.survivalplot
+
+cnsplots.survivalplot
+=====================
+
+.. autofunction:: cnsplots.survivalplot
+
+.. _sphx_glr_backref_cnsplots.survivalplot:
+
+.. minigallery:: cnsplots.survivalplot
+   :add-heading: Examples
+   :heading-level: -

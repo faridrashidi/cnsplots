@@ -1,0 +1,8 @@
+:github_url: cnsplots.LogisticModel.fit
+
+cnsplots.LogisticModel.fit
+==========================
+
+.. currentmodule:: cnsplots
+
+.. automethod:: LogisticModel.fit

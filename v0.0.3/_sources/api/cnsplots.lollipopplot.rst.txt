@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.lollipopplot
+
+cnsplots.lollipopplot
+=====================
+
+.. autofunction:: cnsplots.lollipopplot
+
+.. _sphx_glr_backref_cnsplots.lollipopplot:
+
+.. minigallery:: cnsplots.lollipopplot
+   :add-heading: Examples
+   :heading-level: -

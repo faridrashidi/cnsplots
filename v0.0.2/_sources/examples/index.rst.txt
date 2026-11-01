@@ -1,0 +1,643 @@
+:orphan:
+
+Examples Gallery
+================
+
+This gallery showcases the capabilities of cnsplots for creating publication-ready
+scientific visualizations. Each example demonstrates different plotting techniques and
+styling options available in the library. The examples below cover various use cases
+from basic plotting to advanced customizations suitable for high-impact scientific
+journals like Cell, Nature, and Science.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Configure global defaults for cnsplots.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_010_settings_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_010_settings`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">settings</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Configure figure dimensions, styling, and export options.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_020_figure_setup_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_020_figure_setup`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">figure_setup</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Explore and customize color palettes in cnsplots.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_030_palettes_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_030_palettes`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">palettes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create publication-ready boxplots with statistical annotations.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_040_boxplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_040_boxplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">boxplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create stacked bar plots showing proportions with optional statistical testing.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_050_stackplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_050_stackplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">stackplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create bar plots for comparing categorical data.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_060_barplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_060_barplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">barplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create lollipop plots for comparing categorical data.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_065_lollipopplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_065_lollipopplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">lollipopplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create strip plots showing individual data points with summary statistics.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_070_stripplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_070_stripplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">stripplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create violin plots showing distribution shapes with optional statistical testing.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_080_violinplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_080_violinplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">violinplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create complex clustered heatmaps with annotations and dendrograms.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_090_heatmapplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_090_heatmapplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">heatmapplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create dot plots for visualizing grouped data with size and color encoding.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_100_dotplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_100_dotplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">dotplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create regression plots showing relationships with fitted lines.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_110_regplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_110_regplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">regplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create scatter plots for visualizing relationships between continuous variables.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_120_scatterplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_120_scatterplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">scatterplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create kernel density estimation (KDE) plots for visualizing distributions.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_130_kdeplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_130_kdeplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">kdeplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create distribution plots combining histograms with KDE curves.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_140_distplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_140_distplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">distplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create ridge plots (joy plots) for comparing distributions across categories.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_150_ridgeplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_150_ridgeplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">ridgeplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create histograms for visualizing data distributions.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_160_histplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_160_histplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">histplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create line plots for visualizing trends and time series data.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_170_lineplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_170_lineplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">lineplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create Kaplan-Meier survival curves and cumulative incidence plots.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_180_survivalplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_180_survivalplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">survivalplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create forest plots for visualizing regression results.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_190_forestplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_190_forestplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">forestplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create Gene Set Enrichment Analysis (GSEA) plots.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_200_gseaplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_200_gseaplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">gseaplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create volcano plots for differential expression analysis.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_210_volcanoplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_210_volcanoplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">volcanoplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create Sankey diagrams for visualizing flows between categories.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_220_sankeyplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_220_sankeyplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">sankeyplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create confusion matrix heatmaps with optional statistical testing.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_230_confusionplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_230_confusionplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">confusionplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create pie charts for visualizing proportions.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_240_pieplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_240_pieplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">pieplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create donut charts for visualizing proportions.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_250_donutplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_250_donutplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">donutplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create Venn diagrams for visualizing set overlaps.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_260_vennplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_260_vennplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">vennplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create UpSet plots for visualizing set intersections.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_270_upsetplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_270_upsetplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">upsetplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create slope plots for visualizing changes between conditions.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_280_slopeplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_280_slopeplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">slopeplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create quantile-quantile (Q-Q) plots for distribution comparison.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_290_qqplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_290_qqplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">qqplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create ROC (Receiver Operating Characteristic) curves for classifier evaluation.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_300_rocplot_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_300_rocplot`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">rocplot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Integrate cnsplots with scanpy for single-cell RNA-seq visualization.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_310_scanpy_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_310_scanpy`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">scanpy</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create multi-panel figures in Cell, Nature, Science journal style.">
+
+.. only:: html
+
+  .. image:: /examples/images/thumb/sphx_glr_plot_320_multipanel_thumb.png
+    :alt:
+
+  :doc:`/examples/plot_320_multipanel`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">multipanel</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /examples/plot_010_settings
+   /examples/plot_020_figure_setup
+   /examples/plot_030_palettes
+   /examples/plot_040_boxplot
+   /examples/plot_050_stackplot
+   /examples/plot_060_barplot
+   /examples/plot_065_lollipopplot
+   /examples/plot_070_stripplot
+   /examples/plot_080_violinplot
+   /examples/plot_090_heatmapplot
+   /examples/plot_100_dotplot
+   /examples/plot_110_regplot
+   /examples/plot_120_scatterplot
+   /examples/plot_130_kdeplot
+   /examples/plot_140_distplot
+   /examples/plot_150_ridgeplot
+   /examples/plot_160_histplot
+   /examples/plot_170_lineplot
+   /examples/plot_180_survivalplot
+   /examples/plot_190_forestplot
+   /examples/plot_200_gseaplot
+   /examples/plot_210_volcanoplot
+   /examples/plot_220_sankeyplot
+   /examples/plot_230_confusionplot
+   /examples/plot_240_pieplot
+   /examples/plot_250_donutplot
+   /examples/plot_260_vennplot
+   /examples/plot_270_upsetplot
+   /examples/plot_280_slopeplot
+   /examples/plot_290_qqplot
+   /examples/plot_300_rocplot
+   /examples/plot_310_scanpy
+   /examples/plot_320_multipanel
+
+
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-gallery
+
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download all examples in Python source code: examples_python.zip </examples/examples_python.zip>`
+
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download all examples in Jupyter notebooks: examples_jupyter.zip </examples/examples_jupyter.zip>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

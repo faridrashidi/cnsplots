@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.setup_ggplot
+
+cnsplots.setup\_ggplot
+======================
+
+.. autofunction:: cnsplots.setup_ggplot
+
+.. _sphx_glr_backref_cnsplots.setup_ggplot:
+
+.. minigallery:: cnsplots.setup_ggplot
+   :add-heading: Examples
+   :heading-level: -

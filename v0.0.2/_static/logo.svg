@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="258px" height="185px" viewBox="0 0 258 185" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Artboard</title>
+    <g id="Artboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <text id="Cell" font-family="Helvetica-Bold, Helvetica" font-size="50" font-weight="bold">
+            <tspan x="25" y="71" fill="#377EB8">C</tspan>
+            <tspan x="61.1083984" y="71" fill="#CCCCCC">ell</tspan>
+        </text>
+        <text id="nature" font-family="Helvetica-Bold, Helvetica" font-size="50" font-weight="bold">
+            <tspan x="25" y="112" fill="#4DAF4A">n</tspan>
+            <tspan x="55.5419922" y="112" fill="#CCCCCC">ature</tspan>
+        </text>
+        <text id="Science" font-family="Helvetica-Bold, Helvetica" font-size="50" font-weight="bold">
+            <tspan x="25" y="155" fill="#E41A1C">S</tspan>
+            <tspan x="58.3496094" y="155" fill="#CCCCCC">cience</tspan>
+        </text>
+        <line x1="17.5" y1="167.5" x2="238.5" y2="167.5" id="Line" stroke="#000000" stroke-width="2" stroke-linecap="square"></line>
+        <line x1="17.5" y1="167.5" x2="17.5" y2="11.5" id="Line" stroke="#000000" stroke-width="2" stroke-linecap="square"></line>
+        <polygon id="Triangle" fill="#000000" points="17.5 5 22.5 15 12.5 15"></polygon>
+        <polygon id="Triangle" fill="#000000" transform="translate(241.500000, 167.000000) rotate(90.000000) translate(-241.500000, -167.000000) " points="241.5 162 246.5 172 236.5 172"></polygon>
+        <circle id="Oval" fill="#67A9CF" cx="154" cy="46" r="4"></circle>
+        <circle id="Oval-Copy-5" fill="#2166AC" cx="133" cy="26" r="4"></circle>
+        <circle id="Oval-Copy" fill="#D1E5F0" cx="178" cy="69" r="4"></circle>
+        <circle id="Oval-Copy-2" fill="#FDDBC7" cx="198" cy="54" r="4"></circle>
+        <circle id="Oval-Copy-3" fill="#EF8A62" cx="220" cy="78" r="4"></circle>
+        <circle id="Oval-Copy-4" fill="#B2182B" cx="239" cy="97" r="4"></circle>
+        <line x1="133.5" y1="26.5" x2="178.5" y2="69.5" id="Line-2" stroke="#000000" stroke-width="2" stroke-linecap="square"></line>
+        <line x1="197" y1="54" x2="178.5" y2="69.5" id="Line-2" stroke="#000000" stroke-width="2" stroke-linecap="square"></line>
+        <line x1="197" y1="54" x2="238" y2="97" id="Line-2" stroke="#000000" stroke-width="2" stroke-linecap="square"></line>
+    </g>
+</svg>

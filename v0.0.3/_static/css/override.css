@@ -1,0 +1,29 @@
+.sphx-glr-single-img {
+  margin: auto;
+  display: block;
+  width: auto;
+  max-height: 80% !important;
+}
+
+article table.align-default {
+  display: block;
+}
+
+.table-wrapper.autosummary {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.sphx-glr-script-out {
+  display: none !important;
+}
+
+.sidebar-tree .toctree-l2 {
+  display: none;
+}
+
+.not-found-page {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2rem 0 1rem;
+}
