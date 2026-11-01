@@ -258,7 +258,7 @@ def _assert_region(actual: np.ndarray, expected: np.ndarray) -> None:
     perimeter = 2 * (
         expected_x.max() - expected_x.min() + expected_y.max() - expected_y.min()
     )
-    assert actual.sum() == pytest.approx(expected.sum(), abs=perimeter)
+    assert actual.sum() == pytest.approx(expected.sum(), abs=int(perimeter))
 
 
 @pytest.mark.parametrize("mode", ["pdf", "svg", "svg-missing", "svg-failed"])
