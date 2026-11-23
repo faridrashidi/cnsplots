@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.vennplot
+
+cnsplots.vennplot
+=================
+
+.. autofunction:: cnsplots.vennplot
+
+.. _sphx_glr_backref_cnsplots.vennplot:
+
+.. minigallery:: cnsplots.vennplot
+   :add-heading: Examples
+   :heading-level: -

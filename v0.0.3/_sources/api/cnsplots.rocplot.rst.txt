@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.rocplot
+
+cnsplots.rocplot
+================
+
+.. autofunction:: cnsplots.rocplot
+
+.. _sphx_glr_backref_cnsplots.rocplot:
+
+.. minigallery:: cnsplots.rocplot
+   :add-heading: Examples
+   :heading-level: -

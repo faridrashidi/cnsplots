@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.add_panel_label
+
+cnsplots.add\_panel\_label
+==========================
+
+.. autofunction:: cnsplots.add_panel_label
+
+.. _sphx_glr_backref_cnsplots.add_panel_label:
+
+.. minigallery:: cnsplots.add_panel_label
+   :add-heading: Examples
+   :heading-level: -

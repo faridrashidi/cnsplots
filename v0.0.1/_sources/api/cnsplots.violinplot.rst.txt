@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.violinplot
+
+cnsplots.violinplot
+===================
+
+.. autofunction:: cnsplots.violinplot
+
+.. _sphx_glr_backref_cnsplots.violinplot:
+
+.. minigallery:: cnsplots.violinplot
+   :add-heading: Examples
+   :heading-level: -

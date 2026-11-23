@@ -1,0 +1,8 @@
+:github_url: cnsplots.CoxModel.fit
+
+cnsplots.CoxModel.fit
+=====================
+
+.. currentmodule:: cnsplots
+
+.. automethod:: CoxModel.fit

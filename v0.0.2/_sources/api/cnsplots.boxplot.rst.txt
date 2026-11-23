@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.boxplot
+
+cnsplots.boxplot
+================
+
+.. autofunction:: cnsplots.boxplot
+
+.. _sphx_glr_backref_cnsplots.boxplot:
+
+.. minigallery:: cnsplots.boxplot
+   :add-heading: Examples
+   :heading-level: -

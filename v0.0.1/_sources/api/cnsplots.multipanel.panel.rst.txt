@@ -1,0 +1,8 @@
+:github_url: cnsplots.multipanel.panel
+
+cnsplots.multipanel.panel
+=========================
+
+.. currentmodule:: cnsplots
+
+.. automethod:: multipanel.panel

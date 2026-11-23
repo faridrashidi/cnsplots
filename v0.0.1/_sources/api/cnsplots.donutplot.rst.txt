@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.donutplot
+
+cnsplots.donutplot
+==================
+
+.. autofunction:: cnsplots.donutplot
+
+.. _sphx_glr_backref_cnsplots.donutplot:
+
+.. minigallery:: cnsplots.donutplot
+   :add-heading: Examples
+   :heading-level: -

@@ -1,0 +1,12 @@
+﻿:github_url: cnsplots.heatmapplot
+
+cnsplots.heatmapplot
+====================
+
+.. autofunction:: cnsplots.heatmapplot
+
+.. _sphx_glr_backref_cnsplots.heatmapplot:
+
+.. minigallery:: cnsplots.heatmapplot
+   :add-heading: Examples
+   :heading-level: -

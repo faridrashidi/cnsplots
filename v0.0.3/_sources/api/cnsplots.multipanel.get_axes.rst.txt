@@ -1,0 +1,8 @@
+:github_url: cnsplots.multipanel.get_axes
+
+cnsplots.multipanel.get\_axes
+=============================
+
+.. currentmodule:: cnsplots
+
+.. automethod:: multipanel.get_axes
