@@ -5,4 +5,10 @@ Disallow: /genindex.html
 Disallow: /py-modindex.html
 Disallow: /_sources/
 
+# Leave archive HTML crawlable so Google can read its noindex directive.
+Disallow: /dev/_downloads/
+Disallow: /v*/_downloads/
+Disallow: /dev/_sources/
+Disallow: /v*/_sources/
+
 Sitemap: https://cnsplots.farid.one/sitemap.xml

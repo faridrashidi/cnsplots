@@ -14,7 +14,10 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Iterator
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
+
+from lxml import etree
+from lxml import html as lxml_html
 
 SITE_URL = "https://cnsplots.farid.one/"
 DEV_DOCS_NAME = "dev"
@@ -22,6 +25,16 @@ LATEST_DOCS_NAME = "latest"
 GITHUB_PAGES_BRANCH = "gh-pages"
 GITHUB_REPO = "https://github.com/faridrashidi/cnsplots"
 RELEASE_TAG_PATTERN = re.compile(r"^v\d+\.\d+\.\d+$")
+HTML_HEAD = re.compile(r"<head\b[^>]*>.*?</head\s*>", re.IGNORECASE | re.DOTALL)
+ARCHIVE_NOINDEX = '<meta name="googlebot" content="noindex" data-cnsplots-archive="">'
+SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
+SPHINX_ASSET_DIRS = {
+    "_downloads",
+    "_images",
+    "_sources",
+    "_sphinx_design_static",
+    "_static",
+}
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCS_DIR = REPO_ROOT / "docs"
@@ -538,17 +551,6 @@ def _remove_path(path: Path) -> None:
         shutil.rmtree(path)
 
 
-def _write_version_symlink(output_dir: Path, alias_name: str, target_name: str) -> None:
-    """Create a relative symlink alias for a published docs version."""
-    target_dir = output_dir / target_name
-    if not target_dir.exists():
-        raise RuntimeError(f"Cannot link {alias_name} to missing docs at {target_dir}.")
-
-    alias_path = output_dir / alias_name
-    _remove_path(alias_path)
-    alias_path.symlink_to(target_name)
-
-
 def _write_root_redirects(output_dir: Path) -> None:
     """Write only the site-root redirect to the latest stable docs."""
     latest_alias_dir = output_dir / LATEST_DOCS_NAME
@@ -566,51 +568,91 @@ def _write_root_404(output_dir: Path) -> None:
     _write_text(output_dir / "404.html", _render_root_404_page())
 
 
-def _write_root_sitemap_index(output_dir: Path) -> None:
-    """Write a sitemap index that points to each published docs version."""
-    version_names: list[str] = []
-    for path in output_dir.iterdir():
-        if not path.is_dir():
-            continue
-        if path.name in {
-            DEV_DOCS_NAME,
-            LATEST_DOCS_NAME,
-        } or RELEASE_TAG_PATTERN.fullmatch(path.name):
-            if (path / "sitemap.xml").exists():
-                version_names.append(path.name)
+def _prepare_latest_page(page: Path, canonical: str, release_base: str) -> bool:
+    """Set the stable page URL and return whether the author allows indexing."""
+    source = page.read_text(encoding="utf-8")
+    match = HTML_HEAD.search(source)
+    if match is None:
+        raise ValueError(f"Missing HTML head in {page}")
+    # Only serialize the head. Sphinx's page body can contain inline SVG.
+    head = lxml_html.document_fromstring(match.group()).find("head")
+    for tag in head.xpath(
+        "meta[@data-cnsplots-archive] | link[@rel='canonical'] | meta[@property='og:url']"
+    ):
+        head.remove(tag)
+    head.append(lxml_html.Element("link", rel="canonical", href=canonical))
+    head.append(lxml_html.Element("meta", property="og:url", content=canonical))
+    for tag in head.xpath("meta[@property='og:image' or @name='twitter:image']"):
+        image = tag.get("content", "")
+        if image.startswith(release_base):
+            tag.set("content", _latest_absolute_url(image.removeprefix(release_base)))
+    rendered = lxml_html.tostring(head, encoding="unicode", with_tail=False)
+    _write_text(page, source[: match.start()] + rendered + source[match.end() :])
 
-    release_names = sorted(
-        (
-            name
-            for name in version_names
-            if name not in {DEV_DOCS_NAME, LATEST_DOCS_NAME}
-        ),
-        key=_version_sort_key,
-        reverse=True,
-    )
-    version_names = (
-        ([LATEST_DOCS_NAME] if LATEST_DOCS_NAME in version_names else [])
-        + ([DEV_DOCS_NAME] if DEV_DOCS_NAME in version_names else [])
-        + release_names
-    )
+    directives = {
+        rule
+        for tag in head.iter("meta")
+        if tag.get("name", "").lower() in {"robots", "googlebot"}
+        for rule in re.split(r"[,\s]+", tag.get("content", "").lower())
+    }
+    return directives.isdisjoint({"noindex", "none"})
 
-    sitemap_entries = "\n".join(
-        (
-            "  <sitemap>\n"
-            f"    <loc>{SITE_URL.rstrip('/')}/{name}/sitemap.xml</loc>\n"
-            "  </sitemap>"
+
+def _publish_latest_pages(output_dir: Path, release_name: str) -> None:
+    """Publish independent stable HTML and advertise only its indexable pages."""
+    latest_dir = output_dir / LATEST_DOCS_NAME
+    _remove_path(latest_dir)
+    latest_dir.mkdir()
+    for source in (output_dir / release_name).iterdir():
+        target = latest_dir / source.name
+        if source.is_dir() and source.name in SPHINX_ASSET_DIRS:
+            # A second URL needs separate HTML, but can share the same images and downloads.
+            target.symlink_to(
+                Path("..") / release_name / source.name, target_is_directory=True
+            )
+        elif source.is_dir():
+            shutil.copytree(source, target)
+        else:
+            shutil.copy2(source, target)
+
+    urlset = etree.Element("urlset", nsmap={None: SITEMAP_NAMESPACE})
+    release_base = f"{SITE_URL.rstrip('/')}/{release_name}/"
+    for page in sorted(latest_dir.rglob("*.html")):
+        relative = page.relative_to(latest_dir).as_posix()
+        if page.name == "index.html":
+            relative = relative.removesuffix("index.html")
+        canonical = _latest_absolute_url("/" + quote(relative))
+        if _prepare_latest_page(page, canonical, release_base):
+            entry = etree.SubElement(urlset, "url")
+            etree.SubElement(entry, "loc").text = canonical
+
+    sitemap_index = etree.Element("sitemapindex", nsmap={None: SITEMAP_NAMESPACE})
+    child = etree.SubElement(sitemap_index, "sitemap")
+    etree.SubElement(child, "loc").text = _latest_absolute_url("/sitemap.xml")
+    for folder, tree in ((latest_dir, urlset), (output_dir, sitemap_index)):
+        etree.ElementTree(tree).write(
+            str(folder / "sitemap.xml"),
+            encoding="utf-8",
+            xml_declaration=True,
+            pretty_print=True,
         )
-        for name in version_names
-    )
-    _write_text(
-        output_dir / "sitemap.xml",
-        (
-            '<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-            f"{sitemap_entries}\n"
-            "</sitemapindex>\n"
-        ),
-    )
+
+
+def _exclude_version_from_search(version_dir: Path) -> None:
+    """Keep archive pages crawlable so Google sees the exclusion on a recrawl."""
+    (version_dir / "sitemap.xml").unlink(missing_ok=True)
+    for page in version_dir.rglob("*.html"):
+        if page.relative_to(version_dir).parts[0] in SPHINX_ASSET_DIRS:
+            continue
+        source = page.read_text(encoding="utf-8")
+        match = HTML_HEAD.search(source)
+        if match is None:
+            raise ValueError(f"Missing HTML head in {page}")
+        if ARCHIVE_NOINDEX not in match.group():
+            insert_at = source.index(">", match.start()) + 1
+            _write_text(
+                page, source[:insert_at] + "\n" + ARCHIVE_NOINDEX + source[insert_at:]
+            )
 
 
 def _published_version_index_exists(output_dir: Path, version_name: str) -> bool:
@@ -618,29 +660,10 @@ def _published_version_index_exists(output_dir: Path, version_name: str) -> bool
     return (output_dir / version_name / "index.html").exists()
 
 
-def _resolve_latest_alias_target(output_dir: Path) -> str | None:
-    """Return the release version targeted by the latest docs alias."""
-    latest_alias = output_dir / LATEST_DOCS_NAME
-    if latest_alias.is_symlink():
-        target_name = Path(os.readlink(latest_alias)).name
-        if RELEASE_TAG_PATTERN.fullmatch(
-            target_name
-        ) and _published_version_index_exists(output_dir, target_name):
-            return target_name
-
-    if latest_alias.exists():
-        target_name = latest_alias.resolve().name
-        if RELEASE_TAG_PATTERN.fullmatch(
-            target_name
-        ) and _published_version_index_exists(output_dir, target_name):
-            return target_name
-
-    return None
-
-
-def _build_versions_manifest(output_dir: Path) -> list[dict[str, object]]:
+def _build_versions_manifest(
+    output_dir: Path, latest_release_name: str
+) -> list[dict[str, object]]:
     """Return the published docs versions manifest for dynamic navigation."""
-    latest_release_name = _resolve_latest_alias_target(output_dir)
     entries: list[dict[str, object]] = []
 
     if _published_version_index_exists(output_dir, DEV_DOCS_NAME):
@@ -671,11 +694,11 @@ def _build_versions_manifest(output_dir: Path) -> list[dict[str, object]]:
     return entries
 
 
-def _write_versions_manifest(output_dir: Path) -> None:
+def _write_versions_manifest(output_dir: Path, latest_release_name: str) -> None:
     """Write the dynamic docs version manifest to the site root."""
     _write_text(
         output_dir / "versions.json",
-        f"{json.dumps(_build_versions_manifest(output_dir), indent=2)}\n",
+        f"{json.dumps(_build_versions_manifest(output_dir, latest_release_name), indent=2)}\n",
     )
 
 
@@ -700,8 +723,8 @@ def _docs_env(latest_release_tag: str) -> dict[str, str]:
     return env
 
 
-def _refresh_version_static_assets(output_dir: Path) -> None:
-    """Refresh shared static assets inside all assembled docs versions."""
+def _prepare_version_archives(output_dir: Path) -> None:
+    """Refresh assets and indexing directives in new and preserved versions."""
     version_names = [
         path.name
         for path in output_dir.iterdir()
@@ -711,6 +734,7 @@ def _refresh_version_static_assets(output_dir: Path) -> None:
     ]
     for version_name in version_names:
         version_dir = output_dir / version_name
+        _exclude_version_from_search(version_dir)
         for asset_path in REFRESHED_VERSION_STATIC_ASSETS:
             source_path = DOCS_DIR / asset_path
             target_path = version_dir / asset_path
@@ -720,21 +744,20 @@ def _refresh_version_static_assets(output_dir: Path) -> None:
             shutil.copy2(source_path, target_path)
 
 
-def _finalize_site(output_dir: Path) -> None:
+def _finalize_site(output_dir: Path, latest_release_name: str) -> None:
     """Write the top-level files expected by GitHub Pages."""
-    if not (output_dir / LATEST_DOCS_NAME).exists():
+    if not (output_dir / latest_release_name / "index.html").is_file():
         raise RuntimeError(
-            f"Latest docs alias was not assembled at {output_dir / LATEST_DOCS_NAME}."
+            f"Cannot publish latest without an index for {latest_release_name}."
         )
-
-    _refresh_version_static_assets(output_dir)
-    _write_versions_manifest(output_dir)
+    _prepare_version_archives(output_dir)
+    _publish_latest_pages(output_dir, latest_release_name)
+    _write_versions_manifest(output_dir, latest_release_name)
     _write_root_redirects(output_dir)
     shutil.copy2(ROBOTS_FILE, output_dir / "robots.txt")
     _write_text(output_dir / ".nojekyll", "")
     _write_cname(output_dir)
     _write_root_404(output_dir)
-    _write_root_sitemap_index(output_dir)
 
 
 def _dump_multiversion_metadata(
@@ -829,6 +852,15 @@ def _resolve_published_latest_release(
             target_name
         ):
             return target_name
+
+    manifest = existing_site_dir / "versions.json"
+    if manifest.is_file():
+        for entry in json.loads(manifest.read_text(encoding="utf-8")):
+            name = entry.get("version")
+            if name in preserved_release_names and LATEST_DOCS_NAME in entry.get(
+                "aliases", []
+            ):
+                return name
 
     if not preserved_release_names:
         return None
@@ -935,8 +967,7 @@ def _build_bootstrap_site(output_dir: Path, latest_release_tag: str) -> None:
             cwd=release_worktree,
         )
 
-    _write_version_symlink(output_dir, LATEST_DOCS_NAME, latest_release_tag)
-    _finalize_site(output_dir)
+    _finalize_site(output_dir, latest_release_tag)
 
 
 def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
@@ -990,8 +1021,7 @@ def _build_main_site(output_dir: Path, latest_release_tag: str) -> None:
         published_latest_release_tag,
     )
 
-    _write_version_symlink(output_dir, LATEST_DOCS_NAME, published_latest_release_tag)
-    _finalize_site(output_dir)
+    _finalize_site(output_dir, published_latest_release_tag)
 
 
 def _build_release_site(output_dir: Path, latest_release_tag: str) -> None:
@@ -1055,8 +1085,7 @@ def _build_release_site(output_dir: Path, latest_release_tag: str) -> None:
         latest_release_tag,
     )
 
-    _write_version_symlink(output_dir, LATEST_DOCS_NAME, latest_release_tag)
-    _finalize_site(output_dir)
+    _finalize_site(output_dir, latest_release_tag)
 
 
 def build(output_dir: Path, mode: str) -> None:

@@ -4,6 +4,9 @@ import importlib.util
 import json
 from contextlib import contextmanager
 from pathlib import Path
+from xml.etree import ElementTree
+
+from lxml import html
 
 
 def _load_docs_build_script():
@@ -24,7 +27,7 @@ def _write_version_dir(root: Path, version_name: str) -> Path:
     version_dir = root / version_name
     version_dir.mkdir(parents=True)
     (version_dir / "index.html").write_text(
-        f"<html>{version_name}</html>", encoding="utf-8"
+        f"<html><head></head><body>{version_name}</body></html>", encoding="utf-8"
     )
     (version_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
     (version_dir / "_static" / "js").mkdir(parents=True)
@@ -32,6 +35,14 @@ def _write_version_dir(root: Path, version_name: str) -> Path:
         f"// stale {version_name}\n", encoding="utf-8"
     )
     return version_dir
+
+
+def _page_body(root: Path, version: str) -> str:
+    return html.parse(str(root / version / "index.html")).find("body").text_content()
+
+
+def _sitemap_urls(path: Path) -> list[str]:
+    return [node.text or "" for node in ElementTree.parse(path).iterfind(".//{*}loc")]
 
 
 def _read_versions_manifest(root: Path) -> list[dict[str, object]]:
@@ -176,9 +187,7 @@ def test_main_build_bootstraps_when_gh_pages_branch_is_missing(tmp_path, monkeyp
     assert bootstrap_calls == [(output_dir, "v0.1.0")]
 
 
-def test_main_build_recreates_latest_symlink_when_alias_is_missing(
-    tmp_path, monkeypatch
-):
+def test_main_build_recreates_latest_when_alias_is_missing(tmp_path, monkeypatch):
     docs_build = _load_docs_build_script()
     published_site = tmp_path / "published"
     _write_version_dir(published_site, "v0.1.0")
@@ -227,11 +236,7 @@ def test_main_build_recreates_latest_symlink_when_alias_is_missing(
                 "latest_release_tag": latest_release_tag,
             }
         )
-        version_output_dir.mkdir(parents=True)
-        (version_output_dir / "index.html").write_text(
-            "<html>dev</html>", encoding="utf-8"
-        )
-        (version_output_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+        _write_version_dir(version_output_dir.parent, version_name)
 
     monkeypatch.setattr(
         docs_build, "_build_single_version_docs", fake_build_single_version_docs
@@ -248,11 +253,8 @@ def test_main_build_recreates_latest_symlink_when_alias_is_missing(
             "latest_release_tag": "v0.1.0",
         }
     ]
-    assert (output_dir / "latest").is_symlink()
-    assert (output_dir / "latest").readlink() == Path("v0.1.0")
-    assert (output_dir / "latest" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.1.0</html>"
-    )
+    assert not (output_dir / "latest").is_symlink()
+    assert _page_body(output_dir, "latest") == "v0.1.0"
     assert _read_versions_manifest(output_dir) == [
         {"version": "dev", "title": "dev", "aliases": []},
         {"version": "v0.1.0", "title": "v0.1.0", "aliases": ["latest"]},
@@ -320,11 +322,7 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
         build_calls["docs_dir"] = str(
             kwargs.get("docs_dir", docs_build.DOCS_DIR).resolve()
         )
-        version_output_dir.mkdir(parents=True)
-        (version_output_dir / "index.html").write_text(
-            "<html>dev</html>", encoding="utf-8"
-        )
-        (version_output_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+        _write_version_dir(version_output_dir.parent, version_name)
 
     monkeypatch.setattr(
         docs_build, "_build_single_version_docs", fake_build_single_version_docs
@@ -341,20 +339,11 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
         "latest_release_tag": "v0.1.0",
         "docs_dir": str(docs_build.DOCS_DIR.resolve()),
     }
-    assert (output_dir / "latest").is_symlink()
-    assert (output_dir / "latest").readlink() == Path("v0.1.0")
-    assert (output_dir / "latest" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.1.0</html>"
-    )
-    assert (output_dir / "v0.1.0" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.1.0</html>"
-    )
-    assert (output_dir / "v0.0.4" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.0.4</html>"
-    )
-    assert (output_dir / "dev" / "index.html").read_text(encoding="utf-8") == (
-        "<html>dev</html>"
-    )
+    assert not (output_dir / "latest").is_symlink()
+    assert _page_body(output_dir, "latest") == "v0.1.0"
+    assert _page_body(output_dir, "v0.1.0") == "v0.1.0"
+    assert _page_body(output_dir, "v0.0.4") == "v0.0.4"
+    assert _page_body(output_dir, "dev") == "dev"
     assert "latest/" in (output_dir / "index.html").read_text(encoding="utf-8")
     assert not (output_dir / "installation.html").exists()
     assert not (output_dir / "api.html").exists()
@@ -376,11 +365,9 @@ def test_main_build_preserves_release_directories(tmp_path, monkeypatch):
         encoding="utf-8"
     )
 
-    sitemap = (output_dir / "sitemap.xml").read_text(encoding="utf-8")
-    assert "/latest/sitemap.xml" in sitemap
-    assert "/dev/sitemap.xml" in sitemap
-    assert "/v0.1.0/sitemap.xml" in sitemap
-    assert "/v0.0.4/sitemap.xml" in sitemap
+    assert _sitemap_urls(output_dir / "sitemap.xml") == [
+        "https://cnsplots.farid.one/latest/sitemap.xml"
+    ]
 
 
 def test_main_build_keeps_published_latest_when_newer_tag_is_unpublished(
@@ -461,11 +448,7 @@ def test_main_build_keeps_published_latest_when_newer_tag_is_unpublished(
                 "latest_release_tag": latest_release_tag,
             }
         )
-        version_output_dir.mkdir(parents=True)
-        (version_output_dir / "index.html").write_text(
-            "<html>dev</html>", encoding="utf-8"
-        )
-        (version_output_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+        _write_version_dir(version_output_dir.parent, version_name)
 
     monkeypatch.setattr(
         docs_build, "_build_single_version_docs", fake_build_single_version_docs
@@ -483,14 +466,10 @@ def test_main_build_keeps_published_latest_when_newer_tag_is_unpublished(
             "latest_release_tag": "v0.2.0",
         }
     ]
-    assert (output_dir / "latest").is_symlink()
-    assert (output_dir / "latest").readlink() == Path("v0.2.0")
-    assert (output_dir / "v0.2.0" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.2.0</html>"
-    )
-    assert (output_dir / "v0.1.0" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.1.0</html>"
-    )
+    assert not (output_dir / "latest").is_symlink()
+    assert _page_body(output_dir, "latest") == "v0.2.0"
+    assert _page_body(output_dir, "v0.2.0") == "v0.2.0"
+    assert _page_body(output_dir, "v0.1.0") == "v0.1.0"
     assert _read_versions_manifest(output_dir) == [
         {"version": "dev", "title": "dev", "aliases": []},
         {"version": "v0.2.0", "title": "v0.2.0", "aliases": ["latest"]},
@@ -566,11 +545,7 @@ def test_release_build_preserves_dev_and_previous_releases(tmp_path, monkeypatch
                 "docs_dir": str(kwargs.get("docs_dir", docs_build.DOCS_DIR).resolve()),
             }
         )
-        version_output_dir.mkdir(parents=True)
-        (version_output_dir / "index.html").write_text(
-            f"<html>{version_name}</html>", encoding="utf-8"
-        )
-        (version_output_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+        _write_version_dir(version_output_dir.parent, version_name)
 
     monkeypatch.setattr(
         docs_build, "_build_single_version_docs", fake_build_single_version_docs
@@ -588,20 +563,12 @@ def test_release_build_preserves_dev_and_previous_releases(tmp_path, monkeypatch
             "docs_dir": str(docs_build.DOCS_DIR.resolve()),
         }
     ]
-    assert (output_dir / "dev" / "index.html").read_text(encoding="utf-8") == (
-        "<html>dev</html>"
-    )
-    assert (output_dir / "v0.1.0" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.1.0</html>"
-    )
-    assert (output_dir / "v0.0.4" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.0.4</html>"
-    )
-    assert (output_dir / "v0.2.0" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.2.0</html>"
-    )
-    assert (output_dir / "latest").is_symlink()
-    assert (output_dir / "latest").readlink() == Path("v0.2.0")
+    assert _page_body(output_dir, "dev") == "dev"
+    assert _page_body(output_dir, "v0.1.0") == "v0.1.0"
+    assert _page_body(output_dir, "v0.0.4") == "v0.0.4"
+    assert _page_body(output_dir, "v0.2.0") == "v0.2.0"
+    assert not (output_dir / "latest").is_symlink()
+    assert _page_body(output_dir, "latest") == "v0.2.0"
     assert "latest/" in (output_dir / "index.html").read_text(encoding="utf-8")
     assert _read_versions_manifest(output_dir) == [
         {"version": "dev", "title": "dev", "aliases": []},
@@ -671,11 +638,7 @@ def test_bootstrap_build_only_builds_dev_and_latest_release(tmp_path, monkeypatc
                 "latest_release_tag": latest_release_tag,
             }
         )
-        version_output_dir.mkdir(parents=True)
-        (version_output_dir / "index.html").write_text(
-            f"<html>{version_name}</html>", encoding="utf-8"
-        )
-        (version_output_dir / "sitemap.xml").write_text("<xml />", encoding="utf-8")
+        _write_version_dir(version_output_dir.parent, version_name)
 
     monkeypatch.setattr(
         docs_build, "_build_single_version_docs", fake_build_single_version_docs
@@ -703,11 +666,8 @@ def test_bootstrap_build_only_builds_dev_and_latest_release(tmp_path, monkeypatc
         },
     ]
     assert not (output_dir / "v0.0.4").exists()
-    assert (output_dir / "latest").is_symlink()
-    assert (output_dir / "latest").readlink() == Path("v0.1.0")
-    assert (output_dir / "latest" / "index.html").read_text(encoding="utf-8") == (
-        "<html>v0.1.0</html>"
-    )
+    assert not (output_dir / "latest").is_symlink()
+    assert _page_body(output_dir, "latest") == "v0.1.0"
     assert _read_versions_manifest(output_dir) == [
         {"version": "dev", "title": "dev", "aliases": []},
         {"version": "v0.1.0", "title": "v0.1.0", "aliases": ["latest"]},
@@ -722,14 +682,88 @@ def test_versions_manifest_uses_published_versions_in_order(tmp_path):
     _write_version_dir(output_dir, "v0.2.0")
     _write_version_dir(output_dir, "dev")
     (output_dir / "v9.9.9").mkdir()
-    (output_dir / "latest").symlink_to("v0.3.0")
-
-    assert docs_build._build_versions_manifest(output_dir) == [
+    assert docs_build._build_versions_manifest(output_dir, "v0.3.0") == [
         {"version": "dev", "title": "dev", "aliases": []},
         {"version": "v0.3.0", "title": "v0.3.0", "aliases": ["latest"]},
         {"version": "v0.2.0", "title": "v0.2.0", "aliases": []},
         {"version": "v0.1.0", "title": "v0.1.0", "aliases": []},
     ]
+
+
+def test_latest_indexing_survives_repackaging_archived_html(tmp_path):
+    build = _load_docs_build_script()
+    old = _write_version_dir(tmp_path, "v0.1.0")
+    _write_version_dir(tmp_path, "v0.2.0")
+    _write_version_dir(tmp_path, "dev")
+    (tmp_path / "latest").symlink_to(old.name)
+    (old / "api").mkdir()
+    body = (
+        '<body><svg viewBox="0 0 10 10"></svg><a href="../index.html">Home</a></body>'
+    )
+    (old / "api" / "A & B.html").write_text(
+        '<html><head><link rel="canonical" href="https://cnsplots.farid.one/api/old.html">'
+        '<meta property="og:url" content="https://cnsplots.farid.one/api/old.html">'
+        '<meta name="robots" content="index, follow">'
+        '<meta property="og:image" content="https://cnsplots.farid.one/v0.1.0/_static/logo.png">'
+        f"</head>{body}</html>",
+        encoding="utf-8",
+    )
+    (old / "api" / "index.html").write_text(
+        "<html><head></head></html>", encoding="utf-8"
+    )
+    (old / "search.html").write_text(
+        '<html><head><meta name="robots" content="noindex, nofollow"></head></html>',
+        encoding="utf-8",
+    )
+    (old / "_downloads").mkdir()
+    (old / "_downloads" / "example.py").write_bytes(b"print('example')\n")
+    (old / "_downloads" / "sample.html").write_bytes(b"<p>Downloadable fragment</p>")
+
+    for _ in range(2):
+        build._finalize_site(tmp_path, old.name)
+        assert (
+            build._resolve_published_latest_release(tmp_path, ["v0.1.0", "v0.2.0"])
+            == old.name
+        )
+        for name in ("dev", "v0.1.0", "v0.2.0"):
+            assert not (tmp_path / name / "sitemap.xml").exists()
+            for archived in (tmp_path / name).rglob("*.html"):
+                if archived.parent.name == "_downloads":
+                    continue
+                assert html.parse(str(archived)).xpath(
+                    '//meta[@name="googlebot"]/@content'
+                ) == ["noindex"]
+
+        latest = tmp_path / "latest"
+        doc = html.parse(str(latest / "api" / "A & B.html"))
+        canonical = "https://cnsplots.farid.one/latest/api/A%20%26%20B.html"
+        assert doc.xpath('//link[@rel="canonical"]/@href') == [canonical]
+        assert doc.xpath('//meta[@property="og:url"]/@content') == [canonical]
+        assert doc.xpath('//meta[@property="og:image"]/@content') == [
+            "https://cnsplots.farid.one/latest/_static/logo.png"
+        ]
+        assert not doc.xpath('//meta[@name="googlebot"]')
+        assert body in (latest / "api" / "A & B.html").read_text(encoding="utf-8")
+        assert (
+            latest / "_downloads" / "example.py"
+        ).read_bytes() == b"print('example')\n"
+        assert (
+            latest / "_downloads" / "sample.html"
+        ).read_bytes() == b"<p>Downloadable fragment</p>"
+        assert html.parse(str(latest / "search.html")).xpath(
+            '//meta[@name="robots"]/@content'
+        ) == ["noindex, nofollow"]
+        assert set(_sitemap_urls(latest / "sitemap.xml")) == {
+            "https://cnsplots.farid.one/latest/",
+            "https://cnsplots.farid.one/latest/api/",
+            canonical,
+        }
+
+    build._finalize_site(tmp_path, "v0.2.0")
+    assert _sitemap_urls(tmp_path / "latest" / "sitemap.xml") == [
+        "https://cnsplots.farid.one/latest/"
+    ]
+    assert (old / "api" / "A & B.html").is_file()
 
 
 def test_root_404_matches_latest_docs_ui(tmp_path):
